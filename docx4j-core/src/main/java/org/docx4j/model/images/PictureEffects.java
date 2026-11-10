@@ -185,12 +185,13 @@ final class PictureEffects {
 		svg.setAttribute("overflow", "visible");
 		boolean replaced = false;
 		for (ShapeDrawer.EffectPicture p : drawing.getEffects()) if (p.getLayer() == ShapeDrawer.EffectLayer.REPLACE) replaced = true;
+		// the preset shadow, vector fills, after the reflection and before the outer shadow and glow (CR-081 phase 4)
+		Element shadow = nested(document, drawing.getShadow(), prefix + "s-");
 		for (ShapeDrawer.EffectLayer layer : new ShapeDrawer.EffectLayer[] { ShapeDrawer.EffectLayer.UNDER, ShapeDrawer.EffectLayer.REPLACE,
 				ShapeDrawer.EffectLayer.OVER }) {
-			if (layer == ShapeDrawer.EffectLayer.REPLACE) {
-				// the preset shadow, vector fills under the picture (CR-081 phase 4)
-				Element shadow = nested(document, drawing.getShadow(), prefix + "s-");
-				if (shadow != null) svg.appendChild(shadow);
+			if (layer == ShapeDrawer.EffectLayer.REPLACE && shadow != null) {
+				svg.appendChild(shadow);
+				shadow = null;
 			}
 			if (layer == ShapeDrawer.EffectLayer.REPLACE && !replaced) {
 				// the fill behind, then the picture, in the outline
@@ -221,6 +222,10 @@ final class PictureEffects {
 			}
 			for (ShapeDrawer.EffectPicture p : drawing.getEffects()) {
 				if (p.getLayer() != layer) continue;
+				if (layer == ShapeDrawer.EffectLayer.UNDER && shadow != null && !"reflection".equals(p.getEffect())) {
+					svg.appendChild(shadow);
+					shadow = null;
+				}
 				Element e = effect(document, p, layer == ShapeDrawer.EffectLayer.REPLACE ? null : clip, h);
 				if (e != null) svg.appendChild(e);
 			}

@@ -599,28 +599,41 @@ public final class ShapeRenderer {
 		};
 		Rectangle2D localLine = lineBounds == null ? null
 				: new Rectangle2D.Double(lineBounds.getX() - x, lineBounds.getY() - y, lineBounds.getWidth(), lineBounds.getHeight());
-		Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, maxPixelsPerPoint());
-		for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
-		// a preset shadow: vector fills of the shape's outline, under it (phase 4)
-		List<Object> preset = new ArrayList<Object>();
+		// a preset shadow: vector fills of the shape's outline, its line stroked with it (phase 4)
+		final Drawing preset = new Drawing(drawing.getWidth(), drawing.getHeight());
+		Rectangle2D presetBounds = null;
 		if (list.getPrstShdw() != null) {
 			Rectangle2D drawn = lineBounds == null ? box : box.createUnion(lineBounds);
 			for (Effects.Fill f : Effects.presetShadow(list.getPrstShdw(), of.theme, outline(mine), drawn)) {
-				Drawing.Area a = new Drawing.Area(f.getShape(), f.getColour(), null, 0, "shape.shadow");
-				preset.add(a);
-				bounds = union(bounds, f.getShape().getBounds2D());
+				preset.add(new Drawing.Area(f.getShape(), f.getColour(), null, 0, "shape.shadow"));
+				presetBounds = union(presetBounds, f.getShape().getBounds2D());
 			}
 		}
-		if (r.isEmpty() && preset.isEmpty()) return bounds;
-		List<Object> under = new ArrayList<Object>(), over = new ArrayList<Object>(), replace = new ArrayList<Object>();
+		Effects.Painter presetPainter = preset.getItems().isEmpty() ? null : g -> {
+			g.translate(-x, -y);
+			preset.paint(g);
+			g.translate(x, y);
+		};
+		Rectangle2D localPreset = presetBounds == null ? null
+				: new Rectangle2D.Double(presetBounds.getX() - x, presetBounds.getY() - y, presetBounds.getWidth(), presetBounds.getHeight());
+		Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, presetPainter, localPreset,
+				maxPixelsPerPoint());
+		for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
+		if (presetBounds != null) bounds = union(bounds, presetBounds);
+		if (r.isEmpty() && preset.getItems().isEmpty()) return bounds;
+		List<Object> reflected = new ArrayList<Object>(), under = new ArrayList<Object>(), over = new ArrayList<Object>(),
+				replace = new ArrayList<Object>();
 		for (Effects.Picture p : r.getPictures()) {
 			Rectangle2D.Double pl = p.getPlace();
 			Drawing.Picture dp = new Drawing.Picture(p.getImage(), new Rectangle2D.Double(pl.x + x, pl.y + y, pl.width, pl.height), null);
-			(p.getLayer() == Effects.Layer.UNDER ? under : p.getLayer() == Effects.Layer.OVER ? over : replace).add(dp);
+			(p.getLayer() == Effects.Layer.UNDER ? "reflection".equals(p.getEffect()) ? reflected : under
+					: p.getLayer() == Effects.Layer.OVER ? over : replace).add(dp);
 			bounds = union(bounds, dp.getInto());
 		}
-		List<Object> out = new ArrayList<Object>(under);
-		out.addAll(preset);
+		// Word's order: the reflection, the preset shadow, then the outer shadow and glow (fxp4-01 to -03)
+		List<Object> out = new ArrayList<Object>(reflected);
+		out.addAll(preset.getItems());
+		out.addAll(under);
 		if (!replace.isEmpty()) {
 			out.addAll(replace);
 		} else {

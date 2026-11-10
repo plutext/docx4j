@@ -86,15 +86,48 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		CTEffectList fx = sp == null ? null : sp.getEffectLst();
 		AffineTransform at = picture == null || picture.getWidth() <= 0 || picture.getHeight() <= 0 ? null
 				: frame(picture.getWidth(), picture.getHeight(), w, h, crop);
+		// a transparent picture's preset shadow is its strokes', a picture (fxp3-02, -07); an opaque one's the frame's
+		// vector fills (phase 4)
+		boolean rasterPreset = fx != null && fx.getPrstShdw() != null && at != null && transparent(picture);
+		Effects.Painter presetPainter = null;
+		Rectangle2D presetBounds = null;
+		final List<Effects.Picture> presetPictures = new ArrayList<Effects.Picture>();
+		if (rasterPreset) {
+			Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
+			Rectangle2D drawn = frame.getLineBounds() == null ? box : box.createUnion(frame.getLineBounds());
+			Effects.Painter whole = g -> {
+				paintPicture(g, frame, picture, at, box);
+				if (frame.getLine() != null) frame.getLine().paint(g);
+			};
+			presetPictures.addAll(Effects.presetShadowPictures(fx.getPrstShdw(), theme, whole, drawn, drawn, maxPixelsPerPoint));
+		} else if (frame.getShadow() != null) {
+			presetPainter = g -> frame.getShadow().paint(g);
+			presetBounds = frame.getShadowBounds();
+		}
+		if (!presetPictures.isEmpty()) {
+			presetPainter = g -> {
+				for (Effects.Picture p : presetPictures) {
+					Rectangle2D.Double pl = p.getPlace();
+					g.drawImage(p.getImage(), new AffineTransform(pl.width / p.getImage().getWidth(), 0, 0, pl.height / p.getImage().getHeight(), pl.x,
+							pl.y), null);
+				}
+			};
+			for (Effects.Picture p : presetPictures) presetBounds = presetBounds == null ? p.getPlace() : presetBounds.createUnion(p.getPlace());
+		}
+		List<Effects.Picture> all = new ArrayList<Effects.Picture>();
 		if (fx != null && at != null) {
 			Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
 			Effects.Painter line = frame.getLine() == null ? null : g -> frame.getLine().paint(g);
 			Effects.Result r = Effects.draw(fx, theme, w, h, g -> paintPicture(g, frame, picture, at, box), line, frame.getLineBounds(),
-					maxPixelsPerPoint);
+					presetPainter, presetBounds, maxPixelsPerPoint);
 			if (problems != null) {
 				for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
 			}
-			for (final Effects.Picture p : r.getPictures()) {
+			// Word's order under the picture: the reflection, the preset shadow, then the outer shadow and glow
+			for (Effects.Picture p : r.getPictures()) if ("reflection".equals(p.getEffect())) all.add(p);
+			all.addAll(presetPictures);
+			for (Effects.Picture p : r.getPictures()) if (!"reflection".equals(p.getEffect())) all.add(p);
+			for (final Effects.Picture p : all) {
 				final EffectLayer layer = p.getLayer() == Effects.Layer.UNDER ? EffectLayer.UNDER
 						: p.getLayer() == Effects.Layer.OVER ? EffectLayer.OVER : EffectLayer.REPLACE;
 				out.add(new EffectPicture() {
@@ -122,7 +155,7 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		}
 		final Document behind = frame.getBehind() == null ? null : SvgWriter.toSvg(frame.getBehind(), frame.getBehindBounds());
 		final Document lineSvg = frame.getLine() == null ? null : SvgWriter.toSvg(frame.getLine(), frame.getLineBounds());
-		final Document shadow = frame.getShadow() == null ? null : SvgWriter.toSvg(frame.getShadow(), frame.getShadowBounds());
+		final Document shadow = frame.getShadow() == null || rasterPreset ? null : SvgWriter.toSvg(frame.getShadow(), frame.getShadowBounds());
 		final Shape clip = frame.isBox() ? null : frame.getOutline();
 		return new PictureDrawing() {
 			@Override
@@ -150,6 +183,18 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 				return shadow;
 			}
 		};
+	}
+
+	/** Whether the bitmap has a pixel that isn't opaque */
+	static boolean transparent(BufferedImage picture) {
+		if (picture == null || !picture.getColorModel().hasAlpha()) return false;
+		int w = picture.getWidth(), h = picture.getHeight();
+		int[] row = new int[w];
+		for (int y = 0; y < h; y++) {
+			picture.getRGB(0, y, w, 1, row, 0, w);
+			for (int v : row) if ((v >>> 24) < 255) return true;
+		}
+		return false;
 	}
 
 	/**

@@ -265,7 +265,15 @@ under `pic:spPr` (through the portfolio).
       is the outline moved `dist` along `dir`; some are first halved, sheared, mirrored or scaled about a point of the
       box. shdw13, 17 and 18 add a second fill (findings §2).
     - Against Word's PDFs of all 20 presets on a picture and on a shape: 46 fills within 0.02pt, their greys Word's.
-    - Only one `dist` and `dir` were probed; the second fill's colour is measured on black only (findings §3).
+    - A round after the commit (`cr081-phase4-r1`, 49 probes; Jason: "build and stage the round") measured what
+      phase 0 hadn't (findings §3):
+      - other dists, dirs and sizes: as built;
+      - outlines: the drawing's own, transformed;
+      - the second fill: each channel plus 0.4, not 40% to white;
+      - a transparent picture's preset: a picture of its strokes;
+      - the order: after the reflection, which reflects it.
+
+      The last three were corrected (findings §4); gate b421 against b420: 0 movers, events equal.
     - Gate b420 against b419: 0 movers, events equal. No corpus document has a preset shadow.
     - Tests: `PresetShadowTest` (the oracle, both drawings), `PictureEffectsFoTest` (+1, both routes).
 - **Phase 5, 3-D** (D5): `a:scene3d` and `a:sp3d` on pictures, shapes, SmartArt (CR-082) and WordArt (CR-083, from

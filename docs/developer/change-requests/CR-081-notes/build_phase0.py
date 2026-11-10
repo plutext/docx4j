@@ -17,6 +17,8 @@ The sets:
   cr081-phase0-styles  the 28 picture styles: Jason's hand-made document (cr081-styles-hand.docx, staged as it is),
                    and Word's XML for each style (styles-word.tsv, harvested from it by build_styles_start.py) over the
                    photo, the photo as a JPEG and both line arts, each with the effect extent Word gave the style
+  cr081-phase4-r1  after phase 4 (2026-11-11; Jason: "build and stage the round"): the preset shadows at other dists
+                   and dirs, in other colours, on other outlines, with other effects, and on other sizes
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -158,17 +160,17 @@ class Probe:
     """One page: a picture (pic) or a shape (wps), inline unless anchor is given."""
     def __init__(self, note, sppr='', picture='photo.png', geom='rect', ln='', rot=None, src_rect='', shape=False,
                  fill='<a:solidFill><a:srgbClr val="4472C4"/></a:solidFill>', style='', text='', anchor=None,
-                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene='', raw=''):
+                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene='', raw='', cx=CX, cy=CY):
         self.__dict__.update(locals())
         del self.__dict__['self']
 
     def sp_pr(self):
         if self.raw:     # a picture style: Word's spPr after its xfrm, as it is
-            return f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{CX}" cy="{CY}"/></a:xfrm>{self.raw}'
+            return f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{self.cx}" cy="{self.cy}"/></a:xfrm>{self.raw}'
         rot = f' rot="{self.rot}"' if self.rot else ''
         geom = f'<a:prstGeom prst="{self.geom}"><a:avLst/></a:prstGeom>'
         fill = self.fill if self.shape else ''
-        return f'<a:xfrm{rot}><a:off x="0" y="0"/><a:ext cx="{CX}" cy="{CY}"/></a:xfrm>{geom}{fill}{self.ln}{self.sppr}{self.scene}'
+        return f'<a:xfrm{rot}><a:off x="0" y="0"/><a:ext cx="{self.cx}" cy="{self.cy}"/></a:xfrm>{geom}{fill}{self.ln}{self.sppr}{self.scene}'
 
 def pic(note, *eff, **kw):
     return Probe(note, effects(*eff) if eff else '', **kw)
@@ -422,6 +424,60 @@ def fam_3d_depth():
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
+# ------------------------------------------------------------- after phase 4: what its findings §3 left unmeasured
+
+PRESET_SET = (1, 3, 7, 9, 10, 13, 17, 19, 20)     # one of each kind of preset: moved, leaning, mirrored, scaled, doubled
+P6 = dict(dist=76200, dir=2700000)                 # phase 0's: 6 pt at 45 degrees
+
+def fam_preset_move():
+    """The presets at two other distances and directions (phase 0 had only 6 pt at 45 degrees), and with none."""
+    out = [pic(f'prstShdw shdw{i}, dist 12 pt, dir 135 degrees', prstshdw(f'shdw{i}', dist=152400, dir=8100000)) for i in PRESET_SET]
+    out += [pic(f'prstShdw shdw{i}, dist 3 pt, dir 270 degrees', prstshdw(f'shdw{i}', dist=38100, dir=16200000)) for i in PRESET_SET]
+    out += [pic('prstShdw shdw3, dist 6 pt, dir 0', prstshdw('shdw3', dist=76200, dir=0)),
+            pic('prstShdw shdw1, no dist', prstshdw('shdw1'))]
+    return out
+
+def fam_preset_colour():
+    """The second fill of shdw13 and shdw17 under colours other than black (phase 0: 0.4 grey under black)."""
+    out = []
+    for i in (13, 17):
+        out += [pic(f'prstShdw shdw{i}, red', prstshdw(f'shdw{i}', srgb('FF0000'), **P6)),
+                pic(f'prstShdw shdw{i}, blue at 50%', prstshdw(f'shdw{i}', srgb('0000FF', 50000), **P6)),
+                pic(f'prstShdw shdw{i}, accent1', prstshdw(f'shdw{i}', scheme('accent1'), **P6))]
+    out += [pic('prstShdw shdw1, red at 50%', prstshdw('shdw1', srgb('FF0000', 50000), **P6))]
+    return out
+
+def fam_preset_outline():
+    """The presets on outlines other than a rectangle's box (phase 0's were all rectangles), and on a transparent picture."""
+    line = '<a:ln w="38100"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln>'
+    out = []
+    for i in (1, 3):
+        e = prstshdw(f'shdw{i}', **P6)
+        out += [pic(f'prstShdw shdw{i}, ellipse frame', e, geom='ellipse'),
+                pic(f'prstShdw shdw{i}, lineart-alpha.png', e, picture='lineart-alpha.png'),
+                shp(f'prstShdw shdw{i}, star5 shape', e, geom='star5'),
+                shp(f'prstShdw shdw{i}, ellipse shape', e, geom='ellipse'),
+                shp(f'prstShdw shdw{i}, no fill, line 3pt', e, fill='<a:noFill/>', ln=line)]
+    return out
+
+def fam_preset_combo():
+    """A preset shadow with other effects, and with a picture's line."""
+    e = prstshdw('shdw1', **P6)
+    black = '<a:ln w="76200"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln>'
+    return [pic('prstShdw shdw1 and reflection', e, rf()),
+            pic('prstShdw shdw1 and glow', e, glow(101600)),
+            pic('prstShdw shdw1 and outer shadow', e, o()),
+            pic('prstShdw shdw3 and soft edge', prstshdw('shdw3', **P6), soft(63500)),
+            pic('prstShdw shdw1 and inner shadow', e, inner(**INNER)),
+            pic('prstShdw shdw1, black line 6pt', e, ln=black)]
+
+def fam_preset_size():
+    """The presets on a tall and a wide picture (phase 0's were all 144 by 108 pt): do the lean and the scales follow the box?"""
+    tall, wide = dict(cx=914400, cy=1828800), dict(cx=3657600, cy=914400)
+    out = [pic(f'prstShdw shdw{i}, 72 by 144 pt', prstshdw(f'shdw{i}', **P6), **tall) for i in (3, 7, 9, 10)]
+    out += [pic(f'prstShdw shdw{i}, 288 by 72 pt', prstshdw(f'shdw{i}', **P6), **wide) for i in (3, 10)]
+    return out
+
 STYLES_TSV = os.path.join(HERE, 'styles-word.tsv')
 HAND = ('fs00-hand', os.path.join(HERE, 'cr081-styles-hand.docx'))
 
@@ -503,6 +559,14 @@ SETS = {
         ('fxr52-reflection-blur', generous(fam_reflection_blur), THEME_2023),
         ('fxr53-reflection-offset', generous(fam_reflection_offset), THEME_2023),
     ],
+    # After phase 4 (2026-11-11; Jason: "commit phase 4 then build and stage the round"): phase 4 findings section 3.
+    'cr081-phase4-r1': [
+        ('fxp1-preset-move', generous(fam_preset_move), THEME_2023),
+        ('fxp2-preset-colour', generous(fam_preset_colour), THEME_2023),
+        ('fxp3-preset-outline', generous(fam_preset_outline), THEME_2023),
+        ('fxp4-preset-combo', generous(fam_preset_combo), THEME_2023),
+        ('fxp5-preset-size', generous(fam_preset_size), THEME_2023),
+    ],
     'cr081-phase0-styles': [
         ('fs10-photo', fam_styles('photo.png'), THEME_2023),
         ('fs11-photo-jpeg', fam_styles('photo.jpeg'), THEME_2023),
@@ -512,7 +576,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 
@@ -557,9 +621,9 @@ def drawing(probe, n, rid):
              'behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'
              '<wp:positionH relativeFrom="column"><wp:posOffset>1828800</wp:posOffset></wp:positionH>'
              '<wp:positionV relativeFrom="paragraph"><wp:posOffset>0</wp:posOffset></wp:positionV>'
-             f'<wp:extent cx="{CX}" cy="{CY}"/>{effect_extent(probe)}{wrap}{docpr}{frame}{g}</wp:anchor>')
+             f'<wp:extent cx="{probe.cx}" cy="{probe.cy}"/>{effect_extent(probe)}{wrap}{docpr}{frame}{g}</wp:anchor>')
     else:
-        d = (f'<wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="{CX}" cy="{CY}"/>{effect_extent(probe)}'
+        d = (f'<wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="{probe.cx}" cy="{probe.cy}"/>{effect_extent(probe)}'
              f'{docpr}{frame}{g}</wp:inline>')
     d = f'<w:drawing>{d}</w:drawing>'
     if probe.shape:

@@ -20,8 +20,9 @@ usage: export_effects.py <results dir: one folder a job, <file>-a/<file>.pdf> [-
 (default out: docx4j-chart-render/src/test/resources/effects/cr081-word-effects.jsonl.gz; default files: phase 1's
 rectangular-picture families, FILES; phase 2's: --out .../cr081-word-frames.jsonl.gz --files FRAMES; phase 3's:
 --out .../cr081-word-shapes.jsonl.gz --files SHAPES; phase 4's: --out .../cr081-word-presets.jsonl.gz --files PRESETS)"""
-import csv, gzip, io, json, os, sys
+import csv, gzip, io, json, os, re, sys
 import numpy as np
+import read_phase0
 from read_phase0 import page_of, drawing, near, is_3d
 from pdfdraws import pixels
 
@@ -35,8 +36,9 @@ FILES = ['fxr10-outer-offset', 'fxr11-outer-blur', 'fxr12-outer-scale', 'fxr13-o
 FRAMES = ['fxr71-frames', 'fs10-photo', 'fs11-photo-jpeg', 'fs20-lineart', 'fs21-lineart-alpha']
 # phase 3: shapes, and effectRef under three themes
 SHAPES = ['fxr80-shapes', 'fxr81-effectref-2013', 'fxr82-effectref-2023', 'fxr83-effectref-custom']
-# phase 4: the preset shadows, on a picture and on a shape
-PRESETS = ['fxr60-preset', 'fxr61-preset-shapes']
+# phase 4: the preset shadows, on a picture and on a shape; and the round after it (cr081-phase4-r1)
+PRESETS = ['fxr60-preset', 'fxr61-preset-shapes', 'fxp1-preset-move', 'fxp2-preset-colour', 'fxp3-preset-outline',
+           'fxp4-preset-combo', 'fxp5-preset-size']
 FRACS = (0.25, 0.5, 0.75)
 
 def profiles(alpha):
@@ -79,9 +81,12 @@ def main(results, out, files=FILES):
         pdf = os.path.join(results, f + '-a', f + '.pdf')
         for p in [p for p in probes if p['file'] == f]:
             draws = page_of(pdf, int(p['page']))
+            # a probe of another size names it in its note (fxp5: '72 by 144 pt')
+            size = re.search(r'(\d+) by (\d+) pt', p['note'])
+            read_phase0.W, read_phase0.H = (float(size.group(1)), float(size.group(2))) if size else (144.0, 108.0)
             dr = drawing(draws, p)
-            if p['object'].startswith('shape') and dr is not None and dr['kind'] == 'image' \
-                    and not (abs(dr['box'][2] - dr['box'][0] - 144) < 1 and abs(dr['box'][3] - dr['box'][1] - 108) < 1):
+            if p['object'].startswith('shape') and (dr is None or dr['kind'] == 'image'
+                    and not (abs(dr['box'][2] - dr['box'][0] - 144) < 1 and abs(dr['box'][3] - dr['box'][1] - 108) < 1)):
                 # an unfilled shape: its line's path is its box; with no line either, it has none (its text's alone)
                 strokes = [d for d in draws if d['kind'] == 'stroke' and abs(d['box'][2] - d['box'][0] - 144) < 0.6
                            and abs(d['box'][3] - d['box'][1] - 108) < 0.6]

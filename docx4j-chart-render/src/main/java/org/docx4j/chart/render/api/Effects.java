@@ -192,6 +192,21 @@ public final class Effects {
 	 */
 	public static Result draw(CTEffectList list, ThemeColors theme, double w, double h, Painter painter, Painter line, Rectangle2D lineBounds,
 			double maxPixelsPerPoint) {
+		return draw(list, theme, w, h, painter, line, lineBounds, null, null, maxPixelsPerPoint);
+	}
+
+	/**
+	 * As {@link #draw(CTEffectList, ThemeColors, double, double, Painter, Painter, Rectangle2D, double)}, with the
+	 * drawing's preset shadow (phase 4), which its reflection reflects (fxp4-01: Word's reflection is the preset's
+	 * offset taller); the caller draws the preset itself, after the reflection and before the outer shadow and glow
+	 * (fxp4-01 to -03).
+	 *
+	 * @param preset paints the preset shadow, or null for none
+	 * @param presetBounds what it paints, in the drawing's frame
+	 * @since 17.3.7 (CR-081 phase 4)
+	 */
+	public static Result draw(CTEffectList list, ThemeColors theme, double w, double h, Painter painter, Painter line, Rectangle2D lineBounds,
+			Painter preset, Rectangle2D presetBounds, double maxPixelsPerPoint) {
 		List<Picture> out = new ArrayList<Picture>();
 		List<String> problems = new ArrayList<String>();
 		if (list == null || painter == null || !(w > 0) || !(h > 0)) return new Result(out, problems);
@@ -221,9 +236,10 @@ public final class Effects {
 			shadow = add(problems, outer(list.getOuterShdw(), theme, drawn, bounds, stack(painter(glow), drawing, lineOver), cap));
 		}
 		if (shadow != null) bounds = bounds.createUnion(shadow.place);
+		if (preset != null && presetBounds != null) bounds = bounds.createUnion(presetBounds);
 		if (list.getReflection() != null) {
 			reflection = add(problems, reflection(list.getReflection(), drawn, bounds,
-					stack(painter(shadow), painter(glow), drawing, painter(inner), lineOver), cap));
+					stack(preset, painter(shadow), painter(glow), drawing, painter(inner), lineOver), cap));
 		}
 		// drawn in Word's order: under the drawing its reflection, outer shadow and glow; then in its place or over it
 		for (Picture p : new Picture[] { reflection, shadow, glow, soft, inner }) if (p != null) out.add(p);
@@ -444,10 +460,12 @@ public final class Effects {
 	 * <li>shdw9: 75% about its top left; shdw10: 125% about its bottom right;</li>
 	 * <li>shdw19: half its height up from its foot; shdw20: mirrored down from its foot;</li>
 	 * <li>shdw13: a second fill twice as far; shdw17, 18: a second fill as far the other way; the second under the
-	 * first, in the colour 40% of the way to white (0.4 grey for black).</li>
+	 * first, each channel of its colour plus 0.4.</li>
 	 * </ul>
-	 * Word's presets named for another direction (shdw1 is "top left") are drawn along dir as well; the second fill's
-	 * colour is measured on black only.
+	 * Word's presets named for another direction (shdw1 is "top left") are drawn along dir as well. The round after
+	 * phase 4 (fxp1 to fxp5) confirmed the move at other dists and dirs, the transforms on other sizes (the lean and the
+	 * scales follow the box), and the outline followed: an ellipse frame's, a star's, an unfilled shape's line (a ring),
+	 * the box with a picture's line, each transformed with its stroke.
 	 *
 	 * @param outline the drawing's outline, in its frame
 	 * @param box the box the presets' points are on: the drawing's, with its line where it has one
@@ -455,9 +473,54 @@ public final class Effects {
 	 */
 	public static List<Fill> presetShadow(org.docx4j.dml.CTPresetShadowEffect s, ThemeColors theme, java.awt.Shape outline, Rectangle2D box) {
 		List<Fill> out = new ArrayList<Fill>();
-		if (s == null || outline == null || box == null || s.getPrst() == null) return out;
+		Color[] colours = presetColours(s, theme);
+		if (colours == null || outline == null || box == null) return out;
+		for (Object[] l : presetLayers(s, box)) {
+			out.add(new Fill(((AffineTransform) l[0]).createTransformedShape(outline), colours[(Integer) l[1]]));
+		}
+		return out;
+	}
+
+	/**
+	 * A preset shadow as pictures, from what the painter paints (its alpha), as Word draws one for a transparent picture
+	 * (fxp3-02, -07: the shadow of a line art's strokes, not of its box): each fill of {@link #presetShadow} as a
+	 * picture at 200 dpi, unblurred, under the drawing.
+	 *
+	 * @param bounds what the painter paints, in the drawing's frame
+	 * @since 17.3.7 (CR-081 phase 4)
+	 */
+	public static List<Picture> presetShadowPictures(org.docx4j.dml.CTPresetShadowEffect s, ThemeColors theme, Painter painter, Rectangle2D box,
+			Rectangle2D bounds, double maxPixelsPerPoint) {
+		List<Picture> out = new ArrayList<Picture>();
+		Color[] colours = presetColours(s, theme);
+		if (colours == null || painter == null || box == null || bounds == null) return out;
+		double cap = maxPixelsPerPoint > 0 ? maxPixelsPerPoint : Double.MAX_VALUE;
+		for (Object[] l : presetLayers(s, box)) {
+			AffineTransform t = (AffineTransform) l[0];
+			Rectangle2D area = t.createTransformedShape(bounds).getBounds2D();
+			double ppt = resolution(area, 1, cap);
+			if (ppt <= 0) continue;
+			Grid g = Grid.of(area, ppt);
+			out.add(g.picture(g.alpha(painter, t), colours[(Integer) l[1]], Layer.UNDER, "prstShdw"));
+		}
+		return out;
+	}
+
+	/**
+	 * The shadow's colour and its second fill's (shdw13, 17, 18): each channel plus 0.4, to white at most (fxp2: black
+	 * 0.4 grey, red FF6666, accent1 156082 7BC6E8, blue 6464FF), the alpha the colour's; null where it has none
+	 */
+	private static Color[] presetColours(org.docx4j.dml.CTPresetShadowEffect s, ThemeColors theme) {
+		if (s == null || s.getPrst() == null) return null;
 		Color c = colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
-		if (c == null) return out;
+		if (c == null) return null;
+		Color second = new Color(Math.min(255, c.getRed() + 102), Math.min(255, c.getGreen() + 102), Math.min(255, c.getBlue() + 102), c.getAlpha());
+		return new Color[] { c, second };
+	}
+
+	/** Each fill of a preset, in drawing order: its transform in the drawing's frame, and 1 for the second fill's colour */
+	private static List<Object[]> presetLayers(org.docx4j.dml.CTPresetShadowEffect s, Rectangle2D box) {
+		List<Object[]> out = new ArrayList<Object[]>();
 		int n;
 		try {
 			n = Integer.parseInt(s.getPrst().value().substring(4));
@@ -479,8 +542,6 @@ public final class Effects {
 		double px = box.getX() + ax * box.getWidth(), py = box.getY() + ay * box.getHeight();
 		double dist = s.getDist() / 12700.0, dir = Math.toRadians(s.getDir() / 60000.0);
 		double dx = dist * Math.cos(dir), dy = dist * Math.sin(dir);
-		Color second = new Color((int) Math.round(c.getRed() + 0.4 * (255 - c.getRed())), (int) Math.round(c.getGreen() + 0.4 * (255 - c.getGreen())),
-				(int) Math.round(c.getBlue() + 0.4 * (255 - c.getBlue())), c.getAlpha());
 		double[][] layers = n == 13 ? new double[][] { { 2, 1 }, { 1, 0 } } : n == 17 || n == 18 ? new double[][] { { -1, 1 }, { 1, 0 } }
 				: new double[][] { { 1, 0 } };
 		for (double[] l : layers) {
@@ -488,7 +549,7 @@ public final class Effects {
 			t.translate(px, py);
 			t.concatenate(new AffineTransform(sx, 0, shear, sy, 0, 0));
 			t.translate(-px, -py);
-			out.add(new Fill(t.createTransformedShape(outline), l[1] > 0 ? second : c));
+			out.add(new Object[] { t, (int) l[1] });
 		}
 		return out;
 	}
