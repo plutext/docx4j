@@ -40,6 +40,25 @@ def shapes(docx):
         out.append((sp.group(0) if sp else '', st.group(0) if st else ''))
     return out, zipfile.ZipFile(docx).read('word/theme/theme1.xml').decode('utf-8')
 
+def convert(d):
+    """A probe's draws, read_shapes.py's, as the oracle holds them"""
+    draws = []
+    for dr in d['draws']:
+        if dr['kind'] == 'image':
+            draws.append({'k': 'image', 'box': dr['box']})
+            continue
+        if dr['kind'] not in ('fill', 'stroke', 'fillstroke'):
+            draws.append({'k': dr['kind']})
+            continue
+        base = {'fill': dr['fill'], 'stroke': dr['stroke'], 'alpha': dr['alpha'], 'lw': dr['lw'], 'cap': dr['cap'],
+                'join': dr['join'], 'dash': dr['dash'], 'path': path(dr['subpaths']), 'pattern': bool(dr.get('pattern')),
+                'evenodd': dr['op'].endswith('*')}
+        if dr['kind'] in ('fill', 'fillstroke'):
+            draws.append(dict(base, k='F'))
+        if dr['kind'] in ('stroke', 'fillstroke'):
+            draws.append(dict(base, k='S'))
+    return draws
+
 def main(results, json_in=None, out_file=None):
     data = json.load(open(json_in or os.path.join(HERE, 'phase0-word.json')))
     probes = [p for p in csv.DictReader(open(os.path.join(HERE, 'probes.tsv')), delimiter='\t') if p['file'].startswith(FILES)]
@@ -59,22 +78,7 @@ def main(results, json_in=None, out_file=None):
         k = int(p['page']) - 1
         sp, st = sps[k]
         theme = '2013' if 'Office Theme' in theme_xml and 'Aptos' not in theme_xml else '2023'
-        d = data[p['probe']]
-        draws = []
-        for dr in d['draws']:
-            if dr['kind'] == 'image':
-                draws.append({'k': 'image', 'box': dr['box']})
-                continue
-            if dr['kind'] not in ('fill', 'stroke', 'fillstroke'):
-                draws.append({'k': dr['kind']})
-                continue
-            base = {'fill': dr['fill'], 'stroke': dr['stroke'], 'alpha': dr['alpha'], 'lw': dr['lw'], 'cap': dr['cap'],
-                    'join': dr['join'], 'dash': dr['dash'], 'path': path(dr['subpaths']), 'pattern': bool(dr.get('pattern')),
-                    'evenodd': dr['op'].endswith('*')}
-            if dr['kind'] in ('fill', 'fillstroke'):
-                draws.append(dict(base, k='F'))
-            if dr['kind'] in ('stroke', 'fillstroke'):
-                draws.append(dict(base, k='S'))
+        draws = convert(data[p['probe']])
         rows.append({'probe': p['probe'], 'note': p['note'], 'size': p['size'], 'sppr': sp, 'style': st, 'theme': theme,
                      'draws': draws})
     os.makedirs(OUT_DIR, exist_ok=True)

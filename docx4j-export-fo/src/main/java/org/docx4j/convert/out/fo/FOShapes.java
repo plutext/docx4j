@@ -21,15 +21,20 @@ package org.docx4j.convert.out.fo;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import org.docx4j.chart.render.api.ShapeRenderer;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas.CTWordprocessingCanvas;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup.CTWordprocessingGroup;
 import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.convert.out.common.AbstractWmlConversionContext;
 import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.shapes.ShapeOutlines;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.slf4j.Logger;
@@ -114,8 +119,13 @@ final class FOShapes {
 	 * @param insets the bodyPr's, or null for Word's defaults
 	 */
 	static double[] textInsets(double[] insets, ShapeRenderer.Drawn drawn, CTWordprocessingShape wsp, double w, double h) {
-		if (drawn == null || wsp.getSpPr() == null || wsp.getSpPr().getXfrm() == null) return insets;
-		Rectangle2D r = drawn.getOutlines().getTextRectangle();
+		return drawn == null ? insets : textInsets(insets, drawn.getOutlines(), wsp, w, h);
+	}
+
+	/** As {@link #textInsets(double[], ShapeRenderer.Drawn, CTWordprocessingShape, double, double)}, from the geometry */
+	static double[] textInsets(double[] insets, ShapeOutlines outlines, CTWordprocessingShape wsp, double w, double h) {
+		if (outlines == null || wsp.getSpPr() == null || wsp.getSpPr().getXfrm() == null) return insets;
+		Rectangle2D r = outlines.getTextRectangle();
 		double[] in = insets == null ? new double[] { 7.2, 3.6, 7.2, 3.6 } : insets.clone();
 		double[] add = { r.getMinX(), r.getMinY(), w - r.getMaxX(), h - r.getMaxY() };
 		boolean any = false;
@@ -171,6 +181,77 @@ final class FOShapes {
 		block.appendChild(ifo);
 		abs.appendChild(block);
 		container.insertBefore(abs, container.getFirstChild());
+	}
+
+	// ------------------------------------------------------------------ groups and canvases (CR-080 phase 3)
+
+	/** The group (wpg:wgp) or canvas (wpc:wpc) a drawing's graphicData holds, or null */
+	static Object group(org.docx4j.dml.GraphicData gd) {
+		if (gd == null) return null;
+		for (Object o : gd.getAny()) {
+			Object v = o instanceof jakarta.xml.bind.JAXBElement ? ((jakarta.xml.bind.JAXBElement<?>) o).getValue() : o;
+			if (v instanceof CTWordprocessingGroup || v instanceof CTWordprocessingCanvas) return v;
+		}
+		return null;
+	}
+
+	/** The group or canvas drawn at its extent; null where it can't be. Its gaps are logged, a code each. */
+	static ShapeRenderer.Drawn drawGroup(AbstractWmlConversionContext context, Object group, long cx, long cy) {
+		if (group == null || cx <= 0 && cy <= 0) return null;
+		try {
+			ThemeColors theme = ThemeColors.of(context.getWmlPackage());
+			final Part host = context.getCurrentPart();
+			ShapeRenderer.Drawn drawn = group instanceof CTWordprocessingGroup
+					? ShapeRenderer.drawGroup((CTWordprocessingGroup) group, theme, cx, cy, relId -> picture(host, relId))
+					: ShapeRenderer.drawCanvas((CTWordprocessingCanvas) group, theme, cx, cy, relId -> picture(host, relId));
+			for (String code : drawn.getProblems()) {
+				log.warn(code + ": a DrawingML " + (group instanceof CTWordprocessingGroup ? "group" : "canvas") + " (CR-080 D9)");
+			}
+			return drawn;
+		} catch (RuntimeException e) {
+			log.warn("render.shape.bad_geometry: a DrawingML group or canvas couldn't be drawn: " + e, e);
+			return null;
+		}
+	}
+
+	/**
+	 * The shapes in a group or canvas with a text box (wps:txbx/w:txbxContent), nested groups' included, in document
+	 * order: the order the XSLT pathway converts their text in
+	 */
+	static List<CTWordprocessingShape> textBoxes(Object group) {
+		List<CTWordprocessingShape> out = new ArrayList<CTWordprocessingShape>();
+		List<Object> children = group instanceof CTWordprocessingGroup ? ((CTWordprocessingGroup) group).getWspOrGrpSpOrGraphicFrame()
+				: group instanceof CTWordprocessingCanvas ? ((CTWordprocessingCanvas) group).getWspOrPicOrContentPart() : null;
+		if (children == null) return out;
+		for (Object o : children) {
+			Object c = o instanceof jakarta.xml.bind.JAXBElement ? ((jakarta.xml.bind.JAXBElement<?>) o).getValue() : o;
+			if (c instanceof CTWordprocessingShape) {
+				CTWordprocessingShape wsp = (CTWordprocessingShape) c;
+				if (wsp.getTxbx() != null && wsp.getTxbx().getTxbxContent() != null) out.add(wsp);
+			} else if (c instanceof CTWordprocessingGroup) {
+				out.addAll(textBoxes(c));
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * A group's or canvas's shape's text: a container at the shape's box in the group's container (which has no
+	 * padding), absolutely positioned, set in by its text rectangle and its insets, anchored as its bodyPr says. A
+	 * turned shape's text stays level, as a single shape's does (phase 2).
+	 *
+	 * @param insets the shape's bodyPr insets with its line's half, or null for Word's defaults
+	 */
+	static Element childText(Document doc, ShapeRenderer.Placed placed, CTWordprocessingShape wsp, double[] insets) {
+		Rectangle2D.Double b = placed.getBox();
+		double[] in = textInsets(insets, placed.getOutlines(), wsp, b.width, b.height);
+		Element container = FOTextBoxes.createContainer(doc, "inline", b.width, b.height, 0, "p:0", 0, 0, in);
+		container.setAttribute("absolute-position", "absolute");
+		container.setAttribute("left", pt(b.x));
+		double paddingTop = WordLayoutFixups.lengthPt(container.getAttribute("padding-top"));
+		container.setAttribute("top", pt(b.y + paddingTop));
+		anchorText(container, wsp);
+		return container;
 	}
 
 	private static String pt(double v) {

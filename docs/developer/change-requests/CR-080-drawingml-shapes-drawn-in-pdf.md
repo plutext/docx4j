@@ -475,6 +475,61 @@ corpus documents can't be the only oracle.
 - **Phase 3, groups, canvases and connectors.**
   - Flattening with composed transforms, `a:grpFill`, canvas backgrounds, children's text boxes.
   - **Gate:** the probes; corpora unmoved.
+  - **Built, committed 2026-11-10** (Jason: "start CR-080 phase 3", then "Commit now").
+    - **The rule, from phase 0's round 2** (fp90 to fp92). Word scales a child's box, not its drawing, and turns the
+      box afterwards. Under a group that halves its width, a child keeps its line width (1.0pt in fp91-002) and its
+      right angles (fp91-012's triangle three groups deep keeps sides of 72 and 108 and its 90°). So the groups don't
+      compose as one affine transform, which would skew a turned child. Each child's box is mapped from its group's
+      child space (`a:chOff`, `a:chExt`) to the group's box. Its centre is then turned and flipped with the group,
+      about the group's centre. Its turns add, or are taken from the group's under one flip (R(g) F(g) R(c) F(c)), and
+      its flips are the group's XOR its own. A group with no child extents doesn't scale.
+    - **`ShapeRenderer.drawGroup` and `drawCanvas`** (docx4j-chart-render) paint every shape and picture into one
+      drawing in the group's frame, document order, nested groups included, through the same fills and lines as a
+      single shape (`paintShape`, `draw`'s body). `Drawn.getChildren()` lists each child where it's drawn
+      (`ShapeRenderer.Placed`: its box, turn, flips and geometry).
+      - `a:grpFill` takes the nearest group's fill; a group with none stated passes its own group's down (unmeasured).
+      - A picture (`pic:pic`) is a shape whose fill is its picture, in its geometry, a rectangle where none is stated.
+      - A canvas paints `wpc:bg` as a fill of its box, then `wpc:whole`'s line round it, then its children, in its own
+        coordinates, as Word's PDF orders them (fp92-001).
+      - A graphic frame or ink (`contentPart`) isn't drawn: `render.shape.child_not_drawn` (D9's list gains it). A
+        child with no `a:xfrm` has no box and isn't drawn.
+      - Connectors are shapes: Word draws their stored geometry, and `stCxn` and `endCxn` aren't followed (fp91-017,
+        fp92-004 to 006).
+    - **In the FO**, by the visitor and the XSLT alike (`XsltFOFunctions.createShapeGroup`,
+      `FOExporterVisitorGenerator.handleShapeGroup`, a `docx2fo.xslt` `xsl:when` for `wpg:wgp` and `wpc:wpc`, which
+      it now declares). The group is one container of its extent, with no padding, placed as a shape is:
+      - anchored, where its wrap and position say, and out of the flow where no child shows text (phase 2's rule);
+      - inline, on its line (`placeInline`) where a child shows text; an inline one with none isn't drawn yet (phase 4).
+      Its first child is the drawing. Each child shape with text gets a container at its box (`FOShapes.childText`),
+      absolutely positioned and set in by its text rectangle, insets and line. A turned child's text stays level, as
+      a shape's does (D3). The XSLT converts each child's text box in document order into a `box` each, which the Java
+      side matches to the shapes in the same order (`FOShapes.textBoxes`).
+    - **Against Word.** `GroupRendererTest` holds the 36 probes of round 2 (`shapes/cr080-word-groups.jsonl.gz`,
+      from `CR-080-notes/export_groups.py`, which shares `export_drawn.py`'s conversion, now a function; that
+      exporter still writes phase 2's oracle byte for byte). All 36 are within 0.100pt of Word, by the XOR-thickness
+      measure, with Word's colours. The farthest are a turned right triangle's 33.7° mitred tip, in a group turned 30°
+      (fp91-004, fp91-009, 0.100) and alone (fp90-001, 0.084): phase 2's turn, at one step of the measure's 1/60pt
+      quantum. Single shapes turned and flipped (fp90) weren't in phase 2's oracle and are now measured. Word's draws
+      from the empty picture it writes for a turned, flipped or grouped text box on are its text, and are left out.
+    - **On the PDF**, docx4j's PDFs of the three probe files read as Word's are (read_shapes.py --out,
+      export_groups.py --json --out; `GroupRendererTest` with -Dcr080.groupPdfDraws): all 36 within 0.100pt, colours
+      Word's, and the four level-text glyphs within 0.26pt at both corners.
+    - **Word's save of a group** (`fp91-groups.word.docx`, `fp92-canvas.word.docx`): Word writes the VML Fallback
+      only for a group or canvas holding a text box (fp91-015, fp92-008), and every other one as a bare `w:drawing`.
+      docx4j draws a bare one whatever `docx4j.jaxb.mc.preferChoice` says. For the two with text the default draws
+      the Fallback: nothing is painted and the text is lost, where the `wpg` and `wpc` Choices paint them as Word does
+      (both probes' fills and lines, the glyph within 0.26pt). HTML, the visitor: the Choice gives the text box's
+      text where the Fallback gave `[null] [img]`; the XSLT route's words are the same. D13 asks whether the default
+      takes them.
+    - **Corpora:** none of the four holds a `wpg:wgp` or `wpc:wpc` (557 documents, every part), so their gate is unmoved
+      by construction; the probes are the measure. Gate b402 against b401: 0 movers, events equal, so the single
+      shape's painting, now through `paintShape`, is unchanged.
+    - **Tests:** `GroupRendererTest` (3: the oracle, the PDF, the children's placement); `ShapeDrawingFoTest` gains a
+      group's drawing and its child's text at its box, a canvas's background with a connector child showing no text,
+      and a text-less group out of the flow, both routes. chart-render 28 (2 skipped, the PDF checks), export-fo-tests 920 (9 skipped).
+    - **Mutants:** 14, one rule each, against a passing baseline (scratchpad mutants80p3.py): 13 caught. The 14th, a
+      text-less anchored group out of the flow, survived a `wrapNone` group, which is out of the flow anyway, and was
+      caught once the test wrapped a group 400pt wide, as phase 2's shape test does.
 - **Phase 4, shapes that wrap** (D4).
   - A shape with no text takes a picture's place and wrapping in `WordLayoutFixups`. This is a dispatch change: the
     shape carries the hint attributes `WordXmlPictureE20` writes for a picture, and `WordLayoutFixups`' existing
@@ -580,6 +635,20 @@ corpus documents can't be the only oracle.
   **Done 2026-11-10** (§6, phase 2): 9775 mended (b399); the Choice drawn by default, for every reader of the property
   (Jason: "make the global default wps"), once an inline text box was set on its line (b401: 6 movers against 17.3.6's
   default, all up).
+
+- **D13. Draw the `wpg` and `wpc` Choices by default** (raised in phase 3, 2026-11-10). Word saves a group or a canvas
+  as a bare `w:drawing`, which docx4j now draws, except where it holds a text box. There it writes an
+  `mc:AlternateContent`, its `wpg` or `wpc` Choice beside a VML Fallback (`v:group` with `v:textbox`). With the default
+  `wps`, docx4j draws that Fallback. On Word's saves of round 2's probes (fp91-015, fp92-008), that paints nothing and
+  loses the text box's text. The Choice paints both as Word does, the glyph within 0.26pt. The HTML visitor gains the
+  text, where it wrote `[null] [img]`; the XSLT route is unchanged. No corpus document holds a group or canvas, so a
+  gate can't move.
+  - (a) Keep `wps` alone; `docx4j.jaxb.mc.preferChoice=wps wpg wpc` draws them.
+  - (b) Make the default `wps wpg wpc` now, and say so in the CHANGELOG.
+
+  Recommendation: **(b)**. The Fallback loses the text, and phase 3 draws what the Choice holds as Word does. The
+  reason the default left `wpg` out, a Choice docx4j couldn't draw, no longer holds. Not measured: a group holding a
+  graphic frame (a chart) or ink, which phase 3 doesn't draw (`render.shape.child_not_drawn`), against its Fallback.
 
 ## 9. Out of scope
 

@@ -19,6 +19,7 @@
  */
 package org.docx4j.convert.out.fo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.xml.bind.Unmarshaller;
@@ -532,8 +533,10 @@ public class XsltFOFunctions {
      *  a:lnRef, which Word's text boxes give idx 0 (no line) unless styled; that case is
      *  taken as 0.75pt only where the lnRef names a line.  @since 17.3.1 */
     private static double shapeLinePt(Object anchorOrInline) {
-		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
-				= shape(anchorOrInline);
+		return shapeLinePt(shape(anchorOrInline));
+    }
+
+    private static double shapeLinePt(org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp) {
 		if (wsp==null) return 0;
 		org.docx4j.dml.CTLineProperties ln = wsp.getSpPr()==null ? null : wsp.getSpPr().getLn();
 		if (ln==null) {
@@ -547,9 +550,10 @@ public class XsltFOFunctions {
     /** The shape's text insets (wps:bodyPr lIns/tIns/rIns/bIns, EMU) in points, or null
      *  for Word's defaults. */
     private static double[] shapeInsets(Object anchorOrInline) {
+		return shapeInsets(shape(anchorOrInline));
+    }
 
-		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
-				= shape(anchorOrInline);
+    private static double[] shapeInsets(org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp) {
 		if (wsp==null || wsp.getBodyPr()==null) return null;
 		org.docx4j.dml.CTTextBodyProperties bodyPr = wsp.getBodyPr();
 		if (bodyPr.getLIns()==null && bodyPr.getTIns()==null
@@ -585,6 +589,138 @@ public class XsltFOFunctions {
 			Node childResults = (childResultsIt==null || !FOShapes.hasText(shape(anchorOrInline))) ? null : childResultsIt.nextNode();
 			if (childResults!=null) {
 				XmlUtils.treeCopy(childResults, container);
+			}
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
+
+    // ------------------------------------------------------------------ groups and canvases (CR-080 phase 3)
+
+    /** The group (wpg:wgp) or canvas (wpc:wpc) in this wp:anchor or wp:inline, or null */
+    static Object shapeGroup(Object anchorOrInline) {
+		org.docx4j.dml.Graphic graphic = null;
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			graphic = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getGraphic();
+		} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			graphic = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getGraphic();
+		}
+		return graphic==null ? null : FOShapes.group(graphic.getGraphicData());
+    }
+
+    /** Whether this wp:anchor or wp:inline holds a group or a canvas docx4j draws.  @since 17.3.7 (CR-080 phase 3) */
+    public static boolean isShapeGroup(Object anchorOrInline) {
+		return FOTextBoxes.isEnabled() && shapeGroup(anchorOrInline)!=null;
+    }
+
+    /** A group or canvas in the FO: its container, and its shapes' text boxes with the containers their text goes in */
+    static final class ShapeGroup {
+		final Element container;
+		/** Every shape with a text box, in document order (FOShapes.textBoxes) */
+		final List<org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape> shapes;
+		/** Each one's container, or null where Word shows no text (a connector, a line) or it isn't drawn */
+		final List<Element> texts;
+
+		ShapeGroup(Element container, List<org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape> shapes,
+				List<Element> texts) {
+			this.container = container;
+			this.shapes = shapes;
+			this.texts = texts;
+		}
+    }
+
+    /**
+     * A DrawingML group or canvas, drawn as one drawing in a container of its extent, which is placed as a shape's is:
+     * anchored, where its wrap and position say, out of the flow where no child shows text (phase 2's rule for a shape
+     * with none); inline, on its line, where one does (an inline one with no text isn't drawn yet, phase 4). The
+     * container has no padding; its first child is the drawing, and each child shape with text gets a container of its
+     * own at its box (FOShapes.childText), which the caller fills.  Null where nothing is drawn or shown.
+     *
+     * @since 17.3.7 (CR-080 phase 3)
+     */
+    static ShapeGroup createShapeGroup(FOConversionContext context, Object anchorOrInline, Document document) {
+		Object group = shapeGroup(anchorOrInline);
+		if (group==null || !FOTextBoxes.isEnabled()) return null;
+		org.docx4j.dml.CTPositiveSize2D extent = null;
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			extent = ((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline).getExtent();
+		} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
+		}
+		if (extent==null) return null;
+		double w = extent.getCx() / 12700d, h = extent.getCy() / 12700d;
+		org.docx4j.chart.render.api.ShapeRenderer.Drawn drawn = FOShapes.drawGroup(context, group, extent.getCx(), extent.getCy());
+
+		java.util.Map<Object, org.docx4j.chart.render.api.ShapeRenderer.Placed> where
+				= new java.util.IdentityHashMap<Object, org.docx4j.chart.render.api.ShapeRenderer.Placed>();
+		if (drawn!=null) for (org.docx4j.chart.render.api.ShapeRenderer.Placed p : drawn.getChildren()) where.put(p.getChild(), p);
+		List<org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape> shapes = FOShapes.textBoxes(group);
+		boolean text = false;
+		for (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp : shapes) {
+			if (FOShapes.hasText(wsp) && where.containsKey(wsp)) text = true;
+		}
+		boolean inline = anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline;
+		if (inline && !text) return null;
+		if (!text && (drawn==null || drawn.isEmpty())) return null;
+
+		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0, new double[] { 0, 0, 0, 0 });
+		if (!inline) {
+			org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
+					(org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline, context);
+			if ("topAndBottom".equals(container.getAttribute(WordLayoutFixups.HINT_ANCHOR))) {
+				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
+			}
+			stampTextBeside(container, (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
+			if (!text) container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "none");
+		}
+		if (drawn!=null && !drawn.isEmpty()) FOShapes.addDrawing(document, container, drawn);
+		List<Element> texts = new ArrayList<Element>();
+		for (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp : shapes) {
+			org.docx4j.chart.render.api.ShapeRenderer.Placed p = where.get(wsp);
+			if (p==null || !FOShapes.hasText(wsp)) {
+				texts.add(null);
+				continue;
+			}
+			Element child = FOShapes.childText(document, p, wsp, FOTextBoxes.withStroke(shapeInsets(wsp), shapeLinePt(wsp)));
+			container.appendChild(child);
+			texts.add(child);
+		}
+		return new ShapeGroup(container, shapes, texts);
+    }
+
+    /**
+     * The XSLT pathway's form of createShapeGroup: the group's or canvas's container, holding its drawing and its
+     * shapes' text. childResults holds one element for each of its shapes with a text box, in document order (the
+     * XSLT's {@code box}), with that text box's converted content.
+     *
+     * @since 17.3.7 (CR-080 phase 3)
+     */
+    public static DocumentFragment createShapeGroup(FOConversionContext context, NodeIterator anchorIt, NodeIterator childResultsIt) {
+		try {
+			Node anchorNode = (anchorIt==null) ? null : anchorIt.nextNode();
+			if (anchorNode==null) return null;
+			Unmarshaller u = Context.jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			Object anchorOrInline = XmlUtils.unwrap(u.unmarshal(anchorNode));
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			ShapeGroup g = createShapeGroup(context, anchorOrInline, document);
+			if (g==null) return null;
+			document.appendChild(placeInline(document, g.container, anchorOrInline));
+			Node results = (childResultsIt==null) ? null : childResultsIt.nextNode();
+			List<Node> boxes = new ArrayList<Node>();
+			if (results!=null) {
+				for (Node n = results.getFirstChild(); n!=null; n = n.getNextSibling()) {
+					if (n.getNodeType()==Node.ELEMENT_NODE && "box".equals(n.getLocalName())) boxes.add(n);
+				}
+			}
+			for (int i = 0; i < g.texts.size() && i < boxes.size(); i++) {
+				if (g.texts.get(i)!=null) {
+					for (Node n = boxes.get(i).getFirstChild(); n!=null; n = n.getNextSibling()) XmlUtils.treeCopy(n, g.texts.get(i));
+				}
 			}
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

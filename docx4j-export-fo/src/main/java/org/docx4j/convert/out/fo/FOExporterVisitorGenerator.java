@@ -106,6 +106,15 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			handleShapeTextBox(o);
 			return null;
 
+		} else if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
+				&& XsltFOFunctions.isShapeGroup(o)) {
+
+			// a DrawingML group or canvas: drawn as one, its shapes' text each in a container at its box
+			// (17.3.7, CR-080 phase 3)
+			handleShapeGroup(o);
+			return null;
+
 		} else if (o instanceof DelText) {
 
 			if (!conversionContext.isInComplexFieldDefinition()) {
@@ -377,6 +386,24 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		XmlUtils.treeCopy(styled, getCurrentParent());
 	}
 
+	/** A group or canvas, drawn, with its shapes' text. @since 17.3.7 (CR-080 phase 3) */
+	private void handleShapeGroup(Object anchorOrInline) {
+
+		XsltFOFunctions.ShapeGroup g = XsltFOFunctions.createShapeGroup(conversionContext, anchorOrInline, document);
+		if (g==null) return;
+		getCurrentParent().appendChild(XsltFOFunctions.placeInline(document, g.container, anchorOrInline));
+		for (int i = 0; i < g.shapes.size(); i++) {
+			Element container = g.texts.get(i);
+			if (container==null) continue;
+			conversionContext.enterTextBox();
+			try {
+				new TraversalUtil(g.shapes.get(i).getTxbx().getTxbxContent().getContent(), childGenerator(container));
+			} finally {
+				conversionContext.exitTextBox();
+			}
+		}
+	}
+
 	/** The shape's text box, as a positioned container of the box's paragraphs. @since 17.0.5 */
 	private void handleShapeTextBox(Object anchorOrInline) {
 
@@ -439,8 +466,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 		if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
-				&& XsltFOFunctions.isShape(o)) {
-			// its text box was already converted in apply (handleShapeTextBox), or Word shows none (CR-080)
+				&& (XsltFOFunctions.isShape(o) || XsltFOFunctions.isShapeGroup(o))) {
+			// its text box was already converted in apply (handleShapeTextBox, handleShapeGroup), or Word shows none (CR-080)
 			return false;
 		}
 		if (o instanceof org.docx4j.math.CTOMath

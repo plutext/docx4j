@@ -42,7 +42,15 @@ import org.docx4j.dml.CTRelativeRect;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
 import org.docx4j.dml.CTSolidColorFillProperties;
+import org.docx4j.dml.CTGroupShapeProperties;
+import org.docx4j.dml.CTGroupTransform2D;
+import org.docx4j.dml.CTPresetGeometry2D;
 import org.docx4j.dml.CTTransform2D;
+import org.docx4j.dml.STShapeType;
+import org.docx4j.dml.picture.Pic;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingCanvas.CTWordprocessingCanvas;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingGroup.CTWordprocessingGroup;
+import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.dml.STPathFillMode;
 import org.docx4j.model.color.DrawingMLColors;
 import org.docx4j.model.color.ResolvedColor;
@@ -87,12 +95,23 @@ public final class ShapeRenderer {
 		private final Rectangle2D.Double bounds;
 		private final ShapeOutlines outlines;
 		private final List<String> problems;
+		private final List<Placed> children;
 
 		Drawn(Drawing drawing, Rectangle2D.Double bounds, ShapeOutlines outlines, List<String> problems) {
+			this(drawing, bounds, outlines, problems, Collections.<Placed>emptyList());
+		}
+
+		Drawn(Drawing drawing, Rectangle2D.Double bounds, ShapeOutlines outlines, List<String> problems, List<Placed> children) {
 			this.drawing = drawing;
 			this.bounds = bounds;
 			this.outlines = outlines;
 			this.problems = Collections.unmodifiableList(problems);
+			this.children = Collections.unmodifiableList(children);
+		}
+
+		/** A group's or a canvas's shapes and pictures where they are drawn, in document order; none for a shape */
+		public List<Placed> getChildren() {
+			return children;
 		}
 
 		/** What is painted, in the shape's frame: points from its box's top left, y down */
@@ -105,7 +124,7 @@ public final class ShapeRenderer {
 			return bounds;
 		}
 
-		/** The geometry, its text rectangle included */
+		/** The geometry, its text rectangle included; a group's or a canvas's is its box */
 		public ShapeOutlines getOutlines() {
 			return outlines;
 		}
@@ -126,8 +145,65 @@ public final class ShapeRenderer {
 		}
 	}
 
+	/**
+	 * A shape or picture in a group or a canvas, where it is drawn: its box in the drawing's frame (points from its top
+	 * left, y down), before its turn and flips, which are about the box's centre, flipped then turned, as a shape's own
+	 * are. They are the group's composed with its own, down the tree, as Word draws them (CR-080 phase 0, fp91): a
+	 * child's box is mapped from its group's child space ({@code a:chOff}, {@code a:chExt}) to the group's box, its
+	 * centre then turned and flipped with the group, and its turns added, or taken from the group's under one flip. A
+	 * box is scaled, its drawing not: Word keeps a child's line width and its right angles under a group that halves
+	 * its width.
+	 */
+	public static final class Placed {
+		private final Object child;
+		private final Rectangle2D.Double box;
+		private final double rotation;
+		private final boolean flipH, flipV;
+		private final ShapeOutlines outlines;
+
+		Placed(Object child, Rectangle2D.Double box, double rotation, boolean flipH, boolean flipV, ShapeOutlines outlines) {
+			this.child = child;
+			this.box = box;
+			this.rotation = rotation;
+			this.flipH = flipH;
+			this.flipV = flipV;
+			this.outlines = outlines;
+		}
+
+		/** The {@link CTWordprocessingShape} or {@link Pic} */
+		public Object getChild() {
+			return child;
+		}
+
+		/** Its box in the frame, before its turn and flips */
+		public Rectangle2D.Double getBox() {
+			return box;
+		}
+
+		/** Its turn, clockwise, in degrees */
+		public double getRotation() {
+			return rotation;
+		}
+
+		public boolean isFlipH() {
+			return flipH;
+		}
+
+		public boolean isFlipV() {
+			return flipV;
+		}
+
+		/** Its geometry at its box's size, its text rectangle from the box's top left */
+		public ShapeOutlines getOutlines() {
+			return outlines;
+		}
+	}
+
 	/** A picture fill whose picture couldn't be had: drawn as no fill */
 	public static final String PICTURE_MISSING = "render.shape.picture_missing";
+
+	/** A group's or a canvas's child that isn't drawn: a graphic frame (a chart, a table), ink (contentPart) */
+	public static final String CHILD_NOT_DRAWN = "render.shape.child_not_drawn";
 
 	private ShapeRenderer() {}
 
@@ -147,9 +223,19 @@ public final class ShapeRenderer {
 		if (outlines.getProblem() != null) problems.add(outlines.getProblem());
 		double w = cx / 12700.0, h = cy / 12700.0;
 		Drawing drawing = new Drawing(w, h);
-		AffineTransform turn = turn(spPr == null ? null : spPr.getXfrm(), w, h);
+		Rectangle2D bounds = paintShape(drawing, spPr, style, theme, outlines, w, h, turn(spPr == null ? null : spPr.getXfrm(), w, h), pictures,
+				null, problems);
+		return new Drawn(drawing, bounds == null ? new Rectangle2D.Double(0, 0, w, h) : rect(bounds), outlines, problems);
+	}
 
-		Fill fill = fill(spPr, style, theme);
+	/**
+	 * A shape's fills, then its lines, path by path, as Word paints them, into the drawing: its geometry at its size (w,
+	 * h, points), placed by the transform (its turn, and for a group's child where the group puts it); a:grpFill takes
+	 * the group's fill, null where there is none. The area painted, or null.
+	 */
+	private static Rectangle2D paintShape(Drawing drawing, CTShapeProperties spPr, CTShapeStyle style, ThemeColors theme, ShapeOutlines outlines,
+			double w, double h, AffineTransform turn, Pictures pictures, Fill groupFill, List<String> problems) {
+		Fill fill = fill(spPr, style, theme, groupFill);
 		String preset = spPr != null && spPr.getPrstGeom() != null && spPr.getPrstGeom().getPrst() != null ? spPr.getPrstGeom().getPrst().value() : null;
 		Line line = line(spPr, style, theme, preset);
 		Rectangle2D bounds = null;
@@ -174,7 +260,205 @@ public final class ShapeRenderer {
 				bounds = union(bounds, line.paint(drawing, p, turn, i == 0, i == stroked.size() - 1));
 			}
 		}
-		return new Drawn(drawing, bounds == null ? new Rectangle2D.Double(0, 0, w, h) : rect(bounds), outlines, problems);
+		return bounds;
+	}
+
+	// ------------------------------------------------------------------ groups and canvases
+
+	/**
+	 * A group ({@code wpg:wgp}) drawn at its size: its shapes and pictures, nested groups' too, into one drawing in the
+	 * group's frame, each where Word draws it (see {@link Placed}). The group's own turn and flips apply, about its box.
+	 *
+	 * @param cx its width in EMU, its anchor's extent
+	 * @param cy its height in EMU
+	 * @since 17.3.7 (CR-080 phase 3)
+	 */
+	public static Drawn drawGroup(CTWordprocessingGroup group, ThemeColors theme, long cx, long cy, Pictures pictures) {
+		double w = cx / 12700.0, h = cy / 12700.0;
+		Walk walk = new Walk(new Drawing(w, h), theme, pictures);
+		CTGroupShapeProperties gp = group == null ? null : group.getGrpSpPr();
+		CTGroupTransform2D x = gp == null ? null : gp.getXfrm();
+		Frame top = new Frame(0, 0, w, h, x == null ? 0 : x.getRot() / 60000.0, x != null && x.isFlipH(), x != null && x.isFlipV());
+		top.childSpace(x);
+		top.fill = groupFill(gp, null, theme);
+		if (group != null) walk.children(top, group.getWspOrGrpSpOrGraphicFrame());
+		return walk.drawn(w, h);
+	}
+
+	/**
+	 * A drawing canvas ({@code wpc:wpc}) drawn at its size: its background ({@code wpc:bg}) as a fill of its box and its
+	 * outline ({@code wpc:whole}'s line), then its shapes, pictures and groups, in the canvas's own coordinates, as Word
+	 * draws them (CR-080 phase 0, fp92).
+	 *
+	 * @since 17.3.7 (CR-080 phase 3)
+	 */
+	public static Drawn drawCanvas(CTWordprocessingCanvas canvas, ThemeColors theme, long cx, long cy, Pictures pictures) {
+		double w = cx / 12700.0, h = cy / 12700.0;
+		Walk walk = new Walk(new Drawing(w, h), theme, pictures);
+		if (canvas != null && (canvas.getBg() != null || canvas.getWhole() != null)) {
+			CTShapeProperties box = rectangle();
+			if (canvas.getBg() != null) {
+				box.setNoFill(canvas.getBg().getNoFill());
+				box.setSolidFill(canvas.getBg().getSolidFill());
+				box.setGradFill(canvas.getBg().getGradFill());
+				box.setPattFill(canvas.getBg().getPattFill());
+				box.setBlipFill(canvas.getBg().getBlipFill());
+			}
+			if (canvas.getWhole() != null) box.setLn(canvas.getWhole().getLn());
+			ShapeOutlines o = ShapeGeometry.outlines(box, cx, cy);
+			walk.bounds = union(walk.bounds, paintShape(walk.drawing, box, null, theme, o, w, h, new AffineTransform(), pictures, null, walk.problems));
+		}
+		Frame top = new Frame(0, 0, w, h, 0, false, false);
+		if (canvas != null) walk.children(top, canvas.getWspOrPicOrContentPart());
+		return walk.drawn(w, h);
+	}
+
+	/** A group's box in the drawing's frame (points), its turn and flips, the child space it maps from, its fill */
+	private static final class Frame {
+		final double x, y, w, h, rotation;
+		final boolean flipH, flipV;
+		double chX, chY, kx = 1 / 12700.0, ky = 1 / 12700.0;
+		Fill fill;
+
+		Frame(double x, double y, double w, double h, double rotation, boolean flipH, boolean flipV) {
+			this.x = x;
+			this.y = y;
+			this.w = w;
+			this.h = h;
+			this.rotation = rotation;
+			this.flipH = flipH;
+			this.flipV = flipV;
+		}
+
+		/** Its children's coordinates: chOff and chExt mapped to its box; without them, its off and ext (no scaling) */
+		void childSpace(CTGroupTransform2D x) {
+			if (x == null) return;
+			long ox = x.getChOff() != null ? x.getChOff().getX() : x.getOff() != null ? x.getOff().getX() : 0;
+			long oy = x.getChOff() != null ? x.getChOff().getY() : x.getOff() != null ? x.getOff().getY() : 0;
+			long ex = x.getChExt() != null ? x.getChExt().getCx() : x.getExt() != null ? x.getExt().getCx() : 0;
+			long ey = x.getChExt() != null ? x.getChExt().getCy() : x.getExt() != null ? x.getExt().getCy() : 0;
+			chX = ox;
+			chY = oy;
+			if (ex > 0) kx = w / ex;
+			if (ey > 0) ky = h / ey;
+		}
+
+		/** Its turn and flips about its box's centre */
+		AffineTransform turn() {
+			return ShapeRenderer.turn(x, y, w, h, rotation, flipH, flipV);
+		}
+
+		/** A child at off, ext (EMU, in this group's child space), turned and flipped: where it is drawn */
+		Frame place(long offX, long offY, long extX, long extY, double rot, boolean fh, boolean fv) {
+			double bw = extX * kx, bh = extY * ky;
+			double bx = x + (offX - chX) * kx, by = y + (offY - chY) * ky;
+			java.awt.geom.Point2D c = turn().transform(new java.awt.geom.Point2D.Double(bx + bw / 2, by + bh / 2), null);
+			// R(g) F(g) R(c) F(c): one flip in the group reverses the child's turn
+			double r = flipH != flipV ? rotation - rot : rotation + rot;
+			return new Frame(c.getX() - bw / 2, c.getY() - bh / 2, bw, bh, r, flipH != fh, flipV != fv);
+		}
+	}
+
+	/** A walk down a group or canvas, painting as it goes */
+	private static final class Walk {
+		final Drawing drawing;
+		final ThemeColors theme;
+		final Pictures pictures;
+		final List<String> problems = new ArrayList<String>();
+		final List<Placed> placed = new ArrayList<Placed>();
+		Rectangle2D bounds;
+
+		Walk(Drawing drawing, ThemeColors theme, Pictures pictures) {
+			this.drawing = drawing;
+			this.theme = theme;
+			this.pictures = pictures;
+		}
+
+		void children(Frame parent, List<Object> children) {
+			for (Object o : children) {
+				Object c = o instanceof jakarta.xml.bind.JAXBElement ? ((jakarta.xml.bind.JAXBElement<?>) o).getValue() : o;
+				if (c instanceof CTWordprocessingShape) {
+					CTWordprocessingShape wsp = (CTWordprocessingShape) c;
+					shape(parent, c, wsp.getSpPr(), wsp.getStyle());
+				} else if (c instanceof Pic) {
+					Pic pic = (Pic) c;
+					CTShapeProperties sp = pictureAsShape(pic);
+					shape(parent, c, sp, null);
+				} else if (c instanceof CTWordprocessingGroup) {
+					CTWordprocessingGroup g = (CTWordprocessingGroup) c;
+					CTGroupTransform2D x = g.getGrpSpPr() == null ? null : g.getGrpSpPr().getXfrm();
+					Frame f = x == null ? parent.place(0, 0, 0, 0, 0, false, false)
+							: parent.place(x.getOff() == null ? 0 : x.getOff().getX(), x.getOff() == null ? 0 : x.getOff().getY(),
+									x.getExt() == null ? 0 : x.getExt().getCx(), x.getExt() == null ? 0 : x.getExt().getCy(), x.getRot() / 60000.0,
+									x.isFlipH(), x.isFlipV());
+					f.childSpace(x);
+					f.fill = groupFill(g.getGrpSpPr(), parent.fill, theme);
+					children(f, g.getWspOrGrpSpOrGraphicFrame());
+				} else {
+					if (!problems.contains(CHILD_NOT_DRAWN)) problems.add(CHILD_NOT_DRAWN);
+				}
+			}
+		}
+
+		void shape(Frame parent, Object child, CTShapeProperties sp, CTShapeStyle style) {
+			CTTransform2D x = sp == null ? null : sp.getXfrm();
+			if (x == null || x.getExt() == null) return; // a child with no box has nowhere to be drawn
+			Frame f = parent.place(x.getOff() == null ? 0 : x.getOff().getX(), x.getOff() == null ? 0 : x.getOff().getY(), x.getExt().getCx(),
+					x.getExt().getCy(), x.getRot() / 60000.0, x.isFlipH(), x.isFlipV());
+			long cx = Math.round(f.w * 12700), cy = Math.round(f.h * 12700);
+			ShapeOutlines outlines = ShapeGeometry.outlines(sp, cx, cy);
+			if (outlines.getProblem() != null && !problems.contains(outlines.getProblem())) problems.add(outlines.getProblem());
+			AffineTransform at = turn(f.x, f.y, f.w, f.h, f.rotation, f.flipH, f.flipV);
+			at.translate(f.x, f.y);
+			bounds = union(bounds, paintShape(drawing, sp, style, theme, outlines, f.w, f.h, at, pictures, parent.fill, problems));
+			placed.add(new Placed(child, new Rectangle2D.Double(f.x, f.y, f.w, f.h), f.rotation, f.flipH, f.flipV, outlines));
+		}
+
+		Drawn drawn(double w, double h) {
+			return new Drawn(drawing, bounds == null ? new Rectangle2D.Double(0, 0, w, h) : rect(bounds),
+					ShapeGeometry.outlines((CTShapeProperties) null, Math.round(w * 12700), Math.round(h * 12700)), problems, placed);
+		}
+	}
+
+	/** A picture as a shape whose fill is the picture: its geometry (a rectangle where it states none) and its line */
+	private static CTShapeProperties pictureAsShape(Pic pic) {
+		CTShapeProperties own = pic.getSpPr();
+		CTShapeProperties sp = own != null && (own.getPrstGeom() != null || own.getCustGeom() != null) ? shallow(own) : rectangle();
+		if (own != null) {
+			sp.setXfrm(own.getXfrm());
+			sp.setLn(own.getLn());
+		}
+		sp.setNoFill(null);
+		sp.setSolidFill(null);
+		sp.setGradFill(null);
+		sp.setPattFill(null);
+		sp.setGrpFill(null);
+		sp.setBlipFill(pic.getBlipFill());
+		return sp;
+	}
+
+	private static CTShapeProperties shallow(CTShapeProperties own) {
+		CTShapeProperties sp = new CTShapeProperties();
+		sp.setPrstGeom(own.getPrstGeom());
+		sp.setCustGeom(own.getCustGeom());
+		return sp;
+	}
+
+	private static CTShapeProperties rectangle() {
+		CTShapeProperties sp = new CTShapeProperties();
+		CTPresetGeometry2D g = new CTPresetGeometry2D();
+		g.setPrst(STShapeType.RECT);
+		sp.setPrstGeom(g);
+		return sp;
+	}
+
+	/** A group's fill, for its children's a:grpFill: its own, else (a:grpFill, or none stated) its group's */
+	private static Fill groupFill(CTGroupShapeProperties gp, Fill parent, ThemeColors theme) {
+		if (gp == null) return parent;
+		if (gp.getNoFill() != null) return null;
+		Object own = gp.getSolidFill() != null ? gp.getSolidFill() : gp.getGradFill() != null ? gp.getGradFill()
+				: gp.getPattFill() != null ? gp.getPattFill() : gp.getBlipFill() != null ? gp.getBlipFill() : null;
+		return own != null ? new Fill(own, new Fills(theme)) : parent;
 	}
 
 	private static Rectangle2D.Double rect(Rectangle2D r) {
@@ -187,6 +471,17 @@ public final class ShapeRenderer {
 		Rectangle2D u = a.getBounds2D();
 		Rectangle2D.union(u, b, u);
 		return u;
+	}
+
+	/** A turn and flips about the centre of the box (x, y, w, h): flipped, then turned */
+	static AffineTransform turn(double x, double y, double w, double h, double degrees, boolean flipH, boolean flipV) {
+		AffineTransform at = new AffineTransform();
+		if (degrees == 0 && !flipH && !flipV) return at;
+		at.translate(x + w / 2, y + h / 2);
+		if (degrees != 0) at.rotate(Math.toRadians(degrees));
+		at.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+		at.translate(-(x + w / 2), -(y + h / 2));
+		return at;
 	}
 
 	/** The shape's turn and flips about its box's centre: flipped, then turned */
@@ -245,14 +540,14 @@ public final class ShapeRenderer {
 		}
 	}
 
-	private static Fill fill(CTShapeProperties sp, CTShapeStyle style, ThemeColors theme) {
+	private static Fill fill(CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, Fill groupFill) {
 		if (sp != null) {
 			if (sp.getNoFill() != null) return null;
 			Object own = sp.getSolidFill() != null ? sp.getSolidFill() : sp.getGradFill() != null ? sp.getGradFill()
 					: sp.getPattFill() != null ? sp.getPattFill() : sp.getBlipFill() != null ? sp.getBlipFill() : null;
 			if (own != null) return new Fill(own, new Fills(theme));
-			// a:grpFill is a group's: phase 3
-			if (sp.getGrpFill() != null) return null;
+			// a:grpFill is its group's (CR-080 phase 3, fp91-014)
+			if (sp.getGrpFill() != null) return groupFill;
 		}
 		if (style == null || style.getFillRef() == null) return null;
 		StyleFill sf = DrawingMLColors.fillReference(style.getFillRef(), theme);

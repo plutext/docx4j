@@ -47,7 +47,9 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 	private static final String NS = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""
 			+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 			+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
-			+ " xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\"";
+			+ " xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\""
+			+ " xmlns:wpg=\"http://schemas.microsoft.com/office/word/2010/wordprocessingGroup\""
+			+ " xmlns:wpc=\"http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas\"";
 	private static final String FO_NS = "http://www.w3.org/1999/XSL/Format";
 	private static final String SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -73,6 +75,34 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		return "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">"
 				+ "<wp:extent cx=\"2286000\" cy=\"1143000\"/><wp:docPr id=\"3\" name=\"Text Box 3\"/>" + graphic(sppr, txbx, "<wps:bodyPr/>")
 				+ "</wp:inline></w:drawing></w:r></w:p>";
+	}
+
+	/** A group or canvas (the graphicData's child, uri its namespace) anchored as {@link #anchored} anchors a shape, 180 x 90pt */
+	private static String anchoredGroup(String uri, String graphic) {
+		return "<w:p><w:r><w:drawing><wp:anchor distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\" simplePos=\"0\" relativeHeight=\"1\""
+				+ " behindDoc=\"0\" locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\"><wp:simplePos x=\"0\" y=\"0\"/>"
+				+ "<wp:positionH relativeFrom=\"column\"><wp:posOffset>914400</wp:posOffset></wp:positionH>"
+				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>457200</wp:posOffset></wp:positionV>"
+				+ "<wp:extent cx=\"2286000\" cy=\"1143000\"/><wp:wrapNone/><wp:docPr id=\"4\" name=\"Group 4\"/>"
+				+ "<a:graphic><a:graphicData uri=\"" + uri + "\">" + graphic + "</a:graphicData></a:graphic></wp:anchor></w:drawing></w:r></w:p>";
+	}
+
+	private static final String WPG = "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup";
+	private static final String WPC = "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas";
+
+	/** A group of the anchor's 180 x 90pt, its child space twice that: its children at half their size */
+	private static String group(String kids) {
+		return "<wpg:wgp><wpg:cNvGrpSpPr/><wpg:grpSpPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"2286000\" cy=\"1143000\"/>"
+				+ "<a:chOff x=\"0\" y=\"0\"/><a:chExt cx=\"4572000\" cy=\"2286000\"/></a:xfrm></wpg:grpSpPr>" + kids + "</wpg:wgp>";
+	}
+
+	/** A child shape at (x, y), w x h, in EMU, filled; with a text box where text isn't null */
+	private static String child(long x, long y, long w, long h, String prst, String fill, String text) {
+		return "<wps:wsp><wps:cNvPr id=\"" + (x + y) % 9973 + "\" name=\"Child\"/><wps:cNvSpPr/><wps:spPr><a:xfrm><a:off x=\"" + x + "\" y=\"" + y
+				+ "\"/><a:ext cx=\"" + w + "\" cy=\"" + h + "\"/></a:xfrm><a:prstGeom prst=\"" + prst + "\"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val=\""
+				+ fill + "\"/></a:solidFill></wps:spPr>"
+				+ (text == null ? "" : "<wps:txbx><w:txbxContent><w:p><w:r><w:t>" + text + "</w:t></w:r></w:p></w:txbxContent></wps:txbx>")
+				+ "<wps:bodyPr lIns=\"0\" tIns=\"0\" rIns=\"0\" bIns=\"0\"/></wps:wsp>";
 	}
 
 	private static String graphic(String sppr, String txbx, String bodyPr) {
@@ -220,6 +250,66 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 			assertSame("flags " + flags, box, container.getParentNode());
 			assertEquals("flags " + flags, "absolute", container.getAttribute("absolute-position"));
 			assertEquals("flags " + flags, container.getAttribute("padding-top"), container.getAttribute("top"));
+		}
+	}
+
+	/** A group is drawn as one, its child's text in a container at the child's box: the child space twice the group's,
+	 *  a child at (2in, 1in), 2in x 1in, is at (72, 36)pt, 72 x 36 (CR-080 phase 3).  @since 17.3.7 */
+	@Test
+	public void aGroupIsDrawnWithItsShapesText() throws Exception {
+		String kids = child(0, 0, 1828800, 914400, "rtTriangle", "70AD47", null) + child(1828800, 914400, 1828800, 914400, "rect", "DEEAF6", "GROUP TEXT");
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchoredGroup(WPG, group(kids)), flags);
+			assertEquals("flags " + flags + ": one drawing", 1, svgs(doc).getLength());
+			Element container = textContainer(doc, "GROUP TEXT");
+			assertNotNull("flags " + flags + ": the drawing first in the group's container, the text in it", container);
+			Element text = null;
+			NodeList nl = container.getElementsByTagNameNS(FO_NS, "block-container");
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element el = (Element) nl.item(i);
+				if (el.getTextContent().contains("GROUP TEXT") && "absolute".equals(el.getAttribute("absolute-position"))) text = el;
+			}
+			assertNotNull("flags " + flags + ": the child's text container", text);
+			assertEquals("flags " + flags, 72, pt(text.getAttribute("left")), 1e-6);
+			assertEquals("flags " + flags, 36, pt(text.getAttribute("top")) - pt(text.getAttribute("padding-top")), 1e-6);
+			assertEquals("flags " + flags + ": 72pt wide", 72, pt(text.getAttribute("width")) + pt(text.getAttribute("padding-right")), 1e-6);
+		}
+	}
+
+	/** A canvas draws its background, and a connector in a group shows no text, as Word shows none in one.  @since 17.3.7 */
+	@Test
+	public void aCanvasIsDrawnAndAConnectorShowsNoText() throws Exception {
+		String canvas = "<wpc:wpc><wpc:bg><a:solidFill><a:srgbClr val=\"00FF00\"/></a:solidFill></wpc:bg>"
+				+ child(457200, 228600, 914400, 457200, "rect", "0000FF", "CANVAS TEXT")
+				+ child(0, 0, 914400, 457200, "straightConnector1", "000000", "HIDDEN") + "</wpc:wpc>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchoredGroup(WPC, canvas), flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			String svg = XmlUtils.w3CDomNodeToString(svgs(doc).item(0)).toLowerCase(java.util.Locale.ROOT);
+			assertTrue(svg, svg.contains("lime") || svg.contains("rgb(0,255,0)") || svg.contains("#00ff00"));
+			String all = doc.getDocumentElement().getTextContent();
+			assertTrue("flags " + flags, all.contains("CANVAS TEXT"));
+			assertFalse("flags " + flags + ": a connector's text", all.contains("HIDDEN"));
+		}
+	}
+
+	/** A group with no text anchored is drawn out of the flow, as a shape with none is (phase 2), though it wraps:
+	 *  400pt wide, as WordLayoutFixups takes a box under 60% of the column out of the flow anyway.  @since 17.3.7 */
+	@Test
+	public void aGroupWithNoTextTakesNoSpaceYet() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchoredGroup(WPG, group(child(0, 0, 1828800, 914400, "ellipse", "FF0000", null)))
+					.replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>").replace("cx=\"2286000\"", "cx=\"5080000\""), flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			Element container = textContainer(doc, null);
+			assertNotNull("flags " + flags, container);
+			assertTrue("flags " + flags, container.getAttribute("absolute-position").length() > 0);
+			// out of the flow: in a zero-height wrapper, where a wrapped box's reserves its height
+			boolean zero = false;
+			for (org.w3c.dom.Node n = container; n != null; n = n.getParentNode()) {
+				if (n instanceof Element && "block-container".equals(n.getLocalName()) && "0pt".equals(((Element) n).getAttribute("height"))) zero = true;
+			}
+			assertTrue("flags " + flags + ": not in a zero-height wrapper", zero);
 		}
 	}
 

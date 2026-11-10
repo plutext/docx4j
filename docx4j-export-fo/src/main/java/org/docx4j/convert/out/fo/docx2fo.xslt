@@ -13,13 +13,15 @@
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+	xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+	xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:fox="http://xmlgraphics.apache.org/fop/extensions"
 	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic wps r m">
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic wps wpg wpc r m">
 
   <!-- xmlns:xlink above is deliberate, and must not be added to
        exclude-result-prefixes: it puts the declaration on fo:root, which is what
@@ -607,6 +609,17 @@
 	  			<xsl:apply-templates select="./a:graphic/a:graphicData/wps:wsp/wps:txbx/w:txbxContent/*"/>
 			</xsl:variable>
 		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeTextBox(
+		   			$conversionContext, $wpinline, $childResults)" />
+  		</xsl:when>
+  		<xsl:when test="./a:graphic/a:graphicData/wpg:wgp or ./a:graphic/a:graphicData/wpc:wpc">
+  			<!--  a DrawingML group or canvas: drawn as one, each of its shapes' text boxes converted in
+  			      document order, a box each, for the container at its box (17.3.7, CR-080 phase 3) -->
+			<xsl:variable name="childResults">
+				<xsl:for-each select="./a:graphic/a:graphicData//wps:wsp[wps:txbx/w:txbxContent]">
+					<box><xsl:apply-templates select="wps:txbx/w:txbxContent/*"/></box>
+				</xsl:for-each>
+			</xsl:variable>
+		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeGroup(
 		   			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
   		<xsl:when test="self::wp:anchor and ./a:graphic/a:graphicData/wps:wsp">

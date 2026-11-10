@@ -109,7 +109,7 @@ public class ShapeRendererTest {
 	}
 
 	/** What Word painted: each fill's region, each stroke's outline with its own width, caps, joins and dashes */
-	private static Area word(Map<String, Object> p) {
+	static Area word(Map<String, Object> p) {
 		Area out = new Area();
 		for (Object o : Json.list(p.get("draws"))) {
 			Map<String, Object> d = Json.object(o);
@@ -141,7 +141,7 @@ public class ShapeRendererTest {
 	}
 
 	/** What docx4j paints */
-	private static Area ours(ShapeRenderer.Drawn drawn) {
+	static Area ours(ShapeRenderer.Drawn drawn) {
 		Area out = new Area();
 		for (Object o : drawn.getDrawing().getItems()) {
 			if (o instanceof Drawing.Area) {
@@ -160,7 +160,7 @@ public class ShapeRendererTest {
 	}
 
 	/** The colours painted, hex: Word's from its fills and strokes, docx4j's from its areas (pattern fills and pictures aside) */
-	private static TreeSet<String> wordColours(Map<String, Object> p) {
+	static TreeSet<String> wordColours(Map<String, Object> p) {
 		TreeSet<String> out = new TreeSet<String>();
 		for (Object o : Json.list(p.get("draws"))) {
 			Map<String, Object> d = Json.object(o);
@@ -171,7 +171,7 @@ public class ShapeRendererTest {
 		return out;
 	}
 
-	private static TreeSet<String> ourColours(ShapeRenderer.Drawn drawn) {
+	static TreeSet<String> ourColours(ShapeRenderer.Drawn drawn) {
 		TreeSet<String> out = new TreeSet<String>();
 		for (Object o : drawn.getDrawing().getItems()) {
 			if (!(o instanceof Drawing.Area)) continue;
