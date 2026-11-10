@@ -10,14 +10,18 @@ Word draws, under or over the drawing (a soft edge's is the drawing's own pictur
     clipped (whether a clip cuts it), and its alpha (0..255) along rows and columns at 1/4, 1/2 and 3/4 of its height
     and width, at its own pixels: rows {"0.25": [...], ...}, cols likewise; mass, the mean alpha.
 One JSON object a line, gzip, no name or time:
-    probe, file, note, object, extent, xml (the probe's effect XML, probes.tsv), dw, dh, effects [...]
+    probe, file, note, object, extent, xml (the probe's effect XML, probes.tsv), dw, dh, effects [...]; phase 2's
+    also its page (its file's 3-D probes being left out)
+
+Phase 2's (picture frames: an outline, a line, a fill behind) adds each vector draw, kind 'fill' or 'stroke', with its
+path's box as x, y, w, h. 3-D probes (phase 5) are left out.
 
 usage: export_effects.py <results dir: one folder a job, <file>-a/<file>.pdf> [--out FILE] [--files f1,f2,...]
 (default out: docx4j-chart-render/src/test/resources/effects/cr081-word-effects.jsonl.gz; default files: phase 1's
-rectangular-picture families, FILES)"""
+rectangular-picture families, FILES; phase 2's: --out .../cr081-word-frames.jsonl.gz --files FRAMES)"""
 import csv, gzip, io, json, os, sys
 import numpy as np
-from read_phase0 import page_of, drawing, near
+from read_phase0 import page_of, drawing, near, is_3d
 from pdfdraws import pixels
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -26,6 +30,8 @@ OUT = os.path.join(HERE, '..', '..', '..', '..', 'docx4j-chart-render', 'src', '
 # phase 1: a rectangular picture's effects (round 2 where it re-ran a family with room for the effects)
 FILES = ['fxr10-outer-offset', 'fxr11-outer-blur', 'fxr12-outer-scale', 'fxr13-outer-colour', 'fx20-inner', 'fxr30-glow',
          'fx40-softedge', 'fxr50-reflection', 'fxr52-reflection-blur', 'fxr53-reflection-offset', 'fxr70-combo', 'fxr72-alpha']
+# phase 2: picture frames, and the flat picture styles over the four pictures
+FRAMES = ['fxr71-frames', 'fs10-photo', 'fs11-photo-jpeg', 'fs20-lineart', 'fs21-lineart-alpha']
 FRACS = (0.25, 0.5, 0.75)
 
 def profiles(alpha):
@@ -60,8 +66,9 @@ def effect(pdf, d, box, role):
     return e
 
 def main(results, out, files=FILES):
+    # 3-D drawings are phase 5's: one lit picture in the drawing's place, left out here
     probes = [r for r in csv.DictReader(open(os.path.join(HERE, 'probes.tsv'), encoding='utf-8'), delimiter='\t')
-              if r['file'] in files]
+              if r['file'] in files and not is_3d(r)]
     lines = []
     for f in files:
         pdf = os.path.join(results, f + '-a', f + '.pdf')
@@ -69,6 +76,8 @@ def main(results, out, files=FILES):
             draws = page_of(pdf, int(p['page']))
             dr = drawing(draws, p)
             rec = {k: p[k] for k in ('probe', 'file', 'note', 'object', 'extent', 'xml')}
+            if files is FRAMES:
+                rec['page'] = int(p['page'])
             if dr is None:
                 rec['effects'] = []
                 lines.append(rec)
@@ -99,6 +108,6 @@ if __name__ == '__main__':
     files = FILES
     if '--files' in a:
         i = a.index('--files')
-        files = a[i + 1].split(',')
+        files = FRAMES if a[i + 1] == 'FRAMES' else a[i + 1].split(',')
         del a[i:i + 2]
     main(a[0], out, files)

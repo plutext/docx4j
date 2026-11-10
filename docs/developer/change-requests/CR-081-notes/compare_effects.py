@@ -105,7 +105,8 @@ def main(pdfdir, oracle, show_all):
             print(f, 'no PDF')
             continue
         npages = len(pages(pdf))
-        for page, r in enumerate(rs, 1):
+        for i, r in enumerate(rs, 1):
+            page = r.get('page', i)
             if 'turned' in r['note']:
                 continue
             if page > npages:
@@ -121,7 +122,7 @@ def main(pdfdir, oracle, show_all):
             soft = 'softEdge' in r['xml']
             word = {'under': [], 'over': [], 'replace': []}
             for e in r['effects']:
-                if e['role'] == 'replace' and not soft:
+                if e['role'] == 'replace' and not soft or e.get('kind') != 'image':
                     continue
                 word[e['role']].append(e)
             for role in ('under', 'replace', 'over'):

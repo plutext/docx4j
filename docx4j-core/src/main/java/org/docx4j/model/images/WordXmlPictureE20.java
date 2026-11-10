@@ -417,18 +417,21 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     // ---------------------------------------------------------------- effects (CR-081)
 
     /**
-     * The picture with its effects (pic:spPr/a:effectLst: outer and inner shadow, glow, soft edge, reflection), as
-     * Word draws them (CR-081 phase 1): an fo:instream-foreign-object of the picture's frame holding one SVG, the
-     * effect pictures round the picture and the picture itself, as a data: URI of what the image handler wrote for it
-     * (so it is resampled, cropped and re-encoded as one with no effects is, and a JPEG passes through to the PDF).  d as it is where there are no effects, or
-     * they can't be drawn: no ShapeDrawer (docx4j-chart-render) on the classpath, a metafile, an unreadable bitmap.
-     * The anchor hints and the effect extent then go on the instream-foreign-object as on the external-graphic, so the
-     * picture is placed and wrapped as before.  Until 17.3.7 a picture's effects weren't drawn.  @since 17.3.7
+     * The picture in its frame with its effects (pic:spPr: its outline, a:prstGeom or a:custGeom, which clips it; the
+     * fill behind it; its line, a:ln, wholly outside it; a:effectLst: outer and inner shadow, glow, soft edge,
+     * reflection), as Word draws them (CR-081 phases 1 and 2): an fo:instream-foreign-object of the picture's frame
+     * holding one SVG, the effect pictures and the frame round the picture itself, as a data: URI of what the image
+     * handler wrote for it (so it is resampled, cropped and re-encoded as one with no effects is, and a JPEG passes
+     * through to the PDF).  d as it is where the picture is its bitmap alone (a rectangle with no line, no effects, and
+     * no fill behind or an opaque bitmap), or it can't be drawn: no ShapeDrawer (docx4j-chart-render) on the
+     * classpath, a metafile.  The anchor hints and the effect extent then go on the instream-foreign-object as on the
+     * external-graphic, so the picture is placed and wrapped as before.  Until 17.3.7 a picture's effects, outline and
+     * line weren't drawn.  @since 17.3.7
      */
     Document withEffects(Document d) {
     	if (!forXslFo || metaFileSvg != null || d == null || d.getDocumentElement() == null || dimensions == null) return d;
-    	org.docx4j.dml.CTEffectList fx = PictureEffects.effects(getPic());
-    	if (fx == null) return d;
+    	Pic pic = getPic();
+    	if (!PictureEffects.framed(pic) && !PictureEffects.fillBehind(pic)) return d;
     	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
     	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
     	try {
@@ -436,8 +439,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		// the picture as the image handler wrote it (resampled, cropped and re-encoded as CR-029 has it), as a data:
     		// URI (the FOP fork admits only those in an SVG); else the part's own bytes, cropped in the SVG
     		String href = PictureEffects.dataUri(getSrc());
-    		org.w3c.dom.Element svg = PictureEffects.svg(doc, wmlPackage, fx, w, h, picturePart, crop, href, href != null && isCropApplied(),
-    				effectClip());
+    		org.w3c.dom.Element svg = PictureEffects.svg(doc, wmlPackage, pic, w, h, picturePart, crop, href, href != null && isCropApplied(),
+    				effectClip(), "p-");
     		if (svg == null) return d;
     		svg.setAttribute("width", length(w) + "pt");
     		svg.setAttribute("height", length(h) + "pt");
@@ -455,19 +458,20 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
 
     /**
-     * The picture with its effects in HTML, in the img's place: an inline svg of the picture's frame (its points as CSS
-     * pixels, 4/3 a point: CR-080 D14), its overflow visible, labelled as the img would be; an inline picture's effect
+     * The picture in its frame with its effects in HTML, in the img's place (as {@link #withEffects(Document)} has
+     * them): an inline svg of the picture's frame (its points as CSS pixels, 4/3 a point: CR-080 D14), its overflow
+     * visible, labelled as the img would be, its ids the picture's own (its wp:docPr id); an inline picture's effect
      * extent round it as margin, as the PDF output pads it.  @since 17.3.7
      */
     @Override
     protected org.w3c.dom.Element createHtmlEffectsElement(Document document) {
     	if (forXslFo || metaFileSvg != null || dimensions == null) return null;
-    	org.docx4j.dml.CTEffectList fx = PictureEffects.effects(getPic());
-    	if (fx == null) return null;
+    	Pic pic = getPic();
+    	if (!PictureEffects.framed(pic) && !PictureEffects.fillBehind(pic)) return null;
     	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
     	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
     	String href = getSrc() == null || getSrc().isEmpty() ? null : getSrc();
-    	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, fx, w, h, picturePart, crop, href, false, effectClip());
+    	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, pic, w, h, picturePart, crop, href, false, effectClip(), htmlIds());
     	if (svg == null) return null;
     	svg.setAttribute("width", Long.toString(cssPixels(w, "pt")));
     	svg.setAttribute("height", Long.toString(cssPixels(h, "pt")));
@@ -485,6 +489,12 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	if (style != null && !style.isEmpty()) css.append(';').append(style);
     	svg.setAttribute("style", css.toString());
     	return svg;
+    }
+
+    /** The prefix of the picture's SVG ids in an HTML page, from its wp:docPr id (as a shape's: HtmlShapes) */
+    private String htmlIds() {
+    	org.docx4j.dml.CTNonVisualDrawingProps pr = inline != null ? inline.getDocPr() : anchor != null ? anchor.getDocPr() : null;
+    	return "docx4j-picture-" + (pr == null ? "0" : Long.toString(pr.getId())) + "-";
     }
 
     /** Whether a drawing (its wp:inline's DOM node, as the XSLT gives it) is all its paragraph shows; null where it is

@@ -76,8 +76,9 @@ public class PictureEffectsHtmlTest {
 				+ "<wp:effectExtent l=\"0\" t=\"0\" r=\"76200\" b=\"76200\"/><wp:docPr id=\"1\" name=\"Picture 1\" descr=\"a photo\"/>"
 				+ "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic><pic:nvPicPr><pic:cNvPr id=\"1\" name=\"p\"/>"
 				+ "<pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"" + relId + "\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
-				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
-				+ (effects == null ? "" : effects) + "</pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"
+				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm>"
+				+ (effects != null && effects.startsWith("<a:prstGeom") ? effects : "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>" + (effects == null ? "" : effects))
+				+ "</pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"
 				+ "<w:r><w:t>after</w:t></w:r></w:p></w:body></w:document>"));
 		HTMLSettings settings = Docx4J.createHTMLSettings();
 		settings.setOpcPackage(pkg);
@@ -110,6 +111,34 @@ public class PictureEffectsHtmlTest {
 			assertEquals(route(flags), 2, images.getLength());
 			assertTrue(route(flags), ((Element) images.item(0)).getAttributeNS(XLINK_NS, "href").startsWith("data:image/png;base64,"));
 			assertTrue(route(flags) + ": the paragraph goes on", doc.getDocumentElement().getTextContent().contains("after"));
+		}
+	}
+
+	/**
+	 * An oval frame with a line (CR-081 phase 2): the picture clipped to the ellipse, the line an svg in the picture's,
+	 * after it; every id the picture's own (its wp:docPr's), none twice
+	 */
+	@Test
+	public void aFramedPictureIsAnInlineSvg() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = html("<a:prstGeom prst=\"ellipse\"><a:avLst/></a:prstGeom><a:ln w=\"76200\"><a:solidFill><a:srgbClr val=\"C00000\"/>"
+					+ "</a:solidFill></a:ln>" + SHADOW, flags);
+			assertEquals(route(flags), 0, doc.getElementsByTagName("img").getLength());
+			Element svg = (Element) doc.getElementsByTagNameNS(SVG_NS, "svg").item(0);
+			assertEquals(route(flags), "0 0 144 108", svg.getAttribute("viewBox"));
+			Element clip = (Element) svg.getElementsByTagNameNS(SVG_NS, "clipPath").item(0);
+			assertEquals(route(flags), "docx4j-picture-1-outline", clip.getAttribute("id"));
+			Element last = (Element) svg.getLastChild();
+			assertEquals(route(flags), "svg", last.getLocalName());
+			assertEquals(route(flags), "-6", last.getAttribute("x"));
+			java.util.Set<String> ids = new java.util.HashSet<String>();
+			NodeList all = svg.getElementsByTagName("*");
+			for (int i = 0; i < all.getLength(); i++) {
+				String id = ((Element) all.item(i)).getAttribute("id");
+				if (id.isEmpty()) continue;
+				assertTrue(route(flags) + ": " + id, id.startsWith("docx4j-picture-1-"));
+				assertTrue(route(flags) + ": " + id + " twice", ids.add(id));
+			}
 		}
 	}
 

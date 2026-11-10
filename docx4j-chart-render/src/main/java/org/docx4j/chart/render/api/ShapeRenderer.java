@@ -263,6 +263,171 @@ public final class ShapeRenderer {
 		return bounds;
 	}
 
+	// ------------------------------------------------------------------ a picture's frame (CR-081 phase 2)
+
+	/**
+	 * A picture's frame ({@code pic:spPr}), as Word draws it round the picture (CR-081 phase 2): the outline its geometry
+	 * gives ({@code a:prstGeom}, {@code a:custGeom}), which clips the picture and the fill behind it; the fill behind it
+	 * (a {@code a:solidFill} or another fill, in the outline, under the picture: it shows through a transparent picture);
+	 * and its line ({@code a:ln}), wholly outside the picture, where a shape's is centred on its outline. Word strokes it
+	 * on the outline moved half the line's width outward, its corners mitred and its arcs offset (fs10-14: a
+	 * round2DiagRect's 18pt corners stroked at 21.5pt, its square corners square), so the line's inner edge is the
+	 * picture's; a compound line is rings from the outline outward (thickThin 3 : 1 : 1, fs10-07), their corners the
+	 * line's join. An open path's line is centred on it, as a shape's.
+	 */
+	public static final class PictureFrame {
+		private final Shape outline;
+		private final boolean box;
+		private final Drawing behind, line;
+		private final Rectangle2D.Double behindBounds, lineBounds;
+		private final List<String> problems;
+
+		PictureFrame(Shape outline, boolean box, Drawing behind, Rectangle2D behindBounds, Drawing line, Rectangle2D lineBounds, List<String> problems) {
+			this.outline = outline;
+			this.box = box;
+			this.behind = behind;
+			this.behindBounds = behindBounds == null ? null : rect(behindBounds);
+			this.line = line;
+			this.lineBounds = lineBounds == null ? null : rect(lineBounds);
+			this.problems = Collections.unmodifiableList(problems);
+		}
+
+		/** The outline the picture and the fill behind it are clipped to, points from the box's top left, y down */
+		public Shape getOutline() {
+			return outline;
+		}
+
+		/** The outline is the picture's box: nothing of the picture is clipped */
+		public boolean isBox() {
+			return box;
+		}
+
+		/** The fill behind the picture, in its outline; null where there is none */
+		public Drawing getBehind() {
+			return behind;
+		}
+
+		/** What the fill behind paints; null where there is none */
+		public Rectangle2D.Double getBehindBounds() {
+			return behindBounds;
+		}
+
+		/** The line round the picture; null where there is none */
+		public Drawing getLine() {
+			return line;
+		}
+
+		/** What the line paints, past the box; null where there is none */
+		public Rectangle2D.Double getLineBounds() {
+			return lineBounds;
+		}
+
+		/** The geometry's gaps (render.shape.*: it is then the box) */
+		public List<String> getProblems() {
+			return problems;
+		}
+
+		/** Nothing is drawn round the picture, and nothing of it is clipped */
+		public boolean isPlain() {
+			return box && behind == null && line == null;
+		}
+	}
+
+	/**
+	 * A picture's frame at its size (CR-081 phase 2): its outline, the fill behind it and its line, from its
+	 * {@code pic:spPr} (its own; a picture has no style).
+	 *
+	 * @param cx its width in EMU
+	 * @param cy its height in EMU
+	 */
+	public static PictureFrame pictureFrame(CTShapeProperties spPr, ThemeColors theme, long cx, long cy) {
+		double w = cx / 12700.0, h = cy / 12700.0;
+		List<String> problems = new ArrayList<String>();
+		Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
+		boolean geometry = spPr != null && (spPr.getPrstGeom() != null || spPr.getCustGeom() != null);
+		ShapeOutlines outlines = geometry ? ShapeGeometry.outlines(spPr, cx, cy) : null;
+		if (outlines != null && outlines.getProblem() != null) problems.add(outlines.getProblem());
+		// the outline: the filled paths, each by the even-odd rule, as a shape's fill (a picture with no geometry, or none
+		// that fills, is its box)
+		Area outline = new Area();
+		if (outlines != null) {
+			for (ShapeOutline o : outlines.getOutlines()) {
+				if (o.getFill() == STPathFillMode.NONE) continue;
+				Path2D.Double evenOdd = new Path2D.Double(Path2D.WIND_EVEN_ODD);
+				evenOdd.append(o.getPath(), false);
+				outline.add(new Area(evenOdd));
+			}
+		}
+		if (outline.isEmpty()) outline = new Area(box);
+		Rectangle2D ob = outline.getBounds2D();
+		boolean isBox = outline.isRectangular() && Math.abs(ob.getX()) < 1e-6 && Math.abs(ob.getY()) < 1e-6 && Math.abs(ob.getWidth() - w) < 1e-6
+				&& Math.abs(ob.getHeight() - h) < 1e-6;
+		Shape clip = isBox ? box : outline;
+
+		// the fill behind: the fill in the outline
+		Drawing behind = null;
+		Rectangle2D behindBounds = null;
+		Fill fill = spPr == null || spPr.getBlipFill() != null ? null : fill(spPr, null, theme, null);
+		if (fill != null) {
+			Drawing d = new Drawing(w, h);
+			behindBounds = fill.paint(d, clip, null, box, null, problems);
+			if (behindBounds != null && !d.getItems().isEmpty()) behind = d;
+		}
+
+		// the line, wholly outside
+		Drawing lined = null;
+		Rectangle2D lineBounds = null;
+		String preset = spPr != null && spPr.getPrstGeom() != null && spPr.getPrstGeom().getPrst() != null ? spPr.getPrstGeom().getPrst().value() : null;
+		Line line = line(spPr, null, theme, preset == null ? "rect" : preset);
+		if (line != null) {
+			Drawing d = new Drawing(w, h);
+			List<Path2D.Double> stroked = new ArrayList<Path2D.Double>();
+			if (outlines != null && !outlines.getOutlines().isEmpty()) {
+				for (ShapeOutline o : outlines.getOutlines()) if (o.isStroked()) stroked.add(o.getPath());
+			} else {
+				stroked.add(new Path2D.Double(box));
+			}
+			AffineTransform none = new AffineTransform();
+			for (int i = 0; i < stroked.size(); i++) {
+				lineBounds = union(lineBounds, line.paintOutside(d, stroked.get(i), none, i == 0, i == stroked.size() - 1));
+			}
+			if (lineBounds != null && !d.getItems().isEmpty()) lined = d;
+		}
+		return new PictureFrame(clip, isBox, behind, behindBounds, lined, lineBounds, problems);
+	}
+
+	/**
+	 * A closed path moved d outward, its corners mitred and its arcs offset, as Word strokes a picture's line on it:
+	 * the boundary of the path's inside grown by d. A rectangle stays one, from its bottom left as Word's re.
+	 */
+	static Path2D.Double outward(Path2D.Double path, double d) {
+		Path2D.Double re = asRe(path);
+		if (re != path) {
+			// rectangles: each grown
+			Path2D.Double out = new Path2D.Double(path.getWindingRule());
+			double[] c = new double[6];
+			List<double[]> pts = new ArrayList<double[]>();
+			for (PathIterator it = re.getPathIterator(null); !it.isDone(); it.next()) {
+				int t = it.currentSegment(c);
+				if (t == PathIterator.SEG_MOVETO || t == PathIterator.SEG_LINETO) pts.add(new double[] { c[0], c[1] });
+				if (t == PathIterator.SEG_CLOSE && pts.size() == 4) {
+					double l = Math.min(pts.get(0)[0], pts.get(2)[0]) - d, r = Math.max(pts.get(0)[0], pts.get(2)[0]) + d;
+					double top = Math.min(pts.get(0)[1], pts.get(2)[1]) - d, b = Math.max(pts.get(0)[1], pts.get(2)[1]) + d;
+					out.moveTo(l, b);
+					out.lineTo(r, b);
+					out.lineTo(r, top);
+					out.lineTo(l, top);
+					out.closePath();
+					pts.clear();
+				}
+			}
+			return out;
+		}
+		Area grown = new Area(path);
+		grown.add(new Area(new BasicStroke((float) (2 * d), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f).createStrokedShape(path)));
+		return new Path2D.Double(grown);
+	}
+
 	// ------------------------------------------------------------------ groups and canvases
 
 	/**
@@ -663,7 +828,6 @@ public final class ShapeRenderer {
 			boolean open = isOpen(path);
 			// a rectangle as Word's PDF draws it, an re from its bottom left, so that its dashes start there
 			Shape shape = turn.createTransformedShape(asRe(path));
-			Rectangle2D painted = null;
 
 			// arrowheads on the open ends of the first and last stroked paths, the line drawn up to them
 			List<Shape> heads = new ArrayList<Shape>();
@@ -691,11 +855,42 @@ public final class ShapeRenderer {
 				}
 			}
 
+			return stroke(d, shape, open, heads, false);
+		}
+
+		/**
+		 * Paints a picture's line (CR-081 phase 2): on a closed path, wholly outside it, stroked on the path moved half
+		 * its width outward, a compound line as rings from the path outward; on an open one, as a shape's. The area
+		 * painted.
+		 */
+		Rectangle2D paintOutside(Drawing d, Path2D.Double path, AffineTransform turn, boolean first, boolean last) {
+			if (isOpen(path)) return paint(d, path, turn, first, last);
 			double w = width <= 0 ? HAIRLINE : width;
-			boolean compound = !"sng".equals(cmpd), inside = "in".equals(algn) && !open;
+			if (!"sng".equals(cmpd)) {
+				return stroke(d, turn.createTransformedShape(path), false, Collections.<Shape>emptyList(), true);
+			}
+			return stroke(d, turn.createTransformedShape(asRe(outward(path, w / 2))), false, Collections.<Shape>emptyList(), false);
+		}
+
+		/** The line on the shape, and its heads; outside: a compound line's rings from the shape outward, at its join */
+		private Rectangle2D stroke(Drawing d, Shape shape, boolean open, List<Shape> heads, boolean outside) {
+			Color colour = paint instanceof CTSolidColorFillProperties ? Fills.awt(DrawingMLColors.resolve(paint, fills.getTheme())) : null;
+			Drawing.Gradient gradient = paint instanceof CTGradientFillProperties ? fills.gradient((CTGradientFillProperties) paint) : null;
+			Drawing.Pattern pattern = null;
+			if (paint instanceof CTPatternFillProperties) {
+				CTShapeProperties holder = new CTShapeProperties();
+				holder.setPattFill((CTPatternFillProperties) paint);
+				pattern = fills.pattern(holder);
+			}
+			if (colour == null && gradient != null) colour = gradient.getColours()[0];
+			if (colour == null && pattern != null) colour = pattern.getForeground();
+			if (colour == null) return null;
+			Rectangle2D painted;
+			double w = width <= 0 ? HAIRLINE : width;
+			boolean compound = !"sng".equals(cmpd), inside = "in".equals(algn) && !open && !outside;
 			if (compound || inside) {
-				// Word draws these as filled bands (phase 0: fp30-056 to -059, -061)
-				Area band = band(shape, w, open, compound ? cmpd : "sng", inside);
+				// Word draws these as filled bands (phase 0: fp30-056 to -059, -061); a picture's all outside
+				Area band = outside ? band(shape, w, false, cmpd, false, true, join) : band(shape, w, open, compound ? cmpd : "sng", inside);
 				Drawing.Area a = new Drawing.Area(band, colour, null, 0, "shape.line");
 				if (gradient != null) a.setGradient(gradient);
 				else if (pattern != null) a.setPattern(pattern);
@@ -831,6 +1026,15 @@ public final class ShapeRenderer {
 	 * all of its width inside. An open path has no inside: there the bands are as on a closed path's outside, mirrored.
 	 */
 	static Area band(Shape shape, double w, boolean open, String cmpd, boolean inside) {
+		return band(shape, w, open, cmpd, inside, false, BasicStroke.JOIN_ROUND);
+	}
+
+	/**
+	 * As {@link #band(Shape, double, boolean, String, boolean)}; outside: the whole width outside a closed path (a
+	 * picture's line, CR-081 phase 2: fs10-07's thickThin 18pt is rings 18 to 7.2pt and 3.6 to 0pt out), the outer
+	 * corners at the join given (a shape's are round, CR-080 phase 0; a picture's mitred line has square ones)
+	 */
+	static Area band(Shape shape, double w, boolean open, String cmpd, boolean inside, boolean outside, int join) {
 		double[][] bands;
 		switch (cmpd) {
 			case "dbl": bands = new double[][] { { 0.5, 1.0 / 6 }, { -1.0 / 6, -0.5 } }; break;
@@ -839,51 +1043,55 @@ public final class ShapeRenderer {
 			case "tri": bands = new double[][] { { 0.5, 1.0 / 3 }, { 1.0 / 6, -1.0 / 6 }, { -1.0 / 3, -0.5 } }; break;
 			default: bands = new double[][] { { 0.5, -0.5 } };
 		}
-		if (inside) {
-			// the whole width inside the path
+		if (inside || outside && !open) {
+			// the whole width inside the path, or outside it
+			double by = inside ? -0.5 : 0.5;
 			for (double[] b : bands) {
-				b[0] = b[0] - 0.5;
-				b[1] = b[1] - 0.5;
+				b[0] = b[0] + by;
+				b[1] = b[1] + by;
 			}
 		}
 		Area interior = open ? null : new Area(shape);
 		Area out = new Area();
 		for (double[] b : bands) {
 			double outer = b[0] * w, inner = b[1] * w;
-			out.add(open ? openBand(shape, Math.max(Math.abs(outer), Math.abs(inner)), Math.min(Math.abs(outer), Math.abs(inner)), outer * inner < 0)
-					: closedBand(shape, interior, outer, inner));
+			out.add(open ? openBand(shape, Math.max(Math.abs(outer), Math.abs(inner)), Math.min(Math.abs(outer), Math.abs(inner)), outer * inner < 0, join)
+					: closedBand(shape, interior, outer, inner, join));
 		}
 		return out;
 	}
 
 	/** The points at signed distance between inner and outer (outward positive) from a closed path */
-	private static Area closedBand(Shape shape, Area interior, double outer, double inner) {
+	private static Area closedBand(Shape shape, Area interior, double outer, double inner, int join) {
 		Area band = new Area();
 		if (outer > 0) {
-			Area ring = within(shape, outer);
-			if (inner > 0) ring.subtract(within(shape, inner));
+			Area ring = within(shape, outer, join);
+			if (inner > 0) ring.subtract(within(shape, inner, join));
 			ring.subtract(interior);
 			band.add(ring);
 		}
 		if (inner < 0) {
-			Area ring = within(shape, -inner);
-			if (outer < 0) ring.subtract(within(shape, -outer));
+			Area ring = within(shape, -inner, join);
+			if (outer < 0) ring.subtract(within(shape, -outer, join));
 			ring.intersect(interior);
 			band.add(ring);
 		}
 		return band;
 	}
 
-	private static Area openBand(Shape shape, double far, double near, boolean across) {
-		Area ring = within(shape, far);
-		if (!across && near > 0) ring.subtract(within(shape, near));
+	private static Area openBand(Shape shape, double far, double near, boolean across, int join) {
+		Area ring = within(shape, far, join);
+		if (!across && near > 0) ring.subtract(within(shape, near, join));
 		return ring;
 	}
 
-	/** The points within d of the path: a round-joined stroke of width 2d, as Word's bands' outer corners are round */
-	private static Area within(Shape shape, double d) {
+	/**
+	 * The points within d of the path: a stroke of width 2d at the join (round for a shape's, as Word's bands' outer
+	 * corners are round; mitred, at Word's limit of 10, for a picture's mitred line)
+	 */
+	private static Area within(Shape shape, double d, int join) {
 		if (d <= 0) return new Area();
-		return new Area(new BasicStroke((float) (2 * d), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND).createStrokedShape(shape));
+		return new Area(new BasicStroke((float) (2 * d), BasicStroke.CAP_BUTT, join, 10f).createStrokedShape(shape));
 	}
 
 	// ------------------------------------------------------------------ arrowheads

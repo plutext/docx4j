@@ -4,7 +4,9 @@ Status: ACCEPTED 2026-11-10 (Jason: "CR-081 decisions as recommended"): D1 to D1
 CR-084 (§8). Proposed 2026-11-09, drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status).
 Phase 0 DONE 2026-11-10, in five rounds (`CR-081-notes/phase0-findings.md`). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
 geometry. Phase 1 DONE 2026-11-11 (Jason: "shall we resume work on CR-081?", then "yes" to starting phase 1; "commit phase 1"): `CR-081-notes/phase1-findings.md`; 171 effect pictures against Word's at a mean alpha error of 0.70 of
-255, corpora 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+255, corpora 0 movers. Phase 2 DONE 2026-11-11 (Jason: "start CR-081 phase 2", "comit phase 2"): `CR-081-notes/phase2-findings.md`;
+the flat picture styles' frames and effects against Word's (56 pictures at 0.76, 34 vector draws within 0.02pt), gate
+b416 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -219,6 +221,26 @@ under `pic:spPr` (through the portfolio).
   - From phase 1: a picture's line casts its shadow too (16_en-ZA_num_tbl_10976's is 3.2pt small on every side until
     it does); the picture styles' Perspective Shadow (sx 97%, kx 15°) tells sx·tan kx from tan kx (findings §2).
   - **Gate:** the 28 picture styles within tolerance.
+  - **Done 2026-11-11** (Jason: "commence phase 2", then "start CR-081 phase 2"; "comit phase 2"; `CR-081-notes/phase2-findings.md`).
+    - The 11 flat picture styles over the four pictures, and the frame probes: 56 effect pictures against Word's at a
+      mean alpha error of 0.76 of 255, and 34 vector draws (lines, rings, fills behind) within 0.02pt. The 17 3-D
+      styles are phase 5's, drawn flat until then.
+    - The renderer is `ShapeRenderer.pictureFrame` (the outline, the fill behind, the line moved `w`/2 outward) with
+      `Effects.draw`'s line. Core reaches them through `ShapeDrawer.drawPicture`, which replaces phase 1's
+      `drawEffects` (unreleased). `PictureEffects` clips the picture with an SVG `clipPath`.
+    - A picture with a frame and no effects is drawn through the same SVG. A fill behind an opaque picture changes
+      nothing, so such a picture stays its bitmap alone.
+    - Three rules the probes showed are in findings §2:
+      - the line's corners are mitred and its arcs offset;
+      - a shadow's `algn` point is on the box with the line;
+      - phase 1's inner shadow was half a pixel out (corrected).
+    - The Perspective Shadow is 3-D (style 18), so sx·tan kx is still not told from tan kx.
+    - Gate b416 against b415: 0 movers.
+      - 16_en-ZA_num_tbl_10976's shadow is now within 0.4pt of Word's golden (3.2pt small in phase 1).
+      - 15_en-US_sdt_tbl_469's framed picture with a moved-out crop is drawn in Word's 757pt frame, as the golden has
+        it. FOP reports its overflow of the page (findings §1). Comparing it showed a defect in CR-029's padding
+        under an effect extent, not fixed here (findings §5).
+    - Tests: `PictureFramesTest` (the oracle), `PictureEffectsFoTest` (12, both routes), `PictureEffectsHtmlTest`.
 - **Phase 3, shapes and text boxes** (needs CR-080.2).
   - The same effects on a `wps:wsp`'s drawing, `a:effectRef` resolved.
   - **Gate:** probes; corpora unmoved.

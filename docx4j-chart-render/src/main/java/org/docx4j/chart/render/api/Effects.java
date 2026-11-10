@@ -61,6 +61,9 @@ import org.docx4j.model.color.ThemeColors;
  * past endPos, then blurred. Scale and skew are one matrix, [sx, tan kx; tan ky, sy].</li>
  * <li>An effect picture is 200 dpi, made coarser by a whole factor k = ceil(blur in pixels / 16), the glow's blur being
  * rad / 2; an inner shadow and a soft edge are always 200 dpi.</li>
+ * <li>A picture's line (CR-081 phase 2), wholly outside it, is painted over the drawing and its inner shadow: it glows,
+ * casts the shadow and is reflected with the drawing, and a shadow's or reflection's algn point is on the box with the
+ * line (fs10-08); the inner shadow is the drawing's alone (fs10-07), at each pixel's centre.</li>
  * </ul>
  *
  * <p>A picture is capped (D10): at most {@link #MAX_SIDE} pixels a side and {@link #MAX_PIXELS} in all, made coarser
@@ -173,27 +176,55 @@ public final class Effects {
 	 *        0 or less for none
 	 */
 	public static Result draw(CTEffectList list, ThemeColors theme, double w, double h, Painter painter, double maxPixelsPerPoint) {
+		return draw(list, theme, w, h, painter, null, null, maxPixelsPerPoint);
+	}
+
+	/**
+	 * The effects of a drawing w by h points with a line round it, painted over the drawing and its inner shadow: a
+	 * picture's line, wholly outside it (CR-081 phase 2). The line is part of what glows, casts the shadow and is
+	 * reflected (fxr71-11, -12; 16_en-ZA_num_tbl_10976); the inner shadow is the drawing's alone, under the line
+	 * (fs10-07: Word's is the picture's size). Where there is a soft edge, the line is in the picture that takes the
+	 * drawing's place (not measured).
+	 *
+	 * @param line paints the line, or null for none
+	 * @param lineBounds what the line paints, in the drawing's frame; null for none
+	 * @since 17.3.7 (CR-081 phase 2)
+	 */
+	public static Result draw(CTEffectList list, ThemeColors theme, double w, double h, Painter painter, Painter line, Rectangle2D lineBounds,
+			double maxPixelsPerPoint) {
 		List<Picture> out = new ArrayList<Picture>();
 		List<String> problems = new ArrayList<String>();
 		if (list == null || painter == null || !(w > 0) || !(h > 0)) return new Result(out, problems);
 		Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
+		if (line == null) lineBounds = null;
+		Rectangle2D drawn = lineBounds == null ? box : box.createUnion(lineBounds);
 		double cap = maxPixelsPerPoint > 0 ? maxPixelsPerPoint : Double.MAX_VALUE;
 		// Word's chain (fxr70): the soft edge (its inner shadow in it) or the inner shadow on the drawing; the glow round the
 		// drawing's own silhouette (fxr70-03: round the soft edge it is 5.7 of 255 out, round the drawing 0.5); the outer
 		// shadow cast by the drawing and its glow; the reflection of all of them, about the drawing's box
 		Picture soft = null, inner = null, glow = null, shadow = null, reflection = null;
 		if (list.getSoftEdge() != null && list.getSoftEdge().getRad() > 0) {
-			soft = add(problems, softEdge(list.getSoftEdge().getRad() / 12700.0, list.getInnerShdw(), theme, box, painter, cap));
+			soft = add(problems, softEdge(list.getSoftEdge().getRad() / 12700.0, list.getInnerShdw(), theme, box, drawn, painter, line, cap));
 		} else if (list.getInnerShdw() != null) {
 			inner = add(problems, inner(list.getInnerShdw(), theme, box, painter, cap));
 		}
+		// the drawing with its line; where there is a soft edge, its picture holds them both
 		Painter drawing = soft != null ? soft.painter() : painter;
-		Rectangle2D bounds = box;
-		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, painter, cap));
+		Painter lineOver = soft != null ? null : line;
+		Painter own = stack(painter, line);
+		Rectangle2D bounds = drawn;
+		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, own, cap));
 		if (glow != null) bounds = bounds.createUnion(glow.place);
-		if (list.getOuterShdw() != null) shadow = add(problems, outer(list.getOuterShdw(), theme, box, bounds, layers(drawing, null, glow), cap));
+		// a shadow's and a reflection's algn point is on the drawing's box with its line (fs10-08: Thick Matte's sy 90%
+		// about the bottom of its 35pt line, 3pt lower than about the picture's)
+		if (list.getOuterShdw() != null) {
+			shadow = add(problems, outer(list.getOuterShdw(), theme, drawn, bounds, stack(painter(glow), drawing, lineOver), cap));
+		}
 		if (shadow != null) bounds = bounds.createUnion(shadow.place);
-		if (list.getReflection() != null) reflection = add(problems, reflection(list.getReflection(), box, bounds, layers(drawing, inner, shadow, glow), cap));
+		if (list.getReflection() != null) {
+			reflection = add(problems, reflection(list.getReflection(), drawn, bounds,
+					stack(painter(shadow), painter(glow), drawing, painter(inner), lineOver), cap));
+		}
 		// drawn in Word's order: under the drawing its reflection, outer shadow and glow; then in its place or over it
 		for (Picture p : new Picture[] { reflection, shadow, glow, soft, inner }) if (p != null) out.add(p);
 		return new Result(out, problems);
@@ -204,12 +235,15 @@ public final class Effects {
 		return p instanceof Picture ? (Picture) p : null;
 	}
 
-	/** The pictures under it (in order, those given), then the drawing, then the picture over it (if given) */
-	private static Painter layers(Painter drawing, Picture over, Picture... under) {
+	/** The picture painted where it goes; null for none */
+	private static Painter painter(Picture p) {
+		return p == null ? null : p.painter();
+	}
+
+	/** The painters, in order, those given */
+	private static Painter stack(Painter... painters) {
 		return g -> {
-			for (Picture p : under) if (p != null) p.painter().paint(g);
-			drawing.paint(g);
-			if (over != null) over.painter().paint(g);
+			for (Painter p : painters) if (p != null) p.paint(g);
 		};
 	}
 
@@ -277,22 +311,30 @@ public final class Effects {
 			for (int x = 0; x < g.w; x++) {
 				float in = inside[(y + pad) * ext.w + x + pad];
 				if (in <= 0) continue;
-				a[y * g.w + x] = in * sample(out, ext.w, ext.h, x + pad + dx, y + pad + dy, 1f);
+				// at the pixel's centre, moved (with no dist, Word's corner is 1 - Phi(0.5 px / sigma)^2: fs10-07, fx20-06)
+				a[y * g.w + x] = in * sample(out, ext.w, ext.h, x + pad + 0.5 + dx, y + pad + 0.5 + dy, 1f);
 			}
 		}
 		return a;
 	}
 
-	private static Object softEdge(double rad, CTInnerShadowEffect innerShadow, ThemeColors theme, Rectangle2D.Double box, Painter painter, double cap) {
-		double ppt = resolution(box, 1, cap);
+	/** The drawing with its soft edge, in its place: its inner shadow in it, and its line over that, within drawn */
+	private static Object softEdge(double rad, CTInnerShadowEffect innerShadow, ThemeColors theme, Rectangle2D.Double box, Rectangle2D drawn,
+			Painter painter, Painter line, double cap) {
+		double ppt = resolution(drawn, 1, cap);
 		if (ppt <= 0) return OVER_LIMIT;
-		Grid g = Grid.of(box, ppt);
+		Grid g = Grid.of(drawn, ppt);
 		BufferedImage im = g.colour(painter, null);
 		int[] px = im.getRGB(0, 0, g.w, g.h, null, 0, g.w);
 		if (innerShadow != null) {
 			Color c = colour(innerShadow.getSrgbClr(), innerShadow.getSchemeClr(), innerShadow.getPrstClr(), innerShadow.getSysClr(),
 					innerShadow.getHslClr(), innerShadow.getScrgbClr(), theme);
 			if (c != null) over(px, innerAlpha(innerShadow, g, painter, ppt), c);
+		}
+		if (line != null) {
+			im.setRGB(0, 0, g.w, g.h, px, 0, g.w);
+			g.paintOver(im, line);
+			px = im.getRGB(0, 0, g.w, g.h, null, 0, g.w);
 		}
 		float[] mask = new float[px.length];
 		if (SOFT_EDGE_INSET * rad * ppt < Math.max(g.w, g.h)) {
@@ -483,6 +525,18 @@ public final class Effects {
 			painter.paint(g);
 			g.dispose();
 			return im;
+		}
+
+		/** The painter's paint over what the picture (of this grid) holds */
+		void paintOver(BufferedImage im, Painter painter) {
+			Graphics2D g = im.createGraphics();
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			g.scale(ppt, ppt);
+			g.translate(-x0, -y0);
+			painter.paint(g);
+			g.dispose();
 		}
 
 		/** The drawing's silhouette here: its alpha, 0 to 1 */

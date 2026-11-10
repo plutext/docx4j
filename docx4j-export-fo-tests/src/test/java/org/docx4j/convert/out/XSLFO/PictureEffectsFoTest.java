@@ -46,6 +46,7 @@ import org.w3c.dom.NodeList;
  * A picture's effects in the PDF output (CR-081 phase 1), by the visitor and the XSLT alike: the picture and its effects
  * one SVG in an fo:instream-foreign-object of the picture's frame, the effect pictures round the picture's own bytes;
  * an inline picture's effects cut at its effect extent, an anchored one's not; a JPEG still passed through to the PDF.
+ * Its frame (phase 2): the outline clips it, the line is outside it, a fill behind shows through a transparent one.
  */
 public class PictureEffectsFoTest {
 
@@ -69,6 +70,26 @@ public class PictureEffectsFoTest {
 			+ "<a:srgbClr val=\"000000\"/></a:outerShdw></a:effectLst>";
 	static final String SOFT_EDGE = "<a:effectLst><a:softEdge rad=\"63500\"/></a:effectLst>";
 
+	/** An oval frame (CR-081 phase 2) */
+	static final String OVAL = "<a:prstGeom prst=\"ellipse\"><a:avLst/></a:prstGeom>";
+	/** A 6pt black line round a rectangle */
+	static final String LINE = "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom><a:ln w=\"76200\"><a:solidFill><a:srgbClr val=\"000000\"/></a:solidFill>"
+			+ "<a:miter lim=\"800000\"/></a:ln>";
+	/** A grey fill behind a rectangle */
+	static final String FILL = "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val=\"808080\"/></a:solidFill>";
+
+	/** A picture with transparent corners */
+	static byte[] transparentPicture() throws Exception {
+		BufferedImage img = new BufferedImage(160, 120, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		g.setColor(new Color(40, 120, 200));
+		g.fillOval(0, 0, 160, 120);
+		g.dispose();
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write(img, "png", out);
+		return out.toByteArray();
+	}
+
 	static byte[] picture(String format) throws Exception {
 		BufferedImage img = new BufferedImage(160, 120, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
@@ -89,7 +110,8 @@ public class PictureEffectsFoTest {
 		String graphic = "<wp:docPr id=\"1\" name=\"Picture 1\" descr=\"a photo\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
 				+ "<pic:pic><pic:nvPicPr><pic:cNvPr id=\"1\" name=\"p\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"" + relId + "\"/>"
 				+ (srcRect == null ? "" : srcRect) + "<a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/>"
-				+ "<a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>" + (effects == null ? "" : effects)
+				+ "<a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm>"
+				+ (effects != null && effects.startsWith("<a:prstGeom") ? effects : "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>" + (effects == null ? "" : effects))
 				+ "</pic:spPr></pic:pic></a:graphicData></a:graphic>";
 		if (anchored) {
 			return "<w:r><w:drawing><wp:anchor distT=\"0\" distB=\"0\" distL=\"114300\" distR=\"114300\" simplePos=\"0\" relativeHeight=\"1\" behindDoc=\"0\""
@@ -248,6 +270,86 @@ public class PictureEffectsFoTest {
 			assertEquals(route(flags), 1, fo.getElementsByTagNameNS(FO_NS, "external-graphic").getLength());
 			assertEquals(route(flags), 0, fo.getElementsByTagNameNS(SVG_NS, "svg").getLength());
 		}
+	}
+
+	/** The svg elements directly in an SVG, as the drawer's fill behind and line are nested */
+	static List<Element> nested(Element svg) {
+		List<Element> out = new ArrayList<Element>();
+		for (org.w3c.dom.Node n = svg.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof Element && "svg".equals(n.getLocalName())) out.add((Element) n);
+		}
+		return out;
+	}
+
+	/** An oval frame clips the picture (CR-081 phase 2): one SVG, the picture in a group clipped to the ellipse's path */
+	@Test
+	public void anOvalFrameClipsThePicture() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document fo = fo(pkg(picture("png"), OVAL, null, false, null), flags);
+			assertEquals(route(flags), 0, fo.getElementsByTagNameNS(FO_NS, "external-graphic").getLength());
+			Element svg = onlySvg(fo, route(flags));
+			NodeList clips = svg.getElementsByTagNameNS(SVG_NS, "clipPath");
+			assertEquals(route(flags), 1, clips.getLength());
+			String id = ((Element) clips.item(0)).getAttribute("id");
+			Element path = (Element) ((Element) clips.item(0)).getElementsByTagNameNS(SVG_NS, "path").item(0);
+			assertTrue(route(flags) + ": " + path.getAttribute("d"), path.getAttribute("d").matches("M[^C]*C.*Z"));
+			Element image = (Element) svg.getElementsByTagNameNS(SVG_NS, "image").item(0);
+			assertEquals(route(flags), "url(#" + id + ")", ((Element) image.getParentNode()).getAttribute("clip-path"));
+			assertTrue(route(flags), nested(svg).isEmpty());
+		}
+	}
+
+	/** A line is drawn wholly outside the picture, over it: a 6pt line's SVG from 6pt outside the frame, its stroke
+	 *  on the frame grown by 3pt */
+	@Test
+	public void aLineIsOutsideThePicture() throws Exception {
+		for (int flags : BOTH) {
+			Element svg = onlySvg(fo(pkg(picture("png"), LINE, null, false, null), flags), route(flags));
+			List<Element> nested = nested(svg);
+			assertEquals(route(flags), 1, nested.size());
+			Element line = nested.get(0);
+			assertEquals(route(flags), "-6", line.getAttribute("x"));
+			assertEquals(route(flags), "-6", line.getAttribute("y"));
+			assertEquals(route(flags), "156", line.getAttribute("width"));
+			assertEquals(route(flags), "120", line.getAttribute("height"));
+			assertEquals(route(flags), "visible", line.getAttribute("overflow"));
+			// after the picture
+			assertTrue(route(flags), svg.getLastChild() == line);
+			assertEquals(route(flags), 1, images(svg).size());
+		}
+	}
+
+	/** A fill behind shows only through a transparent picture: behind an opaque one the picture is an external-graphic;
+	 *  behind a transparent one, it is drawn under the picture */
+	@Test
+	public void aFillBehindIsDrawnUnderATransparentPicture() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document fo = fo(pkg(picture("png"), FILL, null, false, null), flags);
+			assertEquals(route(flags), 1, fo.getElementsByTagNameNS(FO_NS, "external-graphic").getLength());
+			Element svg = onlySvg(fo(pkg(transparentPicture(), FILL, null, false, null), flags), route(flags));
+			List<Element> nested = nested(svg);
+			assertEquals(route(flags), 1, nested.size());
+			// before the picture
+			assertTrue(route(flags), svg.getFirstChild() == nested.get(0));
+			assertEquals(route(flags), "0 0 144 108", nested.get(0).getAttribute("viewBox"));
+		}
+	}
+
+	/** A frame, a line and a shadow together: the PDF is made, and the JPEG still passes through */
+	@Test
+	public void aFramedJpegPassesThroughToThePdf() throws Exception {
+		WordprocessingMLPackage pkg = pkg(picture("jpg"), OVAL.replace("ellipse", "roundRect") + "<a:ln w=\"88900\"><a:solidFill><a:srgbClr val=\"FFFFFF\"/>"
+				+ "</a:solidFill></a:ln>" + SHADOW, "0 0 76200 76200", false, null);
+		Element svg = onlySvg(fo(pkg, Docx4J.FLAG_NONE), "visitor");
+		assertEquals(2, images(svg).size());
+		assertEquals(1, nested(svg).size());
+		FOSettings foSettings = Docx4J.createFOSettings();
+		foSettings.setOpcPackage(pkg);
+		ByteArrayOutputStream pdf = new ByteArrayOutputStream();
+		Docx4J.toFO(foSettings, pdf, Docx4J.FLAG_NONE);
+		String s = new String(pdf.toByteArray(), StandardCharsets.ISO_8859_1);
+		assertTrue("the JPEG passed through", s.contains("/DCTDecode"));
+		assertTrue("the shadow, a picture with a soft mask", s.contains("/SMask"));
 	}
 
 	/** The picture's own bytes in the SVG keep FOP's JPEG passthrough: the PDF holds the JPEG (DCTDecode) */

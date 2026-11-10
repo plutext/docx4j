@@ -32,7 +32,7 @@ import org.w3c.dom.Document;
 
 /**
  * Draws a DrawingML shape, group or canvas as SVG, for an output docx4j-core writes itself (HTML: CR-080 phase 5), and
- * a picture's effects, for the PDF and HTML outputs alike (CR-081).
+ * a picture's frame and effects, for the PDF and HTML outputs alike (CR-081).
  * docx4j-chart-render provides one (its ShapeRenderer, as it provides the {@link org.docx4j.model.chart.ChartRenderer});
  * without it a shape's text is still laid out where Word sets it, and nothing is drawn under it.
  *
@@ -50,22 +50,52 @@ public interface ShapeDrawer {
 	Drawing draw(Object graphic, ThemeColors theme, long cx, long cy, Function<String, BufferedImage> pictures);
 
 	/**
-	 * A picture's effects ({@code a:effectLst}: outer and inner shadow, glow, soft edge, reflection) as Word draws them
-	 * round it (CR-081): pictures with alpha, under the picture, over it, or in its place (the picture with its soft
-	 * edge), in the order they are drawn, each placed in the picture's frame, w by h points.
+	 * A picture drawn as Word draws it in its frame, w by h points (CR-081 phases 1 and 2): its outline ({@code
+	 * pic:spPr/a:prstGeom} or {@code a:custGeom}), which clips it; the fill behind it; its line ({@code a:ln}), wholly
+	 * outside it; and its effects ({@code a:effectLst}: outer and inner shadow, glow, soft edge, reflection), pictures
+	 * with alpha under it, over it, or in its place (the picture with its soft edge, its line in it).
 	 *
-	 * @param effects the picture's a:effectLst (a CTEffectList)
-	 * @param picture the stored bitmap, all of it (it may be a reduced copy)
+	 * @param spPr the picture's pic:spPr (a CTShapeProperties)
+	 * @param picture the stored bitmap, all of it (it may be a reduced copy); null where it can't be read: its effects
+	 *        are then not drawn, its frame is
 	 * @param crop what of the bitmap the frame shows ({@code a:srcRect}), or null for all of it
 	 * @param maxPixelsPerPoint an upper bound on an effect picture's resolution, 0 for none (Word's: 200 dpi, coarser
 	 *        for a wide blur)
-	 * @param problems the gaps are added here, stable codes ({@code render.effect.*})
-	 * @return null where this drawer draws no effects; empty where there are none to draw
+	 * @param problems the gaps are added here, stable codes ({@code render.effect.*}, {@code render.shape.*})
+	 * @return null where this drawer doesn't draw pictures
 	 * @since 17.3.7
 	 */
-	default List<EffectPicture> drawEffects(Object effects, ThemeColors theme, double w, double h, BufferedImage picture,
+	default PictureDrawing drawPicture(Object spPr, ThemeColors theme, double w, double h, BufferedImage picture,
 			org.docx4j.model.images.PictureCrop crop, double maxPixelsPerPoint, List<String> problems) {
 		return null;
+	}
+
+	/**
+	 * A picture as Word draws it, in its frame: points from its box's top left, y down. Drawn in this order: the effect
+	 * pictures under it; the fill behind it, then the picture, both clipped to the outline; the effect pictures over it;
+	 * the line. Where an effect picture takes its place (a soft edge), that picture is drawn for the fill, the picture
+	 * and the line.
+	 *
+	 * @since 17.3.7
+	 */
+	interface PictureDrawing {
+
+		/** The outline the picture and the fill behind it are clipped to; null where it is the picture's box */
+		java.awt.Shape getClip();
+
+		/** The fill behind the picture as SVG, a user unit a point, its viewBox where it is in the frame; null for none */
+		Document getBehind();
+
+		/** The line round the picture as SVG, likewise; null for none */
+		Document getLine();
+
+		/** The effect pictures, in the order they are drawn */
+		List<EffectPicture> getEffects();
+
+		/** Nothing is drawn round the picture or clipped from it, and it has no effects: it is drawn as a picture alone */
+		default boolean isPlain() {
+			return getClip() == null && getBehind() == null && getLine() == null && getEffects().isEmpty();
+		}
 	}
 
 	/** Where an effect picture is drawn: under the picture, over it, or in its place */
