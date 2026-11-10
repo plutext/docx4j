@@ -142,14 +142,21 @@ public abstract class AbstractWordXmlPicture {
             	imageElement.setAttribute("style", style);
             }
 
+            /* The picture at its size: CSS fixes a pixel at 1/96in and a point at 1/72in, and
+             * docx4j sets the text beside it in points, so the frame's points are 4/3 as many
+             * pixels.  Until 17.3.7 the points were written as pixels (a 72dpi convention shared
+             * with the FO output, where FOP reads px so), which drew every picture at three
+             * quarters of its size against its text, and shrank and resampled a 96dpi screenshot
+             * Word sizes a pixel to 1/96in; a VML picture's inches were written as pixels too
+             * (CR-080 D14).  @since 17.3.7 */
             if (dimensions.width>0)
             {
-            	imageElement.setAttribute("width",  Integer.toString((int) Math.round(dimensions.width)));
+            	imageElement.setAttribute("width",  Long.toString(cssPixels(dimensions.width, dimensions.widthUnit)));
             }
 
             if (dimensions.height>0)
             {
-            	imageElement.setAttribute("height", Integer.toString((int) Math.round(dimensions.height)));
+            	imageElement.setAttribute("height", Long.toString(cssPixels(dimensions.height, dimensions.heightUnit)));
             }
 
             if (hlinkRef !=null && !hlinkRef.equals("")
@@ -492,6 +499,11 @@ public abstract class AbstractWordXmlPicture {
 	}
 
 	/** A length as XSL-FO/CSS states it, in points; 0 where it is not stated. */
+	/** A length as CSS pixels, 96 an inch (an HTML img's width and height), rounded.  @since 17.3.7 (CR-080 D14) */
+	public static long cssPixels(double v, String unit) {
+		return Math.round(lengthInPoints(v, unit) * 96d / 72d);
+	}
+
 	protected static double lengthInPoints(double v, String unit) {
 		if (!(v > 0)) return 0;
 		if (unit == null) return v;

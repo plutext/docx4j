@@ -99,8 +99,8 @@ public class ChartBoxTest {
 			Matcher m = svg.matcher(html);
 			assertTrue(pathway + "no svg in " + html, m.find());
 			String tag = m.group();
-			assertTrue(pathway + tag, tag.contains("width=\"432\""));
-			assertTrue(pathway + tag, tag.contains("height=\"252\""));
+			assertTrue(pathway + tag, tag.contains("width=\"576\""));
+			assertTrue(pathway + tag, tag.contains("height=\"336\""));
 			assertTrue(pathway + tag, tag.contains("aria-label=\"Chart 1\""));
 			assertFalse(pathway + "a second svg", m.find());
 			assertFalse(pathway, html.contains("NOT IMPLEMENTED"));
@@ -123,7 +123,7 @@ public class ChartBoxTest {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			Docx4J.toHTML(settings, baos, flags);
 			String html = baos.toString("UTF-8");
-			assertTrue(pathway + html, html.matches("(?s).*<img[^>]*width=\"432\"[^>]*>.*"));
+			assertTrue(pathway + html, html.matches("(?s).*<img[^>]*width=\"576\"[^>]*>.*"));
 			assertFalse(pathway, html.contains("<svg"));
 		}
 	}

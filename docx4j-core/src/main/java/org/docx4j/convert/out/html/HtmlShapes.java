@@ -55,8 +55,8 @@ import org.w3c.dom.Node;
  * anchor's paragraph and drew nothing; the XSLT wrote nothing at all.
  *
  * <p>The box is a {@code span} with {@code display:inline-block}, in its line as a picture's {@code img} is, its
- * lengths in points (a picture's {@code img} gives its points as pixels; a shape's text is set in points, which its
- * box must hold). The drawing is an {@code svg} of the box, a user unit a point, its overflow visible, so that what
+ * lengths in points, its size against the text (as a picture's {@code img} is since 17.3.7, its points as 4/3 as many
+ * CSS pixels: CR-080 D14). The drawing is an {@code svg} of the box, a user unit a point, its overflow visible, so that what
  * it paints past the box (half its line, arrowheads, a callout's leader) shows. A shape's paragraphs are written as
  * {@code span}s with {@code display:block} ({@link #phrasing}): the box is inside its anchor's {@code p}, which an
  * HTML parser would end at a nested {@code p}, breaking the box. Its paragraph styles are class selectors, which a

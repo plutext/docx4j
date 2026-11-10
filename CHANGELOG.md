@@ -29,6 +29,12 @@ Changes in Version 17.3.7
 - Groups and drawing canvases are drawn, their shapes' text placed in them (CR-080).
 - `docx4j.jaxb.mc.preferChoice` now defaults to `wps wpg wpc`, so a shape's, group's or canvas's DrawingML is drawn, not its VML fallback (HTML too); set it empty for the old behaviour.
 - An inline text box is set on its line, its height kept; its text was lost with the DrawingML drawn.
+- A shape, group or canvas with no text takes a picture's place and wrapping, anchored or inline; it had been drawn out of the flow, or not at all inline (CR-080).
+- Anchored pictures wrap as Word wraps them: their effect extent counted, the wrap starting distT above, behind-text pictures wrapped, a picture above its paragraph drawn there, and the text after a top-and-bottom picture no longer a line low.
+
+### HTML output
+- Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).
+- Pictures and charts are written at their size: their points as CSS pixels at 4/3, where they had been drawn at three quarters of their size against the text.
 
 ### Shapes
 - `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).

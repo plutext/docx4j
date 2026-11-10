@@ -450,6 +450,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	// so, assuming 72 dpi, there is 1 point per pixel
     	// so no further conversion is necessary
     	// All we need to do is set the units for XSL FO
+    	// (HTML converts them to CSS pixels, 96 an inch, since 17.3.7: AbstractWordXmlPicture.cssPixels)
     	
     	
     }

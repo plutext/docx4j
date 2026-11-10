@@ -52,7 +52,7 @@ import org.w3c.dom.traversal.NodeIterator;
  * chart's name as its {@code fox:alt-text}, holding the chart's SVG (FOP draws it as vectors, its
  * text as text) or an empty one.  In HTML it is an inline {@code <svg>} (or, with
  * {@link #HTML_PNG}, an {@code <img>} of the chart's picture), sized as a picture's {@code <img>}
- * is (its points as pixels), with the name as its {@code aria-label}; each chart's SVG ids are
+ * is (its points as CSS pixels, 4/3 a point, since 17.3.7), with the name as its {@code aria-label}; each chart's SVG ids are
  * prefixed with its part's name, since one document holds them all.</p>
  *
  * <p>Used for a {@code c:chart} and, where the outputs take a chartex chart's {@code mc:Choice}, a
@@ -334,11 +334,12 @@ public final class ChartBox {
 	/**
 	 * This box as HTML; see {@link #createHtml(AbstractWmlConversionContext, Object)}.  A
 	 * drawn chart is its SVG (or, with {@link #HTML_PNG}, its picture), sized as a picture's
-	 * {@code <img>} is: its points as pixels.
+	 * {@code <img>} is: its points as CSS pixels, 4/3 a point (since 17.3.7).
 	 */
 	public DocumentFragment toHtml() {
-		// a picture's <img> gives its points as pixels (AbstractWordXmlPicture), so the same here
-		return toHtml(Long.toString(Math.round(widthPt)), Long.toString(Math.round(heightPt)));
+		// at its size, as a picture's <img> is since 17.3.7: a point is 4/3 of a CSS pixel (CR-080 D14); until then
+		// a chart's points were written as pixels, at three quarters of its size against its text
+		return toHtml(Long.toString(Math.round(widthPt * 96d / 72d)), Long.toString(Math.round(heightPt * 96d / 72d)));
 	}
 
 	/**

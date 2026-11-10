@@ -247,12 +247,12 @@ public class ChartExRendererTest {
 			ChartExRenderer.setRenderer(new TestRenderer(true));
 			html = html((WordprocessingMLPackage) load("waterfall.docx"), flags);
 			assertTrue(pathway(flags) + html, html.contains(">drawn waterfall</text>"));
-			assertFalse(pathway(flags) + "the Fallback's picture too", html.matches("(?s).*<img[^>]*width=\"432\"[^>]*>.*"));
+			assertFalse(pathway(flags) + "the Fallback's picture too", html.matches("(?s).*<img[^>]*width=\"576\"[^>]*>.*"));
 
 			ChartExRenderer.setRenderer(new TestRenderer(false));
 			html = html((WordprocessingMLPackage) load("waterfall.docx"), flags);
 			assertFalse(pathway(flags), html.contains("drawn waterfall"));
-			assertTrue(pathway(flags) + html, html.matches("(?s).*<img[^>]*width=\"432\"[^>]*>.*"));
+			assertTrue(pathway(flags) + html, html.matches("(?s).*<img[^>]*width=\"576\"[^>]*>.*"));
 			ChartExRenderer.setRenderer(null);
 		}
 	}

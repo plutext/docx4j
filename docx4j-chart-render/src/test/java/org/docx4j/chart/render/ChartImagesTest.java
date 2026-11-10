@@ -238,8 +238,8 @@ public class ChartImagesTest {
 			int svgs = 0;
 			while (m.find()) {
 				svgs++;
-				assertTrue(pathway + m.group(), m.group().contains("width=\"432\""));
-				assertTrue(pathway + m.group(), m.group().contains("height=\"252\""));
+				assertTrue(pathway + m.group(), m.group().contains("width=\"576\""));
+				assertTrue(pathway + m.group(), m.group().contains("height=\"336\""));
 				assertTrue(pathway + m.group(), m.group().contains("aria-label=\"Chart "));
 			}
 			assertEquals(pathway, 2, svgs);
@@ -264,7 +264,7 @@ public class ChartImagesTest {
 			assertFalse(html.contains("<svg"));
 			Matcher img = Pattern.compile("<img[^>]*src=\"data:image/png;base64,[^\"]+\"[^>]*>").matcher(html);
 			assertTrue(html.length() > 2000 ? html.substring(0, 2000) : html, img.find());
-			assertTrue(img.group(), img.group().contains("width=\"432\""));
+			assertTrue(img.group(), img.group().contains("width=\"576\""));
 			assertTrue(img.group(), img.group().contains("alt=\"Chart "));
 		} finally {
 			Docx4jProperties.setProperty(ChartBox.HTML_PNG, was);

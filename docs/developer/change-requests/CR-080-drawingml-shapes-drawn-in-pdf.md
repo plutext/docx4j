@@ -807,6 +807,13 @@ corpus documents can't be the only oracle.
   are written as pixels is three quarters of its size against its text; a 96-dpi screenshot, which Word sizes a pixel
   to 1/96in, is shrunk and resampled. Shapes stay in points as phase 5 built them; pictures and charts give their
   points as pixels at 4/3 (17.3.7, a CHANGELOG line, the ports told).
+  **Built 2026-11-10**, its own commit after phase 5's: `AbstractWordXmlPicture.createHtmlImageElement` writes
+  `cssPixels` (the frame's length in points, through its unit, at 96/72), for DrawingML and VML pictures alike, so a
+  VML picture sized in inches, whose inches had been written as pixels, is at its size too; `ChartBox.toHtml()` the
+  same. A metafile drawn as SVG was in points already, and pptx4j's SVG-in-HTML at 96 dpi. Tests:
+  `HtmlPictureSizeTest` (a 144 x 108pt picture 192 x 144, a 1 x 0.75in VML picture 96 x 72, both routes; both fail
+  on the old code); `ChartBoxTest`, `ChartExRendererTest` and `ChartImagesTest` expect 576 x 336 for a 432 x 252pt
+  chart. core-tests 2631 (30 skipped), chart-render 37 (2 skipped), export-fo-tests 936 (9 skipped) pass.
 
 ## 9. Out of scope
 
