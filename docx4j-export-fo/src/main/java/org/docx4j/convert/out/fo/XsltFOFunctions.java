@@ -383,8 +383,23 @@ public class XsltFOFunctions {
 
 		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
 				= shape(anchorOrInline);
-		if (wsp==null || wsp.getTxbx()==null) return null;
+		// Word draws no text in a line or a connector, whatever its text box holds (CR-080 phase 0)
+		if (!FOShapes.hasText(wsp)) return null;
 		return wsp.getTxbx().getTxbxContent();
+    }
+
+    /** Whether this wp:anchor or wp:inline holds a DrawingML shape (wps:wsp).  @since 17.3.7 (CR-080) */
+    public static boolean isShape(Object anchorOrInline) {
+		return shape(anchorOrInline)!=null;
+    }
+
+    /**
+     * Whether this is an anchored DrawingML shape with no text to show, drawn out of the flow (CR-080 phase 2: one
+     * that takes space and wraps is phase 4's).  @since 17.3.7
+     */
+    public static boolean isDrawnShape(Object anchorOrInline) {
+		return anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor && FOTextBoxes.isEnabled()
+				&& shape(anchorOrInline)!=null && !FOShapes.hasText(shape(anchorOrInline));
     }
 
     /** The DrawingML shape (wps:wsp) in this wp:anchor or wp:inline, or null. */
@@ -420,11 +435,23 @@ public class XsltFOFunctions {
 		double w = (extent==null) ? 0 : extent.getCx() / 12700d;
 		double h = (extent==null) ? 0 : extent.getCy() / 12700d;
 
+		// the shape drawn, under its text (CR-080 phase 2); a shape with no text to show is drawn only where it is
+		// anchored, out of the flow: one that takes space is phase 4's
+		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
+				= shape(anchorOrInline);
+		boolean text = FOShapes.hasText(wsp);
+		if (!text && !isDrawnShape(anchorOrInline)) return null;
+		org.docx4j.chart.render.api.ShapeRenderer.Drawn drawn = (extent==null) ? null
+				: FOShapes.draw(context, wsp, extent.getCx(), extent.getCy());
+		if (!text && (drawn==null || drawn.isEmpty())) return null;
+
 		// a wp:inline shape is in the flow; a wp:anchor is positioned, and
 		// stampAnchorHints works out where from its wrap and position elements
-		// the text is set in by half the line as well as by the insets (17.3.1)
+		// the text is set in by half the line as well as by the insets (17.3.1), in the geometry's text rectangle
+		// (CR-080 phase 2)
+		double[] insets = text ? FOShapes.textInsets(shapeInsets(anchorOrInline), drawn, wsp, w, h) : shapeInsets(anchorOrInline);
 		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
-				FOTextBoxes.withStroke(shapeInsets(anchorOrInline), shapeLinePt(anchorOrInline)));
+				FOTextBoxes.withStroke(insets, shapeLinePt(anchorOrInline)));
 		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
 				&& FOTextBoxes.isEnabled()) {
 			org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container,
@@ -435,7 +462,12 @@ public class XsltFOFunctions {
 				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
 			}
 			stampTextBeside(container, (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
+			// a shape with no text takes no space yet (phase 4)
+			if (!text) container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "none");
 		}
+		// the text where the shape anchors it in its text rectangle: top, middle or foot (CR-080 phase 2)
+		if (text) FOShapes.anchorText(container, wsp);
+		if (drawn!=null && !drawn.isEmpty()) FOShapes.addDrawing(document, container, drawn);
 		return container;
     }
 
@@ -514,8 +546,9 @@ public class XsltFOFunctions {
 
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			Element container = createShapeTextBox(context, anchorOrInline, document);
+			if (container==null) return null;
 			document.appendChild(container);
-			Node childResults = (childResultsIt==null) ? null : childResultsIt.nextNode();
+			Node childResults = (childResultsIt==null || !FOShapes.hasText(shape(anchorOrInline))) ? null : childResultsIt.nextNode();
 			if (childResults!=null) {
 				XmlUtils.treeCopy(childResults, container);
 			}
@@ -526,6 +559,15 @@ public class XsltFOFunctions {
 			log.error(e.getMessage(), e);
 			return null;
 		}
+    }
+
+    /**
+     * The XSLT pathway's form of createShapeTextBox for a shape with no text to show: its drawing alone, or null.
+     *
+     * @since 17.3.7 (CR-080 phase 2)
+     */
+    public static DocumentFragment createShapeDrawing(FOConversionContext context, NodeIterator anchorIt) {
+		return createShapeTextBox(context, anchorIt, (NodeIterator) null);
     }
 
     /**

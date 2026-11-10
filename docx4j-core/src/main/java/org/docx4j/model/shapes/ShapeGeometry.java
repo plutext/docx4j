@@ -147,7 +147,7 @@ public final class ShapeGeometry {
 					ctx = spaces.computeIfAbsent(w + " " + h, k -> new Context(read.geometry, new Rectangle2D.Double(0, 0, w, h), adjust));
 				}
 				double toEmuX = ownW ? cx / w : 1, toEmuY = ownH ? cy / h : 1;
-				Path2D.Double path = p.getPath(ctx);
+				Path2D.Double path = normalise(p.getPath(ctx));
 				within(path, toEmuX, toEmuY);
 				path.transform(AffineTransform.getScaleInstance(toEmuX / EMU_PER_POINT, toEmuY / EMU_PER_POINT));
 				outlines.add(new ShapeOutline(path, GeometryReader.fill(p.getFill()), p.isStroked(), p.isExtrusionOk()));
@@ -173,6 +173,68 @@ public final class ShapeGeometry {
 		} catch (RuntimeException e) {
 			return box(cx, cy, ShapeOutlines.BAD_GEOMETRY, name + ": " + e);
 		}
+	}
+
+	/**
+	 * The path as Word draws it (CR-080 phase 2, from Word's PDFs of phase 0's presets):
+	 * <ul>
+	 * <li>A line of no length goes. The engine appends each arc with a line to its start, and a stroke's cap or join
+	 * then formed round it ({@code rightBrace}, {@code moon}, the curved arrows).</li>
+	 * <li>A close straight after a move, with more drawn after it, closes the subpath at its end: the callouts' accent
+	 * bar is {@code moveTo}, {@code close}, {@code lnTo} in ECMA-376's definitions, and Word draws it as a closed
+	 * line. A close after a drawing closes as it is.</li>
+	 * </ul>
+	 */
+	static Path2D.Double normalise(Path2D.Double path) {
+		Path2D.Double out = new Path2D.Double(path.getWindingRule());
+		double[] c = new double[6];
+		double px = 0, py = 0;
+		boolean pendingClose = false, drawnSinceMove = false;
+		for (PathIterator it = path.getPathIterator(null); !it.isDone(); it.next()) {
+			int t = it.currentSegment(c);
+			switch (t) {
+				case PathIterator.SEG_MOVETO:
+					if (pendingClose) out.closePath();
+					pendingClose = false;
+					drawnSinceMove = false;
+					out.moveTo(c[0], c[1]);
+					px = c[0];
+					py = c[1];
+					break;
+				case PathIterator.SEG_LINETO:
+					if (Math.abs(c[0] - px) < 1e-6 && Math.abs(c[1] - py) < 1e-6) break;
+					out.lineTo(c[0], c[1]);
+					drawnSinceMove = true;
+					px = c[0];
+					py = c[1];
+					break;
+				case PathIterator.SEG_QUADTO:
+					out.quadTo(c[0], c[1], c[2], c[3]);
+					drawnSinceMove = true;
+					px = c[2];
+					py = c[3];
+					break;
+				case PathIterator.SEG_CUBICTO:
+					out.curveTo(c[0], c[1], c[2], c[3], c[4], c[5]);
+					drawnSinceMove = true;
+					px = c[4];
+					py = c[5];
+					break;
+				case PathIterator.SEG_CLOSE:
+					// a close straight after the move closes what follows it; one after a drawing closes as it is
+					if (drawnSinceMove) {
+						out.closePath();
+						drawnSinceMove = false;
+					} else {
+						pendingClose = true;
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		if (pendingClose) out.closePath();
+		return out;
 	}
 
 	/**

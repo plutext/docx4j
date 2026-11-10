@@ -53,7 +53,20 @@ public final class SvgWriter {
 
 	/** The drawing as SVG, its width by height points */
 	public static Document toSvg(Drawing drawing) {
-		double width = drawing.getWidth(), height = drawing.getHeight();
+		return toSvg(drawing, 0, 0, drawing.getWidth(), drawing.getHeight());
+	}
+
+	/**
+	 * The drawing as SVG, its canvas {@code bounds} (a DrawingML shape's, whose line, arrowheads and
+	 * callout leaders reach past its box: CR-080 phase 2), a user unit a point.
+	 *
+	 * @since 17.3.7
+	 */
+	public static Document toSvg(Drawing drawing, java.awt.geom.Rectangle2D bounds) {
+		return toSvg(drawing, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+	}
+
+	private static Document toSvg(Drawing drawing, double x, double y, double width, double height) {
 		DOMImplementation impl = GenericDOMImplementation.getDOMImplementation();
 		Document doc = impl.createDocument(SVG_NS, "svg", null);
 		SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(doc);
@@ -88,7 +101,7 @@ public final class SvgWriter {
 		// one user unit a point, the frame filled exactly (as BatikMetafileSvgProvider's)
 		root.setAttributeNS(null, "width", length(width) + "pt");
 		root.setAttributeNS(null, "height", length(height) + "pt");
-		root.setAttributeNS(null, "viewBox", "0 0 " + length(width) + " " + length(height));
+		root.setAttributeNS(null, "viewBox", length(x) + " " + length(y) + " " + length(width) + " " + length(height));
 		root.setAttributeNS(null, "preserveAspectRatio", "none");
 		// each text is placed and split at its kerned pairs already (Drawing): a browser
 		// kerns an SVG's text and makes ligatures by default, FOP doesn't, and neither should

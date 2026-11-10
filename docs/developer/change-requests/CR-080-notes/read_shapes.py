@@ -8,7 +8,8 @@
   strokes; the line's width, cap, join and dash; the fill colours; the glyph's box.
 Every shape is anchored at (180 pt, 252 pt) from the page's top left (build_shapes.py), so its frame is known exactly.
 
-usage: read_shapes.py <results dir: one folder a job, <file>/<file>.pdf> [file ...]"""
+usage: read_shapes.py [--out DIR] <results dir: one folder a job, <file>/<file>.pdf> [file ...]
+--out writes the two files to DIR (another renderer's PDFs, say: CR-080 phase 2 reads docx4j's so)"""
 import csv, json, os, re, subprocess, sys
 import xml.etree.ElementTree as ET
 import pdfpaths
@@ -49,7 +50,7 @@ def glyphs(pdf):
         out[n] = chars
     return out
 
-def main(results, only):
+def main(results, only, out_dir=HERE):
     probes = list(csv.DictReader(open(os.path.join(HERE, 'probes.tsv')), delimiter='\t'))
     seen, uniq = set(), []                      # a file staged in two sets (fp21) is read once
     for p in probes:
@@ -110,15 +111,19 @@ def main(results, only):
                          'dash': ' '.join(f'{v:g}' for v in s0['dash'][0]) if s0 else '',
                          'fill_colours': ' '.join(sorted({d['fill'] for d in fills if d['fill']})),
                          'glyph': ' '.join(f'{v:.2f}' for v in glyph) if glyph else ''})
-    with open(os.path.join(HERE, 'phase0-word.json'), 'w') as fjson:
+    with open(os.path.join(out_dir, "phase0-word.json"), "w") as fjson:
         json.dump(data, fjson, separators=(',', ':'))
     cols = ['file', 'page', 'probe', 'note', 'size', 'fills', 'strokes', 'shadings', 'images', 'fill_box', 'stroke_box',
             'lw', 'cap', 'join', 'dash', 'fill_colours', 'glyph']
-    with open(os.path.join(HERE, 'phase0-word.tsv'), 'w', newline='') as ftsv:
+    with open(os.path.join(out_dir, "phase0-word.tsv"), "w", newline="") as ftsv:
         w = csv.DictWriter(ftsv, cols, delimiter='\t', lineterminator='\n')
         w.writeheader()
         w.writerows(rows)
     print(len(rows), 'probes read')
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2:])
+    a = sys.argv[1:]
+    out = HERE
+    if a and a[0] == '--out':
+        out, a = a[1], a[2:]
+    main(a[0], a[1:], out)

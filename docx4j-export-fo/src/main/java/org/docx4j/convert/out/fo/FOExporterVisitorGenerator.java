@@ -97,10 +97,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 		} else if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
-				&& XsltFOFunctions.shapeTextBox(o)!=null) {
+				&& (XsltFOFunctions.shapeTextBox(o)!=null || XsltFOFunctions.isDrawnShape(o))) {
 
 			// a DrawingML shape's text box (wps:wsp/wps:txbx): its text, in a
-			// container WordLayoutFixups positions as it does an anchored picture.
+			// container WordLayoutFixups positions as it does an anchored picture,
+			// over the shape drawn (17.3.7, CR-080 phase 2), or the drawing alone.
 			// @since 17.0.5
 			handleShapeTextBox(o);
 			return null;
@@ -380,6 +381,7 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	private void handleShapeTextBox(Object anchorOrInline) {
 
 		Element container = XsltFOFunctions.createShapeTextBox(conversionContext, anchorOrInline, document);
+		if (container==null) return;
 		getCurrentParent().appendChild(container);
 		org.docx4j.wml.CTTxbxContent txbx = XsltFOFunctions.shapeTextBox(anchorOrInline);
 		if (txbx!=null) {
@@ -436,8 +438,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		}
 		if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
 				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
-				&& XsltFOFunctions.shapeTextBox(o)!=null) {
-			// its text box was already converted in apply (handleShapeTextBox)
+				&& XsltFOFunctions.isShape(o)) {
+			// its text box was already converted in apply (handleShapeTextBox), or Word shows none (CR-080)
 			return false;
 		}
 		if (o instanceof org.docx4j.math.CTOMath

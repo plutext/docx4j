@@ -494,6 +494,83 @@ public final class Drawing {
 		public void setDash(float[] dash) {
 			this.dash = dash;
 		}
+
+		/** its line's stroke, its width, caps, joins and dashes, where it is a shape's own (CR-080); else null */
+		private java.awt.Stroke stroke;
+		/** its line a pattern ({@link #line} its foreground), or null */
+		private Pattern linePattern;
+		/** its fill any other paint (a tiled picture: CR-080), or null */
+		private java.awt.Paint paint;
+
+		/**
+		 * Its line's stroke, which stands in for the one its width, dashes and roundness would give: a
+		 * DrawingML shape's caps, joins and dashes, as Word draws them.
+		 *
+		 * @since 17.3.7 (CR-080 phase 2)
+		 */
+		public java.awt.Stroke getStroke() {
+			return stroke;
+		}
+
+		/** @since 17.3.7 (CR-080 phase 2) */
+		public void setStroke(java.awt.Stroke stroke) {
+			this.stroke = stroke;
+		}
+
+		/** Its line as a pattern ({@code a:ln/a:pattFill}), or null. @since 17.3.7 (CR-080 phase 2) */
+		public Pattern getLinePattern() {
+			return linePattern;
+		}
+
+		/** @since 17.3.7 (CR-080 phase 2) */
+		public void setLinePattern(Pattern linePattern) {
+			this.linePattern = linePattern;
+		}
+
+		/** Its fill as any other paint, a tiled picture's, or null. @since 17.3.7 (CR-080 phase 2) */
+		public java.awt.Paint getPaint() {
+			return paint;
+		}
+
+		/** @since 17.3.7 (CR-080 phase 2) */
+		public void setPaint(java.awt.Paint paint) {
+			this.paint = paint;
+		}
+	}
+
+	/**
+	 * A picture, drawn into a rectangle and clipped to a shape: a DrawingML shape's stretched picture
+	 * fill ({@code a:blipFill/a:stretch}).
+	 *
+	 * @since 17.3.7 (CR-080 phase 2)
+	 */
+	public static final class Picture {
+		private final java.awt.image.BufferedImage image;
+		private final Rectangle2D into;
+		private final Shape clip;
+
+		/**
+		 * @param image the picture, cropped already
+		 * @param into where it is drawn, stretched to fill it
+		 * @param clip what it is drawn within, or null
+		 */
+		public Picture(java.awt.image.BufferedImage image, Rectangle2D into, Shape clip) {
+			this.image = image;
+			this.into = into;
+			this.clip = clip;
+		}
+
+		public java.awt.image.BufferedImage getImage() {
+			return image;
+		}
+
+		public Rectangle2D getInto() {
+			return into;
+		}
+
+		public Shape getClip() {
+			return clip;
+		}
 	}
 
 	/** A line of text, from its baseline's start, turned by angle degrees (clockwise) about it */
@@ -613,6 +690,11 @@ public final class Drawing {
 		items.add(t);
 	}
 
+	/** Adds a picture, painted after what is before it. @since 17.3.7 (CR-080 phase 2) */
+	public void add(Picture p) {
+		items.add(p);
+	}
+
 	public double getWidth() {
 		return width;
 	}
@@ -621,7 +703,7 @@ public final class Drawing {
 		return height;
 	}
 
-	/** What is painted, {@link Area}s and {@link Text}s in painting order (the list itself) */
+	/** What is painted, {@link Area}s, {@link Text}s and {@link Picture}s in painting order (the list itself) */
 	public List<Object> getItems() {
 		return items;
 	}
@@ -682,7 +764,10 @@ public final class Drawing {
 				if (a.shadows != null) {
 					for (Shadow sh : a.shadows) sh.paint(g, a.shape, a.fill != null || a.gradient != null || a.pattern != null, a.line == null ? 0 : a.lineWidth);
 				}
-				if (a.gradient != null) {
+				if (a.paint != null) {
+					g.setPaint(a.paint);
+					g.fill(a.shape);
+				} else if (a.gradient != null) {
 					g.setPaint(a.gradient.paint(a.shape.getBounds2D()));
 					g.fill(a.shape);
 				} else if (a.pattern != null) {
@@ -694,12 +779,14 @@ public final class Drawing {
 				}
 				if (a.line != null && a.lineWidth > 0) {
 					if (a.lineGradient != null) {
-						java.awt.Stroke st = new BasicStroke((float) a.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+						java.awt.Stroke st = a.stroke != null ? a.stroke : new BasicStroke((float) a.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
 						g.setPaint(a.lineGradient.paint(st.createStrokedShape(a.shape).getBounds2D()));
+					} else if (a.linePattern != null) {
+						g.setPaint(a.linePattern.paint());
 					} else {
 						g.setColor(a.line);
 					}
-					g.setStroke(a.dash != null
+					g.setStroke(a.stroke != null ? a.stroke : a.dash != null
 							? new BasicStroke((float) a.lineWidth, a.round ? BasicStroke.CAP_ROUND : BasicStroke.CAP_BUTT,
 									a.round ? BasicStroke.JOIN_ROUND : BasicStroke.JOIN_MITER, 10f, a.dash, 0f)
 							: a.round ? new BasicStroke((float) a.lineWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
@@ -708,6 +795,15 @@ public final class Drawing {
 				}
 				if (a.clip != null) g.setClip(saved);
 				if (crisp) g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, aa);
+			} else if (o instanceof Picture) {
+				Picture p = (Picture) o;
+				Shape saved = g.getClip();
+				if (p.clip != null) g.clip(p.clip);
+				AffineTransform at = new AffineTransform();
+				at.translate(p.into.getX(), p.into.getY());
+				at.scale(p.into.getWidth() / p.image.getWidth(), p.into.getHeight() / p.image.getHeight());
+				g.drawImage(p.image, at, null);
+				g.setClip(saved);
 			} else {
 				Text t = (Text) o;
 				g.setColor(t.colour);

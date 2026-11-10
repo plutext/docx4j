@@ -45,6 +45,11 @@ public final class Fills {
 		this.theme = theme;
 	}
 
+	/** The colours and format scheme the fills resolve through. @since 17.3.7 (CR-080 phase 2) */
+	public ThemeColors getTheme() {
+		return theme;
+	}
+
 	/** A resolved DrawingML colour as AWT's, its alpha kept; null for none */
 	public static Color awt(ResolvedColor c) {
 		if (c == null) return null;

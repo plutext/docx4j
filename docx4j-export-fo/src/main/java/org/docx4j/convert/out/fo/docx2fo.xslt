@@ -609,6 +609,11 @@
 		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeTextBox(
 		   			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
+  		<xsl:when test="self::wp:anchor and ./a:graphic/a:graphicData/wps:wsp">
+  			<!--  a DrawingML shape with no text box: drawn, out of the flow (17.3.7, CR-080 phase 2) -->
+		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeDrawing(
+		   			$conversionContext, $wpinline)" />
+  		</xsl:when>
   		<xsl:when test="./a:graphic/a:graphicData[@uri='http://schemas.openxmlformats.org/drawingml/2006/chart' or @uri='http://schemas.microsoft.com/office/drawing/2014/chartex']">
   			<!--  a chart: its box, a space of the drawing's extent, holding the chart drawn
   			      where docx4j-chart-render draws it (17.3.3, CR-035, CR-037) -->

@@ -5,7 +5,8 @@ changes (§6). Proposed 2026-11-09, drafted on Jason's request ("let's draft CRs
 suggested scope ... please evaluate what if any of that is worth porting"), one of four: this CR (shapes and geometry),
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
 proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`); phase 1
-done, the geometry engine and `ShapeGeometry` (§6). Read
+done, the geometry engine and `ShapeGeometry` (§6); phase 2 built, shapes drawn, its D12 (c) open: the `wps` Choice
+drawn by default once 9775's text box loss is mended. Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -325,6 +326,102 @@ corpus documents can't be the only oracle.
     - the fill-mode factors, and the line widths of each theme's style references.
   - **Gate:** the probes within tolerance; corpora unmoved (0 movers; colour only); the register's
     `drawingml-fills-not-painted` closed.
+  - **Built, committed 2026-11-10** (Jason: "commence phase 2 when ready", then "Commit both"). Not done: D12 (c),
+    9775 mended and the `wps` Choice drawn by default, is the rest of the phase, and its register gate waits on it.
+    - **`ShapeRenderer`** (docx4j-chart-render, `org.docx4j.chart.render.api`). It draws a shape's `spPr` and
+      `wps:style` at its extent, through `ShapeGeometry`, into a `Drawing`, and as SVG over the bounds of all it
+      paints, which can reach past the box.
+      - **The fill:** the shape's own where it states one, else its style's `fillRef` through the theme, `phClr`
+        the reference's colour. Solid with alpha, gradient, pattern, and picture, stretched (into its `fillRect`,
+        cropped by its `srcRect`) or tiled (scale, offset, alignment, flip).
+      - **The line:** the shape's own `a:ln` over its style's `lnRef`, attribute by attribute, so that a width alone
+        keeps the style's colour (`fp50-012`).
+      - **The turn and flips:** the shape's own `a:xfrm` turn and flips, about its centre.
+      - `Drawing` gains a stroke of an area's own, a pattern line, any fill paint, and a `Picture` item;
+        `SvgWriter` a canvas from a bounds; `Fills` its theme's getter.
+    - **What Word does, found in drawing it** (phase 0's PDFs, read again):
+      - **Joins by preset.** Word strokes 31 presets with a mitred join where none is stated, and the other 156
+        round: `rightArrow` mitred, `leftArrow` round, all the stars, the math shapes, `chevron`, `cube`, `moon`.
+        That looks like Office's legacy shape types. docx4j has the 31 as a table.
+      - **Fills** are even-odd (the PDF's `f*`).
+      - **Rectangles** are the PDF's `re`, from the bottom left, so a rectangle's dashes start there.
+      - **Compound lines** are filled bands, their outer corners round: `dbl` 1:1:1, `thickThin` 3:1:1 with the
+        thick band outside, `thinThick` 1:1:3, `tri` 1:1:2:1:1. An inside line (`algn="in"`) is all inside.
+      - **Arrowheads.** With s the larger of the width and 2pt, a head's length L and width W are 2, 3 or 5 s.
+        - A `triangle`'s tip is the end, and the line stops s/2 inside its base.
+        - A `stealth`'s notch is s, 2s or 3s back, and the line stops there.
+        - A `diamond` and an `oval` are centred on the end.
+        - An `arrow` is an open V of the line's width with round ends, its apex mitred so that its outer edges
+          meet at the end. Each arm ends 2s, 3s or 4.5s back and 1.25s, 1.75s or 2.5s across from the apex, and
+          the line stops at the apex.
+        - On a curve a head lies along the chord over its own length.
+      - **Dashes with a round cap:** each dash a width shorter, each gap a width longer.
+      - **Two path corrections in core's `ShapeGeometry`,** where Word draws otherwise than the definitions read
+        literally:
+        - a line of no length goes, as the engine appends one before each arc and a cap or join formed round it
+          (`rightBrace`, `moon`, the curved arrows);
+        - a close straight after a move closes the subpath at its end: the callouts' accent bar is `moveTo`,
+          `close`, `lnTo` in ECMA's definitions, and Word draws it as a closed line.
+    - **Against Word.**
+      - `ShapeRendererTest`, against Word's PDFs of `fp10`, `fp11`, `fp20`, `fp21`, `fp30`, `fp31`, `fp40`, `fp50`
+        and `fp51` (662 probes; `shapes/cr080-word-drawn.jsonl.gz`, from `CR-080-notes/export_drawn.py`): each probe's painted
+        region and colours. The region is compared by the thickness of where the two paintings disagree, from a
+        distance transform at 40 pixels a point. An outline distance was fooled by the edges of no width a Java
+        `Area` keeps at a stroke's inner joins.
+      - Within 0.085 pt in all but two. An inside line is 0.30 pt off, as Word's sits 0.24 pt further out (its
+        1/300-inch grid); a triangle head on an arc is 0.133 pt off. The test names both.
+    - **In the FO, by the visitor and the XSLT alike** (`FOShapes`, `XsltFOFunctions`, `docx2fo.xslt`).
+      - The drawing is the first child of the shape's container, an absolutely positioned block-container at its
+        bounds. FOP paints it before the text that follows, so the text is on top.
+      - The text is laid out in the geometry's text rectangle, by the container's insets, and anchored by
+        `bodyPr`'s `anchor` (top, middle or foot). docx4j had read no `anchor`, and set every shape's text at its
+        top, where Word sets an inserted shape's, `anchor="ctr"`, in its middle.
+      - A shape with no `a:xfrm` keeps its text in the box (2.1.1315).
+      - Word's 14 presets show no text.
+      - An anchored shape with no text is drawn out of the flow, in the same container. One that takes space, and
+        an inline one, are phase 4's.
+      - `ShapeDrawingFoTest` holds each, by both routes.
+    - **The probe gate, on the PDF.** docx4j's PDFs of the seven files, read as Word's are (`read_shapes.py --out`,
+      `export_drawn.py --json --out`), against Word's (`ShapeRendererTest`, `-Dcr080.pdfDraws`): all 662 within
+      0.067 pt but the two above, the colours Word's. The text in the eight text-rectangle files, 346 probes: within
+      0.42 pt of Word's glyph at both corners, where the bottom-anchored text had been 98.75 pt out.
+    - **WD-003's rule.** docx4j's own code writes no `wps:wsp`, so there is nothing to give an `a:xfrm` to. A
+      document read with a text box and no `a:xfrm` keeps its `spPr` on a save; adding one there would be a repair
+      at save, a question for Jason.
+    - **D9.** A gap is logged with its code once a drawing: `render.shape.unknown_preset`, `bad_geometry`,
+      `over_limit`, and `render.shape.picture_missing`, a picture fill whose picture ImageIO can't read. The
+      gate's `events.py` counts FOP's warnings only, so it needs a kind for these; the message writer isn't called
+      yet.
+    - **Not done, or unmeasured** (phase 2's additions to the list above):
+      - a compound line on an open path, its bands mirrored;
+      - dashes with a square cap, left as the preset's;
+      - a turned shape's text, which stays level;
+      - a turned shape's picture fill, which stays square to the page;
+      - a pattern line;
+      - the `rect` and `shape` gradient paths, drawn as radial;
+      - a shape in front of text in an earlier paragraph, painted under it (FOP paints in document order, §5.4).
+    - **Gate:** b396 against b395: 0 movers, events equal, every corpus's scoreboard and the probes' identical, no gap
+      logged. That is because none of the corpora's 92 shapes (in 34 of 557 documents) reached the new code. By
+      default docx4j draws the VML Fallback of a shape in `mc:AlternateContent` (`McSelection`, CR-021 §8.5), and
+      Word writes every shape so, beside its `wps` Choice. Drawing the Choice (`docx4j.jaxb.mc.preferChoice=wps`) is
+      D12's question:
+      - **b397, the Choice drawn,** against b396: 2 movers. `14_en-US_num_tbl_14372` gains a line (0.9802 to
+        0.9818); `15_en-GB_sdt_tbl_9775` loses 5 (0.9951 to 0.9707). 9775's loss is the DrawingML text box path's,
+        older than phase 2: scored alone with the Choice it is 0.9707 on b395's jars too.
+      - **On the page** (`15_en-US_tbl_5075`): the Choice gives Word's dark bar, grey box and rule, where the
+        Fallback draws its VML strokes as outlined boxes and no fill. But a white-filled text box that docx4j places
+        otherwise than Word now hides body text, as FOP paints in document order.
+      - The register: `drawingml-fills-not-painted` stays open (Enterprise, attempts b396 and b397).
+    - **Mutants:** 25, one rule each, against a passing baseline: 24 caught.
+      - Three first survived, and the tests were strengthened until they were caught: the even-odd rule wanted
+        `fp20-033`'s nested subpaths, one way round, in the oracle; a shape with no text that wraps wanted one wider
+        than 60% of the column, as the fixups take a narrower box out of the flow anyway; a shape painting nothing
+        wanted the FO's containers counted.
+      - The 25th, a triangle's line stopping s/2 inside its base where it could stop at it, is equivalent for an
+        opaque line, as the head covers both. A transparent line would show it, painted twice under the head, and no
+        probe has one; the measured rule stays.
+    - **The suites:** core-tests 2624 (30 skipped), chart-render 25 (1 skipped, the PDF gate), export-fo 111,
+      export-fo-tests 914 (9 skipped; `ShapeDrawingFoTest`'s 6 among them) pass.
 - **Phase 3, groups, canvases and connectors.**
   - Flattening with composed transforms, `a:grpFill`, canvas backgrounds, children's text boxes.
   - **Gate:** the probes; corpora unmoved.
@@ -417,6 +514,19 @@ corpus documents can't be the only oracle.
   Apache-licensed ancestor, offers no way round this: its `oox/source/drawingml/diagram/diagramlayoutatoms.cxx` is a
   3.5 KB stub, and the SmartArt layout work came after the fork. Recommendation: yes.
   **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
+- **D12. Draw the `wps` Choice by default** (raised in phase 2, 2026-11-10). Word writes every shape in
+  `mc:AlternateContent`, a `wps` Choice beside a VML Fallback, and docx4j draws the Fallback by default
+  (`docx4j.jaxb.mc.preferChoice`, CR-021 §8.5), so phase 2's drawing reaches no shape Word wrote unless the Choice is
+  preferred. Options:
+  - (a) Keep the Fallback, and document `docx4j.jaxb.mc.preferChoice=wps`.
+  - (b) Prefer the `wps` Choice for drawing by default now: b397's 2 movers, one better and one worse (9775, the
+    DrawingML text box path's, older than phase 2), and a white text box placed otherwise than Word's can hide text.
+  - (c) As (b), once 9775's loss is understood and mended in the DrawingML text box path, with its own gate.
+
+  Recommendation: **(c)**. It is what makes phase 2 reach Word's documents, and the one regression is a known path's,
+  measured on its own.
+  **Decided 2026-11-10: (c), as recommended** (Jason, 2026-11-10: "(c) After mending 9775"). Phase 2 stays open
+  for it: 9775's loss in the DrawingML text box path, then the Choice drawn by default, each with its gate.
 
 ## 9. Out of scope
 
