@@ -1,0 +1,53 @@
+set	file	page	probe	object	wrap	side	h	v	size	effect	behind	rot	geom	where	note
+cr080-phase4	fw10-shapes	1	fw10-01	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, at the column left
+cr080-phase4	fw10-shapes	2	fw10-02	shape	square	bothSides	('column', 'right')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, aligned right
+cr080-phase4	fw10-shapes	3	fw10-03	shape	square	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, centred in the column
+cr080-phase4	fw10-shapes	4	fw10-04	shape	square	largest	('column', 100)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square largest, 100pt in
+cr080-phase4	fw10-shapes	5	fw10-05	shape	square	left	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square, text on the left only, centred
+cr080-phase4	fw10-shapes	6	fw10-06	shape	square	right	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square, text on the right only, centred
+cr080-phase4	fw10-shapes	7	fw10-07	shape	topAndBottom	bothSides	('column', 100)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	top and bottom
+cr080-phase4	fw10-shapes	8	fw10-08	shape	tight	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	tight both sides, a box polygon, at the column left
+cr080-phase4	fw10-shapes	9	fw10-09	shape	through	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	through both sides, a box polygon, at the column left
+cr080-phase4	fw10-shapes	10	fw10-10	shape	tight	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	tight both sides, a box polygon, centred
+cr080-phase4	fw10-shapes	11	fw10-11	shape	tight	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	ellipse	body	tight both sides, an ellipse polygon, centred
+cr080-phase4	fw10-shapes	12	fw10-12	shape	none	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	1	0	rect	body	behind the text, no wrap
+cr080-phase4	fw10-shapes	13	fw10-13	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	1	0	rect	body	behind the text, square
+cr080-phase4	fw10-shapes	14	fw10-14	shape	none	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	in front of the text, no wrap
+cr080-phase4	fw10-shapes	15	fw10-15	shape	square	bothSides	('page', 254)	('page', 200)	144x108	0 0 12700 12700	0	0	rect	body	square, against the page: 254pt in, 200pt down
+cr080-phase4	fw10-shapes	16	fw10-16	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	38100 38100 38100 38100	0	0	rect	body	square, effect extent 3pt on every side
+cr080-phase4	fw10-shapes	17	fw10-17	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	1800000	rect	body	square, turned 30 degrees, effect extent as written for a 1pt line
+cr080-phase4	fw10-shapes	18	fw10-18	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	220345 365252 220345 365252	0	1800000	rect	body	square, turned 30 degrees, effect extent the turned bounds
+cr080-phase4	fw10-shapes	19	fw10-19	shape	inline	bothSides	('column', 0)	('paragraph', 24)	72x54	0 0 0 0	0	0	rect	body	inline 72 x 54pt, in a line of words, effect extent 0
+cr080-phase4	fw10-shapes	20	fw10-20	shape	inline	bothSides	('column', 0)	('paragraph', 24)	72x54	76200 76200 76200 76200	0	0	rect	body	inline 72 x 54pt, effect extent 6pt on every side
+cr080-phase4	fw10-shapes	21	fw10-21	shape	square	bothSides	('column', 0)	('paragraph', 24)	72x54	0 0 12700 12700	0	0	rect	cell	square both sides, 72 x 54pt, in a table cell
+cr080-phase4	fw11-pictures	1	fw11-01	picture	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, at the column left
+cr080-phase4	fw11-pictures	2	fw11-02	picture	square	bothSides	('column', 'right')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, aligned right
+cr080-phase4	fw11-pictures	3	fw11-03	picture	square	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, centred in the column
+cr080-phase4	fw11-pictures	4	fw11-04	picture	square	largest	('column', 100)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square largest, 100pt in
+cr080-phase4	fw11-pictures	5	fw11-05	picture	square	left	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square, text on the left only, centred
+cr080-phase4	fw11-pictures	6	fw11-06	picture	square	right	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square, text on the right only, centred
+cr080-phase4	fw11-pictures	7	fw11-07	picture	topAndBottom	bothSides	('column', 100)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	top and bottom
+cr080-phase4	fw11-pictures	8	fw11-08	picture	tight	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	tight both sides, a box polygon, at the column left
+cr080-phase4	fw11-pictures	9	fw11-09	picture	through	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	through both sides, a box polygon, at the column left
+cr080-phase4	fw11-pictures	10	fw11-10	picture	tight	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	tight both sides, a box polygon, centred
+cr080-phase4	fw11-pictures	11	fw11-11	picture	tight	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	ellipse	body	tight both sides, an ellipse polygon, centred
+cr080-phase4	fw11-pictures	12	fw11-12	picture	none	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	1	0	rect	body	behind the text, no wrap
+cr080-phase4	fw11-pictures	13	fw11-13	picture	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	1	0	rect	body	behind the text, square
+cr080-phase4	fw11-pictures	14	fw11-14	picture	none	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	in front of the text, no wrap
+cr080-phase4	fw11-pictures	15	fw11-15	picture	square	bothSides	('page', 254)	('page', 200)	144x108	0 0 12700 12700	0	0	rect	body	square, against the page: 254pt in, 200pt down
+cr080-phase4	fw11-pictures	16	fw11-16	picture	square	bothSides	('column', 0)	('paragraph', 24)	144x108	38100 38100 38100 38100	0	0	rect	body	square, effect extent 3pt on every side
+cr080-phase4	fw11-pictures	17	fw11-17	picture	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	1800000	rect	body	square, turned 30 degrees, effect extent as written for a 1pt line
+cr080-phase4	fw11-pictures	18	fw11-18	picture	square	bothSides	('column', 0)	('paragraph', 24)	144x108	220345 365252 220345 365252	0	1800000	rect	body	square, turned 30 degrees, effect extent the turned bounds
+cr080-phase4	fw11-pictures	19	fw11-19	picture	inline	bothSides	('column', 0)	('paragraph', 24)	72x54	0 0 0 0	0	0	rect	body	inline 72 x 54pt, in a line of words, effect extent 0
+cr080-phase4	fw11-pictures	20	fw11-20	picture	inline	bothSides	('column', 0)	('paragraph', 24)	72x54	76200 76200 76200 76200	0	0	rect	body	inline 72 x 54pt, effect extent 6pt on every side
+cr080-phase4	fw11-pictures	21	fw11-21	picture	square	bothSides	('column', 0)	('paragraph', 24)	72x54	0 0 12700 12700	0	0	rect	cell	square both sides, 72 x 54pt, in a table cell
+cr080-phase4	fw12-shape-only	1	fw12-01	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square, painting nothing (fw10-01 painted)
+cr080-phase4	fw12-shape-only	2	fw12-02	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 0 0	0	0	rect	body	square, painting nothing, effect extent 0
+cr080-phase4	fw12-shape-only	3	fw12-03	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 0 0	0	0	rect	body	square, a 1pt line, effect extent 0 (fw10-01 r = b = 1pt)
+cr080-phase4	fw12-shape-only	4	fw12-04	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 0 0	0	0	rect	body	square, a 6pt line, effect extent 0
+cr080-phase4	fw12-shape-only	5	fw12-05	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 76200 76200	0	0	rect	body	square, a 6pt line, effect extent r = b = 6pt
+cr080-phase4	fw12-shape-only	6	fw12-06	shape	topAndBottom	bothSides	('column', 100)	('paragraph', 24)	144x0	0 0 0 0	0	0	line	body	top and bottom, a line 144pt long, no height, 2pt wide, effect extent 0
+cr080-phase4	fw12-shape-only	7	fw12-07	shape	topAndBottom	bothSides	('column', 100)	('paragraph', 24)	144x0	0 12700 0 12700	0	0	line	body	top and bottom, the line, effect extent t = b = 1pt
+cr080-phase4	fw12-shape-only	8	fw12-08	shape	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	ellipse	body	square both sides, an ellipse, at the column left
+cr080-phase4	fw12-shape-only	9	fw12-09	shape	tight	bothSides	('column', 'center')	('paragraph', 24)	144x108	0 0 12700 12700	0	0	ellipse	body	tight both sides, an ellipse with a box polygon, centred
+cr080-phase4	fw12-shape-only	10	fw12-10	group	square	bothSides	('column', 0)	('paragraph', 24)	144x108	0 0 12700 12700	0	0	rect	body	square both sides, a group of two shapes, at the column left

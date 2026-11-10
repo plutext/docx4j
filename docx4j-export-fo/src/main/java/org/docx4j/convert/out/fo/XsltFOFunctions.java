@@ -395,12 +395,11 @@ public class XsltFOFunctions {
     }
 
     /**
-     * Whether this is an anchored DrawingML shape with no text to show, drawn out of the flow (CR-080 phase 2: one
-     * that takes space and wraps is phase 4's).  @since 17.3.7
+     * Whether this is a DrawingML shape with no text to show, anchored or inline: it is drawn as a picture of its
+     * extent and placed and wrapped as a picture is (CR-080 phase 4, {@link #createShapePicture}).  @since 17.3.7
      */
     public static boolean isDrawnShape(Object anchorOrInline) {
-		return anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor && FOTextBoxes.isEnabled()
-				&& shape(anchorOrInline)!=null && !FOShapes.hasText(shape(anchorOrInline));
+		return shape(anchorOrInline)!=null && !FOShapes.hasText(shape(anchorOrInline));
     }
 
     /** The DrawingML shape (wps:wsp) in this wp:anchor or wp:inline, or null. */
@@ -420,7 +419,9 @@ public class XsltFOFunctions {
     /**
      * The fo:block-container a DrawingML shape's text box is rendered in, carrying
      * the anchor's geometry as hints for WordLayoutFixups (the same treatment an
-     * anchored picture gets).  The caller adds the converted w:txbxContent.
+     * anchored picture gets).  The caller adds the converted w:txbxContent.  A shape
+     * with no text to show is instead a picture of its extent, an
+     * fo:instream-foreign-object ({@link #createShapePicture}, CR-080 phase 4).
      *
      * @since 17.0.5
      */
@@ -436,21 +437,20 @@ public class XsltFOFunctions {
 		double w = (extent==null) ? 0 : extent.getCx() / 12700d;
 		double h = (extent==null) ? 0 : extent.getCy() / 12700d;
 
-		// the shape drawn, under its text (CR-080 phase 2); a shape with no text to show is drawn only where it is
-		// anchored, out of the flow: one that takes space is phase 4's
+		// the shape drawn, under its text (CR-080 phase 2); a shape with no text to show is a picture (phase 4)
 		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
 				= shape(anchorOrInline);
-		boolean text = FOShapes.hasText(wsp);
-		if (!text && !isDrawnShape(anchorOrInline)) return null;
+		if (wsp==null) return null;
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn drawn = (extent==null) ? null
 				: FOShapes.draw(context, wsp, extent.getCx(), extent.getCy());
-		if (!text && (drawn==null || drawn.isEmpty())) return null;
+		boolean text = FOShapes.hasText(wsp);
+		if (!text) return createShapePicture(context, anchorOrInline, document, drawn);
 
 		// a wp:inline shape is in the flow; a wp:anchor is positioned, and
 		// stampAnchorHints works out where from its wrap and position elements
 		// the text is set in by half the line as well as by the insets (17.3.1), in the geometry's text rectangle
 		// (CR-080 phase 2)
-		double[] insets = text ? FOShapes.textInsets(shapeInsets(anchorOrInline), drawn, wsp, w, h) : shapeInsets(anchorOrInline);
+		double[] insets = FOShapes.textInsets(shapeInsets(anchorOrInline), drawn, wsp, w, h);
 		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0,
 				FOTextBoxes.withStroke(insets, shapeLinePt(anchorOrInline)));
 		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
@@ -463,13 +463,87 @@ public class XsltFOFunctions {
 				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
 			}
 			stampTextBeside(container, (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
-			// a shape with no text takes no space yet (phase 4)
-			if (!text) container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "none");
 		}
 		// the text where the shape anchors it in its text rectangle: top, middle or foot (CR-080 phase 2)
-		if (text) FOShapes.anchorText(container, wsp);
+		FOShapes.anchorText(container, wsp);
 		if (drawn!=null && !drawn.isEmpty()) FOShapes.addDrawing(document, container, drawn);
 		return container;
+    }
+
+    /** The least extent a shape drawn as a picture is given, in pt: a line has no height (or no width), and an SVG
+     *  viewport of none paints nothing, nor does FOP's scaling of a drawing to one. */
+    private static final double LEAST_EXTENT_PT = 0.01;
+
+    /**
+     * A DrawingML shape, group or canvas with no text to show, as a picture of its extent (CR-080 phase 4, D4): an
+     * fo:instream-foreign-object holding its drawing, which reaches past the box where its line, its arrowheads or a
+     * callout's leader do (the SVG's viewBox is the box, its overflow visible), carrying the anchor hints
+     * WordXmlPictureE20 gives an anchored picture, so that WordLayoutFixups places and wraps it as it does a picture
+     * (square, tight and through as a square, top and bottom, behind the text, none); a wp:inline one is in its line
+     * at its extent with its effect extent round it, as an inline picture is.  Until 17.3.7 an anchored shape with no
+     * text was drawn out of the flow whatever its wrap, and an inline one not at all (phase 2).  One that paints
+     * nothing keeps its space, the drawing empty (as a chart's box does), unless it takes none: anchored with no wrap.
+     * Null where it neither paints nor takes space, or has no extent.
+     *
+     * @param drawn the shape drawn at its extent (FOShapes.draw or drawGroup), or null where it couldn't be
+     * @since 17.3.7
+     */
+    static Element createShapePicture(AbstractWmlConversionContext context, Object anchorOrInline, Document document,
+			org.docx4j.chart.render.api.ShapeRenderer.Drawn drawn) {
+		org.docx4j.dml.CTPositiveSize2D extent = null;
+		org.docx4j.dml.wordprocessingDrawing.Anchor anchor = null;
+		org.docx4j.dml.wordprocessingDrawing.Inline inline = null;
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline;
+			extent = anchor.getExtent();
+		} else if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			inline = (org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline;
+			extent = inline.getExtent();
+		}
+		if (extent==null || extent.getCx() <= 0 && extent.getCy() <= 0) return null;
+		boolean paints = drawn!=null && !drawn.isEmpty();
+		if (!paints && anchor!=null && takesNoSpace(anchor)) return null;
+
+		double w = Math.max(LEAST_EXTENT_PT, extent.getCx() / 12700d);
+		double h = Math.max(LEAST_EXTENT_PT, extent.getCy() / 12700d);
+		final String svgNs = "http://www.w3.org/2000/svg";
+		Element svg = paints ? (Element) document.importNode(drawn.toSvg().getDocumentElement(), true)
+				: document.createElementNS(svgNs, "svg");
+		svg.setAttributeNS(null, "width", FOTextBoxes.pt(w));
+		svg.setAttributeNS(null, "height", FOTextBoxes.pt(h));
+		// a user unit a point from the box's top left, as the drawing's frame is: what it paints past the box shows
+		svg.setAttributeNS(null, "viewBox", "0 0 " + FOTextBoxes.fmt(w) + " " + FOTextBoxes.fmt(h));
+		svg.setAttributeNS(null, "preserveAspectRatio", "none");
+		svg.setAttributeNS(null, "overflow", "visible");
+
+		Element ifo = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:instream-foreign-object");
+		ifo.setAttribute("content-width", FOTextBoxes.pt(w));
+		ifo.setAttribute("content-height", FOTextBoxes.pt(h));
+		ifo.setAttribute("scaling", "non-uniform");
+		ifo.appendChild(svg);
+		if (anchor!=null) {
+			org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(ifo, anchor, context);
+			// the box as the picture's frame, a line's least extent included
+			if (ifo.hasAttribute(WordLayoutFixups.HINT_ANCHOR)) {
+				ifo.setAttribute(WordLayoutFixups.HINT_ANCHOR_W, FOTextBoxes.fmt(w));
+				ifo.setAttribute(WordLayoutFixups.HINT_ANCHOR_H, FOTextBoxes.fmt(h));
+			}
+		} else if (inline.getEffectExtent()!=null) {
+			// as WordXmlPictureE20.stampEffectExtent sets an inline picture's: its line is taller by the top and bottom
+			// extents, the text after it further right by the left and right (17.3.5)
+			org.docx4j.dml.wordprocessingDrawing.CTEffectExtent e = inline.getEffectExtent();
+			if (e.getT() > 0) ifo.setAttribute("padding-top", FOTextBoxes.pt(e.getT() / 12700d));
+			if (e.getB() > 0) ifo.setAttribute("padding-bottom", FOTextBoxes.pt(e.getB() / 12700d));
+			if (e.getL() > 0) ifo.setAttribute("padding-left", FOTextBoxes.pt(e.getL() / 12700d));
+			if (e.getR() > 0) ifo.setAttribute("padding-right", FOTextBoxes.pt(e.getR() / 12700d));
+		}
+		return ifo;
+    }
+
+    /** An anchor that takes no space: one with no wrap (in front of the text or behind it) */
+    private static boolean takesNoSpace(org.docx4j.dml.wordprocessingDrawing.Anchor anchor) {
+		return anchor.getWrapSquare()==null && anchor.getWrapTight()==null && anchor.getWrapThrough()==null
+				&& anchor.getWrapTopAndBottom()==null;
     }
 
     /**
@@ -481,10 +555,12 @@ public class XsltFOFunctions {
      * padding-top, as an anchored box is in its wrapper (FOP measures an absolute position in an
      * inline-container itself from the page).  Until 17.3.7 the container stayed in the run's fo:inline, where FOP paints a block-container not at
      * all and reserves it no height, so an inline text box's text was lost once its wps Choice was drawn
-     * (CR-080 D12).  A wp:anchor's container is returned as it is.  @since 17.3.7
+     * (CR-080 D12).  A wp:anchor's container is returned as it is, and so is a shape drawn as a picture (an
+     * fo:instream-foreign-object, phase 4), which is in its line already.  @since 17.3.7
      */
     static Element placeInline(Document document, Element container, Object anchorOrInline) {
 		if (!(anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline)) return container;
+		if (!"block-container".equals(container.getLocalName())) return container;
 		org.docx4j.dml.CTPositiveSize2D extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
 		if (extent==null || extent.getCx() <= 0 || extent.getCy() <= 0) return container;
 		Element holder = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline-container");
@@ -617,7 +693,8 @@ public class XsltFOFunctions {
 		return FOTextBoxes.isEnabled() && shapeGroup(anchorOrInline)!=null;
     }
 
-    /** A group or canvas in the FO: its container, and its shapes' text boxes with the containers their text goes in */
+    /** A group or canvas in the FO: its container (or, with no text shown, its picture), and its shapes' text boxes
+     *  with the containers their text goes in */
     static final class ShapeGroup {
 		final Element container;
 		/** Every shape with a text box, in document order (FOShapes.textBoxes) */
@@ -635,10 +712,10 @@ public class XsltFOFunctions {
 
     /**
      * A DrawingML group or canvas, drawn as one drawing in a container of its extent, which is placed as a shape's is:
-     * anchored, where its wrap and position say, out of the flow where no child shows text (phase 2's rule for a shape
-     * with none); inline, on its line, where one does (an inline one with no text isn't drawn yet, phase 4). The
-     * container has no padding; its first child is the drawing, and each child shape with text gets a container of its
-     * own at its box (FOShapes.childText), which the caller fills.  Null where nothing is drawn or shown.
+     * anchored, where its wrap and position say; inline, on its line. The container has no padding; its first child is
+     * the drawing, and each child shape with text gets a container of its own at its box (FOShapes.childText), which
+     * the caller fills.  Where no child shows text the group is a picture of its extent instead, as a shape with none
+     * is ({@link #createShapePicture}, phase 4), and the lists are empty.  Null where nothing is drawn or shown.
      *
      * @since 17.3.7 (CR-080 phase 3)
      */
@@ -663,9 +740,14 @@ public class XsltFOFunctions {
 		for (org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp : shapes) {
 			if (FOShapes.hasText(wsp) && where.containsKey(wsp)) text = true;
 		}
+		if (!text) {
+			// no child shows text: the group is a picture of its extent, placed and wrapped as one (phase 4)
+			Element picture = createShapePicture(context, anchorOrInline, document, drawn);
+			return picture==null ? null : new ShapeGroup(picture,
+					java.util.Collections.<org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape>emptyList(),
+					java.util.Collections.<Element>emptyList());
+		}
 		boolean inline = anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline;
-		if (inline && !text) return null;
-		if (!text && (drawn==null || drawn.isEmpty())) return null;
 
 		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0, new double[] { 0, 0, 0, 0 });
 		if (!inline) {
@@ -675,7 +757,6 @@ public class XsltFOFunctions {
 				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
 			}
 			stampTextBeside(container, (org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
-			if (!text) container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "none");
 		}
 		if (drawn!=null && !drawn.isEmpty()) FOShapes.addDrawing(document, container, drawn);
 		List<Element> texts = new ArrayList<Element>();
@@ -732,7 +813,8 @@ public class XsltFOFunctions {
     }
 
     /**
-     * The XSLT pathway's form of createShapeTextBox for a shape with no text to show: its drawing alone, or null.
+     * The XSLT pathway's form of createShapeTextBox for a shape with no text to show: its drawing as a picture of its
+     * extent ({@link #createShapePicture}, phase 4), or null.
      *
      * @since 17.3.7 (CR-080 phase 2)
      */

@@ -101,7 +101,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 			// a DrawingML shape's text box (wps:wsp/wps:txbx): its text, in a
 			// container WordLayoutFixups positions as it does an anchored picture,
-			// over the shape drawn (17.3.7, CR-080 phase 2), or the drawing alone.
+			// over the shape drawn (17.3.7, CR-080 phase 2); or, a shape with no
+			// text to show, the drawing as a picture of its extent (phase 4).
 			// @since 17.0.5
 			handleShapeTextBox(o);
 			return null;

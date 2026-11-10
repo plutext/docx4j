@@ -162,6 +162,8 @@ def check(schema, docx, tmp):
             errors.append('an mc:AlternateContent of another form')
         parts = {'document': AC.sub(r'\1', doc), 'settings': z.read('word/settings.xml').decode(),
                  'theme': z.read('word/theme/theme1.xml').decode()}
+        if 'word/styles.xml' in z.namelist():                      # CR-080 phase 4's packages carry docDefaults
+            parts['styles'] = z.read('word/styles.xml').decode()
     for k, xml in parts.items():
         f = os.path.join(tmp, k + '.xml')
         open(f, 'w', encoding='utf-8').write(xml)

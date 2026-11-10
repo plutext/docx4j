@@ -40,7 +40,8 @@ import org.w3c.dom.NodeList;
 /**
  * A DrawingML shape drawn in the FO, by the visitor and the XSLT alike (CR-080 phase 2): its drawing, SVG, the first
  * child of its container, under its text; the text in the geometry's text rectangle, where its bodyPr anchors it; no
- * text in a line; an anchored shape with no text drawn out of the flow, and an inline one not yet (phase 4).
+ * text in a line. A shape, group or canvas with no text to show is a picture of its extent, placed and wrapped as a
+ * picture is, anchored or inline (phase 4).
  */
 public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 
@@ -151,20 +152,60 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 
 	private static final int[] BOTH = { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL };
 
+	/** A shape with no text is a picture of its extent: an fo:instream-foreign-object of 180 x 90pt holding its
+	 *  drawing, the SVG's viewBox the box with its overflow visible, so that its line, centred on the box's edge, is
+	 *  painted whole; with no wrap it is out of the flow where its anchor puts it, as a picture is (phase 4).  */
 	@Test
-	public void aShapeWithNoTextIsDrawn() throws Exception {
+	public void aShapeWithNoTextIsAPictureOfItsExtent() throws Exception {
 		for (int flags : BOTH) {
 			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>"), flags);
 			assertEquals("flags " + flags, 1, svgs(doc).getLength());
-			String svg = XmlUtils.w3CDomNodeToString(svgs(doc).item(0)).toLowerCase(java.util.Locale.ROOT);
+			Element svg = (Element) svgs(doc).item(0);
+			String text = XmlUtils.w3CDomNodeToString(svg).toLowerCase(java.util.Locale.ROOT);
 			// Batik names a colour where SVG has a name for it
-			assertTrue(svg, svg.contains("fill=\"red\"") || svg.contains("rgb(255,0,0)") || svg.contains("#ff0000"));
-			Element container = textContainer(doc, null);
-			assertNotNull("flags " + flags, container);
-			// out of the flow, as a wrapNone shape is: positioned, not reserving space
-			assertTrue("flags " + flags, container.getAttribute("absolute-position").length() > 0
-					|| ((Element) container.getParentNode()).getAttribute("absolute-position").length() > 0);
+			assertTrue(text, text.contains("fill=\"red\"") || text.contains("rgb(255,0,0)") || text.contains("#ff0000"));
+			assertPicture("flags " + flags, svg, 180, 90);
+			// out of the flow, as a wrapNone picture is: positioned in a zero-height wrapper at the paragraph's top
+			Element abs = (Element) svg.getParentNode().getParentNode().getParentNode();
+			assertEquals("flags " + flags, "block-container", abs.getLocalName());
+			assertEquals("flags " + flags, "absolute", abs.getAttribute("absolute-position"));
+			assertEquals("flags " + flags, 72, pt(abs.getAttribute("left")), 1e-6);
+			assertEquals("flags " + flags, 36, pt(abs.getAttribute("top")), 1e-6);
+			assertEquals("flags " + flags, "0pt", ((Element) abs.getParentNode()).getAttribute("height"));
+			assertNoHints("flags " + flags, doc);
 		}
+	}
+
+	/** The svg is a picture's of w x h pt: in an fo:instream-foreign-object of that extent, its viewBox the box, a user
+	 *  unit a point, what it paints past the box shown */
+	private static Element assertPicture(String message, Element svg, double w, double h) {
+		Element ifo = (Element) svg.getParentNode();
+		assertEquals(message, "instream-foreign-object", ifo.getLocalName());
+		assertEquals(message, w, pt(ifo.getAttribute("content-width")), 1e-6);
+		assertEquals(message, h, pt(ifo.getAttribute("content-height")), 1e-6);
+		String[] box = svg.getAttribute("viewBox").split(" ");
+		assertEquals(message, 0, Double.parseDouble(box[0]), 0);
+		assertEquals(message, 0, Double.parseDouble(box[1]), 0);
+		assertEquals(message, w, Double.parseDouble(box[2]), 1e-6);
+		assertEquals(message, h, Double.parseDouble(box[3]), 1e-6);
+		assertEquals(message, w, pt(svg.getAttribute("width")), 1e-6);
+		assertEquals(message, h, pt(svg.getAttribute("height")), 1e-6);
+		assertEquals(message, "visible", svg.getAttribute("overflow"));
+		return ifo;
+	}
+
+	/** WordLayoutFixups has read and removed every anchor hint */
+	private static void assertNoHints(String message, org.w3c.dom.Document doc) {
+		String all = XmlUtils.w3CDomNodeToString(doc.getDocumentElement());
+		assertFalse(message, all.contains("docx4j-anchor"));
+	}
+
+	/** The nearest ancestor of this element named so, or null */
+	private static Element ancestor(Element el, String localName) {
+		for (org.w3c.dom.Node n = el.getParentNode(); n != null; n = n.getParentNode()) {
+			if (n instanceof Element && localName.equals(n.getLocalName())) return (Element) n;
+		}
+		return null;
 	}
 
 	@Test
@@ -188,24 +229,102 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		}
 	}
 
-	/** A shape with no text that wraps takes no space yet: it is drawn out of the flow (phase 4 wraps it) */
+	/** A shape with no text wrapped square is floated as a picture is, the text beside it: at the column's left,
+	 *  padded to its offset (72pt) and its distR (9pt), its 36pt offset below the paragraph's top as the float's;
+	 *  until phase 4 it was drawn out of the flow, the text running under it.  The shape is 300pt wide, as a box under
+	 *  60% of the column would be taken out of the flow in a cell anyway, under 90% of the 451.3pt column, where the
+	 *  text goes below it, and nearer the left than the right.  */
 	@Test
-	public void aShapeWithNoTextTakesNoSpaceYet() throws Exception {
+	public void aShapeWithNoTextWrappedSquareIsFloatedAsAPictureIs() throws Exception {
 		for (int flags : BOTH) {
-			// 400pt wide: a narrower box (under 60% of the column) WordLayoutFixups takes out of the flow anyway
 			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
-					.replace("cx=\"2286000\"", "cx=\"5080000\""), flags);
+					.replace("cx=\"2286000\"", "cx=\"3810000\"").replace("distR=\"0\"", "distR=\"114300\""), flags);
 			assertEquals("flags " + flags, 1, svgs(doc).getLength());
-			NodeList floats = doc.getElementsByTagNameNS(FO_NS, "float");
-			for (int i = 0; i < floats.getLength(); i++) {
-				assertEquals("flags " + flags + ": floated", 0, ((Element) floats.item(i)).getElementsByTagNameNS(SVG_NS, "svg").getLength());
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 300, 90);
+			Element f = ancestor(svg, "float");
+			assertNotNull("flags " + flags + ": floated", f);
+			assertEquals("flags " + flags, "left", f.getAttribute("float"));
+			Element holder = (Element) svg.getParentNode().getParentNode();
+			assertEquals("flags " + flags, 72, pt(holder.getAttribute("padding-left")), 1e-6);
+			assertEquals("flags " + flags, 9, pt(holder.getAttribute("padding-right")), 1e-6);
+			assertNoHints("flags " + flags, doc);
+		}
+	}
+
+	/** A shape with no text wrapped top and bottom reserves its band as a picture does: a block-container of its
+	 *  offset and height, 36 + 90pt, the shape at its offset in it (phase 4) */
+	@Test
+	public void aShapeWithNoTextWrappedTopAndBottomReservesItsBand() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapTopAndBottom/>"), flags);
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 90);
+			Element holder = (Element) svg.getParentNode().getParentNode();
+			Element band = (Element) holder.getParentNode();
+			assertEquals("flags " + flags, "block-container", band.getLocalName());
+			assertEquals("flags " + flags, 126, pt(band.getAttribute("height")), 1e-6);
+			assertEquals("flags " + flags, 36, pt(holder.getAttribute("padding-top")), 1e-6);
+			assertEquals("flags " + flags, 72, pt(holder.getAttribute("start-indent")), 1e-6);
+			assertNoHints("flags " + flags, doc);
+		}
+	}
+
+	/** Tight and through wrap a shape as a picture's do: as square, its box (phase 4) */
+	@Test
+	public void aShapeWithNoTextWrappedTightIsFloated() throws Exception {
+		String tight = "<wp:wrapTight wrapText=\"bothSides\"><wp:wrapPolygon edited=\"0\"><wp:start x=\"0\" y=\"0\"/><wp:lineTo x=\"0\" y=\"21600\"/>"
+				+ "<wp:lineTo x=\"21600\" y=\"21600\"/><wp:lineTo x=\"21600\" y=\"0\"/><wp:lineTo x=\"0\" y=\"0\"/></wp:wrapPolygon></wp:wrapTight>";
+		for (String wrap : new String[] { tight, tight.replace("wrapTight", "wrapThrough") }) {
+			for (int flags : BOTH) {
+				org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", wrap), flags);
+				Element svg = (Element) svgs(doc).item(0);
+				assertPicture("flags " + flags, svg, 180, 90);
+				assertNotNull("flags " + flags + " " + wrap, ancestor(svg, "float"));
 			}
-			// out of the flow: in a zero-height wrapper, where a wrapped box's reserves its height
-			boolean zero = false;
-			for (org.w3c.dom.Node n = svgs(doc).item(0); n != null; n = n.getParentNode()) {
-				if (n instanceof Element && "block-container".equals(n.getLocalName()) && "0pt".equals(((Element) n).getAttribute("height"))) zero = true;
-			}
-			assertTrue("flags " + flags + ": not in a zero-height wrapper", zero);
+		}
+	}
+
+	/** Behind the text a wrapped shape displaces nothing, as a picture behind it doesn't: out of the flow (phase 4) */
+	@Test
+	public void aShapeWithNoTextBehindTheTextTakesNoSpace() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
+					.replace("behindDoc=\"0\"", "behindDoc=\"1\""), flags);
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 90);
+			assertNull("flags " + flags, ancestor(svg, "float"));
+			Element abs = (Element) svg.getParentNode().getParentNode().getParentNode();
+			assertEquals("flags " + flags, "absolute", abs.getAttribute("absolute-position"));
+			assertEquals("flags " + flags, "0pt", ((Element) abs.getParentNode()).getAttribute("height"));
+		}
+	}
+
+	/** A shape that paints nothing but wraps keeps its space, the drawing empty, as a chart's box does (phase 4) */
+	@Test
+	public void aShapeThatPaintsNothingButWrapsKeepsItsSpace() throws Exception {
+		String nothing = "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(nothing, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>"), flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 90);
+			assertNull("flags " + flags + ": nothing drawn", firstElement(svg));
+			assertNotNull("flags " + flags, ancestor(svg, "float"));
+		}
+	}
+
+	/** A line has no height: it is a picture of the least extent, 0.01pt, whose drawing, its 2pt line, is painted past
+	 *  it (phase 4); a viewport of no height paints nothing */
+	@Test
+	public void aLineIsAPictureOfTheLeastExtent() throws Exception {
+		String line = "<a:prstGeom prst=\"line\"><a:avLst/></a:prstGeom><a:ln w=\"25400\"><a:solidFill><a:srgbClr val=\"000000\"/></a:solidFill></a:ln>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(line, null, "<wps:bodyPr/>").replace("cy=\"1143000\"", "cy=\"0\""), flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 0.01);
+			assertNotNull("flags " + flags + ": drawn", firstElement(svg));
 		}
 	}
 
@@ -219,10 +338,39 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/** An inline shape with no text is an inline picture of its extent, in its line, its effect extent round it as
+	 *  padding, as an inline picture's (phase 4; until then it wasn't drawn) */
 	@Test
-	public void anInlineShapeWithNoTextIsNotDrawnYet() throws Exception {
+	public void anInlineShapeWithNoTextIsAnInlinePicture() throws Exception {
 		for (int flags : BOTH) {
-			assertEquals("flags " + flags, 0, svgs(fo(inline(RED_RECT), flags)).getLength());
+			org.w3c.dom.Document doc = fo(inline(RED_RECT).replace("<wp:docPr", "<wp:effectExtent l=\"6350\" t=\"6350\" r=\"6350\" b=\"12700\"/><wp:docPr"), flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			Element svg = (Element) svgs(doc).item(0);
+			Element ifo = assertPicture("flags " + flags, svg, 180, 90);
+			assertEquals("flags " + flags, 0.5, pt(ifo.getAttribute("padding-left")), 1e-6);
+			assertEquals("flags " + flags, 0.5, pt(ifo.getAttribute("padding-top")), 1e-6);
+			assertEquals("flags " + flags, 0.5, pt(ifo.getAttribute("padding-right")), 1e-6);
+			assertEquals("flags " + flags, 1, pt(ifo.getAttribute("padding-bottom")), 1e-6);
+			assertNull("flags " + flags, ancestor(svg, "block-container"));
+			assertNull("flags " + flags, ancestor(svg, "inline-container"));
+			assertNotNull("flags " + flags + ": in the paragraph", ancestor(svg, "block"));
+		}
+	}
+
+	/** An inline group with no text is an inline picture too (phase 4) */
+	@Test
+	public void anInlineGroupWithNoTextIsAnInlinePicture() throws Exception {
+		String para = anchoredGroup(WPG, group(child(0, 0, 1828800, 914400, "ellipse", "FF0000", null)));
+		String drawing = para.substring(para.indexOf("<w:drawing>"), para.indexOf("</w:drawing>") + "</w:drawing>".length());
+		String graphic = drawing.substring(drawing.indexOf("<a:graphic>"), drawing.indexOf("</wp:anchor>"));
+		String body = "<w:p><w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"2286000\" cy=\"1143000\"/>"
+				+ "<wp:docPr id=\"5\" name=\"Group 5\"/>" + graphic + "</wp:inline></w:drawing></w:r></w:p>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(body, flags);
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 90);
+			assertNull("flags " + flags, ancestor(svg, "block-container"));
 		}
 	}
 
@@ -315,23 +463,19 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		}
 	}
 
-	/** A group with no text anchored is drawn out of the flow, as a shape with none is (phase 2), though it wraps:
-	 *  400pt wide, as WordLayoutFixups takes a box under 60% of the column out of the flow anyway.  @since 17.3.7 */
+	/** A group with no text anchored and wrapped square is a picture floated as a shape with none is (phase 4):
+	 *  360pt wide, under 90% of the column.  @since 17.3.7 */
 	@Test
-	public void aGroupWithNoTextTakesNoSpaceYet() throws Exception {
+	public void aGroupWithNoTextWrappedSquareIsFloated() throws Exception {
 		for (int flags : BOTH) {
 			org.w3c.dom.Document doc = fo(anchoredGroup(WPG, group(child(0, 0, 1828800, 914400, "ellipse", "FF0000", null)))
-					.replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>").replace("cx=\"2286000\"", "cx=\"5080000\""), flags);
+					.replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>").replace("cx=\"2286000\"", "cx=\"4572000\""), flags);
 			assertEquals("flags " + flags, 1, svgs(doc).getLength());
-			Element container = textContainer(doc, null);
-			assertNotNull("flags " + flags, container);
-			assertTrue("flags " + flags, container.getAttribute("absolute-position").length() > 0);
-			// out of the flow: in a zero-height wrapper, where a wrapped box's reserves its height
-			boolean zero = false;
-			for (org.w3c.dom.Node n = container; n != null; n = n.getParentNode()) {
-				if (n instanceof Element && "block-container".equals(n.getLocalName()) && "0pt".equals(((Element) n).getAttribute("height"))) zero = true;
-			}
-			assertTrue("flags " + flags + ": not in a zero-height wrapper", zero);
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 360, 90);
+			assertNotNull("flags " + flags, ancestor(svg, "float"));
+			assertNull("flags " + flags + ": no text container", textContainer(doc, null));
+			assertNoHints("flags " + flags, doc);
 		}
 	}
 

@@ -7,7 +7,8 @@ CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR
 proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`); phase 1
 done, the geometry engine and `ShapeGeometry` (§6); phase 2 done, shapes drawn, and by D12 (c) the `wps` Choice
 drawn by default (9775's loss mended, an inline text box set on its line); phase 3 done, groups and canvases drawn,
-and by D13 (b) the `wpg` and `wpc` Choices drawn by default too. Read
+and by D13 (b) the `wpg` and `wpc` Choices drawn by default too; phase 4 done, a shape, group or canvas with no text a
+picture of its extent, placed and wrapped as a picture is, as Word's wrap probes show it does. Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -537,6 +538,84 @@ corpus documents can't be the only oracle.
     `wrapSquare`, `wrapTopAndBottom` and `behindDoc` handling places it. `wp:wrapTight` and `wp:wrapThrough` polygons
     are handled as a picture's are.
   - **Gate:** a fidelity gate against the then baseline, movers read.
+  - **Built, committed 2026-11-10** (Jason: "do CR-080 phase 4", then "commit phase 4").
+    - **The dispatch.** A shape with no text to show (no text box, or one of Word's 14 presets that show none) is a
+      picture of its extent. So is a group or canvas none of whose children shows text.
+      - `XsltFOFunctions.createShapePicture` writes it as a chart's box is written (CR-035): an
+        `fo:instream-foreign-object` of the extent, holding the drawing.
+      - On a `wp:anchor` it carries the hints `WordXmlPictureE20.stampAnchorHints` writes for an anchored picture.
+        `WordLayoutFixups.anchorImages` places it as it places one: square, tight and through as a float, or by
+        §9.2's rule where no float is to be had (a cell, a header); top and bottom reserving its band; behind the text
+        or with no wrap, out of the flow; positioned against the page, fixed; in a table cell, from the cell.
+      - A `wp:inline` one is in its line at its extent, its `wp:effectExtent` round it as padding, as an inline
+        picture's is (17.3.5).
+      - By the visitor and the XSLT alike: the XSLT's `wps:wsp` branch is no longer for an anchor only, and
+        `placeInline` leaves a picture in its line.
+      - Until now an anchored shape with no text was drawn out of the flow whatever its wrap (phase 2's interim rule),
+        and an inline shape or group with none wasn't drawn at all.
+    - **What the shape paints past its box.** The SVG's `viewBox` is the box, a user unit a point, and its overflow is
+      visible. So half the line, the arrowheads, a callout's leader and a turned shape's corners are drawn. Batik
+      clips an outermost `svg` to its viewport by its user agent stylesheet (`svg { overflow: hidden }`); FOP clips a
+      graphic only where its `overflow` is `hidden`.
+    - **A line has no height** (or no width). Its picture has the least extent, 0.01pt, in its frame and in its hints,
+      since a viewport of no size paints nothing, and neither does FOP's scaling of a drawing to one.
+    - **A shape that paints nothing** (no fill, no line) keeps its space where it takes any, wrapped or inline: its
+      drawing is an empty `svg`, as a chart's empty box is. With no wrap, nothing is written (phase 2's rule).
+    - **Against Word.** Phase 2's PDF gate was run again on docx4j's PDFs of its nine probe files. Every probe in them
+      is a shape with no text, now a picture. All 662 are within 0.067pt of Word's but the two named, as before. Every
+      probe's line is centred on its box's edge, so nothing past a box is clipped. Phase 3's three files: 36 within
+      0.050pt, the glyphs within 0.26pt.
+    - **Corpora:** none holds a shape with no text (every corpus `wps:wsp` has a text box, §4), so the gate is unmoved
+      by construction. b404 against b403: 0 movers, events equal.
+    - **Tests:** `ShapeDrawingFoTest`, both routes, now 17. Its three tests of the interim rule became tests of the
+      picture: a shape with no text a picture of its extent, out of the flow with no wrap; floated where wrapped
+      square, its offset and `distR` the float's padding; top and bottom reserving its band; tight and through
+      floated; behind the text taking no space; one painting nothing but wrapped keeping its space; a line a picture
+      of the least extent, its line drawn; an inline shape an inline picture with its effect extent; an inline group
+      and a wrapped group with no text pictures too. Each asserts the fixups left no hint behind.
+    - **Mutants:** 13, one rule each, against a passing baseline: all caught.
+    - **The suites:** export-fo 111, export-fo-tests 927 (9 skipped) pass. Only docx4j-export-fo changed.
+    - **Unmeasured when built, with docx4j's reading meanwhile** (all five settled by the round below; the third was
+      wrong):
+      - that Word wraps a shape with no text as it wraps a picture of the same extent and distances (D4; docxide-pdf's
+        `empty-shape-wraps` fixture, against Word for Mac's export);
+      - that a shape that paints nothing keeps its space;
+      - an anchored shape's `wp:effectExtent` isn't added to its wrap, as an anchored picture's isn't, though CR-081
+        phase 0 measured Word's wrap round a picture with effects as its extent, effect extent and distances;
+      - `wp:wrapTight` and `wp:wrapThrough` wrap the box, not the polygon, as a picture's do (FOP has no shaped wrap);
+      - a turned shape wraps by its box, not by its turned bounds.
+
+      Settled by one round of probes: each a shape with no text beside the same anchor holding a picture, in each
+      wrap, the lines beside them read from Word's PDF.
+    - **That round, staged 2026-11-10** (Jason: "Build and stage the probe round, tell portfolio to run it"):
+      `cr080-phase4`, from `CR-080-notes/build_wrap.py` (manifest `probes-phase4.tsv`). One probe a page, each an
+      object anchored (or inline) in paragraphs of numbered filler words, so that the word opening each line says where
+      Word broke it; Arial 10pt from the package's docDefaults.
+      - `fw10-shapes`, 21 pages: a rectangle with no text in each wrap and position (square on both sides, on one
+        side and largest, top and bottom, tight and through with a box polygon and an ellipse's, behind the text, in
+        front, against the page, effect extents, turned 30°, inline twice, in a table cell);
+      - `fw11-pictures`: the same 21 pages, each with a picture of the same extent and anchor, Word's twin;
+      - `fw12-shape-only`, 10 pages: a shape that paints nothing, a 1pt and a 6pt line with no effect extent, a line
+        with no height, an ellipse with its polygon a box, a group.
+
+      All three are valid against the ECMA-376 transitional schemas (`check_probes.py`, which now checks a
+      `styles.xml` too). docx4j's own PDFs of them read as intended.
+    - **That round, read 2026-11-10** (`CR-080-notes/phase4-findings.md`, `read_wrap.py`; run silent on bridge
+      22479f7). The five readings, settled:
+      - **D4 holds exactly.** Word's 21 shape pages are its 21 picture pages, every line's words, x and baseline to
+        0.0pt; and docx4j's shape pages are its picture pages, 21 of 21, to 0.0pt.
+      - A shape that paints nothing keeps its space, as docx4j has it.
+      - Word adds the effect extent to an anchored object's wrap and to its alignment, for a picture as for a shape.
+        docx4j doesn't, for either: its reading was wrong (the text beside 1pt nearer than Word's on fw10-01). The line
+        itself isn't in the wrap (a 6pt line wraps as a 1pt one, both with no effect extent).
+      - Tight and through follow the stored polygon (not the geometry), without the effect extent; docx4j wraps the
+        box, as for a picture (FOP has no shaped wrap).
+      - A turned object wraps by its unturned box and its effect extent, not its turned bounds, as docx4j has it.
+    - **The round's other findings, the picture treatment's, not phase 4's** (findings §3): a picture anchored the same
+      way departs from Word the same way. The effect extent above; a float that leaves out `distT` above the object,
+      so the wrap starts a line late; top and bottom reserving its band at the paragraph's top, where Word keeps the
+      lines that end above the band there; and behind the text with a square wrap, which Word wraps in mode 15 and
+      docx4j takes out of the flow. Each is a change to `WordLayoutFixups.anchorImage`, for every anchored picture.
 - **Phase 5, HTML** (D5).
 - **Phase 6, CHANGELOG, Getting Started, the register.**
 

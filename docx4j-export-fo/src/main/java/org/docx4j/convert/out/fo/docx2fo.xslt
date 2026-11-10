@@ -622,8 +622,9 @@
 		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeGroup(
 		   			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
-  		<xsl:when test="self::wp:anchor and ./a:graphic/a:graphicData/wps:wsp">
-  			<!--  a DrawingML shape with no text box: drawn, out of the flow (17.3.7, CR-080 phase 2) -->
+  		<xsl:when test="./a:graphic/a:graphicData/wps:wsp">
+  			<!--  a DrawingML shape with no text box: drawn as a picture of its extent, placed and wrapped as a
+  			      picture is (17.3.7, CR-080 phases 2 and 4) -->
 		   	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createShapeDrawing(
 		   			$conversionContext, $wpinline)" />
   		</xsl:when>
