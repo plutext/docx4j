@@ -54,6 +54,15 @@ public final class TextWarning {
 	 * @since 17.3.6
 	 */
 	public static final String PART_NOT_READ = "part.not_read";
+	/**
+	 * A part the reading needed is not in the package, and the reading supplies what it would have held (REQ-801, WD
+	 * 0.76): today the numbering part for a numbered paragraph, read with Word's default list (REQ-510). Once a part,
+	 * at the first paragraph that needs it; its selector is the part's name the package would have held. A part the
+	 * document doesn't need raises nothing.
+	 *
+	 * @since 17.3.7
+	 */
+	public static final String PART_ABSENT = "part.absent";
 	/** An image the {@link ImageDescriber} failed to describe: it has no description (REQ-514, REQ-801). */
 	public static final String IMAGE_NOT_DESCRIBED = "image.not_described";
 	/**

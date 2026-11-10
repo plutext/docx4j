@@ -2,9 +2,9 @@ fixture	view	warnings
 part-not-read-intact.docx	accepted	
 part-not-read-intact.docx	original	
 part-not-read-intact.docx	markup	
-part-not-read-numbering-absent.docx	accepted	
-part-not-read-numbering-absent.docx	original	
-part-not-read-numbering-absent.docx	markup	
+part-not-read-numbering-absent.docx	accepted	part.absent /word/numbering.xml
+part-not-read-numbering-absent.docx	original	part.absent /word/numbering.xml
+part-not-read-numbering-absent.docx	markup	part.absent /word/numbering.xml
 part-not-read-numbering-unneeded.docx	accepted	
 part-not-read-numbering-unneeded.docx	original	
 part-not-read-numbering-unneeded.docx	markup	

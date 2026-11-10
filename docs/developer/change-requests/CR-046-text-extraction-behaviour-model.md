@@ -1191,3 +1191,20 @@ Built:
   ISTANBUL_THEME rows lose their `WD 0.72 (1)` label and are checked.
 - `CaseMappingTest`: `themeFontLang` tr-TR leaves ISTANBUL; `default_language: tr-TR` gives İSTANBUL; the option's
   default, order, preset, copy and a refused tag. `ExtractionConformance` maps the option to REQ-607.
+
+### 10.2 `part.absent` (WD 0.76 REQ-801; built 2026-11-10)
+
+Raised by python's reading of the broken-part family (relayed by the portfolio, 10 November 2026): REQ-801 has
+`part.absent` since WD 0.76, once per part where a part the reading needed isn't in the package and the reading
+supplies what it would have held. Today that is the numbering part for a numbered paragraph, read with Word's default
+list (REQ-510). Its selector is the part's name the package would have held, and a part the document doesn't need
+raises nothing. docx4j raised nothing there, and the broken-part table had no row for its two files (Jason: "yes").
+
+Built:
+- `TextWarning.PART_ABSENT`; `Extractor.numberingPart`, asked only for a paragraph with a `w:numId` other than 0,
+  raises it once where the main part has no numbering part, its selector the name beside the main part
+  (`/word/numbering.xml`). The styles and settings absent raise nothing: their content isn't supplied.
+- `broken-part`: `build_broken_part.py` writes the rows for cases 104 and 109 (`ABSENT`); the rebuild is
+  byte-identical but for `expected-findings.tsv`'s two rows; `BrokenPartTest` 1191 pass (six more, a row a view).
+- `part-not-read`: `numbering-absent`'s expected warning in every view is `part.absent /word/numbering.xml`, where
+  it was none.

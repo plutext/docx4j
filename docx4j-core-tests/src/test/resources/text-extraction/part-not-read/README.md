@@ -30,6 +30,10 @@ where a reading consults it.
 - **The settings:** losing them changes no text, since the capitals no longer take `themeFontLang` (WD 0.80). The
   settings are always needed, since the result carries `fields_update_on_open`, so `part.not_read` is raised.
 - **A part the document does not need raises nothing** (`numbering-unneeded`).
+- **The numbering part absent, a paragraph numbered** (`numbering-absent`): `part.absent` (WD 0.76), once, its
+  selector `/word/numbering.xml`, the part the package would have held, as the reading supplies Word's default list
+  for it (REQ-510). The styles and settings absent raise nothing: `part.absent` names a part whose content the
+  reading supplies, today only the numbering's. Until 17.3.7 docx4j raised nothing here.
 
 Word was not asked: it repairs or refuses a part not well formed, and the rule is about the reading, not
 about Word's repair.

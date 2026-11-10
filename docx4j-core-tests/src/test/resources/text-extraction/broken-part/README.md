@@ -34,7 +34,7 @@ tables included; a rebuild is byte-identical (stored zips, fixed dates).
 | 121 | `store-not-read.docx` | Two custom XML stores whose roots fit the controls' XPath (`/ns0:root[1]/ns0:name[1]`). Control A names store 1, B names store 2, C names no store. Store 1 is not well formed (cut after `</name>`). |
 | 122 | `store-not-read-intact.docx` | The same, with store 1 intact. |
 | | `expected-tokens.tsv` | The tokens as Word read each file (below). |
-| | `expected-findings.tsv` | docx4j's `part.not_read` (REQ-801), in every view, for the nine files whose reading needs a part it cannot read. |
+| | `expected-findings.tsv` | docx4j's `part.not_read` (REQ-801), in every view, for the nine files whose reading needs a part it cannot read; and `part.absent` (WD 0.76) for the two whose numbered paragraphs need a numbering part the package doesn't hold, read with Word's default list. |
 | | `goldens.tsv` | Empty. `ExtractionConformance` reads it. |
 | | `*-word365-utf8.txt`, `*-word365.docx` | Word's saves (below). |
 

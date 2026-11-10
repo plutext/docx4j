@@ -2400,7 +2400,25 @@ final class Extractor {
 	private NumberingDefinitionsPart numberingPart() {
 		NumberingDefinitionsPart part = pkg == null || pkg.getMainDocumentPart() == null ? null
 				: pkg.getMainDocumentPart().getNumberingDefinitionsPart();
+		if (part == null && pkg != null && pkg.getMainDocumentPart() != null) absent(beside(pkg.getMainDocumentPart(), "numbering.xml"));
 		return part == null || consult(part) ? part : null;
+	}
+
+	/**
+	 * A part this document needs that the package doesn't hold, the reading supplying what it would have: marked with
+	 * {@code part.absent}, its selector the part's name, once a part (REQ-801, WD 0.76). Asked only where the
+	 * document needs the part, as {@link #consult} is.
+	 */
+	private void absent(String name) {
+		TextWarning w = new TextWarning(TextWarning.PART_ABSENT, null, null, null, name);
+		if (!warned.contains(w)) log.info("Read as text without " + name + ", which the package doesn't hold: its default stands in");
+		warn(w);
+	}
+
+	/** The name a part would have beside another, in its folder: the numbering part beside the main part */
+	private static String beside(Part part, String file) {
+		String name = partName(part);
+		return name == null ? "/word/" + file : name.substring(0, name.lastIndexOf('/') + 1) + file;
 	}
 
 	/** The settings; null where there are none, and where they could not be read, with {@code part.not_read}. */

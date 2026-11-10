@@ -33,6 +33,9 @@ Changes in Version 17.3.7
 ### Shapes
 - `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).
 
+### Text extraction
+- A numbered paragraph read without a numbering part in the package raises `part.absent` (REQ-801, WD 0.76).
+
 
 
 Version 17.3.6

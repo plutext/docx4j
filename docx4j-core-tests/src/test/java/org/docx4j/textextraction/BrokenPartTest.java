@@ -82,11 +82,14 @@ public class BrokenPartTest {
 			assertTrue(r, r.contains("\tPENDING\tphase 2; ") && LABELS.stream().anyMatch(r::contains));
 			pending++;
 		}
-		assertEquals(1185, pass);
+		assertEquals(1191, pass);
 		assertEquals(126, pending);
 		String word = "\tprofile: word-text; list_labels: true; fields: update\t";
 		assertTrue(rows.contains("broken-part-styles-late.docx\t110\twarning:part.not_read:/word/styles.xml\tmarkup\tdefault\tPASS\t"));
 		assertTrue(rows.contains("broken-part-numbering-order.docx\t108\twarning:part.not_read:/word/numbering.xml\taccepted\tdefault\tPASS\t"));
+		// a numbering part the package doesn't hold, its numbered paragraphs read with Word's default list (WD 0.76)
+		assertTrue(rows.contains("broken-part-numbering-absent.docx\t104\twarning:part.absent:/word/numbering.xml\tmarkup\tdefault\tPASS\t"));
+		assertTrue(rows.contains("broken-part-numbering-order-absent.docx\t109\twarning:part.absent:/word/numbering.xml\taccepted\tdefault\tPASS\t"));
 		assertTrue(rows.contains("broken-part-styles.docx\t101\tDIRECT_LIST_1. first item\taccepted" + word + "PASS\t"));
 		assertTrue(rows.contains("store-not-read-intact.docx\t122\tSTORE1_VALUE\taccepted" + word + "PASS\t"));
 		assertTrue(rows.contains("broken-part-numbering-order.docx\t108\t3. heading two\taccepted" + word + "PENDING\tphase 2; WD 0.72 (2)"));

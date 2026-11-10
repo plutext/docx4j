@@ -8,7 +8,8 @@ that part; BP_BEGIN and BP_END depend on no part.  Also store-not-read and its i
 whose roots fit the same XPath, the first not well formed in store-not-read.docx.
 
 It also writes expected-tokens.tsv, the tokens as Word 365 read each file (WORD_READINGS, from Jason's runs of 3 and 4
-November 2026), expected-findings.tsv (docx4j's part.not_read) and an empty goldens.tsv, for ExtractionConformance.
+November 2026), expected-findings.tsv (docx4j's part.not_read and part.absent) and an empty goldens.tsv, for
+ExtractionConformance.
 
 Run from this folder or give it the output folder: python3 -I build_broken_part.py [dir].  The zips are stored, not
 deflated, with fixed dates and no docx4j comment, so a rebuild is byte-identical."""
@@ -435,6 +436,10 @@ NOT_READ = [('broken-part-styles.docx', '/word/styles.xml'), ('broken-part-numbe
             ('broken-part-styles-late.docx', '/word/styles.xml'), ('broken-part-styles-invalid.docx', '/word/styles.xml'),
             ('broken-part-document-rels.docx', '/word/_rels/document.xml.rels'), ('broken-part-package-rels.docx', '/_rels/.rels'),
             ('store-not-read.docx', '/customXml/item1.xml')]
+# part.absent where the reading needs a part the package doesn't hold and supplies what it would have (REQ-801, WD
+# 0.76): the numbering part for a numbered paragraph, read with Word's default list (REQ-510)
+ABSENT = [('broken-part-numbering-absent.docx', '/word/numbering.xml'),
+          ('broken-part-numbering-order-absent.docx', '/word/numbering.xml')]
 
 
 def cases():
@@ -470,8 +475,9 @@ def tokens_table():
 def findings_table():
     case = cases()
     out = ['case\tfixture\tchannel\tkind\tselector\tscenario\texpected\tstatements']
-    for name, part in NOT_READ:
-        out.append('\t'.join([str(case[name]), name, 'warning', 'part.not_read', part, 'default', '1', 'REQ-801']))
+    rows = [(name, 'part.not_read', part) for name, part in NOT_READ] + [(name, 'part.absent', part) for name, part in ABSENT]
+    for name, kind, part in sorted(rows, key=lambda r: case[r[0]]):
+        out.append('\t'.join([str(case[name]), name, 'warning', kind, part, 'default', '1', 'REQ-801']))
     return '\n'.join(out) + '\n'
 
 
