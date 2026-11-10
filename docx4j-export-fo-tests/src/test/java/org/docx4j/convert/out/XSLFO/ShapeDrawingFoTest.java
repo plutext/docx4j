@@ -276,6 +276,28 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/** A group with text in mc:AlternateContent, its wpg Choice beside a VML Fallback as Word writes one, is drawn from
+	 *  its Choice by default (CR-080 D13), where the Fallback painted nothing and lost the text.  @since 17.3.7 */
+	@Test
+	public void aGroupsChoiceIsDrawnByDefault() throws Exception {
+		String kids = child(1828800, 914400, 1828800, 914400, "rect", "DEEAF6", "CHOICE TEXT");
+		String para = anchoredGroup(WPG, group(kids));
+		String drawing = para.substring(para.indexOf("<w:drawing>"), para.indexOf("</w:drawing>") + "</w:drawing>".length());
+		String mc = "<mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\"><mc:Choice Requires=\"wpg\">"
+				+ drawing + "</mc:Choice><mc:Fallback><w:pict><v:group xmlns:v=\"urn:schemas-microsoft-com:vml\" style=\"width:180pt;height:90pt\""
+				+ " coordsize=\"21600,21600\"><v:rect style=\"position:absolute;left:0;top:0;width:21600;height:21600\"><v:textbox><w:txbxContent>"
+				+ "<w:p><w:r><w:t>FALLBACK TEXT</w:t></w:r></w:p></w:txbxContent></v:textbox></v:rect></v:group></w:pict></mc:Fallback></mc:AlternateContent>";
+		String body = para.replace(drawing, mc);
+		assertEquals("the default", "wps wpg wpc", org.docx4j.jaxb.McSelection.PREFER_CHOICE_DEFAULT);
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(body, flags);
+			String all = doc.getDocumentElement().getTextContent();
+			assertTrue("flags " + flags, all.contains("CHOICE TEXT"));
+			assertFalse("flags " + flags, all.contains("FALLBACK TEXT"));
+			assertEquals("flags " + flags, 1, svgs(doc).getLength());
+		}
+	}
+
 	/** A canvas draws its background, and a connector in a group shows no text, as Word shows none in one.  @since 17.3.7 */
 	@Test
 	public void aCanvasIsDrawnAndAConnectorShowsNoText() throws Exception {

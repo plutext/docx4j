@@ -35,8 +35,8 @@ public enum McPurpose {
 	TEXT,
 
 	/**
-	 * Drawing: {@code docx4j.jaxb.mc.preferChoice}, {@code wps} by default since 17.3.7, so that a
-	 * DrawingML shape's Choice is drawn and otherwise the Fallback
+	 * Drawing: {@code docx4j.jaxb.mc.preferChoice}, {@code wps wpg wpc} by default since 17.3.7, so
+	 * that a DrawingML shape's, group's or canvas's Choice is drawn and otherwise the Fallback
 	 * ({@link McSelection#selectedBranch(org.docx4j.mce.AlternateContent)}); the FO and
 	 * HTML exporters' layout, and {@link McMode#DRAW} walks ({@link McMode#READ} walks until
 	 * CR-046 phase 3).

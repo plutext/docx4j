@@ -26,7 +26,8 @@ Changes in Version 17.3.7
 
 ### PDF output
 - DrawingML shapes are drawn as Word draws them: fill, line and arrowheads under their text, which is set in the shape's text rectangle (CR-080).
-- `docx4j.jaxb.mc.preferChoice` now defaults to `wps`, so a shape's DrawingML is drawn, not its VML fallback (HTML too); set it empty for the old behaviour.
+- Groups and drawing canvases are drawn, their shapes' text placed in them (CR-080).
+- `docx4j.jaxb.mc.preferChoice` now defaults to `wps wpg wpc`, so a shape's, group's or canvas's DrawingML is drawn, not its VML fallback (HTML too); set it empty for the old behaviour.
 - An inline text box is set on its line, its height kept; its text was lost with the DrawingML drawn.
 
 ### Shapes

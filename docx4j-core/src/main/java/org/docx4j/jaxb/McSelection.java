@@ -48,17 +48,19 @@ import org.slf4j.LoggerFactory;
  * an element with Choices and no Fallback - the first Choice Word understands, else
  * nothing (WD REQ-305; ISO/IEC 29500-3 section 9.4): the element is absent.</p>
  *
- * <p><b>The property's default is {@code wps}</b> (since 17.3.7, CR-080 D12): a
+ * <p><b>The property's default is {@code wps wpg wpc}</b> (since 17.3.7, CR-080 D12, D13): a
  * DrawingML shape's Choice is drawn, which the FO exporter paints as Word does (CR-080
  * phase 2), where the VML Fallback Word writes beside it drew its strokes as outlined
  * boxes and no fill.  Set the property empty ({@code docx4j.jaxb.mc.preferChoice=}) to
  * draw the Fallback, as until 17.3.6.  The default was empty since 17.2.0: measured over
  * the real-document corpora for 17.1.0, preferring {@code wps} moved two documents and
  * both fell (CR-021 §8.5); for 17.3.7, with an inline shape set on its line, it moves
- * six, all up (gate b401: corpus document 14372 a line, five probes).  {@code wpg},
- * {@code w14}, {@code wp14} and {@code v} are deliberately not listed: a Choice
- * docx4j cannot draw is worse than the fallback the producer wrote for exactly
- * that case.</p>
+ * six, all up (gate b401: corpus document 14372 a line, five probes).  {@code wpg} and
+ * {@code wpc} too since 17.3.7 (CR-080 D13): a group's and a canvas's Choice is drawn as
+ * Word draws it (CR-080 phase 3), where the VML Fallback Word writes for one holding a text
+ * box painted nothing and lost its text.  {@code w14}, {@code wp14} and {@code v} are
+ * deliberately not listed: a Choice docx4j cannot draw is worse than the fallback the
+ * producer wrote for exactly that case.</p>
  *
  * <p>Callers: {@link org.docx4j.TraversalUtil} in its {@link McMode#DRAW} mode (its
  * {@link McMode#READ} mode until 17.3.4), the visitor exporters (FO, HTML),
@@ -90,9 +92,9 @@ public final class McSelection {
 	 *  prefers the Fallback. */
 	public static final String PROPERTY = "docx4j.jaxb.mc.preferChoice";
 
-	/** {@link #PROPERTY}'s value where it is unset: {@code wps}, a DrawingML shape's Choice
-	 *  drawn (until 17.3.6 empty, the Fallback).  @since 17.3.7 */
-	public static final String PREFER_CHOICE_DEFAULT = "wps";
+	/** {@link #PROPERTY}'s value where it is unset: {@code wps wpg wpc}, a DrawingML shape's,
+	 *  group's and canvas's Choice drawn (until 17.3.6 empty, the Fallback).  @since 17.3.7 */
+	public static final String PREFER_CHOICE_DEFAULT = "wps wpg wpc";
 
 	private McSelection() {}
 

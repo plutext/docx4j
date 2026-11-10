@@ -68,7 +68,7 @@ public class XSLTUtils {
 	 * x=528.0..581.8 and the fallback's {@code style="left:605.25pt"} put ours at
 	 * 519.9..803.5, most of it off the page.</p>
 	 *
-	 * <p><b>The default is {@code wps}</b> since 17.3.7 (CR-080 D12): a DrawingML shape's
+	 * <p><b>The default is {@code wps wpg wpc}</b> since 17.3.7 (CR-080 D12, D13): a DrawingML shape's
 	 * Choice is drawn, which the FO exporter paints as Word does (CR-080 phase 2), with an inline
 	 * shape set on its line.  Gate b401 against 17.3.6's default: six documents move, all up
 	 * (corpus 14372 a line; five probes, two to 1.0), none down; the HTML visitor writes a text
@@ -82,9 +82,10 @@ public class XSLTUtils {
 	 * written for is drawn correctly either way.  Set {@code docx4j.jaxb.mc.preferChoice=}
 	 * (empty) to take the fallback, as until 17.3.6.</p>
 	 *
-	 * <p>{@code wpg} (shape groups), {@code w14}, {@code wp14} and {@code v} are
-	 * deliberately not suggested: a Choice we cannot in fact draw is worse than the
-	 * fallback, and the fallback is what the producer wrote for exactly this case.</p>
+	 * <p>{@code wpg} (shape groups) and {@code wpc} (canvases) are in the default too since
+	 * 17.3.7 (CR-080 D13), as docx4j draws them (CR-080 phase 3).  {@code w14}, {@code wp14}
+	 * and {@code v} are deliberately not suggested: a Choice we cannot in fact draw is worse
+	 * than the fallback, and the fallback is what the producer wrote for exactly this case.</p>
 	 *
 	 * @since 17.1.0
 	 */

@@ -6,7 +6,8 @@ suggested scope ... please evaluate what if any of that is worth porting"), one 
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
 proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`); phase 1
 done, the geometry engine and `ShapeGeometry` (§6); phase 2 done, shapes drawn, and by D12 (c) the `wps` Choice
-drawn by default (9775's loss mended, an inline text box set on its line). Read
+drawn by default (9775's loss mended, an inline text box set on its line); phase 3 done, groups and canvases drawn,
+and by D13 (b) the `wpg` and `wpc` Choices drawn by default too. Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -519,8 +520,8 @@ corpus documents can't be the only oracle.
       docx4j draws a bare one whatever `docx4j.jaxb.mc.preferChoice` says. For the two with text the default draws
       the Fallback: nothing is painted and the text is lost, where the `wpg` and `wpc` Choices paint them as Word does
       (both probes' fills and lines, the glyph within 0.26pt). HTML, the visitor: the Choice gives the text box's
-      text where the Fallback gave `[null] [img]`; the XSLT route's words are the same. D13 asks whether the default
-      takes them.
+      text where the Fallback gave `[null] [img]`; the XSLT route's words are the same. D13 asked whether the default
+      takes them; (b), it does (§8).
     - **Corpora:** none of the four holds a `wpg:wgp` or `wpc:wpc` (557 documents, every part), so their gate is unmoved
       by construction; the probes are the measure. Gate b402 against b401: 0 movers, events equal, so the single
       shape's painting, now through `paintShape`, is unchanged.
@@ -649,6 +650,13 @@ corpus documents can't be the only oracle.
   Recommendation: **(b)**. The Fallback loses the text, and phase 3 draws what the Choice holds as Word does. The
   reason the default left `wpg` out, a Choice docx4j couldn't draw, no longer holds. Not measured: a group holding a
   graphic frame (a chart) or ink, which phase 3 doesn't draw (`render.shape.child_not_drawn`), against its Fallback.
+  **Decided 2026-11-10: (b), as recommended** (Jason: "(b) wps wpg wpc"). `McSelection.PREFER_CHOICE_DEFAULT` is
+  `wps wpg wpc`. Gate b403 against b402: 2 movers, both up, the same document in two corpora:
+  `12_en-US_fields1_tbl_4069` +2 lines (0.9792 to 1.0) in real and real-c2. Its three shapes are plain `wps:wsp`
+  that Word wrote under `mc:Choice Requires="wpg"`, so `wpg` reaches single shapes as well, through phase 2's
+  drawing. Probes unmoved; events equal but 4069's (bcov 0 to 1, bcovi 0 to 2 in each). Test:
+  `ShapeDrawingFoTest.aGroupsChoiceIsDrawnByDefault`, both routes. core-tests 2624 (30 skipped), export-fo-tests 921
+  (9 skipped).
 
 ## 9. Out of scope
 
