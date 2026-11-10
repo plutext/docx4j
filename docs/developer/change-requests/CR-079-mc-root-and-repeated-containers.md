@@ -1,7 +1,7 @@
 # CR-079: `mc:AlternateContent` as the root, and a repeated container, read as Word reads them
 
 Status: ACCEPTED 2026-11-07 (Jason: "CR-079: D1–D9 as recommended."). Proposed 2026-11-06 (Jason: "reproduce it first and then write a CR"). Reproduced
-on f960df59e; phases 0 to 3 done, D8's count open (§6; 4b26e7422, e8340add0, af50deffe). Read against WD 0.103 (portfolio eceabd6), which takes phase 0, `ft-*` and `rq-*` into REQ-317 to REQ-322.
+on f960df59e; phases 0 to 3 done, D8's count open (§6; 4b26e7422, e8340add0, af50deffe). Addendum 2026-11-10 (§9): a repeated child in a header or a footer, accepted (Jason: "CR-079 decisions as recommended"), D10 to D13 as recommended; phase 4 not started. Read against WD 0.103 (portfolio eceabd6), which takes phase 0, `ft-*` and `rq-*` into REQ-317 to REQ-322.
 Raised by docx4j-generated-objects-ts's Word rounds and docx-tool-identifier's run of the readers (Jason: "tell the various engines about
 the disagreement"), written up in `docx4j-portfolio/docs/text_extraction_behaviour_model.md` §7.15.
 
@@ -400,3 +400,103 @@ four largest main parts. Hand-offs to core-ts and python go through the portfoli
 - **A part other than the main part holding another story's root.** Unmeasured. D1 asks only about `mc:AlternateContent` there.
 - **Word 2003 XML and Flat OPC opened as `.xml`.** Other formats.
 - **The stylesheet's rule below the root,** which takes the Fallback in a branch it doesn't keep (`76t44`, in CR-076).
+
+## 9. Addendum, 10 November 2026: a repeated child in a header or a footer
+
+ACCEPTED 2026-11-10 (Jason: "CR-079 decisions as recommended"): D10 to D13 as recommended (§9.4). Proposed the same day
+(Jason: "write a CR-079 addendum along the same lines", after objects decided its CR-022 D7 as (c)). Phases 0 to 3 read the main part alone, as every measurement was of `word/document.xml` (§4). Two Word
+rounds since have measured a header and a footer.
+
+### 9.1 What Word does
+
+The rounds were objects', for its CR-022 D7 (Jason: "D7 let's measure a header", then "run a further round: a footer,
+three copies, and other properties"). Word 16.0.20326.20232 ran them through the bridge (da85101), each file twice,
+every job silent, the runs equal but for generated ids:
+- `header-repeats` (`hr-*`, 7 files and a control) put seven of the main part's measured cases into `word/header1.xml`.
+- `header-footer-repeats` (`hf-*`, 19 files and a control) took a header's `w:pPr` through seven forms, three copies of
+  the other shapes, the same shapes in a footer, and main-part twins of the new markup.
+
+Each source and Word's save of it were read again here (`bridge/portfolio/hr-*`, `hf-*`), and Word's PDFs agree with
+the saves.
+
+| Given more than once, in a header or a footer | Files | Word |
+|---|---|---|
+| `w:sdtContent`, block level, two and three copies | `hr-11`, `hf-18`, `hf-24` (a footer) | Joined in order, as in the main part |
+| `w:txbxContent` in a VML box, two and three | `hr-12`, `hf-19`, `hf-25` (a footer) | Joined in reverse, as in the main part |
+| `w:rPr` in a run, two and three (`w:b`, `w:i`, `w:u`) | `hr-23`, `hf-17`, `hf-23` (a footer) | Merged, all three standing, as in the main part |
+| `w:tblPr`, the first with `w:tblW` and `w:jc`, the second with `w:tblW` alone | `hr-60` | The first's `w:jc` stands. That fits a merge and the first copy alike |
+| `w:ind` twice in one `w:pPr`, `w:rFonts` twice in one `w:rPr` | `hr-70`, `hr-73` | Merged, as in the main part |
+| **A paragraph's `w:pPr`, two or three copies** | `hr-21`; `hf-10` to `hf-15`; `hf-20` to `hf-22` (a footer) | **The first copy whole; every later copy ignored.** `w:jc` then `w:ind` keeps the `w:jc` alone; `center` then `right` gives `center`; `w:ind` then `w:jc` gives the `w:ind`; three copies, three values (`left`, `center`, `right`), an empty first copy, and no `w:jc` alike: 11 of 11 |
+| A `w:pPr` twice, each with a mark `w:rPr` (`w:b`, then `w:i`) | `hf-16` | The mark keeps the first's `w:b`, and the later's `w:i` lands on the paragraph's run, which the PDF draws in italic. One file, one run |
+| The same `w:pPr` markup in the main part | `hf-51`, `hf-54`, `hf-55` | Merged, as REQ-322 has it |
+
+So a header and a footer read as the main part does, but for a paragraph's repeated `w:pPr`, where the first copy stands
+whole.
+
+### 9.2 What docx4j does (17.3.6)
+
+`Docx4jUnmarshallerListener` asks `RepeatedChildren` only in a `MainDocumentPart`. In a header or a footer JAXB keeps
+the last copy, which matches Word in none of the 23 cases (objects' count). It loses the first control's words and the
+first box's, a run's `w:b`, the first `w:tblPr`'s `w:jc`, a `w:ind`'s `left` and a `w:rFonts`'s `ascii`, and it takes
+the later `w:pPr` where Word takes the first. The test `RepeatedChildrenTest.anotherPartIsLeftAsJaxbReadsIt` holds that
+reading in a footer: two `w:pPr` (`w:jc`, then `w:ind`) read as the `w:ind` alone, where Word reads the `w:jc` alone
+(`hf-20`).
+
+The ports differ:
+- **objects** decided its CR-022 D7 as (c) and built it (Jason: "D7 (c) as recommended"). The reading applies by class
+  in every part, and in a `w:hdr` or `w:ftr` a paragraph's repeated `w:pPr` keeps the first copy. The nearest story
+  element decides, and a text box's `w:txbxContent` is a story of its own, so its paragraphs merge. It doesn't follow
+  `hf-16`'s run. It matches all 23 but that run.
+- **python**, outside the main part, reads the first copy of each, which matches Word on 11 of the 23 (its CR-039
+  §10.3).
+
+### 9.3 Approach
+
+- **`RepeatedChildren` in a `HeaderPart` and a `FooterPart` too,** the same rules as the main part's. The listener
+  knows its part already.
+- **A paragraph's repeated `w:pPr` there keeps the first copy whole.** JAXB sets the later copy after the callback
+  returns, so the listener keeps the earlier for the paragraph and sets it back when the paragraph completes. A third
+  copy finds it already kept. Nothing of the later copies stays, as Word keeps nothing of them (`hf-14`: an empty first
+  copy leaves none).
+- **A paragraph in a text box keeps the main part's merge** (D13). The listener counts the `w:txbxContent` open around
+  it, through `beforeUnmarshal`, which it doesn't use yet.
+- **The WARN** names the part, as it does now.
+- **Tests.** `RepeatedChildrenTest` against Word's saves of the 26 files, in `repeated/` beside the main part's (they
+  are objects' fixtures already). `anotherPartIsLeftAsJaxbReadsIt` becomes a test of Word's reading in a footer, and,
+  by D10, one that a footnote keeps JAXB's reading.
+
+### 9.4 Decisions
+
+- **D10. Which parts.** (a) Headers and footers, as measured; footnotes, endnotes and comments stay as JAXB reads them
+  until a round measures them. (b) Every part by class, as objects has it, its notes, comments and glossary
+  unmeasured. *Recommended:* (a), with a small round for the notes and comments (the `w:pPr`, `w:rPr` and
+  `w:sdtContent` cases in each, and a text box in a header for D13). The pPr rule differs between two stories already,
+  so it can't be assumed for a third. Until then docx4j and objects differ there, and the portfolio records it.
+  **Decided 2026-11-10: (a), as recommended** (Jason: "CR-079 decisions as recommended"), with the round.
+- **D11. A paragraph's repeated `w:pPr` in a header or a footer.** *Recommended:* the first copy whole, as 11 of 11
+  files have it, in both. **Decided 2026-11-10: as recommended.**
+- **D12. `hf-16`'s run.** A later copy's mark `w:rPr` landed on the paragraph's run. *Recommended:* not followed, as
+  objects doesn't follow it. It is one file with one run, and which runs it reaches isn't known. It goes on D10's
+  round. **Decided 2026-11-10: as recommended.**
+- **D13. A paragraph in a text box in a header.** *Recommended:* its own story, so it merges, as objects has it. That is
+  unmeasured, so it goes on D10's round too. **Decided 2026-11-10: as recommended.**
+
+### 9.5 Phase 4, headers and footers
+
+- §9.3, by D10 to D13.
+- **Each part of the house's ending**, as phases 1 to 3 had it:
+  - all the suites, and the six test classes under MOXy;
+  - mutants, against a passing baseline;
+  - the Office check on docx4j's saves of the 26 files (a round of its own);
+  - a gate against the baseline, and the register;
+  - the cost on the four largest header and footer parts in the corpora.
+- **The WD.** REQ-322 says nothing of a header or a footer. The rule goes to the portfolio for the WD with the phase.
+- **Hand-offs.** python, through the portfolio: Word reads every shape but `w:pPr` in a header as in the main part.
+  objects has (c) already.
+- **Unmeasured:**
+  - a footnote, an endnote and a comment (D10);
+  - a text box in a header (D13);
+  - a `w:sdtContent` at run, row or cell level in a header;
+  - `wps:txbx` in a header;
+  - two mark `w:rPr`, two `w:numPr` or two `w:spacing` in one `w:pPr` there;
+  - a `w:tblPr` whose later copy states what the first does (`hr-60` can't tell the first copy from a merge).
