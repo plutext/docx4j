@@ -613,14 +613,7 @@ public class XsltFOFunctions {
     }
 
     private static double shapeLinePt(org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp) {
-		if (wsp==null) return 0;
-		org.docx4j.dml.CTLineProperties ln = wsp.getSpPr()==null ? null : wsp.getSpPr().getLn();
-		if (ln==null) {
-			org.docx4j.dml.CTShapeStyle style = wsp.getStyle();
-			return (style!=null && style.getLnRef()!=null && style.getLnRef().getIdx() > 0) ? 0.75 : 0;
-		}
-		if (ln.getNoFill()!=null) return 0;
-		return ln.getW()==null ? 0.75 : ln.getW() / 12700d;
+		return org.docx4j.model.shapes.ShapeText.linePt(wsp);
     }
 
     /** The shape's text insets (wps:bodyPr lIns/tIns/rIns/bIns, EMU) in points, or null
@@ -630,16 +623,7 @@ public class XsltFOFunctions {
     }
 
     private static double[] shapeInsets(org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp) {
-		if (wsp==null || wsp.getBodyPr()==null) return null;
-		org.docx4j.dml.CTTextBodyProperties bodyPr = wsp.getBodyPr();
-		if (bodyPr.getLIns()==null && bodyPr.getTIns()==null
-				&& bodyPr.getRIns()==null && bodyPr.getBIns()==null) return null;
-		// DrawingML's defaults are Word's: 0.1in left and right, 0.05in top and bottom
-		return new double[] {
-				bodyPr.getLIns()==null ? 7.2 : bodyPr.getLIns() / 12700d,
-				bodyPr.getTIns()==null ? 3.6 : bodyPr.getTIns() / 12700d,
-				bodyPr.getRIns()==null ? 7.2 : bodyPr.getRIns() / 12700d,
-				bodyPr.getBIns()==null ? 3.6 : bodyPr.getBIns() / 12700d };
+		return org.docx4j.model.shapes.ShapeText.bodyInsets(wsp);
     }
 
     /**

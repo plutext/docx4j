@@ -8,7 +8,9 @@ proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phas
 done, the geometry engine and `ShapeGeometry` (§6); phase 2 done, shapes drawn, and by D12 (c) the `wps` Choice
 drawn by default (9775's loss mended, an inline text box set on its line); phase 3 done, groups and canvases drawn,
 and by D13 (b) the `wpg` and `wpc` Choices drawn by default too; phase 4 done, a shape, group or canvas with no text a
-picture of its extent, placed and wrapped as a picture is, as Word's wrap probes show it does. Read
+picture of its extent, placed and wrapped as a picture is, as Word's wrap probes show it does; phase 5 done, shapes
+drawn in HTML with their text over them, by both routes, and by D14 (c) pictures and charts in HTML at their size
+too. Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -617,6 +619,57 @@ corpus documents can't be the only oracle.
       lines that end above the band there; and behind the text with a square wrap, which Word wraps in mode 15 and
       docx4j takes out of the flow. Each is a change to `WordLayoutFixups.anchorImage`, for every anchored picture.
 - **Phase 5, HTML** (D5).
+  - **Built, committed 2026-11-10** (Jason: "start CR-080 phase 5", then "yes" to committing it).
+    - **What changed.** A shape, group or canvas in `Docx4J.toHTML`'s output, by the visitor and the XSLT alike
+      (`org.docx4j.convert.out.html.HtmlShapes`; `HTMLExporterVisitorGenerator.handleShape`;
+      `XsltHTMLFunctions.createShape` and a `docx2xhtml-core.xslt` branch, which now declares `wps`, `wpg` and `wpc`).
+      - It is a box: a `span` with `display:inline-block`, of its extent in points, in its line as a picture's `img` is.
+      - The drawing is the box's first child: an `svg` of the box, a user unit a point, its overflow visible, so that
+        half its line and its arrowheads show. It's hidden from screen readers where the shape shows text. Its ids
+        are prefixed with the part's name and the docPr id (`SvgIds`, moved here from `ChartBox`), as one page holds
+        every drawing.
+      - Each shape's text sits over the drawing in a container at its box: set in by the geometry's text rectangle,
+        its insets and half its line, anchored top, middle or foot as its bodyPr says (flex). That's the PDF's rule,
+        now one copy in core (`org.docx4j.model.shapes.ShapeText`), which `FOShapes` and `XsltFOFunctions` call.
+      - A shape with no text is an image: `role="img"`, its docPr's description or name as its `aria-label`.
+      - One that paints nothing and takes no space (anchored, no wrap) writes nothing, as in the PDF.
+    - **Until now** the visitor wrote a shape's text as paragraphs nested in its anchor's paragraph and drew nothing.
+      The XSLT wrote nothing at all: a shape's text was lost.
+    - **How core reaches the drawing.** docx4j-core gains a service, `org.docx4j.model.shapes.ShapeDrawer` (`uses` in
+      its module-info), which docx4j-chart-render provides (`ShapeSvgDrawer`, over `ShapeRenderer`), as it provides
+      the `ChartRenderer`. Without docx4j-chart-render the box and its text are still written where Word lays them
+      out, with nothing drawn under them.
+    - **Kept whole by an HTML parser.** The box is inside its anchor's `p`, which an HTML parser ends at a nested `p`,
+      spilling the text out of the box. So a shape's paragraphs are written as `span`s with `display:block`
+      (`HtmlShapes.phrasing`). The paragraph styles are class selectors, so a `span` takes them as a `p` does.
+    - **Two defects found on the way, in the paragraph and run builders.** They rebuild a run's `span` from its
+      `class` and `style` alone (`mergeSpans`), and fold a run's single child `span` into the run's own
+      (`composeRunSpan`, `createBlockForRPr`). Both stripped the box of its class, role and label, and the merge
+      would have joined two boxes of the same style. 9775's 9 boxes all lost their class before the fix. A shape's
+      box is now never a run's span (`XsltHTMLFunctions.isShapeBox`).
+    - **docx2fo.xslt's group branch** paired a group's text boxes by `.//wps:wsp`, which reached into a child's own
+      text box; both XSLTs now skip a shape inside a text box.
+    - **Corpora**, the 13 documents with a `wps:wsp` in their main part, by both routes, against b410's jars: no word
+      lost anywhere. The visitor's words are unchanged; the XSLT gains every text box's text (9775 +138, 5893 +78, 14372
+      +61, 5268 +48, nine others +1 to +16). Both routes write the same boxes per document (1 to 9), the drawing where
+      there's paint. The PDF: b411 against b410 (`FOShapes` on `ShapeText`), 0 movers, events equal.
+    - **Seen in a browser** (headless Chrome): phase 0's group probes (fp91) are drawn as in the PDF, and the text
+      probes (fp74) have their text at the foot, right-aligned.
+    - **Tests:** chart-render `ShapeHtmlTest` (8, both routes: the drawer found; a shape with text, its drawing and its
+      text over it, set in by the ellipse's text rectangle, centred, once, with no `p` in the box; a shape with no
+      text an image; painting nothing with no wrap, nothing; two shapes, two boxes, ids their own; a group's child's
+      text at its box; a shape inside a shape's text; a group's children keeping their text past a nested shape; the
+      box through the paragraph's spans; 9 in all). export-fo-tests `ShapeDrawingFoTest` finds the drawer on the
+      classpath, by its `META-INF/services` entry (module-info's `provides` serves the module path). core-tests
+      `HtmlShapesTest` (5, both routes, no drawer on the classpath: the text placed with nothing drawn; jsoup reading
+      the output as a browser does, the box and both its paragraphs inside the anchor's paragraph; a styled run's
+      only content a shape; a shape with no text keeps its space).
+    - **Mutants:** 16, one rule each, against a passing baseline: all caught, two after tests were added (a group's
+      second child past a nested shape; the services entry, which chart-render's module-path tests can't see).
+    - **The suites:** core-tests 2629 (30 skipped), chart-render 37 (2 skipped, the PDF gates), export-fo 111,
+      export-fo-tests 936 (9 skipped) pass.
+    - **Not done:** an anchored shape stays in its line in HTML, as an anchored picture does (no float, no
+      position); VML shapes and text boxes, which HTML doesn't output at all (D6's later CR).
 - **Phase 6, CHANGELOG, Getting Started, the register.**
 
 ## 7. Risks
@@ -736,6 +789,24 @@ corpus documents can't be the only oracle.
   drawing. Probes unmoved; events equal but 4069's (bcov 0 to 1, bcovi 0 to 2 in each). Test:
   `ShapeDrawingFoTest.aGroupsChoiceIsDrawnByDefault`, both routes. core-tests 2624 (30 skipped), export-fo-tests 921
   (9 skipped).
+
+- **D14. Lengths in HTML: a shape's box in points** (raised in phase 5, 2026-11-10). An HTML picture's `img`, and
+  since 17.3.3 a chart's box, give their points as pixels: a 144pt picture is 144px wide, 108pt, where the text beside
+  it is set in points. A shape's box can't do the same, since its text is set in points too and must fit it, so phase
+  5 gives a shape's box in points.
+  - (a) Shapes in points, pictures and charts in pixels as now: a shape is drawn at its size against the text, a
+    picture beside it at three quarters of its size.
+  - (b) Shapes in pixels too: a shape's text overflows its box by a third.
+  - (c) Shapes in points, and pictures and charts moved to points as well: everything drawn at its size, but every
+    HTML picture and chart grows by a third against 17.3.6's output.
+
+  Recommendation: **(a)** now, as built; (c) is a change to the HTML output's pictures, for its own decision and
+  CHANGELOG line.
+  **Decided 2026-11-10: (c)** (Jason, asked what the correct thing is, then "yes" to doing it as its own commit after
+  phase 5's). CSS fixes 1px at 1/96in and 1pt at 1/72in, and docx4j sets text in points, so a picture whose points
+  are written as pixels is three quarters of its size against its text; a 96-dpi screenshot, which Word sizes a pixel
+  to 1/96in, is shrunk and resampled. Shapes stay in points as phase 5 built them; pictures and charts give their
+  points as pixels at 4/3 (17.3.7, a CHANGELOG line, the ports told).
 
 ## 9. Out of scope
 

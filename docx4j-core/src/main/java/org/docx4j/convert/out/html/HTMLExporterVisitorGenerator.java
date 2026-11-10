@@ -78,7 +78,17 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 		// HTML-specific handling of elements the shared visitor has no case for;
 		// the output matches the corresponding docx2xhtml-core.xslt templates.
 
-		if (o instanceof P) {
+		if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
+				&& HtmlShapes.graphic(o)!=null) {
+
+			// a DrawingML shape, group or canvas: its box, its drawing, its text over it
+			// (17.3.7, CR-080 phase 5); until then its text was written as paragraphs in
+			// its anchor's, and nothing drawn
+			handleShape(o);
+			return null;
+
+		} else if (o instanceof P) {
 
 			// Since 17.0.4, the paragraph element is built by the same code as the
 			// XSLT pathway (children first, then wrap), rather than by handlePPr
@@ -221,6 +231,12 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			// its contents were already converted in apply (handleP / handleSdt)
 			return false;
 		}
+		if ((o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor
+				|| o instanceof org.docx4j.dml.wordprocessingDrawing.Inline)
+				&& HtmlShapes.graphic(o)!=null) {
+			// its text was already converted in apply (handleShape)
+			return false;
+		}
 		if (o instanceof org.docx4j.math.CTOMath
 				|| o instanceof org.docx4j.math.CTOMathPara) {
 			// converted whole in apply(); don't descend into the OMML children
@@ -228,6 +244,21 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 			return false;
 		}
 		return super.shouldTraverse(o);
+	}
+
+	/** A shape, group or canvas: its box, and each shape's text walked into its container.  @since 17.3.7 */
+	private void handleShape(Object anchorOrInline) {
+		HtmlShapes.Box box = HtmlShapes.create(conversionContext, anchorOrInline, document);
+		if (box==null) return;
+		getCurrentParent().appendChild(box.element);
+		for (int i = 0; i < box.shapes.size(); i++) {
+			Element container = box.texts.get(i);
+			if (container==null) continue;
+			AbstractVisitorExporterGenerator<HTMLConversionContext> generator =
+					getFactory().createInstance(conversionContext, document, container);
+			new TraversalUtil(box.shapes.get(i).getTxbx().getTxbxContent().getContent(), generator);
+			HtmlShapes.phrasing(container);
+		}
 	}
 
 	// ---------------------------------------------------------------- MathML

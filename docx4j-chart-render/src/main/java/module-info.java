@@ -17,5 +17,8 @@ module org.docx4j.chart.render {
 
 	provides org.docx4j.model.chart.ChartRenderer
 		with org.docx4j.chart.render.ClassicChartRenderer;
+	// a DrawingML shape, group or canvas drawn for docx4j-core's HTML output (CR-080 phase 5)
+	provides org.docx4j.model.shapes.ShapeDrawer
+		with org.docx4j.chart.render.ShapeSvgDrawer;
 
 }

@@ -989,6 +989,12 @@ public class XsltHTMLFunctions {
     }
 
     /** A run's element: a span, or a sup or sub (since 17.3.5, CR-069), each merged with its like. */
+    /** A DrawingML shape's box (HtmlShapes): copied whole, never merged into or collapsed with a run's span */
+    private static boolean isShapeBox(Node n) {
+    	return n instanceof Element && "span".equals(n.getLocalName()!=null ? n.getLocalName() : n.getNodeName())
+    			&& HtmlShapes.BOX_CLASS.equals(((Element) n).getAttribute("class"));
+    }
+
     private static boolean isRunElement(Node n) {
     	return runElementName(n)!=null;
     }
@@ -998,6 +1004,9 @@ public class XsltHTMLFunctions {
     	if (!(n instanceof Element)) return null;
     	if (n.getNodeType()!=Node.ELEMENT_NODE) return null;
     	String name = (n.getLocalName()!=null ? n.getLocalName() : n.getNodeName());
+    	// a DrawingML shape's box is no run: it is copied whole, as an img is, its role and
+    	// label kept, never merged with the box beside it (17.3.7, CR-080 phase 5)
+    	if (isShapeBox(n)) return null;
     	return ("span".equals(name) || "sup".equals(name) || "sub".equals(name)) ? name : null;
     }
 
@@ -1150,8 +1159,9 @@ public class XsltHTMLFunctions {
 	    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
 
     		// Avoid unnecessary nested span for common case of single child
+    		// (not a DrawingML shape's box, which keeps its own attributes: 17.3.7, CR-080 phase 5)
 	    	if (span.getChildNodes().getLength()==1
-	    			&& isSpan(span.getFirstChild())) {
+	    			&& isSpan(span.getFirstChild()) && !isShapeBox(span.getFirstChild())) {
 
 	    		Element child = (Element)span.getFirstChild();
 				String existingStyle = child.getAttribute("style");
@@ -1392,8 +1402,10 @@ public class XsltHTMLFunctions {
 			document.appendChild(span);
 			
     		// Avoid unnecessary nested span for common case of single child
+    		// (not a DrawingML shape's box, which keeps its own attributes: 17.3.7, CR-080 phase 5)
         	if (n.hasChildNodes() && n.getChildNodes().getLength()==1
-        			&& n.getChildNodes().item(0).getLocalName().equals("span")) {
+        			&& n.getChildNodes().item(0).getLocalName().equals("span")
+        			&& !isShapeBox(n.getChildNodes().item(0))) {
         		        		
         		String existingStyle = ((Element)n.getChildNodes().item(0)).getAttribute("style");
 				span.setAttribute("style", existingStyle );				
@@ -1477,4 +1489,45 @@ public class XsltHTMLFunctions {
 			}
 		}
 	}
+
+    /**
+     * The XSLT pathway's form of the HTML visitor's shapes ({@link HtmlShapes}): a DrawingML shape's, group's or
+     * canvas's box, holding its drawing and its shapes' text. childResults holds one element for each of its shapes
+     * with a text box, in document order (the XSLT's {@code box}), with that text box's converted content.
+     *
+     * @since 17.3.7 (CR-080 phase 5)
+     */
+    public static org.w3c.dom.DocumentFragment createShape(HTMLConversionContext context,
+			org.w3c.dom.traversal.NodeIterator anchorIt, org.w3c.dom.traversal.NodeIterator childResultsIt) {
+		try {
+			org.w3c.dom.Node anchorNode = (anchorIt==null) ? null : anchorIt.nextNode();
+			if (anchorNode==null) return null;
+			Unmarshaller u = Context.jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			Object anchorOrInline = XmlUtils.unwrap(u.unmarshal(anchorNode));
+			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
+			HtmlShapes.Box box = HtmlShapes.create(context, anchorOrInline, document);
+			if (box==null) return null;
+			document.appendChild(box.element);
+			org.w3c.dom.Node results = (childResultsIt==null) ? null : childResultsIt.nextNode();
+			List<org.w3c.dom.Node> boxes = new ArrayList<org.w3c.dom.Node>();
+			if (results!=null) {
+				for (org.w3c.dom.Node n = results.getFirstChild(); n!=null; n = n.getNextSibling()) {
+					if (n.getNodeType()==org.w3c.dom.Node.ELEMENT_NODE && "box".equals(n.getLocalName())) boxes.add(n);
+				}
+			}
+			for (int i = 0; i < box.texts.size() && i < boxes.size(); i++) {
+				org.w3c.dom.Element container = box.texts.get(i);
+				if (container==null) continue;
+				for (org.w3c.dom.Node n = boxes.get(i).getFirstChild(); n!=null; n = n.getNextSibling()) XmlUtils.treeCopy(n, container);
+				HtmlShapes.phrasing(container);
+			}
+			org.w3c.dom.DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+			return docfrag;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return null;
+		}
+    }
 }

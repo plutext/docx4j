@@ -208,6 +208,16 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		return null;
 	}
 
+	/** On the classpath, where this suite runs, docx-core finds docx4j-chart-render's shape drawer by its
+	 *  META-INF/services entry (module-info's provides serves the module path), for the HTML output (CR-080 phase 5).
+	 *  @since 17.3.7 */
+	@Test
+	public void theShapeDrawerIsFoundOnTheClasspath() {
+		org.docx4j.model.shapes.ShapeDrawer d = org.docx4j.model.shapes.ShapeDrawer.getDrawer();
+		assertNotNull(d);
+		assertEquals("org.docx4j.chart.render.ShapeSvgDrawer", d.getClass().getName());
+	}
+
 	@Test
 	public void theDrawingIsUnderTheTextInTheTextRectangle() throws Exception {
 		String ellipse = "<a:prstGeom prst=\"ellipse\"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val=\"DEEAF6\"/></a:solidFill><a:ln><a:noFill/></a:ln>";

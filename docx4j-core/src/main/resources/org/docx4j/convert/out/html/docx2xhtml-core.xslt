@@ -12,12 +12,15 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+    xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+    xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+    xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
     xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic w16du">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic w16du wps wpg wpc">	
 
         <!-- xmlns:xlink is deliberate, and must not be added to
              exclude-result-prefixes: it puts the declaration on the <html> element,
@@ -402,6 +405,17 @@
   	<xsl:copy-of select="java:org.docx4j.model.chart.ChartBox.createHtml( 
   			$conversionContext, 
   			$wpinline)" />
+  		</xsl:when>
+  		<xsl:when test="./a:graphic/a:graphicData/wps:wsp or ./a:graphic/a:graphicData/wpg:wgp or ./a:graphic/a:graphicData/wpc:wpc">
+  			<!--  a DrawingML shape, group or canvas: its box, its drawing, each shape's text box converted in
+  			      document order, a box each, for the container at its place (17.3.7, CR-080 phase 5) -->
+			<xsl:variable name="childResults">
+				<xsl:for-each select="./a:graphic/a:graphicData//wps:wsp[wps:txbx/w:txbxContent][count(ancestor::w:txbxContent) = count(current()/ancestor::w:txbxContent)]">
+					<box><xsl:apply-templates select="wps:txbx/w:txbxContent/*"/></box>
+				</xsl:for-each>
+			</xsl:variable>
+  	<xsl:copy-of select="java:org.docx4j.convert.out.html.XsltHTMLFunctions.createShape(
+  			$conversionContext, $wpinline, $childResults)" />
   		</xsl:when>
   		<xsl:otherwise>
   		

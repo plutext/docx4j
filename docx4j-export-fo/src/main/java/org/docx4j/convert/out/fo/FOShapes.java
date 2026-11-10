@@ -22,8 +22,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -57,21 +55,18 @@ final class FOShapes {
 	 * The presets Word draws no text in, though a text box be there (CR-080 phase 0): the line, the connectors and
 	 * three of the chart symbols.
 	 */
-	static final Set<String> NO_TEXT = new HashSet<String>(Arrays.asList("line", "lineInv", "straightConnector1", "bentConnector2",
-			"bentConnector3", "bentConnector4", "bentConnector5", "curvedConnector2", "curvedConnector3", "curvedConnector4", "curvedConnector5",
-			"chartPlus", "chartStar", "chartX"));
+	static final Set<String> NO_TEXT = org.docx4j.model.shapes.ShapeText.NO_TEXT;
 
 	private FOShapes() {}
 
 	/** The shape's preset's name, or null for a custom geometry or none */
 	static String preset(CTWordprocessingShape wsp) {
-		if (wsp == null || wsp.getSpPr() == null || wsp.getSpPr().getPrstGeom() == null || wsp.getSpPr().getPrstGeom().getPrst() == null) return null;
-		return wsp.getSpPr().getPrstGeom().getPrst().value();
+		return org.docx4j.model.shapes.ShapeText.preset(wsp);
 	}
 
 	/** Whether Word shows the shape's text: it has a text box, and its preset isn't one of {@link #NO_TEXT} */
 	static boolean hasText(CTWordprocessingShape wsp) {
-		return wsp != null && wsp.getTxbx() != null && wsp.getTxbx().getTxbxContent() != null && !NO_TEXT.contains(preset(wsp));
+		return org.docx4j.model.shapes.ShapeText.hasText(wsp);
 	}
 
 	/**
@@ -124,17 +119,7 @@ final class FOShapes {
 
 	/** As {@link #textInsets(double[], ShapeRenderer.Drawn, CTWordprocessingShape, double, double)}, from the geometry */
 	static double[] textInsets(double[] insets, ShapeOutlines outlines, CTWordprocessingShape wsp, double w, double h) {
-		if (outlines == null || wsp.getSpPr() == null || wsp.getSpPr().getXfrm() == null) return insets;
-		Rectangle2D r = outlines.getTextRectangle();
-		double[] in = insets == null ? new double[] { 7.2, 3.6, 7.2, 3.6 } : insets.clone();
-		double[] add = { r.getMinX(), r.getMinY(), w - r.getMaxX(), h - r.getMaxY() };
-		boolean any = false;
-		for (int i = 0; i < 4; i++) {
-			double a = Math.max(0, add[i]);
-			if (a > 1e-6) any = true;
-			in[i] += a;
-		}
-		return any ? in : insets;
+		return org.docx4j.model.shapes.ShapeText.textInsets(insets, outlines, wsp, w, h);
 	}
 
 	/**
@@ -219,20 +204,8 @@ final class FOShapes {
 	 * order: the order the XSLT pathway converts their text in
 	 */
 	static List<CTWordprocessingShape> textBoxes(Object group) {
-		List<CTWordprocessingShape> out = new ArrayList<CTWordprocessingShape>();
-		List<Object> children = group instanceof CTWordprocessingGroup ? ((CTWordprocessingGroup) group).getWspOrGrpSpOrGraphicFrame()
-				: group instanceof CTWordprocessingCanvas ? ((CTWordprocessingCanvas) group).getWspOrPicOrContentPart() : null;
-		if (children == null) return out;
-		for (Object o : children) {
-			Object c = o instanceof jakarta.xml.bind.JAXBElement ? ((jakarta.xml.bind.JAXBElement<?>) o).getValue() : o;
-			if (c instanceof CTWordprocessingShape) {
-				CTWordprocessingShape wsp = (CTWordprocessingShape) c;
-				if (wsp.getTxbx() != null && wsp.getTxbx().getTxbxContent() != null) out.add(wsp);
-			} else if (c instanceof CTWordprocessingGroup) {
-				out.addAll(textBoxes(c));
-			}
-		}
-		return out;
+		if (!(group instanceof CTWordprocessingGroup || group instanceof CTWordprocessingCanvas)) return new ArrayList<CTWordprocessingShape>();
+		return org.docx4j.model.shapes.ShapeText.textBoxes(group);
 	}
 
 	/**

@@ -392,46 +392,9 @@ public final class ChartBox {
 		return img;
 	}
 
-	/**
-	 * Each id in the SVG prefixed, and each reference to one ({@code url(#id)}, {@code #id}):
-	 * Batik numbers a drawing's clip paths from 1, and an HTML document holds every chart's
-	 */
+	/** Each id in the SVG prefixed, and each reference to one: an HTML document holds every chart's */
 	private static void prefixIds(Element svg, String prefix) {
-		java.util.Set<String> ids = new java.util.HashSet<>();
-		collectIds(svg, ids);
-		if (!ids.isEmpty()) renameIds(svg, ids, prefix);
-	}
-
-	private static void collectIds(Element e, java.util.Set<String> ids) {
-		if (e.hasAttribute("id")) ids.add(e.getAttribute("id"));
-		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-			if (n instanceof Element) collectIds((Element) n, ids);
-		}
-	}
-
-	private static void renameIds(Element e, java.util.Set<String> ids, String prefix) {
-		org.w3c.dom.NamedNodeMap attrs = e.getAttributes();
-		for (int i = 0; i < attrs.getLength(); i++) {
-			org.w3c.dom.Attr a = (org.w3c.dom.Attr) attrs.item(i);
-			String v = a.getValue();
-			if ("id".equals(a.getName())) {
-				a.setValue(prefix + v);
-			} else if (v.startsWith("#") && ids.contains(v.substring(1))) {
-				a.setValue("#" + prefix + v.substring(1));
-			} else if (v.contains("url(#")) {
-				StringBuilder b = new StringBuilder();
-				java.util.regex.Matcher m = java.util.regex.Pattern.compile("url\\(#([^)]*)\\)").matcher(v);
-				while (m.find()) {
-					m.appendReplacement(b, java.util.regex.Matcher.quoteReplacement(
-							ids.contains(m.group(1)) ? "url(#" + prefix + m.group(1) + ")" : m.group()));
-				}
-				m.appendTail(b);
-				a.setValue(b.toString());
-			}
-		}
-		for (Node n = e.getFirstChild(); n != null; n = n.getNextSibling()) {
-			if (n instanceof Element) renameIds((Element) n, ids, prefix);
-		}
+		org.docx4j.model.shapes.SvgIds.prefix(svg, prefix);
 	}
 
 

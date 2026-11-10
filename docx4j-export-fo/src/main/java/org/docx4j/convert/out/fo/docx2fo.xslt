@@ -615,7 +615,7 @@
   			<!--  a DrawingML group or canvas: drawn as one, each of its shapes' text boxes converted in
   			      document order, a box each, for the container at its box (17.3.7, CR-080 phase 3) -->
 			<xsl:variable name="childResults">
-				<xsl:for-each select="./a:graphic/a:graphicData//wps:wsp[wps:txbx/w:txbxContent]">
+				<xsl:for-each select="./a:graphic/a:graphicData//wps:wsp[wps:txbx/w:txbxContent][count(ancestor::w:txbxContent) = count(current()/ancestor::w:txbxContent)]">
 					<box><xsl:apply-templates select="wps:txbx/w:txbxContent/*"/></box>
 				</xsl:for-each>
 			</xsl:variable>
