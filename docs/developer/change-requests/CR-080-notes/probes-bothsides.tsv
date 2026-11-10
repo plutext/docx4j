@@ -1,0 +1,23 @@
+set	file	page	case	note
+fop-cr024-bothsides	fb10-bothsides	1	1a	paragraph A ends a third of the way into the left gap, then paragraph B
+fop-cr024-bothsides	fb10-bothsides	2	1b	paragraph A ends filling the left gap, then paragraph B
+fop-cr024-bothsides	fb10-bothsides	3	2a	a line break (w:br) after the first word of a band line's left gap
+fop-cr024-bothsides	fb10-bothsides	4	2b	a line break (w:br) after the first word of a band line's right gap
+fop-cr024-bothsides	fb10-bothsides	5	3a	paragraph B in the band: left 36pt, right 36pt, first line 24pt
+fop-cr024-bothsides	fb10-bothsides	6	3b	paragraph B in the band: left 36pt, hanging 36pt
+fop-cr024-bothsides	fb10-bothsides	7	4	tab stops left at 72pt and 330pt from the margin; a tab past the left gap; default tabs
+fop-cr024-bothsides	fb10-bothsides	8	5a	paragraph B justified, its last line in the left gap
+fop-cr024-bothsides	fb10-bothsides	9	5b	paragraph B justified, its last line ending the right gap
+fop-cr024-bothsides	fb10-bothsides	10	5c	paragraph B centred
+fop-cr024-bothsides	fb10-bothsides	11	5d	paragraph B right-aligned
+fop-cr024-bothsides	fb10-bothsides	12	6a	left gap 15pt, short words (a, to, the)
+fop-cr024-bothsides	fb10-bothsides	13	6b	left gap 15pt, long words
+fop-cr024-bothsides	fb10-bothsides	14	6c	left gap 30pt, short words
+fop-cr024-bothsides	fb10-bothsides	15	6d	left gap 30pt, long words
+fop-cr024-bothsides	fb10-bothsides	16	6e	left gap 60pt, short words
+fop-cr024-bothsides	fb10-bothsides	17	6f	left gap 60pt, long words
+fop-cr024-bothsides	fb10-bothsides	18	7a	an auto-width table after the anchor paragraph, beside the object
+fop-cr024-bothsides	fb10-bothsides	19	7b	a fixed 100pt table after the anchor paragraph, beside the object
+fop-cr024-bothsides	fb10-bothsides	20	8	a numbered list (label, tab, text) beside the object
+fop-cr024-bothsides	fb10-bothsides	21	9	case 1a with the object positioned on the page, where 1a's is
+fop-cr024-bothsides	fb10-bothsides	22	10	a Hebrew paragraph (right to left) beside the object
