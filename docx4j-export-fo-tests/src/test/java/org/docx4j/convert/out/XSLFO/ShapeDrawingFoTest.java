@@ -230,7 +230,8 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 	}
 
 	/** A shape with no text wrapped square is floated as a picture is, the text beside it: at the column's left,
-	 *  padded to its offset (72pt) and its distR (9pt), its 36pt offset below the paragraph's top as the float's;
+	 *  padded to its offset (72pt) and its distR (9pt) with its effect extent's r (1pt), its 36pt offset below the
+	 *  paragraph's top as the float's;
 	 *  until phase 4 it was drawn out of the flow, the text running under it.  The shape is 300pt wide, as a box under
 	 *  60% of the column would be taken out of the flow in a cell anyway, under 90% of the 451.3pt column, where the
 	 *  text goes below it, and nearer the left than the right.  */
@@ -238,7 +239,8 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 	public void aShapeWithNoTextWrappedSquareIsFloatedAsAPictureIs() throws Exception {
 		for (int flags : BOTH) {
 			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
-					.replace("cx=\"2286000\"", "cx=\"3810000\"").replace("distR=\"0\"", "distR=\"114300\""), flags);
+					.replace("cx=\"2286000\"", "cx=\"3810000\"").replace("distR=\"0\"", "distR=\"114300\"")
+					.replace("<wp:wrapSquare", "<wp:effectExtent l=\"0\" t=\"0\" r=\"12700\" b=\"0\"/><wp:wrapSquare"), flags);
 			assertEquals("flags " + flags, 1, svgs(doc).getLength());
 			Element svg = (Element) svgs(doc).item(0);
 			assertPicture("flags " + flags, svg, 300, 90);
@@ -247,26 +249,60 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 			assertEquals("flags " + flags, "left", f.getAttribute("float"));
 			Element holder = (Element) svg.getParentNode().getParentNode();
 			assertEquals("flags " + flags, 72, pt(holder.getAttribute("padding-left")), 1e-6);
-			assertEquals("flags " + flags, 9, pt(holder.getAttribute("padding-right")), 1e-6);
+			// distR and the effect extent's r, as Word wraps it (17.3.7)
+			assertEquals("flags " + flags, 10, pt(holder.getAttribute("padding-right")), 1e-6);
 			assertNoHints("flags " + flags, doc);
 		}
 	}
 
-	/** A shape with no text wrapped top and bottom reserves its band as a picture does: a block-container of its
-	 *  offset and height, 36 + 90pt, the shape at its offset in it (phase 4) */
+	/** A shape with no text wrapped top and bottom reserves its band as a picture does: drawn at its offset, 36pt
+	 *  down, out of the flow, and the band at the paragraph's top as tall as its offset and height, 36 + 90pt, less the
+	 *  lines that fit above it (Word keeps those above; docx4j sets them below, the rest where Word's are: 17.3.7) */
 	@Test
 	public void aShapeWithNoTextWrappedTopAndBottomReservesItsBand() throws Exception {
 		for (int flags : BOTH) {
 			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapTopAndBottom/>"), flags);
 			Element svg = (Element) svgs(doc).item(0);
 			assertPicture("flags " + flags, svg, 180, 90);
-			Element holder = (Element) svg.getParentNode().getParentNode();
-			Element band = (Element) holder.getParentNode();
-			assertEquals("flags " + flags, "block-container", band.getLocalName());
-			assertEquals("flags " + flags, 126, pt(band.getAttribute("height")), 1e-6);
-			assertEquals("flags " + flags, 36, pt(holder.getAttribute("padding-top")), 1e-6);
-			assertEquals("flags " + flags, 72, pt(holder.getAttribute("start-indent")), 1e-6);
+			Element abs = (Element) svg.getParentNode().getParentNode().getParentNode();
+			assertEquals("flags " + flags, "absolute", abs.getAttribute("absolute-position"));
+			assertEquals("flags " + flags, 36, pt(abs.getAttribute("top")), 1e-6);
+			assertEquals("flags " + flags, 72, pt(abs.getAttribute("left")), 1e-6);
+			Element para = (Element) abs.getParentNode().getParentNode();
+			double pitch = pt(para.getAttribute("line-height"));
+			assertTrue("flags " + flags + ": a pitch", pitch > 0 && pitch <= 36);
+			Element band = null;
+			for (org.w3c.dom.Node n = para.getFirstChild(); n != null; n = n.getNextSibling()) {
+				if (n instanceof Element && "block-container".equals(n.getLocalName()) && !"0pt".equals(((Element) n).getAttribute("height"))) band = (Element) n;
+			}
+			assertNotNull("flags " + flags + ": the band", band);
+			assertEquals("flags " + flags, 126 - Math.floor(36 / pitch) * pitch, pt(band.getAttribute("height")), 0.01);
 			assertNoHints("flags " + flags, doc);
+		}
+	}
+
+	/** An alignment places the box with its effect extent (ECMA-376 20.4.2.6; the probes: aligned right with r = 1pt,
+	 *  the right edge 1pt in from the column's): a right float padded 1pt from the column's edge.  @since 17.3.7 */
+	@Test
+	public void anAlignmentPlacesTheBoxWithItsEffectExtent() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
+					.replace("<wp:posOffset>914400</wp:posOffset></wp:positionH>", "<wp:align>right</wp:align></wp:positionH>")
+					.replace("<wp:wrapSquare", "<wp:effectExtent l=\"0\" t=\"0\" r=\"12700\" b=\"12700\"/><wp:wrapSquare"), flags);
+			Element svg = (Element) svgs(doc).item(0);
+			Element f = ancestor(svg, "float");
+			assertNotNull("flags " + flags, f);
+			assertEquals("flags " + flags, "right", f.getAttribute("float"));
+			Element holder = (Element) svg.getParentNode().getParentNode();
+			assertEquals("flags " + flags, 1, pt(holder.getAttribute("padding-right")), 0.01);
+			// centred, the box with its effect extent (180 + 2pt) is centred in the 451.3pt column: 134.65pt in
+			doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
+					.replace("<wp:posOffset>914400</wp:posOffset></wp:positionH>", "<wp:align>center</wp:align></wp:positionH>")
+					.replace("<wp:wrapSquare", "<wp:effectExtent l=\"0\" t=\"0\" r=\"25400\" b=\"0\"/><wp:wrapSquare"), flags);
+			svg = (Element) svgs(doc).item(0);
+			holder = (Element) svg.getParentNode().getParentNode();
+			assertEquals("flags " + flags, "left", ((Element) holder.getParentNode()).getAttribute("float"));
+			assertEquals("flags " + flags, 134.65, pt(holder.getAttribute("padding-left")), 0.01);
 		}
 	}
 
@@ -277,22 +313,29 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 				+ "<wp:lineTo x=\"21600\" y=\"21600\"/><wp:lineTo x=\"21600\" y=\"0\"/><wp:lineTo x=\"0\" y=\"0\"/></wp:wrapPolygon></wp:wrapTight>";
 		for (String wrap : new String[] { tight, tight.replace("wrapTight", "wrapThrough") }) {
 			for (int flags : BOTH) {
-				org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", wrap), flags);
+				org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>",
+						"<wp:effectExtent l=\"0\" t=\"0\" r=\"12700\" b=\"12700\"/>" + wrap).replace("distR=\"0\"", "distR=\"114300\""), flags);
 				Element svg = (Element) svgs(doc).item(0);
 				assertPicture("flags " + flags, svg, 180, 90);
 				assertNotNull("flags " + flags + " " + wrap, ancestor(svg, "float"));
+				// Word wraps the polygon, without the effect extent (the probes: 225.22, not 226.18; 17.3.7)
+				assertEquals("flags " + flags, 9, pt(((Element) svg.getParentNode().getParentNode()).getAttribute("padding-right")), 1e-6);
 			}
 		}
 	}
 
-	/** Behind the text a wrapped shape displaces nothing, as a picture behind it doesn't: out of the flow (phase 4) */
+	/** Behind the text a shape wrapped square is floated as one in front is, as Word wraps it (phase 4's wrap probes,
+	 *  fw10-13 and fw10-01); with no wrap, behind the text, it takes no space */
 	@Test
-	public void aShapeWithNoTextBehindTheTextTakesNoSpace() throws Exception {
+	public void aShapeWithNoTextBehindTheTextIsWrappedAsInFront() throws Exception {
 		for (int flags : BOTH) {
-			org.w3c.dom.Document doc = fo(anchored(RED_RECT, null, "<wps:bodyPr/>").replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>")
-					.replace("behindDoc=\"0\"", "behindDoc=\"1\""), flags);
+			String behind = anchored(RED_RECT, null, "<wps:bodyPr/>").replace("behindDoc=\"0\"", "behindDoc=\"1\"");
+			org.w3c.dom.Document doc = fo(behind.replace("<wp:wrapNone/>", "<wp:wrapSquare wrapText=\"bothSides\"/>"), flags);
 			Element svg = (Element) svgs(doc).item(0);
 			assertPicture("flags " + flags, svg, 180, 90);
+			assertNotNull("flags " + flags, ancestor(svg, "float"));
+			doc = fo(behind, flags);
+			svg = (Element) svgs(doc).item(0);
 			assertNull("flags " + flags, ancestor(svg, "float"));
 			Element abs = (Element) svg.getParentNode().getParentNode().getParentNode();
 			assertEquals("flags " + flags, "absolute", abs.getAttribute("absolute-position"));

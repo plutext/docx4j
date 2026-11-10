@@ -13,18 +13,18 @@ import org.docx4j.wml.Document;
 import org.junit.Test;
 
 /**
- * A picture Word draws <em>behind</em> the text ({@code wp:anchor/@behindDoc="1"})
- * displaces nothing: its wrap element is not applied, the text runs over it, and it
- * reserves no space.
+ * A picture Word draws <em>behind</em> the text ({@code wp:anchor/@behindDoc="1"}) is wrapped as
+ * one in front of it is: behindDoc says where it is painted, its wrap element how the text goes
+ * round it.  Measured on CR-080 phase 4's wrap probes (Word 16.0.20326, mode 15: fw10-13 and
+ * fw11-13 lay their paragraphs out line for line as fw10-01 and fw11-01, in front); and on the
+ * mode 14 document the rule of 17.0.6 to 17.3.6 was read from, which said such a picture
+ * displaces nothing: Word centres its anchor paragraph's heading in the room beside the
+ * 155.25pt logo, and its caption, which docx4j had set beside the logo, lies below the logo's
+ * foot.  The caption had moved because the logo's offset, 22.85pt above its paragraph, was
+ * left out: such a picture is now drawn where its offset puts it, and only the part of its band
+ * below the paragraph's top is reserved.
  *
- * <p>Measured against Word 365 on a document whose 155.25pt logo carries
- * {@code wrapSquare} and {@code behindDoc="1"}: Word puts the caption beside it at
- * x=85.0, where the float put docx4j's at 249.3 - +164.3 = the picture's 155.25 plus its
- * 9.0pt distL/distR - and moved a whole block from above the table to below it,
- * everything after it +92.6pt.  9 documents of three corpora carry a wrapped
- * {@code behindDoc} anchor.</p>
- *
- * @since 17.1.0
+ * @since 17.0.6
  */
 public class BehindDocAnchorTest extends AbstractXSLFOTest {
 
@@ -53,6 +53,10 @@ public class BehindDocAnchorTest extends AbstractXSLFOTest {
 	}
 
 	private static String anchoredPicture(String relId, boolean behindDoc) {
+		return anchoredPicture(relId, behindDoc, 0);
+	}
+
+	private static String anchoredPicture(String relId, boolean behindDoc, long offsetV) {
 		return "<w:r><w:drawing xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
 				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
 				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
@@ -62,7 +66,7 @@ public class BehindDocAnchorTest extends AbstractXSLFOTest {
 				+ " locked=\"0\" layoutInCell=\"1\" allowOverlap=\"1\">"
 				+ "<wp:simplePos x=\"0\" y=\"0\"/>"
 				+ "<wp:positionH relativeFrom=\"margin\"><wp:posOffset>0</wp:posOffset></wp:positionH>"
-				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>0</wp:posOffset></wp:positionV>"
+				+ "<wp:positionV relativeFrom=\"paragraph\"><wp:posOffset>" + offsetV + "</wp:posOffset></wp:positionV>"
 				+ "<wp:extent cx=\"1270000\" cy=\"952500\"/>"
 				+ "<wp:wrapSquare wrapText=\"bothSides\"/>"
 				+ "<wp:docPr id=\"1\" name=\"anchor1\"/>"
@@ -75,11 +79,15 @@ public class BehindDocAnchorTest extends AbstractXSLFOTest {
 	}
 
 	private static org.w3c.dom.Document fo(boolean behindDoc, int flags) throws Exception {
+		return fo(behindDoc, 0, flags);
+	}
+
+	private static org.w3c.dom.Document fo(boolean behindDoc, long offsetV, int flags) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage img =
 				org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage
 					.createImagePart(pkg, png());
-		String body = "<w:p>" + anchoredPicture(img.getSourceRelationship().getId(), behindDoc)
+		String body = "<w:p>" + anchoredPicture(img.getSourceRelationship().getId(), behindDoc, offsetV)
 				+ "<w:r><w:t>Palmera Turistica Saona.</w:t></w:r></w:p>";
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
 				"<w:document " + W + "><w:body>" + body + SECT_PR + "</w:body></w:document>"));
@@ -91,20 +99,41 @@ public class BehindDocAnchorTest extends AbstractXSLFOTest {
 		return XmlUtils.getNewDocumentBuilder().parse(new ByteArrayInputStream(baos.toByteArray()));
 	}
 
+	/** Behind the text, a picture wrapped square is floated as it is in front: the text beside it.  @since 17.3.7 */
 	@Test
-	public void aBehindDocAnchorIsNotFloated() throws Exception {
+	public void aBehindDocAnchorIsFloatedAsOneInFront() throws Exception {
 		for (int flag : FLAGS) {
-			assertEquals(flagName(flag) + ": a behindDoc picture was floated, so it displaces the text",
-					0, fo(true, flag).getElementsByTagNameNS(FO, "float").getLength());
+			assertEquals(flagName(flag) + ": a behindDoc picture wrapped square should be an fo:float",
+					1, fo(true, flag).getElementsByTagNameNS(FO, "float").getLength());
 		}
 	}
 
-	/** The same anchor without behindDoc still floats, so the rule is the attribute's. */
 	@Test
-	public void anOrdinaryWrappedAnchorStillFloats() throws Exception {
+	public void anOrdinaryWrappedAnchorFloats() throws Exception {
 		for (int flag : FLAGS) {
-			assertEquals(flagName(flag) + ": the wrapped picture should still be an fo:float",
+			assertEquals(flagName(flag) + ": the wrapped picture should be an fo:float",
 					1, fo(false, flag).getElementsByTagNameNS(FO, "float").getLength());
+		}
+	}
+
+	/** 4253's logo: 75pt tall, 22.85pt above its paragraph's top (-290195 EMU), behind the text, wrapped square.
+	 *  The picture is positioned at its offset, out of the flow, and the float beside the text holds only the band
+	 *  below the paragraph's top, 75 - 22.85 = 52.15pt, empty.  @since 17.3.7 */
+	@Test
+	public void aPictureAboveItsParagraphIsDrawnThereItsBandBelowReserved() throws Exception {
+		for (int flag : FLAGS) {
+			org.w3c.dom.Document doc = fo(true, -290195, flag);
+			org.w3c.dom.NodeList floats = doc.getElementsByTagNameNS(FO, "float");
+			assertEquals(flagName(flag), 1, floats.getLength());
+			org.w3c.dom.Element fl = (org.w3c.dom.Element) floats.item(0);
+			assertEquals(flagName(flag) + ": the band holds no picture", 0, fl.getElementsByTagNameNS(FO, "external-graphic").getLength());
+			org.w3c.dom.NodeList boxes = fl.getElementsByTagNameNS(FO, "block-container");
+			assertEquals(flagName(flag), 1, boxes.getLength());
+			assertEquals(flagName(flag), 52.15, Double.parseDouble(((org.w3c.dom.Element) boxes.item(0)).getAttribute("height").replace("pt", "")), 0.01);
+			org.w3c.dom.Element graphic = (org.w3c.dom.Element) doc.getElementsByTagNameNS(FO, "external-graphic").item(0);
+			org.w3c.dom.Element abs = (org.w3c.dom.Element) graphic.getParentNode().getParentNode();
+			assertEquals(flagName(flag), "absolute", abs.getAttribute("absolute-position"));
+			assertEquals(flagName(flag), -22.85, Double.parseDouble(abs.getAttribute("top").replace("pt", "")), 0.01);
 		}
 	}
 }

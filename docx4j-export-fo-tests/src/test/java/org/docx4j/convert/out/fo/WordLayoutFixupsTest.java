@@ -707,6 +707,89 @@ public class WordLayoutFixupsTest {
 		}
 	}
 
+	/** Word's wrap takes a square object's effect extent (CR-080 phase 4's wrap probes: the text beside at 226.18 with
+	 *  r = 1pt, 225.22 with none): the float's padding on the text side and below grows by it.  @since 17.3.7 */
+	@Test
+	public void theEffectExtentWidensTheWrap() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "72", "p:36", " docx4j-anchor-effect=\"0 0 1 1\"")), 15);
+		assertTrue(out, out.contains("float=\"left\""));
+		assertTrue(out, out.contains("padding-right=\"10pt\""));
+		assertTrue(out, out.contains("padding-bottom=\"1pt\""));
+		assertFalse("hints stripped", out.contains("docx4j-anchor"));
+	}
+
+	/** Word's wrap starts distT above a square picture (the probes' second line, ending within those 3.6pt, beside it):
+	 *  the float starts there, the picture padded down to its offset, on a renderer with float-offset.  @since 17.3.7 */
+	@Test
+	public void theFloatStartsDistTAboveThePicture() {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "72", "p:24", "").replace("docx4j-anchor-dist=\"9 9 0 0\"",
+				"docx4j-anchor-dist=\"9 9 3.6 0\"")), 15);
+		if (org.docx4j.convert.out.fo.FopCapabilities.has(org.docx4j.convert.out.fo.FopCapabilities.Capability.FLOAT_OFFSET)) {
+			assertTrue(out, out.contains("float-offset=\"20.4pt\""));
+			assertTrue(out, out.contains("padding-top=\"3.6pt\""));
+		} else {
+			assertTrue(out, out.contains("padding-top=\"24pt\""));
+		}
+	}
+
+	/** A square picture above its paragraph's top (4253's logo at -22.85pt) is drawn at its offset, out of the flow,
+	 *  and an empty float holds the band below the paragraph's top: 85.04 - 22.85pt.  @since 17.3.7 */
+	@Test
+	public void aSquarePictureAboveItsParagraphIsPositionedItsBandBelowFloated() throws Exception {
+		String out = WordLayoutFixups.apply(flow(anchored("square", "72", "p:-22.85", "")), 15);
+		org.w3c.dom.Document d = parse(out);
+		org.w3c.dom.Element g = (org.w3c.dom.Element) d.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "external-graphic").item(0);
+		org.w3c.dom.Element abs = (org.w3c.dom.Element) g.getParentNode().getParentNode();
+		assertEquals("absolute", abs.getAttribute("absolute-position"));
+		assertEquals("-22.85pt", abs.getAttribute("top"));
+		org.w3c.dom.Element fl = (org.w3c.dom.Element) d.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "float").item(0);
+		assertTrue(out, fl != null);
+		assertEquals(0, fl.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "external-graphic").getLength());
+		assertTrue(out, out.contains("height=\"62.19pt\""));
+	}
+
+	/** In a header a picture above its paragraph's top keeps reserving its whole band at the paragraph's top, as before
+	 *  17.3.7: a header is sized by what is in it (7733's logos: 110 lines fewer with the band cut, gate b407). */
+	@Test
+	public void aHeaderPictureAboveItsParagraphKeepsItsBand() {
+		String fo = "<fo:root " + NS + "><fo:page-sequence><fo:static-content flow-name=\"xsl-region-before\">"
+				+ anchored("topAndBottom", "72", "p:-10", "") + "</fo:static-content><fo:flow flow-name=\"xsl-region-body\">"
+				+ "<fo:block>body</fo:block></fo:flow></fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(fo, 15);
+		assertFalse(out, out.contains("absolute-position"));
+		assertTrue(out, out.contains("height=\"85.04pt\""));
+	}
+
+	/** Two top-and-bottom pictures in one paragraph keep sharing one band (bandWith), though lines would fit above
+	 *  each: the lines-above rule is for a picture alone in its paragraph.  @since 17.3.7 */
+	@Test
+	public void twoTopAndBottomPicturesKeepTheirSharedBand() throws Exception {
+		String one = anchored("topAndBottom", "72", "p:24", "");
+		String g1 = one.substring(one.indexOf("<fo:external-graphic"), one.indexOf("/></fo:inline></fo:block>") + 2);
+		String g2 = g1.replace("docx4j-anchor-x=\"72\"", "docx4j-anchor-x=\"300\"").replace("p:24", "p:30");
+		String fo = flow("<fo:block docx4j-pstyle=\"\" line-height=\"11.5pt\"><fo:inline>text</fo:inline><fo:inline>" + g1 + g2
+				+ "</fo:inline></fo:block>");
+		org.w3c.dom.Document d = parse(WordLayoutFixups.apply(fo, 15));
+		org.w3c.dom.Element para = (org.w3c.dom.Element) d.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Format", "flow").item(0).getFirstChild();
+		int bands = 0;
+		for (org.w3c.dom.Node n = para.getFirstChild(); n != null; n = n.getNextSibling()) {
+			if (n instanceof org.w3c.dom.Element && "block-container".equals(n.getLocalName())
+					&& !"0pt".equals(((org.w3c.dom.Element) n).getAttribute("height"))) bands++;
+		}
+		assertEquals("one shared band", 1, bands);
+	}
+
+	/** Top and bottom, 24pt below the top of a paragraph of 11.5pt lines: the picture drawn at its offset, and the band
+	 *  at the paragraph's top shorter by the two lines Word keeps above it, 24 + 85.04 - 23pt.  @since 17.3.7 */
+	@Test
+	public void topAndBottomLeavesRoomForTheLinesAboveIt() {
+		String out = WordLayoutFixups.apply(flow(anchored("topAndBottom", "168.96", "p:24", "")
+				.replace("<fo:block docx4j-pstyle=\"\" space-before=\"6pt\">", "<fo:block docx4j-pstyle=\"\" space-before=\"6pt\" line-height=\"11.5pt\">")), 15);
+		assertFalse(out, out.contains("fo:float"));
+		assertTrue(out, out.contains("top=\"24pt\"") && out.contains("left=\"168.96pt\""));
+		assertTrue(out, out.contains("height=\"86.04pt\""));
+	}
+
 	@Test
 	public void topAndBottomWrapIsABlockContainerAsTallAsThePicture() {
 		String out = WordLayoutFixups.apply(flow(anchored("topAndBottom", "168.96", "p:0", "")), 15);
@@ -1641,10 +1724,12 @@ public class WordLayoutFixupsTest {
 		assertFalse(out.contains("fox:wrap-sides"));
 	}
 
-	/** Behind the text Word applies no wrap, and a renderer without the hook gets nothing. */
+	/** Behind the text the wrap is still applied, as Word applies it to a picture behind the text relative to its
+	 *  paragraph (CR-080 phase 4's wrap probes, fw10-13; ledger8's 8371 in mode 14; 17.3.7): against the page the same
+	 *  is taken, unmeasured.  A renderer without the hook gets nothing. */
 	@Test
-	public void noWrapBehindTheTextOrWithoutTheHook() {
-		assertFalse(withObstacles(true, flow(anchored("square", "301.3", "page:200", " docx4j-anchor-behind=\"1\""))).contains("fox:wrap"));
+	public void wrapBehindTheTextNoneWithoutTheHook() {
+		assertTrue(withObstacles(true, flow(anchored("square", "301.3", "page:200", " docx4j-anchor-behind=\"1\""))).contains("fox:wrap=\"square\""));
 		assertFalse(withObstacles(false, flow(anchored("square", "301.3", "page:200", ""))).contains("fox:wrap"));
 		// relative to its paragraph a picture floats, as before
 		String p = withObstacles(true, flow(anchored("square", "337.91", "p:0", "")));

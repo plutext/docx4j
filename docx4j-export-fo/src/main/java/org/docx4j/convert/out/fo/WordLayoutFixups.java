@@ -972,10 +972,14 @@ public final class WordLayoutFixups {
 	 *  cell's text reaches (WordXmlPictureE20.HINT_ANCHOR_CELL_FOOT; {@link #growRowToContain}).
 	 *  @since 17.3.3 */
 	public static final String HINT_ANCHOR_CELL_FOOT = "docx4j-anchor-cell-foot";
+	/** A square or top-and-bottom wrap's effect extent, "l t r b" in pt
+	 *  (WordXmlPictureE20.HINT_ANCHOR_EFFECT), which Word's wrap adds to the object's box.
+	 *  @since 17.3.7 */
+	public static final String HINT_ANCHOR_EFFECT = "docx4j-anchor-effect";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES,
-			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF };
+			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF, HINT_ANCHOR_EFFECT };
 
 	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
 	static Boolean obstaclesForTest;
@@ -1775,7 +1779,21 @@ public final class WordLayoutFixups {
 		double off = Double.parseDouble(y.substring(y.indexOf(':') + 1));
 		String[] dist = g.getAttribute("docx4j-anchor-dist").split(" ");
 		double distL = Double.parseDouble(dist[0]), distR = Double.parseDouble(dist[1]),
-				distB = Double.parseDouble(dist[3]);
+				distT = Double.parseDouble(dist[2]), distB = Double.parseDouble(dist[3]);
+		/* Word wraps a square or top-and-bottom object round its box with its effect extent
+		 * added, then its distances: measured on CR-080 phase 4's wrap probes, where the text
+		 * beside a 144pt picture or shape starts at 226.18 with r = 1pt, 225.22 with none, 228.1
+		 * with 3pt on every side, and the wrap's foot a line lower with b = 3pt; a 6pt line with
+		 * no effect extent wraps as a 1pt one.  Until 17.3.7 docx4j left it out (its alignment as
+		 * well, which WordXmlPictureE20 now takes).  Tight and through carry no such hint: Word
+		 * wraps their polygon in the extent's box.  @since 17.3.7 */
+		String[] effect = g.getAttribute(HINT_ANCHOR_EFFECT).trim().split("\\s+");
+		if (effect.length == 4) {
+			distL += Double.parseDouble(effect[0]);
+			distT += Double.parseDouble(effect[1]);
+			distR += Double.parseDouble(effect[2]);
+			distB += Double.parseDouble(effect[3]);
+		}
 
 		// in a table cell Word measures the position from the cell (@since 17.3.3)
 		Element cell = ancestorCell(g);
@@ -1819,20 +1837,19 @@ public final class WordLayoutFixups {
 		holder.appendChild(g); // moves it out of its run
 
 		final String wrapKind = kind;  // Word's wrap, before the cases below override it
-		final boolean behind = "1".equals(g.getAttribute("docx4j-anchor-behind"));
 		if (pageY) kind = "none"; // FOP cannot wrap text around a page-positioned object
-		/* A picture Word draws *behind* the text (wp:anchor/@behindDoc="1") displaces
-		 * nothing: its wrap element is not applied, the text runs over it, and it
-		 * reserves no space.  Measured on a document whose 155.25pt logo carries
-		 * wrapSquare and behindDoc="1": Word puts the caption beside it at x=85.0,
-		 * where the float put ours at 249.3 - +164.3 = the picture's 155.25 plus its
-		 * 9.0pt distL/distR - and moved a whole block from above the table to below it,
-		 * everything after it +92.6pt.  In the body only: a header or footer region takes
-		 * its height from what is in it, and a picture drawn behind that region's text is
-		 * still what gives it that height - measured, letting a behindDoc anchor in a
-		 * footer reserve nothing took a document's region-body margin-bottom from 73.7 to
-		 * 50.2pt and cost it a page of 27.  @since 17.1.0 */
-		if ("1".equals(g.getAttribute("docx4j-anchor-behind")) && floatsAllowed(para)) kind = "none";
+		/* A picture Word draws behind the text (wp:anchor/@behindDoc="1") is wrapped as one in
+		 * front of it is: behindDoc says where it is painted, its wrap element how the text goes
+		 * round it.  On CR-080 phase 4's wrap probes (mode 15) a picture or shape behind the text
+		 * wrapped square lays its paragraph out line for line as the same in front (fw10-13,
+		 * fw11-13); ledger8 found wrapTight applied in mode 14 (8371); and the mode 14 document
+		 * the rule of 17.1.0 to 17.3.6, that such a picture displaces nothing, was read from
+		 * (4253, a 155.25pt logo at -22.85pt) has Word centring its anchor paragraph's heading in
+		 * the room beside the logo, its caption below the logo's foot.  What had put the caption
+		 * beside it in docx4j was the offset above the paragraph, which the float left out
+		 * (placed at the paragraph's top, its foot 22.85pt low): such a picture is now drawn
+		 * where its offset puts it, its band only what lies below the paragraph's top (below).
+		 * @since 17.3.7 */
 		if ("square".equals(kind) && !FOConversionContext.useFloats()) {
 			kind = "topAndBottom"; // the property asks for the picture to be in the flow
 		} else if ("square".equals(kind) && oneColumn > 0) {
@@ -1896,6 +1913,38 @@ public final class WordLayoutFixups {
 			if (body > 0 && Math.max(0, off) + h > body) kind = "none";
 		}
 
+		/* A picture above its paragraph's top (a negative paragraph-relative offset), wrapped
+		 * square or top and bottom: Word draws it at its offset and wraps the paragraph's lines
+		 * that lie beside it (4253's logo at -22.85pt, its heading centred beside it); docx4j put
+		 * it at the paragraph's top, its band's foot too low by the offset.  So it is positioned
+		 * as one with no wrap is, and only the band below the paragraph's top is reserved, by an
+		 * empty float or block of that height.  In the body's flow only: a header or footer is
+		 * sized by what is in it, and there reserving the whole band stays nearer Word's (7733's
+		 * header and footer logos at -45.6 and -6.95pt: 110 lines fewer at gate b407 with the
+		 * band cut).  @since 17.3.7 */
+		if (off < 0 && floatsAllowed(para) && ("square".equals(kind) || "topAndBottom".equals(kind))) {
+			double band = off + h + distB;
+			Element positioned = positioned(doc, holder, x, off, w, h, false, ml);
+			Element space = null;
+			if (band > 0 && "square".equals(kind)) {
+				boolean right = x + w / 2 > col / 2;
+				space = doc.createElementNS(FO_NS, "fo:float");
+				space.setAttribute("float", right ? "right" : "left");
+				Element pad = doc.createElementNS(FO_NS, "fo:block");
+				pad.setAttribute("padding-left", pt(right ? distL : Math.max(0, x)));
+				pad.setAttribute("padding-right", pt(right ? Math.max(0, col - x - w) : distR));
+				pad.setAttribute("start-indent", "0pt");
+				pad.setAttribute("end-indent", "0pt");
+				pad.appendChild(emptyBox(doc, w, band));
+				space.appendChild(pad);
+			} else if (band > 0) {
+				space = emptyBox(doc, -1, band);
+			}
+			insertAnchorWrapper(para, positioned);
+			if (space != null) insertAnchorWrapper(para, space);
+			return;
+		}
+
 		Element wrapper;
 		if ("square".equals(kind)) {
 			boolean right = x + w / 2 > col / 2;
@@ -1906,18 +1955,45 @@ public final class WordLayoutFixups {
 			// the picture's offset below its paragraph: as the float's offset on a renderer
 			// with float-offset (fork CR-023; the lines above it full width, as Word's), else
 			// padding inside the float (CR-032 phase 2)
-			if (off > 0) {
-				if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
-					wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(off));
-				} else {
-					holder.setAttribute("padding-top", pt(off));
-				}
+			/* Word's wrap starts distT (and the effect extent's top) above the picture: on
+			 * CR-080 phase 4's wrap probes, a picture 24pt below its paragraph's top with distT
+			 * 3.6pt has the paragraph's second line, whose box ends within those 3.6pt, set
+			 * beside it, where docx4j's float, starting at the picture, set it full width and
+			 * every line beside the picture one line late (fw10-01, fw11-01).  So the float
+			 * starts that much higher and the picture is padded down to its offset.  @since 17.3.7 */
+			if (FopCapabilities.has(FopCapabilities.Capability.FLOAT_OFFSET)) {
+				double top = Math.max(0, off - distT);
+				if (top > 0) wrapper.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:float-offset", pt(top));
+				if (off - top > 0) holder.setAttribute("padding-top", pt(off - top));
+			} else if (off > 0) {
+				holder.setAttribute("padding-top", pt(off));
 			}
 			if (distB > 0) holder.setAttribute("padding-bottom", pt(distB));
 			wrapper.appendChild(holder);
 		} else if ("topAndBottom".equals(kind)) {
 			if (bandWith(doc, para, holder, Math.max(0, x), w, Math.max(0, off), h, distB)) {
 				return;   // it joined the drawing beside it; that band reserves the height
+			}
+			if (floatsAllowed(para) && !otherWrappedAnchors(para, g)
+					&& linePitchPt(para) > 0 && Math.floor((off - distT) / linePitchPt(para)) >= 1) {
+				/* Word keeps the anchor paragraph's lines that end above a top-and-bottom picture's
+				 * band (its offset less distT and the effect extent's top) above it, and sets the
+				 * rest below it: on CR-080 phase 4's wrap probes a picture 24pt below its paragraph's
+				 * top has the paragraph's first line above it, the second at its foot (fw10-07,
+				 * fw11-07), where docx4j's band at the paragraph's top put every line below, each a
+				 * line low.  docx4j can't split the paragraph round the band (a float as wide as the
+				 * column set the second line beside it on the fork, one word past the column's edge),
+				 * so, as inFlowOffset does for a positioned table: the picture is drawn at its offset,
+				 * out of the flow, and the band at the paragraph's top is shorter by the lines that
+				 * fit above it, which are set below it instead; every line after them lands where
+				 * Word's does.  Where another drawing wraps in the same paragraph the shared band
+				 * (bandWith) stays.  @since 17.3.7 */
+				double pitch = linePitchPt(para);
+				double above = Math.floor((off - distT) / pitch) * pitch;
+				insertAnchorWrapper(para, positioned(doc, holder, x, off, w, h, false, ml));
+				double band = off + h + distB - above;
+				if (band > 0) insertAnchorWrapper(para, emptyBox(doc, -1, band));
+				return;
 			}
 			wrapper = doc.createElementNS(FO_NS, "fo:block-container");
 			wrapper.setAttribute("height", pt(Math.max(0, off) + h + distB));
@@ -1927,37 +2003,73 @@ public final class WordLayoutFixups {
 			holder.setAttribute("start-indent", pt(Math.max(0, x)));
 			wrapper.appendChild(holder);
 		} else {
-			wrapper = doc.createElementNS(FO_NS, "fo:block-container");
-			wrapper.setAttribute("height", "0pt");
-			wrapper.setAttribute("overflow", "visible");
-			wrapper.setAttribute("start-indent", "0pt");
-			wrapper.setAttribute("end-indent", "0pt");
-			Element abs = doc.createElementNS(FO_NS, "fo:block-container");
-			abs.setAttribute("absolute-position", pageY ? "fixed" : "absolute");
-			abs.setAttribute("top", pt(off));
-			abs.setAttribute("left", pt(pageY ? x + ml : x));
-			abs.setAttribute("width", pt(w));
-			abs.setAttribute("height", pt(h));
-			abs.setAttribute("overflow", "visible");
-			/* The picture at the container's top: on a 0pt line of a 0.1pt font FOP sets it
-			 * 0.045pt above it (a 36pt logo at 18.475 for a top of 18.52), into the border of a
-			 * cell whose top it is placed at - which at screen resolutions then lost that border
-			 * under it, where Word's, 0.02pt above its picture, shows.  A 0pt font puts it at
-			 * 18.52; a normal line 0.014pt below, into the border under a row grown to it.
-			 * Positioned, the line moves nothing else.  @since 17.3.3 */
-			holder.setAttribute("font-size", "0pt");
-			abs.appendChild(holder);
-			wrapper.appendChild(abs);
-			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5); behind the
-			// text, Word applies no wrap (above)
-			if (pageY && !behind && ("square".equals(wrapKind) || "topAndBottom".equals(wrapKind))
+			wrapper = positioned(doc, holder, x, off, w, h, pageY, ml);
+			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5), behind the
+			// text as well (above)
+			if (pageY && ("square".equals(wrapKind) || "topAndBottom".equals(wrapKind))
 					&& obstaclesInTheLine() && inBodyFlow(para)) {
-				wrapAround(abs, "square".equals(wrapKind) ? "square" : "top-and-bottom",
-						g.getAttribute(HINT_ANCHOR_SIDES), Double.parseDouble(dist[2]), distB, distL, distR);
+				wrapAround(firstElementChild(wrapper), "square".equals(wrapKind) ? "square" : "top-and-bottom",
+						g.getAttribute(HINT_ANCHOR_SIDES), distT, distB, distL, distR);
 			}
 		}
 		if (inCell != null) insertAtCellTop(cell, wrapper);
 		else insertAnchorWrapper(para, wrapper);
+	}
+
+	/** Whether another drawing in this paragraph, not yet placed, wraps square or top and bottom. */
+	private static boolean otherWrappedAnchors(Element para, Element g) {
+		for (String name : new String[] { "external-graphic", "instream-foreign-object" }) {
+			NodeList nl = para.getElementsByTagNameNS(FO_NS, name);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element e = (Element) nl.item(i);
+				if (e == g) continue;
+				String k = e.getAttribute(HINT_ANCHOR);
+				if ("square".equals(k) || "topAndBottom".equals(k)) return true;
+			}
+		}
+		return false;
+	}
+
+	/** An anchored picture's holder positioned at (x, top) from its paragraph's top (or, pageY, fixed on the page),
+	 *  taking no space: an absolutely positioned block-container in a zero-height one. */
+	private static Element positioned(Document doc, Element holder, double x, double top, double w, double h,
+			boolean pageY, double ml) {
+		Element wrapper = doc.createElementNS(FO_NS, "fo:block-container");
+		wrapper.setAttribute("height", "0pt");
+		wrapper.setAttribute("overflow", "visible");
+		wrapper.setAttribute("start-indent", "0pt");
+		wrapper.setAttribute("end-indent", "0pt");
+		Element abs = doc.createElementNS(FO_NS, "fo:block-container");
+		abs.setAttribute("absolute-position", pageY ? "fixed" : "absolute");
+		abs.setAttribute("top", pt(top));
+		abs.setAttribute("left", pt(pageY ? x + ml : x));
+		abs.setAttribute("width", pt(w));
+		abs.setAttribute("height", pt(h));
+		abs.setAttribute("overflow", "visible");
+		/* The picture at the container's top: on a 0pt line of a 0.1pt font FOP sets it
+		 * 0.045pt above it (a 36pt logo at 18.475 for a top of 18.52), into the border of a
+		 * cell whose top it is placed at - which at screen resolutions then lost that border
+		 * under it, where Word's, 0.02pt above its picture, shows.  A 0pt font puts it at
+		 * 18.52; a normal line 0.014pt below, into the border under a row grown to it.
+		 * Positioned, the line moves nothing else.  @since 17.3.3 */
+		holder.setAttribute("font-size", "0pt");
+		abs.appendChild(holder);
+		wrapper.appendChild(abs);
+		return wrapper;
+	}
+
+	/** An empty block-container of this height (and width, unless negative), which reserves the space. */
+	private static Element emptyBox(Document doc, double w, double h) {
+		Element box = doc.createElementNS(FO_NS, "fo:block-container");
+		if (w >= 0) box.setAttribute("width", pt(w));
+		box.setAttribute("height", pt(h));
+		box.setAttribute("start-indent", "0pt");
+		box.setAttribute("end-indent", "0pt");
+		Element empty = doc.createElementNS(FO_NS, "fo:block");
+		empty.setAttribute("font-size", "0.1pt");
+		empty.setAttribute("line-height", "0pt");
+		box.appendChild(empty);
+		return box;
 	}
 
 	/**

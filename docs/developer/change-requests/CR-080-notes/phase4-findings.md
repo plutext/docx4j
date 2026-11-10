@@ -54,3 +54,23 @@ behind or in front (fw10-12, fw10-14: within 0.1pt). Elsewhere, the same on the 
 
 None of these is phase 4's: a picture anchored the same way departs the same, since 17.0.5. Each is a change to
 WordLayoutFixups.anchorImage, a layout change for every anchored picture in the corpora, so each wants its own gate.
+
+## 4. Mended (2026-11-10; Jason: "Fix the anchored-picture wrap departures the round found")
+
+In `WordXmlPictureE20.stampAnchorHints` and `WordLayoutFixups.anchorImage`, with a gate each (b405 to b409, the
+Enterprise fidelity register's `anchored-picture-wrap-geometry`):
+
+- the effect extent in an alignment, and in a square or top-and-bottom wrap (not tight or through): the text beside
+  the probes' pictures within 0.22pt of Word's;
+- the float starting distT above the picture: on the fork the line it reaches is beside the picture only where the
+  page-sequence holds an obstacle (Enterprise CR-001 §6.6 item 64, traced by the fork session), so fw10 and fw11 come
+  out as Word's and fw12 doesn't;
+- behindDoc no longer stopping the wrap, and a picture above its paragraph drawn at its offset, its band below the
+  paragraph's top reserved (in the body's flow: a header keeps its whole band);
+- top and bottom: the band shorter by the lines Word keeps above it, which docx4j sets below it, every line after them
+  where Word's is.
+
+Corpora, b409 against b404: 12851 +3, 2189 +6, 8371 +1 (Word's 68 pages), 13986 +5; 4957 -1 line (62 pages to 61,
+Word's 60); b410 (two top-and-bottom pictures in one paragraph keep their shared band) moves nothing more. Tests in
+WordLayoutFixupsTest, ShapeDrawingFoTest and BehindDocAnchorTest (rewritten: 17.0.6's rule was the offset's); 14
+mutants, all caught. export-fo 111, export-fo-tests 935 (9 skipped), core-tests 2624 (30 skipped) pass.

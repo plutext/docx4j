@@ -462,6 +462,12 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      *  tight or through): how far below the object's foot the cell's text reaches, in pt -
      *  its distB in mode 15, 0 below.  Word grows the row to that.  @since 17.3.3 */
     public static final String HINT_ANCHOR_CELL_FOOT = "docx4j-anchor-cell-foot";
+    /** A square or top-and-bottom wrap's effect extent (wp:effectExtent), "l t r b" in pt, which Word
+     *  adds to the object's box before its distances when it wraps text round it; tight and
+     *  through wrap their polygon in the extent's box, without it (CR-080 phase 4's wrap probes,
+     *  2026-11-10: the text beside a 144pt picture at 226.18 with r = 1pt, at 225.22 with none
+     *  or with wrapTight; at 228.1 with 3pt).  Only where some side is not 0.  @since 17.3.7 */
+    public static final String HINT_ANCHOR_EFFECT = "docx4j-anchor-effect";
 
     /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
     private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
@@ -503,6 +509,18 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	if (extent==null) return;
 	    	double w = extent.getCx() / EMU_PER_PT;
 	    	double h = extent.getCy() / EMU_PER_PT;
+	    	/* The effect extent is part of the object's box (ECMA-376 20.4.2.6: "added to each edge"),
+	    	 * which an alignment places: measured on CR-080 phase 4's wrap probes (Word 16.0.20326),
+	    	 * a 144pt picture or shape with r = 1pt aligned right has its right edge 1pt in from the
+	    	 * column's (522.3 on a column ending at 523.3), and centred, 0.5pt left of the extent
+	    	 * centred (225.15 for 225.65).  An offset places the extent itself (posOffset 0 with
+	    	 * l = 3pt: the picture at the column's edge).  The vertical alignments are taken alike
+	    	 * (unmeasured).  @since 17.3.7 */
+	    	org.docx4j.dml.wordprocessingDrawing.CTEffectExtent ee = anchor.getEffectExtent();
+	    	double eL = ee==null ? 0 : Math.max(0, ee.getL() / EMU_PER_PT);
+	    	double eT = ee==null ? 0 : Math.max(0, ee.getT() / EMU_PER_PT);
+	    	double eR = ee==null ? 0 : Math.max(0, ee.getR() / EMU_PER_PT);
+	    	double eB = ee==null ? 0 : Math.max(0, ee.getB() / EMU_PER_PT);
 
 	    	double colW = pd.getWritableWidthTwips() / 20d;
 	    	double pageW = pd.getPgSz().getW().doubleValue() / 20d;
@@ -528,9 +546,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	double x = refLeft;
 	    	if (ph!=null && ph.getAlign()!=null) {
 	    		switch (ph.getAlign()) {
-	    			case CENTER: x = (refLeft + refRight - w) / 2; break;
-	    			case RIGHT: case OUTSIDE: x = refRight - w; break;
-	    			default: x = refLeft; // left, inside
+	    			case CENTER: x = (refLeft + refRight - (eL + w + eR)) / 2 + eL; break;
+	    			case RIGHT: case OUTSIDE: x = refRight - w - eR; break;
+	    			default: x = refLeft + eL; // left, inside
 	    		}
 	    	} else if (ph!=null && ph.getPosOffset()!=null) {
 	    		x = refLeft + ph.getPosOffset() / EMU_PER_PT;
@@ -558,9 +576,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    		double py = refTop + off;
 	    		if (pv.getAlign()!=null) {
 	    			switch (pv.getAlign()) {
-	    				case CENTER: py = (refTop + refBottom - h) / 2; break;
-	    				case BOTTOM: case OUTSIDE: py = refBottom - h; break;
-	    				default: py = refTop; // top, inside
+	    				case CENTER: py = (refTop + refBottom - (eT + h + eB)) / 2 + eT; break;
+	    				case BOTTOM: case OUTSIDE: py = refBottom - h - eB; break;
+	    				default: py = refTop + eT; // top, inside
 	    			}
 	    		}
 	    		y = "page:" + fmt(py);
@@ -574,6 +592,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	g.setAttribute(HINT_ANCHOR_DIST, fmt(emu(anchor.getDistL())) + " " + fmt(emu(anchor.getDistR()))
 	    			+ " " + fmt(emu(anchor.getDistT())) + " " + fmt(emu(anchor.getDistB())));
 	    	if (anchor.isBehindDoc()) g.setAttribute(HINT_ANCHOR_BEHIND, "1");
+	    	if ((anchor.getWrapSquare()!=null || anchor.getWrapTopAndBottom()!=null) && eL + eT + eR + eB > 0) {
+	    		g.setAttribute(HINT_ANCHOR_EFFECT, fmt(eL) + " " + fmt(eT) + " " + fmt(eR) + " " + fmt(eB));
+	    	}
 	    	org.docx4j.dml.wordprocessingDrawing.STWrapText wrapText = anchor.getWrapSquare()!=null ? anchor.getWrapSquare().getWrapText()
 	    			: anchor.getWrapTight()!=null ? anchor.getWrapTight().getWrapText()
 	    			: anchor.getWrapThrough()!=null ? anchor.getWrapThrough().getWrapText() : null;
