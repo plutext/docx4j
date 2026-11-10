@@ -115,9 +115,13 @@ public class EffectsTest {
 
 	/** The alpha (0 to 255) of a picture at a point of the drawing's frame, bilinear, 0 outside it */
 	static double alphaAt(Effects.Picture pic, double x, double y) {
-		BufferedImage im = pic.getImage();
-		double sx = im.getWidth() / pic.getPlace().width, sy = im.getHeight() / pic.getPlace().height;
-		double fx = (x - pic.getPlace().x) * sx - 0.5, fy = (y - pic.getPlace().y) * sy - 0.5;
+		return alphaAt(pic.getImage(), pic.getPlace(), x, y);
+	}
+
+	/** As {@link #alphaAt(Effects.Picture, double, double)}, for a bitmap drawn in place */
+	static double alphaAt(BufferedImage im, java.awt.geom.Rectangle2D place, double x, double y) {
+		double sx = im.getWidth() / place.getWidth(), sy = im.getHeight() / place.getHeight();
+		double fx = (x - place.getX()) * sx - 0.5, fy = (y - place.getY()) * sy - 0.5;
 		int x0 = (int) Math.floor(fx), y0 = (int) Math.floor(fy);
 		double tx = fx - x0, ty = fy - y0;
 		return (1 - ty) * ((1 - tx) * a(im, x0, y0) + tx * a(im, x0 + 1, y0)) + ty * ((1 - tx) * a(im, x0, y0 + 1) + tx * a(im, x0 + 1, y0 + 1));
@@ -142,23 +146,27 @@ public class EffectsTest {
 	}
 
 	static Compared compare(String probe, Effects.Picture pic, Map<String, Object> word) {
+		return compare(probe, pic.getEffect(), pic.getImage(), pic.getPlace(), word);
+	}
+
+	/** As {@link #compare(String, Effects.Picture, Map)}, for a bitmap drawn in place (a shape's effect, in its drawing) */
+	static Compared compare(String probe, String effect, BufferedImage im, java.awt.geom.Rectangle2D place, Map<String, Object> word) {
 		Compared c = new Compared();
 		c.probe = probe;
-		c.effect = pic.getEffect();
+		c.effect = effect;
 		double wx = Json.number(word.get("x")), wy = Json.number(word.get("y")), ww = Json.number(word.get("w")), wh = Json.number(word.get("h"));
-		c.dx = pic.getPlace().x - wx;
-		c.dy = pic.getPlace().y - wy;
-		c.dw = pic.getPlace().width - ww;
-		c.dh = pic.getPlace().height - wh;
+		c.dx = place.getX() - wx;
+		c.dy = place.getY() - wy;
+		c.dw = place.getWidth() - ww;
+		c.dh = place.getHeight() - wh;
 		Double wpw = Json.number(word.get("pw")), wph = Json.number(word.get("ph"));
 		if (wpw == null) return c;
-		c.pptRatio = pic.getPixelsPerPoint() / (wpw / ww);
+		c.pptRatio = im.getWidth() / place.getWidth() / (wpw / ww);
 		c.wordAmax = Json.number(word.get("amax")) == null ? 0 : Json.number(word.get("amax"));
 		c.wordColour = (String) word.get("colour");
 		c.wordMass = Json.number(word.get("mass")) == null ? 0 : Json.number(word.get("mass"));
 		int peak = 0;
 		long r = 0, g = 0, b = 0, n = 0;
-		BufferedImage im = pic.getImage();
 		for (int y = 0; y < im.getHeight(); y++) for (int x = 0; x < im.getWidth(); x++) peak = Math.max(peak, im.getRGB(x, y) >>> 24);
 		for (int y = 0; y < im.getHeight(); y++) {
 			for (int x = 0; x < im.getWidth(); x++) {
@@ -194,7 +202,7 @@ public class EffectsTest {
 							x = wx + (Math.min(wpw - 1, Math.floor(f * wpw)) + 0.5) * ww / wpw;
 							y = wy + (i + 0.5 + shift) * wh / wph;
 						}
-						double d = Math.abs(alphaAt(pic, x, y) - Json.number(values.get(i)));
+						double d = Math.abs(alphaAt(im, place, x, y) - Json.number(values.get(i)));
 						s += d;
 						m = Math.max(m, d);
 					}

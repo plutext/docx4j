@@ -18,7 +18,8 @@ path's box as x, y, w, h. 3-D probes (phase 5) are left out.
 
 usage: export_effects.py <results dir: one folder a job, <file>-a/<file>.pdf> [--out FILE] [--files f1,f2,...]
 (default out: docx4j-chart-render/src/test/resources/effects/cr081-word-effects.jsonl.gz; default files: phase 1's
-rectangular-picture families, FILES; phase 2's: --out .../cr081-word-frames.jsonl.gz --files FRAMES)"""
+rectangular-picture families, FILES; phase 2's: --out .../cr081-word-frames.jsonl.gz --files FRAMES; phase 3's:
+--out .../cr081-word-shapes.jsonl.gz --files SHAPES)"""
 import csv, gzip, io, json, os, sys
 import numpy as np
 from read_phase0 import page_of, drawing, near, is_3d
@@ -32,6 +33,8 @@ FILES = ['fxr10-outer-offset', 'fxr11-outer-blur', 'fxr12-outer-scale', 'fxr13-o
          'fx40-softedge', 'fxr50-reflection', 'fxr52-reflection-blur', 'fxr53-reflection-offset', 'fxr70-combo', 'fxr72-alpha']
 # phase 2: picture frames, and the flat picture styles over the four pictures
 FRAMES = ['fxr71-frames', 'fs10-photo', 'fs11-photo-jpeg', 'fs20-lineart', 'fs21-lineart-alpha']
+# phase 3: shapes, and effectRef under three themes
+SHAPES = ['fxr80-shapes', 'fxr81-effectref-2013', 'fxr82-effectref-2023', 'fxr83-effectref-custom']
 FRACS = (0.25, 0.5, 0.75)
 
 def profiles(alpha):
@@ -75,8 +78,14 @@ def main(results, out, files=FILES):
         for p in [p for p in probes if p['file'] == f]:
             draws = page_of(pdf, int(p['page']))
             dr = drawing(draws, p)
+            if p['object'].startswith('shape') and dr is not None and dr['kind'] == 'image' \
+                    and not (abs(dr['box'][2] - dr['box'][0] - 144) < 1 and abs(dr['box'][3] - dr['box'][1] - 108) < 1):
+                # an unfilled shape: its line's path is its box; with no line either, it has none (its text's alone)
+                strokes = [d for d in draws if d['kind'] == 'stroke' and abs(d['box'][2] - d['box'][0] - 144) < 0.6
+                           and abs(d['box'][3] - d['box'][1] - 108) < 0.6]
+                dr = strokes[-1] if strokes else None
             rec = {k: p[k] for k in ('probe', 'file', 'note', 'object', 'extent', 'xml')}
-            if files is FRAMES:
+            if files is FRAMES or files is SHAPES:
                 rec['page'] = int(p['page'])
             if dr is None:
                 rec['effects'] = []
@@ -108,6 +117,6 @@ if __name__ == '__main__':
     files = FILES
     if '--files' in a:
         i = a.index('--files')
-        files = FRAMES if a[i + 1] == 'FRAMES' else a[i + 1].split(',')
+        files = FRAMES if a[i + 1] == 'FRAMES' else SHAPES if a[i + 1] == 'SHAPES' else a[i + 1].split(',')
         del a[i:i + 2]
     main(a[0], out, files)

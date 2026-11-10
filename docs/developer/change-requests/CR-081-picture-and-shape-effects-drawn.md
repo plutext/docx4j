@@ -6,7 +6,8 @@ Phase 0 DONE 2026-11-10, in five rounds (`CR-081-notes/phase0-findings.md`). Pha
 geometry. Phase 1 DONE 2026-11-11 (Jason: "shall we resume work on CR-081?", then "yes" to starting phase 1; "commit phase 1"): `CR-081-notes/phase1-findings.md`; 171 effect pictures against Word's at a mean alpha error of 0.70 of
 255, corpora 0 movers. Phase 2 DONE 2026-11-11 (Jason: "start CR-081 phase 2", "comit phase 2"): `CR-081-notes/phase2-findings.md`;
 the flat picture styles' frames and effects against Word's (56 pictures at 0.76, 34 vector draws within 0.02pt), gate
-b416 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+b416 0 movers. Phase 3 DONE 2026-11-11 (Jason: "do phase 3", "commit phase 3"):
+`CR-081-notes/phase3-findings.md`; shapes' effects, `effectRef` resolved, 14 pictures at 0.44, gate b418 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -244,6 +245,16 @@ under `pic:spPr` (through the portfolio).
 - **Phase 3, shapes and text boxes** (needs CR-080.2).
   - The same effects on a `wps:wsp`'s drawing, `a:effectRef` resolved.
   - **Gate:** probes; corpora unmoved.
+  - **Done 2026-11-11** (Jason: "do phase 3", "commit phase 3"; `CR-081-notes/phase3-findings.md`).
+    - `ShapeRenderer` draws a shape's effects round its own drawing, in the shape's drawing, and so in every route.
+      This holds for a single shape and for each shape in a group or a canvas.
+    - Its effects come from its `a:effectLst`, else its style's `a:effectRef` through the theme.
+    - Against Word's PDFs of the shape probes: 14 effect pictures at a mean alpha error of 0.44 of 255.
+    - A shape's text casts its effects in Word, as a picture of its own (`fxr80-10`, `-11`); docx4j's text is the
+      output's, so it casts none. That is reported where it would show (`render.effect.shape_text`), with
+      `render.effect.flat_3d`, `effect_dag` and `group` (findings §3).
+    - Gate b418 against b417, and b419 (the final jar) against b417: 0 movers, events equal.
+      14_en-US_num_tbl_14372's two shapes gain their theme's shadow, each within 0.5pt of Word's golden.
 - **Phase 4, preset shadows** (D6): the 20 `a:prstShdw` presets as outer shadows with Word's parameters, measured in
   phase 0.
 - **Phase 5, 3-D** (D5): `a:scene3d` and `a:sp3d` on pictures, shapes, SmartArt (CR-082) and WordArt (CR-083, from

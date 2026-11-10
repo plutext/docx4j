@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.docx4j.dml.CTBlipFillProperties;
+import org.docx4j.dml.CTEffectList;
 import org.docx4j.dml.CTGradientFillProperties;
 import org.docx4j.dml.CTLineEndProperties;
 import org.docx4j.dml.CTLineProperties;
@@ -218,6 +219,17 @@ public final class ShapeRenderer {
 	 * @param pictures gives a picture fill's picture, or null where there are none
 	 */
 	public static Drawn draw(CTShapeProperties spPr, CTShapeStyle style, ThemeColors theme, long cx, long cy, Pictures pictures) {
+		return draw(spPr, style, theme, cx, cy, pictures, false);
+	}
+
+	/**
+	 * The shape drawn at its size, with its effects (CR-081 phase 3).
+	 *
+	 * @param text the shape shows text: Word's text casts the shape's effects too, which docx4j doesn't draw, so where
+	 *        they would show it is reported ({@link #TEXT_EFFECTS})
+	 * @since 17.3.7 (CR-081 phase 3)
+	 */
+	public static Drawn draw(CTShapeProperties spPr, CTShapeStyle style, ThemeColors theme, long cx, long cy, Pictures pictures, boolean text) {
 		ShapeOutlines outlines = ShapeGeometry.outlines(spPr, cx, cy);
 		List<String> problems = new ArrayList<String>();
 		if (outlines.getProblem() != null) problems.add(outlines.getProblem());
@@ -225,6 +237,7 @@ public final class ShapeRenderer {
 		Drawing drawing = new Drawing(w, h);
 		Rectangle2D bounds = paintShape(drawing, spPr, style, theme, outlines, w, h, turn(spPr == null ? null : spPr.getXfrm(), w, h), pictures,
 				null, problems);
+		bounds = effects(drawing, 0, spPr, style, theme, null, new Rectangle2D.Double(0, 0, w, h), text, bounds, problems);
 		return new Drawn(drawing, bounds == null ? new Rectangle2D.Double(0, 0, w, h) : rect(bounds), outlines, problems);
 	}
 
@@ -428,6 +441,199 @@ public final class ShapeRenderer {
 		return new Path2D.Double(grown);
 	}
 
+	// ------------------------------------------------------------------ a shape's effects (CR-081 phase 3)
+
+	/**
+	 * A shape's text casts its effects in Word (fxr80-10, -11: its outer shadow, a picture of its own under the
+	 * shape's fill); docx4j's text is the output's, not the drawing's, so it casts none. Reported where that shows:
+	 * a shadow or glow under a shape with no opaque fill, a reflection under any (D9).
+	 */
+	public static final String TEXT_EFFECTS = "render.effect.shape_text";
+
+	/** A 3-D drawing (a bevel, an extrusion, a turned camera) drawn flat, until CR-081 phase 5 (D9) */
+	public static final String FLAT_3D = "render.effect.flat_3d";
+
+	/** An effect list given as a DAG ({@code a:effectDag}), not drawn (CR-081 §9) */
+	public static final String EFFECT_DAG = "render.effect.effect_dag";
+
+	/** A group's own effects ({@code wpg:grpSpPr/a:effectLst}), not drawn: not measured (its shapes' are drawn) */
+	public static final String GROUP_EFFECTS = "render.effect.group";
+
+	/** Reports a group's own effects, which aren't drawn */
+	private static void groupEffects(CTGroupShapeProperties gp, List<String> problems) {
+		CTEffectList l = gp == null ? null : gp.getEffectLst();
+		if (l != null && (l.getOuterShdw() != null || l.getInnerShdw() != null || l.getGlow() != null || l.getSoftEdge() != null
+				|| l.getReflection() != null || l.getPrstShdw() != null) && !problems.contains(GROUP_EFFECTS)) {
+			problems.add(GROUP_EFFECTS);
+		}
+	}
+
+	/** The effects a shape draws, and the theme its colours resolve in */
+	static final class EffectsOf {
+		final CTEffectList list;
+		final ThemeColors theme;
+		final boolean flat3d;
+
+		EffectsOf(CTEffectList list, ThemeColors theme, boolean flat3d) {
+			this.list = list;
+			this.theme = theme;
+			this.flat3d = flat3d;
+		}
+	}
+
+	/**
+	 * The shape's effects: its spPr's a:effectLst where it states one (an empty one is none, over its style's:
+	 * fxr81-05, fxr82-05), else its style's a:effectRef, the theme's effect style idx (1-based; 0 none), its colours
+	 * in the reference's colour for phClr (fxr81-04, fxr83-02: a custom theme's glow in its accent); null where there
+	 * are none
+	 */
+	static EffectsOf effectsOf(CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, List<String> problems) {
+		boolean flat3d = sp != null && is3d(sp.getScene3D(), sp.getSp3D());
+		if (sp != null && sp.getEffectLst() != null) return new EffectsOf(sp.getEffectLst(), theme, flat3d);
+		if (sp != null && sp.getEffectDag() != null) {
+			if (problems != null && !problems.contains(EFFECT_DAG)) problems.add(EFFECT_DAG);
+			return flat3d ? new EffectsOf(null, theme, true) : null;
+		}
+		if (style != null && style.getEffectRef() != null && theme != null && theme.getFormatScheme() != null
+				&& theme.getFormatScheme().getEffectStyleLst() != null) {
+			long idx = style.getEffectRef().getIdx();
+			List<org.docx4j.dml.CTEffectStyleItem> items = theme.getFormatScheme().getEffectStyleLst().getEffectStyle();
+			if (idx > 0 && idx <= items.size()) {
+				org.docx4j.dml.CTEffectStyleItem item = items.get((int) idx - 1);
+				boolean item3d = flat3d || is3d(item.getScene3D(), item.getSp3D());
+				if (item.getEffectDag() != null && item.getEffectLst() == null && problems != null && !problems.contains(EFFECT_DAG)) {
+					problems.add(EFFECT_DAG);
+				}
+				return new EffectsOf(item.getEffectLst(), theme.withPlaceholder(DrawingMLColors.resolve(style.getEffectRef(), theme)), item3d);
+			}
+		}
+		return flat3d ? new EffectsOf(null, theme, true) : null;
+	}
+
+	/** Whether a scene and shape are 3-D as Word draws them: a bevel, an extrusion or a contour, or a camera off the front */
+	public static boolean is3d(org.docx4j.dml.CTScene3D scene, org.docx4j.dml.CTShape3D shape) {
+		if (shape != null && (shape.getBevelT() != null || shape.getBevelB() != null || shape.getExtrusionH() > 0 || shape.getContourW() > 0)) return true;
+		if (scene != null && scene.getCamera() != null) {
+			org.docx4j.dml.CTCamera c = scene.getCamera();
+			if (c.getPrst() != null && c.getPrst() != org.docx4j.dml.STPresetCameraType.ORTHOGRAPHIC_FRONT) return true;
+			if (c.getRot() != null && (c.getRot().getLat() != 0 || c.getRot().getLon() != 0 || c.getRot().getRev() != 0)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * The effects of the shape whose items are the drawing's from {@code from} on (its fills, then its lines and
+	 * arrowheads, as {@link #paintShape} adds them), drawn round them as Word draws a shape's (CR-081 phase 3): its
+	 * reflection, outer shadow and glow under it, its inner shadow over its fill and under its line (as a picture's,
+	 * phase 2), or the shape with its soft edge in its place (fxr80-07). Each follows the shape's silhouette, its fill
+	 * and line as painted (fxr80-02 to -04: an ellipse, a star, an arrow; fxr80-09: an unfilled shape's shadow is its
+	 * line's); a shadow's algn point is on the box with the line. The area painted, effects included.
+	 *
+	 * @param box the shape's box in the drawing's frame, before its turn (a turned shape's effects are cast unturned)
+	 */
+	static Rectangle2D effects(Drawing drawing, int from, CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, Fill groupFill,
+			Rectangle2D.Double box, boolean text, Rectangle2D bounds, List<String> problems) {
+		EffectsOf of = effectsOf(sp, style, theme, problems);
+		if (of == null) return bounds;
+		if (of.flat3d && !problems.contains(FLAT_3D)) problems.add(FLAT_3D);
+		CTEffectList list = of.list;
+		if (list == null || list.getOuterShdw() == null && list.getInnerShdw() == null && (list.getGlow() == null || list.getGlow().getRad() <= 0)
+				&& (list.getSoftEdge() == null || list.getSoftEdge().getRad() <= 0) && list.getReflection() == null) {
+			return bounds;
+		}
+		if (text && !problems.contains(TEXT_EFFECTS)) {
+			Fill f = fill(sp, style, theme, groupFill);
+			boolean covered = opaque(f);
+			if (list.getReflection() != null || !covered && (list.getOuterShdw() != null || list.getGlow() != null)) problems.add(TEXT_EFFECTS);
+		}
+		List<Object> items = drawing.getItems();
+		if (from >= items.size()) return bounds; // nothing painted, nothing cast (fxr80-10: Word's is its text's)
+		// the shape's items: its fills (and picture fills) the body, its lines and arrowheads over them
+		List<Object> mine = new ArrayList<Object>(items.subList(from, items.size()));
+		Drawing body = new Drawing(drawing.getWidth(), drawing.getHeight()), line = new Drawing(drawing.getWidth(), drawing.getHeight());
+		Rectangle2D lineBounds = null;
+		for (Object o : mine) {
+			boolean isLine = o instanceof Drawing.Area && ("shape.line".equals(((Drawing.Area) o).getRole()) || "shape.arrowhead".equals(((Drawing.Area) o).getRole()));
+			(isLine ? line : body).getItems().add(o);
+			if (isLine) lineBounds = union(lineBounds, painted((Drawing.Area) o));
+		}
+		final double x = box.x, y = box.y;
+		Effects.Painter bodyPainter = g -> {
+			g.translate(-x, -y);
+			body.paint(g);
+			g.translate(x, y);
+		};
+		Effects.Painter linePainter = line.getItems().isEmpty() ? null : g -> {
+			g.translate(-x, -y);
+			line.paint(g);
+			g.translate(x, y);
+		};
+		Rectangle2D localLine = lineBounds == null ? null
+				: new Rectangle2D.Double(lineBounds.getX() - x, lineBounds.getY() - y, lineBounds.getWidth(), lineBounds.getHeight());
+		Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, maxPixelsPerPoint());
+		for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
+		if (r.isEmpty()) return bounds;
+		List<Object> under = new ArrayList<Object>(), over = new ArrayList<Object>(), replace = new ArrayList<Object>();
+		for (Effects.Picture p : r.getPictures()) {
+			Rectangle2D.Double pl = p.getPlace();
+			Drawing.Picture dp = new Drawing.Picture(p.getImage(), new Rectangle2D.Double(pl.x + x, pl.y + y, pl.width, pl.height), null);
+			(p.getLayer() == Effects.Layer.UNDER ? under : p.getLayer() == Effects.Layer.OVER ? over : replace).add(dp);
+			bounds = union(bounds, dp.getInto());
+		}
+		List<Object> out = new ArrayList<Object>(under);
+		if (!replace.isEmpty()) {
+			out.addAll(replace);
+		} else {
+			out.addAll(body.getItems());
+			out.addAll(over);
+			out.addAll(line.getItems());
+		}
+		items.subList(from, items.size()).clear();
+		items.addAll(out);
+		return bounds;
+	}
+
+	/** What an area paints: its stroke's outline, or its shape */
+	private static Rectangle2D painted(Drawing.Area a) {
+		if (a.getLine() != null && a.getStroke() != null) return a.getStroke().createStrokedShape(a.getShape()).getBounds2D();
+		if (a.getLine() != null && a.getLineWidth() > 0) return new BasicStroke((float) a.getLineWidth()).createStrokedShape(a.getShape()).getBounds2D();
+		return a.getShape().getBounds2D();
+	}
+
+	/** Whether a fill hides what is under it: a solid colour, a gradient or a pattern with no alpha (14372's gradient) */
+	private static boolean opaque(Fill f) {
+		if (f == null) return false;
+		if (f.fill instanceof CTSolidColorFillProperties) {
+			Color c = Fills.awt(DrawingMLColors.resolve(f.fill, f.fills.getTheme()));
+			return c != null && c.getAlpha() >= 255;
+		}
+		if (f.fill instanceof CTGradientFillProperties) {
+			Drawing.Gradient g = f.fills.gradient((CTGradientFillProperties) f.fill);
+			if (g == null) return false;
+			for (Color c : g.getColours()) if (c == null || c.getAlpha() < 255) return false;
+			return true;
+		}
+		if (f.fill instanceof CTPatternFillProperties) {
+			CTShapeProperties holder = new CTShapeProperties();
+			holder.setPattFill((CTPatternFillProperties) f.fill);
+			Drawing.Pattern p = f.fills.pattern(holder);
+			return p != null && p.getForeground() != null && p.getBackground() != null && p.getForeground().getAlpha() >= 255
+					&& p.getBackground().getAlpha() >= 255;
+		}
+		return false;
+	}
+
+	/** docx4j.convert.out.effects.pixelsPerPoint, an upper bound on an effect picture's resolution (D3); 0 for none */
+	private static double maxPixelsPerPoint() {
+		String bound = org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.effects.pixelsPerPoint");
+		if (bound == null || bound.trim().isEmpty()) return 0;
+		try {
+			return Double.parseDouble(bound.trim());
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
 	// ------------------------------------------------------------------ groups and canvases
 
 	/**
@@ -446,6 +652,7 @@ public final class ShapeRenderer {
 		Frame top = new Frame(0, 0, w, h, x == null ? 0 : x.getRot() / 60000.0, x != null && x.isFlipH(), x != null && x.isFlipV());
 		top.childSpace(x);
 		top.fill = groupFill(gp, null, theme);
+		groupEffects(gp, walk.problems);
 		if (group != null) walk.children(top, group.getWspOrGrpSpOrGraphicFrame());
 		return walk.drawn(w, h);
 	}
@@ -558,6 +765,7 @@ public final class ShapeRenderer {
 									x.isFlipH(), x.isFlipV());
 					f.childSpace(x);
 					f.fill = groupFill(g.getGrpSpPr(), parent.fill, theme);
+					groupEffects(g.getGrpSpPr(), problems);
 					children(f, g.getWspOrGrpSpOrGraphicFrame());
 				} else {
 					if (!problems.contains(CHILD_NOT_DRAWN)) problems.add(CHILD_NOT_DRAWN);
@@ -575,7 +783,13 @@ public final class ShapeRenderer {
 			if (outlines.getProblem() != null && !problems.contains(outlines.getProblem())) problems.add(outlines.getProblem());
 			AffineTransform at = turn(f.x, f.y, f.w, f.h, f.rotation, f.flipH, f.flipV);
 			at.translate(f.x, f.y);
-			bounds = union(bounds, paintShape(drawing, sp, style, theme, outlines, f.w, f.h, at, pictures, parent.fill, problems));
+			int from = drawing.getItems().size();
+			Rectangle2D painted = paintShape(drawing, sp, style, theme, outlines, f.w, f.h, at, pictures, parent.fill, problems);
+			// its effects, round its own drawing (CR-081 phase 3); a picture's own spPr's
+			CTShapeProperties own = child instanceof Pic ? ((Pic) child).getSpPr() : sp;
+			painted = effects(drawing, from, own, style, theme, parent.fill, new Rectangle2D.Double(f.x, f.y, f.w, f.h),
+					child instanceof CTWordprocessingShape && org.docx4j.model.shapes.ShapeText.hasText((CTWordprocessingShape) child), painted, problems);
+			bounds = union(bounds, painted);
 			placed.add(new Placed(child, new Rectangle2D.Double(f.x, f.y, f.w, f.h), f.rotation, f.flipH, f.flipV, outlines));
 		}
 

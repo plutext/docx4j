@@ -60,7 +60,7 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		ShapeRenderer.Drawn drawn;
 		if (graphic instanceof CTWordprocessingShape) {
 			CTWordprocessingShape wsp = (CTWordprocessingShape) graphic;
-			drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, p);
+			drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, p, org.docx4j.model.shapes.ShapeText.hasText(wsp));
 		} else if (graphic instanceof CTWordprocessingGroup) {
 			drawn = ShapeRenderer.drawGroup((CTWordprocessingGroup) graphic, theme, cx, cy, p);
 		} else if (graphic instanceof CTWordprocessingCanvas) {
@@ -79,6 +79,8 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		final ShapeRenderer.PictureFrame frame = ShapeRenderer.pictureFrame(sp, theme, Math.round(w * 12700), Math.round(h * 12700));
 		if (problems != null) {
 			for (String code : frame.getProblems()) if (!problems.contains(code)) problems.add(code);
+			// a 3-D picture style is drawn flat until CR-081 phase 5 (17 of Word's 28)
+			if (sp != null && ShapeRenderer.is3d(sp.getScene3D(), sp.getSp3D()) && !problems.contains(ShapeRenderer.FLAT_3D)) problems.add(ShapeRenderer.FLAT_3D);
 		}
 		final List<EffectPicture> out = new ArrayList<EffectPicture>();
 		CTEffectList fx = sp == null ? null : sp.getEffectLst();

@@ -40,6 +40,21 @@ def drawing(imgs, pdf):
     sized = [d for d in imgs if abs(d['box'][2] - d['box'][0] - W) < 0.6 and abs(d['box'][3] - d['box'][1] - H) < 0.6]
     return (sized[-1], sized[-1]['box'], 'replace') if sized else (None, None, None)
 
+def shape_drawing(pdf, page):
+    """A shape's page (phase 3): (its images in drawing order, the index of the first image over the shape, the shape's
+    box, how found): the shape is its last vector fill or stroke of the frame's size; with none, the soft-edged shape's
+    picture in its place"""
+    draws = page_draws(pdf, pages(pdf)[page - 1])
+    sized = [i for i, d in enumerate(draws) if d['kind'] in ('fill', 'stroke') and abs(d['box'][2] - d['box'][0] - W) < 0.6
+             and abs(d['box'][3] - d['box'][1] - H) < 0.6]
+    imgs = [d for d in draws if d['kind'] == 'image']
+    if not sized:
+        rep = [d for d in imgs if abs(d['box'][2] - d['box'][0] - W) < 1 and abs(d['box'][3] - d['box'][1] - H) < 1]
+        return (imgs, None, rep[-1]['box'], 'replace') if rep else (imgs, None, None, None)
+    first, last = sized[0], sized[-1]
+    under = [d for d in draws[:first] if d['kind'] == 'image']
+    return imgs, len(under), draws[last]['box'], 'shape'
+
 def alpha_at(alpha, box, x, y):
     """alpha (rows top first) of an image drawn in box (PDF space, y up) at frame point (x, y) (from the drawing's
     top left, y down, given here already as PDF x and y)"""
@@ -112,18 +127,35 @@ def main(pdfdir, oracle, show_all):
             if page > npages:
                 print(r['probe'], 'no page')
                 continue
-            imgs = page_of(pdf, page)
-            dr, frame, how = drawing(imgs, pdf)
-            if dr is None:
-                print(r['probe'], 'no drawing found')
-                continue
-            order = imgs.index(dr)
-            mine = {'under': [d for d in imgs[:order]], 'over': [d for d in imgs[order + 1:]], 'replace': [dr] if how == 'replace' else []}
+            shape = r['object'].startswith('shape')
+            if shape:
+                if r.get('dw') is None:
+                    continue  # its text's effects alone (fxr80-10): not docx4j's
+                imgs, split, frame, how = shape_drawing(pdf, page)
+                if frame is None:
+                    print(r['probe'], 'no shape found')
+                    continue
+                if how == 'replace':
+                    dr = [d for d in imgs if d['box'] == frame][-1]
+                    mine = {'under': [], 'over': [], 'replace': [dr]}
+                else:
+                    mine = {'under': imgs[:split], 'over': imgs[split:], 'replace': []}
+            else:
+                imgs = page_of(pdf, page)
+                dr, frame, how = drawing(imgs, pdf)
+                if dr is None:
+                    print(r['probe'], 'no drawing found')
+                    continue
+                order = imgs.index(dr)
+                mine = {'under': [d for d in imgs[:order]], 'over': [d for d in imgs[order + 1:]], 'replace': [dr] if how == 'replace' else []}
             soft = 'softEdge' in r['xml']
+            text = shape and 'text' in r['note']
             word = {'under': [], 'over': [], 'replace': []}
             for e in r['effects']:
                 if e['role'] == 'replace' and not soft or e.get('kind') != 'image':
                     continue
+                if text and (e['role'] != 'under' or word['under']):
+                    continue  # the text's own pictures (its shadow, the text itself): not docx4j's
                 word[e['role']].append(e)
             for role in ('under', 'replace', 'over'):
                 if len(mine[role]) != len(word[role]):

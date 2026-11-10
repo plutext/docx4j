@@ -176,6 +176,28 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 		}
 	}
 
+	/**
+	 * A shape's effects (CR-081 phase 3): its outer shadow a picture with alpha under its fill, in the drawing's SVG, its
+	 * extent and place unchanged
+	 */
+	@Test
+	public void aShapesShadowIsDrawnUnderIt() throws Exception {
+		String shadow = "<a:effectLst><a:outerShdw blurRad=\"50800\" dist=\"38100\" dir=\"2700000\" algn=\"tl\" rotWithShape=\"0\">"
+				+ "<a:srgbClr val=\"000000\"><a:alpha val=\"40000\"/></a:srgbClr></a:outerShdw></a:effectLst>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(anchored(RED_RECT + shadow, null, "<wps:bodyPr/>"), flags);
+			Element svg = (Element) svgs(doc).item(0);
+			assertPicture("flags " + flags, svg, 180, 90);
+			NodeList images = svg.getElementsByTagNameNS(SVG_NS, "image");
+			assertEquals("flags " + flags, 1, images.getLength());
+			String href = ((Element) images.item(0)).getAttributeNS("http://www.w3.org/1999/xlink", "href");
+			assertTrue("flags " + flags, href.startsWith("data:image/png;base64,"));
+			// under the fill: the picture comes before the drawing's first path
+			String text = XmlUtils.w3CDomNodeToString(svg);
+			assertTrue("flags " + flags, text.indexOf("<image") < text.indexOf("<path"));
+		}
+	}
+
 	/** The svg is a picture's of w x h pt: in an fo:instream-foreign-object of that extent, its viewBox the box, a user
 	 *  unit a point, what it paints past the box shown */
 	private static Element assertPicture(String message, Element svg, double w, double h) {

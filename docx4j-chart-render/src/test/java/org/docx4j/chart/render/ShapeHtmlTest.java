@@ -198,6 +198,22 @@ public class ShapeHtmlTest {
 		}
 	}
 
+	/** A shape's shadow (CR-081 phase 3) is a picture in its drawing, under its fill, by both routes */
+	@Test
+	public void aShapesShadowIsInItsDrawing() throws Exception {
+		String shadow = "<a:effectLst><a:outerShdw blurRad=\"50800\" dist=\"38100\" dir=\"2700000\" algn=\"tl\" rotWithShape=\"0\">"
+				+ "<a:srgbClr val=\"000000\"><a:alpha val=\"40000\"/></a:srgbClr></a:outerShdw></a:effectLst>";
+		String body = "<w:p>" + inline(2, graphic(WPS, wsp("rect", RED + shadow, null, "<wps:bodyPr/>"))) + "</w:p>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = html(body, flags);
+			Element svg = firstSvg(byClass(doc, "docx4j-shape").get(0));
+			NodeList images = svg.getElementsByTagNameNS(SVG_NS, "image");
+			assertEquals(flagName(flags), 1, images.getLength());
+			String text = XmlUtils.w3CDomNodeToString(svg);
+			assertTrue(flagName(flags), text.indexOf("<image") < text.indexOf("<path"));
+		}
+	}
+
 	/** An anchored shape with no wrap that paints nothing writes nothing; one in its line keeps its space */
 	@Test
 	public void aShapeThatPaintsNothingWithNoWrapWritesNothing() throws Exception {
