@@ -181,7 +181,6 @@ public final class WordLayoutFixups {
 		anchorTextBoxes(doc, compatibilityMode);
 		textBoxStartIndents(doc);
 		anchorFloatingTables(doc);
-		hoistFloats(doc);
 		// after the anchoring passes: a paragraph which gains a positioned container is
 		// not one whose only block-level content is soft returns
 		justifySoftReturns(doc, compat);
@@ -1478,8 +1477,8 @@ public final class WordLayoutFixups {
 	 *     footer or a footnote, and one in a multi-column region - FOP lays out no side
 	 *     float in any of those, and paints nothing at all for one (&#xa7;10);</li>
 	 * <li>one which an {@code fo:block} inside an {@code fo:inline} follows - a line
-	 *     break inside a run - since that combination throws in FOP
-	 *     ({@link #hoistFloats}) and a float holding a table cannot be hoisted;</li>
+	 *     break inside a run - since that combination threw in FOP before FOP-3348
+	 *     (Enterprise CR-001 &#xa7;6.6 item 36);</li>
 	 * <li>one with no following block to anchor the float to.</li>
 	 * </ul>
 	 *
@@ -2484,11 +2483,9 @@ public final class WordLayoutFixups {
 	private static boolean floatFloatingTable(Document doc, Element tbl) {
 		Node parent = tbl.getParentNode();
 		if (!(parent instanceof Element) || !isFo((Element) parent, "flow")) return false;
-		// {@link #hoistFloats} would move this float to flow level, where FOP renders a
-		// float holding a table as nothing at all (measured), losing the table; and left
-		// where it is, the combination threw on Apache FOP (TraitSetter.setVisibility, §6.6
-		// item 36).  So on Apache FOP the table stays in the flow instead.  The docx4j
-		// renderer from 2.11-docx4j.5 carries the fix (fop/CR-011, FOP-3348; the three
+		// A float holding a table, followed by a line break inside a run, threw on Apache
+		// FOP (TraitSetter.setVisibility, §6.6 item 36), so on Apache FOP the table stays
+		// in the flow instead.  The docx4j renderer from 2.11-docx4j.5 carries the fix (fop/CR-011, FOP-3348; the three
 		// recorded reproducers render on it), and Word floats such a table as any other
 		// (probe table-floating-br-anchor: the text beside it, 70pt a page; CR-032 phase 1).
 		String[] pad = tbl.getAttribute(HINT_TBLP_PAD).trim().split("\\s+");
@@ -3202,7 +3199,8 @@ public final class WordLayoutFixups {
 	/**
 	 * Whether an fo:block inside an fo:inline - how the visitor pathway emits a line break
 	 * inside a run - comes after this element in document order.  That is the other half
-	 * of the FOP float defect {@link #hoistFloats} works around.
+	 * of the FOP float defect of Enterprise CR-001 &#xa7;6.6 item 36 (FOP-3348), which the
+	 * float checks still decline.
 	 */
 	private static boolean blockInsideInlineAfter(Document doc, Element el) {
 		return blockInsideInlineAfter(doc.getDocumentElement(), el, new boolean[1]);
@@ -3239,99 +3237,6 @@ public final class WordLayoutFixups {
 			}
 		}
 		return sum;
-	}
-
-	// ------------------------------------------------------------ 0d. floats at flow level
-
-	/**
-	 * Move every fo:float to be a direct child of its fo:flow, immediately before the
-	 * flow-level ancestor it sits in.
-	 *
-	 * <p>FOP throws NullPointerException from TraitSetter.setVisibility (called with the
-	 * null curBlockArea of a BlockLayoutManager which produced no area) whenever a float
-	 * nested in an fo:block shares a flow with an fo:block nested in an fo:inline - which
-	 * is how a line break inside a run reaches the FO (BrWriter emits a block with
-	 * linefeed-treatment="preserve"), so it is a common combination and the whole export
-	 * fails.  The float is laid out correctly when it is a direct child of the flow.</p>
-	 *
-	 * <p>Only the floats which the crash is in prospect for are moved: it takes a block
-	 * inside an inline <em>after</em> the float (measured - one before it lays out), and
-	 * at flow level a float anchors just above its paragraph rather than at the
-	 * paragraph's first line, which measures a little further from Word (the
-	 * image-anchored probe fell from 86% to 76% when every float was moved, and a real
-	 * document whose only such block precedes its floats regressed with it).  The XSLT
-	 * pathway emits a line break as a sibling of the run's inlines rather than inside
-	 * one, so it never needs this.</p>
-	 *
-	 * <p>A float inside a table cell, header/footer or footnote has no flow ancestor;
-	 * those are left alone (FOP ignores them there in any case, and
-	 * {@link #anchorImage} does not create them).</p>
-	 *
-	 * @since 17.1.0
-	 */
-	static void hoistFloats(Document doc) {
-		List<Element> floats = elements(doc, "float");
-		if (floats.isEmpty()) return;
-		java.util.Map<Element, Integer> at = new java.util.HashMap<Element, Integer>();
-		int lastBlockInsideInline = number(doc.getDocumentElement(), new int[1], at);
-		if (lastBlockInsideInline < 0) return; // FOP copes with floats on their own
-		for (Element fl : floats) {
-			Integer position = at.get(fl);
-			if (position == null || position > lastBlockInsideInline) continue;
-			// FOP renders a float holding an fo:table at flow level as nothing at all
-			// (measured), so such a float is never moved; a floating table which would
-			// need this is left in the flow instead ({@link #floatFloatingTable}).
-			if (widest(fl, "table") > 0) continue;
-			Node child = fl;
-			Node parent = fl.getParentNode();
-			while (parent instanceof Element && !isFo((Element) parent, "flow")) {
-				// never out of a cell, a header/footer or a footnote: the float would
-				// leave the content it belongs to
-				if (isFo((Element) parent, "table-cell") || isFo((Element) parent, "static-content")
-						|| isFo((Element) parent, "footnote-body")) {
-					child = fl;
-					break;
-				}
-				child = parent;
-				parent = parent.getParentNode();
-			}
-			if (!(parent instanceof Element) || child == fl) continue; // already at flow level
-			parent.insertBefore(fl, child);
-		}
-	}
-
-	/**
-	 * Numbers the elements in document order, recording where each fo:float is.
-	 *
-	 * @return the position of the last fo:block inside an fo:inline - the shape a line
-	 *         break inside a run produces, and the other half of the crash - or -1.
-	 */
-	private static int number(Element el, int[] counter, java.util.Map<Element, Integer> floats) {
-		int last = -1;
-		int position = counter[0]++;
-		if (isFo(el, "float")) {
-			floats.put(el, position);
-		} else if (isFo(el, "block")) {
-			Node parent = el.getParentNode();
-			if (parent instanceof Element && isFo((Element) parent, "inline")) last = position;
-		}
-		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
-			if (n instanceof Element) last = Math.max(last, number((Element) n, counter, floats));
-		}
-		return last;
-	}
-
-	/** The widest fo:external-graphic (content-width) or fo:table (width) at or under
-	 *  this element; 0 where it holds none. */
-	private static double widest(Element el, String name) {
-		double w = 0;
-		if (isFo(el, name)) {
-			w = "table".equals(name) ? tableWidthPt(el) : pictureWidthPt(el);
-		}
-		for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
-			if (n instanceof Element) w = Math.max(w, widest((Element) n, name));
-		}
-		return w;
 	}
 
 	// ------------------------------------------------------------ 0e. pictures FOP cannot paint
@@ -3934,8 +3839,7 @@ public final class WordLayoutFixups {
 	 * from the room (the larger side's, where both have it - FOP's floats are one-sided, where
 	 * Word fills both), from the box's wrap edge to the column's edge, as tall as the box's
 	 * offset, height and bottom wrap distance.  The float holds a sized block-container, not
-	 * the band table a framed paragraph's float holds, so {@link #hoistFloats} can still move
-	 * it.  Lines above the box's top in its paragraph are narrowed too (a side float starts at
+	 * the band table a framed paragraph's float holds.  Lines above the box's top in its paragraph are narrowed too (a side float starts at
 	 * its line; rules §10).</p>
 	 *
 	 * <p>Not where the room is under {@link #TEXT_BESIDE_MIN_PT}, where floats are not laid
@@ -5870,8 +5774,8 @@ public final class WordLayoutFixups {
 	 * {@code WidowsAcrossSoftReturnsTest}.
 	 *
 	 * <p>Done before the frames, pictures and tables are floated: a block inside an inline
-	 * after a float is the other half of the FOP crash {@link #hoistFloats} works around, and
-	 * that and the float checks ({@link #floatFrame}, {@link #floatFloatingTable}) look for
+	 * after a float is the other half of the FOP crash of Enterprise CR-001 &#xa7;6.6 item 36,
+	 * and the float checks ({@link #floatFrame}, {@link #floatFloatingTable}) look for
 	 * this shape.  Run after them, it put the XSLT pathway's floats back beside the shape
 	 * (AnchoredPictureFloatTest).</p>
 	 *

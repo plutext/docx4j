@@ -17,18 +17,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * A picture Word wraps text around becomes an fo:float, and the float has to be a
- * direct child of the fo:flow.
+ * A picture Word wraps text around becomes an fo:float in its paragraph, and stays there
+ * when a line break inside a run follows it.
  *
- * <p>FOP throws NullPointerException from TraitSetter.setVisibility - called with the
+ * <p>FOP threw NullPointerException from TraitSetter.setVisibility - called with the
  * null curBlockArea of a BlockLayoutManager that produced no area - whenever a float
- * nested inside an fo:block shares a flow with an fo:block nested inside an fo:inline.
- * That second shape is how a line break inside a run reaches the FO (BrWriter emits a
- * block with linefeed-treatment="preserve"), so the combination is common: three
- * documents of a 157 document corpus failed to export at all because of it.  The
- * float is laid out correctly when it is a direct child of the flow, so
- * WordLayoutFixups moves it there - but only where the crash is in prospect, since the
- * paragraph is where the picture measures closest to Word.</p>
+ * nested inside an fo:block shared a flow with a later fo:block nested inside an
+ * fo:inline, which is how a line break inside a run reaches the FO (BrWriter emits a
+ * block with linefeed-treatment="preserve").  Three documents of a 157 document corpus
+ * failed to export because of it, and from 17.1.0 to 17.3.6 WordLayoutFixups moved such
+ * a float to be a direct child of the flow.  But FOP lays out no float there: it was
+ * dropped, picture and all (Enterprise CR-001 &#xa7;6.6 item 66).  The crash is fixed in
+ * both renderers docx4j supports (the docx4j renderer from 2.11-docx4j.4, fop/CR-011;
+ * Apache FOP 2.12, FOP-3348), so the float is left in its paragraph (item 36; gate b422).</p>
  *
  * @since 17.1.0
  */
@@ -141,39 +142,34 @@ public class AnchoredPictureFloatTest extends AbstractXSLFOTest {
 	}
 
 	@Test
-	public void floatIsAtFlowLevelVisitor() throws Exception {
+	public void floatStaysInItsParagraphVisitor() throws Exception {
 		// the visitor pathway puts the line break's block inside the run's fo:inline,
-		// which is the shape that crashes FOP when a float shares the flow with it
+		// the shape that crashed FOP when a float shared the flow with it
 		org.w3c.dom.Document doc = fo(Docx4J.FLAG_NONE);
 		assertTrue("no fo:block inside an fo:inline - the test no longer covers the crash",
 				blockInsideInline(doc));
-		assertEquals("an fo:float nested in a block crashes FOP; it belongs to the flow",
-				"flow", ((Element)theFloat(doc).getParentNode()).getLocalName());
+		assertEquals("FOP lays out no float at flow level; it stays in its paragraph",
+				"block", ((Element)theFloat(doc).getParentNode()).getLocalName());
 	}
 
 	/**
 	 * The XSLT pathway emits the line break's block as a sibling of the run's inlines, and
 	 * since 17.3.1 the fixups put it in an inline, as the visitor writes it
 	 * (WordLayoutFixups.wrapLineBreakBlocks, so that widows count across the break): the
-	 * float then goes to the flow as the visitor's does.  That step ran after the floats were
-	 * made at first, which left this float in its paragraph beside the crash's other half.
+	 * float stays in its paragraph, as the visitor's does, and the document lays out.
 	 */
 	@Test
-	public void floatIsAtFlowLevelXslt() throws Exception {
+	public void floatStaysInItsParagraphXslt() throws Exception {
 		org.w3c.dom.Document doc = fo(Docx4J.FLAG_EXPORT_PREFER_XSL);
 		assertTrue("the line break's block is in an inline, as the visitor writes it",
 				blockInsideInline(doc));
-		assertEquals("an fo:float nested in a block crashes FOP; it belongs to the flow",
-				"flow", ((Element)theFloat(doc).getParentNode()).getLocalName());
+		assertEquals("FOP lays out no float at flow level; it stays in its paragraph",
+				"block", ((Element)theFloat(doc).getParentNode()).getLocalName());
 		assertTrue("nothing was laid out",
 				lineCount(areaTree(pkg(), Docx4J.FLAG_EXPORT_PREFER_XSL)) > 10);
 	}
 
-	/**
-	 * A line break before the float lays out in FOP as it is, and the float is left in
-	 * its paragraph: only a block inside an inline which follows the float crashes, and
-	 * the paragraph is where the picture measures closest to Word.
-	 */
+	/** A line break before the float: the float is in its paragraph, as with one after it. */
 	@Test
 	public void aLineBreakBeforeTheFloatLeavesItInTheParagraph() throws Exception {
 		org.w3c.dom.Document doc = fo(pkg(true), Docx4J.FLAG_NONE);
@@ -182,20 +178,22 @@ public class AnchoredPictureFloatTest extends AbstractXSLFOTest {
 		assertTrue("nothing was laid out", lineCount(areaTree(pkg(true), Docx4J.FLAG_NONE)) > 10);
 	}
 
-	/** The document lays out: before the fix FOP threw NullPointerException here. */
+	/** The document lays out: before FOP-3348, FOP threw NullPointerException here. */
 	@Test
 	public void theDocumentLaysOut() throws Exception {
 		org.w3c.dom.Document areaTree = areaTree(pkg(), Docx4J.FLAG_NONE);
 		assertTrue("nothing was laid out", lineCount(areaTree) > 10);
 		assertNotNull(areaTree.getElementsByTagName("pageViewport").item(0));
-		// and the float did its job: the lines beside the picture are held off the
-		// right edge by it (FOP's area tree does not serialise the float's own areas)
+		// and the float did its job: the lines beside the picture are narrowed by it, the
+		// 100pt picture and its 9pt distance off the column's 451.3pt (FOP's area tree does
+		// not serialise the float's own areas).  A line's ipd is its measure; its end-indent
+		// is only the room a short line leaves, so it shows nothing about the float.
 		int intruded = 0;
 		NodeList lines = areaTree.getElementsByTagName("lineArea");
 		for (int i = 0; i < lines.getLength(); i++) {
-			String endIndent = ((Element)lines.item(i)).getAttribute("end-indent");
-			if (endIndent.length() > 0 && Integer.parseInt(endIndent) > 100000) intruded++;
+			String ipd = ((Element)lines.item(i)).getAttribute("ipd");
+			if (ipd.length() > 0 && Integer.parseInt(ipd) <= 451300 - 100000) intruded++;
 		}
-		assertTrue("no line was pushed aside by the float", intruded > 0);
+		assertTrue("no line was narrowed by the float", intruded > 0);
 	}
 }

@@ -3915,11 +3915,11 @@ below it and FOP fitted it into the rest of the band, costing a page), one whose
 position falls outside the text column, and one in a section of more than one column, since
 FOP drops a float from a multi-column region silently. A table in a **cell**, a header, a
 footer or a footnote is left in the flow too: FOP implements no float under an `fo:table`
-and paints nothing at all for one (§10). And a float which a line break inside a run
-*follows* is declined, because hoisting it to flow level - which is what that combination
-otherwise needs, to avoid FOP's `TraitSetter.setVisibility` NPE - loses a float holding a
-table entirely (§10); one corpus document's 219.6pt rubric table is left in the flow for
-that reason alone, at a cost of 168.3pt on every line after it.
+and paints nothing at all for one (§10). And on Apache FOP a float which a line break inside a run
+*follows* is declined, since that combination threw FOP's `TraitSetter.setVisibility` NPE
+before FOP-3348 (§10); one corpus document's 219.6pt rubric table was left in the flow for
+that reason alone, at a cost of 168.3pt on every line after it. The docx4j renderer floats
+it (CR-032 phase 1), where its offset allows.
 `docx4j.convert.out.fo.tables.float=false` leaves every one of them in the flow.
 
 The horizontal position the band is measured from is the table's **unshifted** grid edge:
@@ -5799,8 +5799,7 @@ had it at (0.0, 10.5). The document went **0.727 to 0.864** of Word's lines.
   inside a borders/shading container: FOP lays out no side float in any of those and paints
   nothing at all for one (§10). Nine frames of one corpus document are in cells;
 * one which an `fo:block` inside an `fo:inline` **follows** - a line break inside a run -
-  since that combination throws in FOP (§10) and a float holding a table cannot be hoisted
-  out of the way;
+  since that combination threw in FOP before FOP-3348 (§10);
 * one with no following block for the float to anchor to.
 
 Of the corpora's 716 text-anchored frames that may have text beside them, 41 in 14
@@ -6071,10 +6070,12 @@ Worked around here, and worth knowing about:
   A block inside an inline is how the visitor pathway emits a line break inside a run, so
   the combination is common: three documents of a 157-document corpus failed on it.
   Minimal case: `<fo:block><fo:float float="right"><fo:block/></fo:float><fo:inline>
-  <fo:block>x</fo:block></fo:inline></fo:block>`. The float lays out correctly as a direct
-  child of `fo:flow`, and `WordLayoutFixups` moves it there in a document which has both
-  (only then: at flow level the float anchors slightly higher, which measures a little
-  further from Word).
+  <fo:block>x</fo:block></fo:inline></fo:block>`. Fixed in the docx4j renderer from
+  2.11-docx4j.4 (fop/CR-011) and in Apache FOP 2.12 (FOP-3348). From 17.1.0 to 17.3.6
+  `WordLayoutFixups` moved such a float to be a direct child of `fo:flow`, but there its
+  picture was not drawn (Enterprise CR-001 §6.6 items 36 and 66; the pictures came back in 6
+  corpus documents at gate b422). From 17.3.7 the float
+  stays in its paragraph.
 - **`fo:float` plus a line that has to break beside it throws.** FOP 2.11's
   `LineLayoutManager$LineBreakingAlgorithm.updateData2` (line 403) reads
   `curChildLM.getFObj()` without checking `curChildLM`, which is null on the float
@@ -6090,14 +6091,11 @@ Worked around here, and worth knowing about:
   implemented by Apache FOP, yet: fo:float (on fo:table)" and paints nothing at all - not
   the float's content, not an indent - for a float anywhere under an `fo:table`, so a
   wrapped picture in a cell is positioned or reserved instead ([§9.1](#s91nofloat)).
-  Hoisting a float to flow level (above) therefore never takes it out of a cell, a
-  header/footer or a footnote: it would be painted somewhere else entirely.
 - **A float holding a table renders nothing at flow level**, and a float with no line to
   anchor to is dropped: a float which is a direct child of `fo:flow` and holds an
   `fo:table` produces no area at all, silently (measured, same minimal case with a table in
-  the float). So a floating table's float goes inside the paragraph it is anchored to, and
-  a floating table which the defect above would move to flow level is left in the flow
-  instead - losing the wrap rather than the table ([§6.8](#s69)).
+  the float). So a floating table's float goes inside the paragraph it is anchored to, as
+  every float now does.
 - **A `break-before` on the first block inside a `span="all"` block is lost**: FOP changes
   span at the block and never takes the break on the child which opens it, so the chapter
   heading opening the narrower part of a merged continuous run started mid-page (measured on

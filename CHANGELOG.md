@@ -36,6 +36,7 @@ Changes in Version 17.3.7
 - An inline picture whose crop moves an edge out keeps its place in its frame when it has an effect extent; the effect extent had replaced the crop's padding.
 - A DrawingML shape's effects are drawn, its own or its style's (`a:effectRef`) through the theme: shadows, glows, soft edges and reflections, in groups and canvases too (CR-081).
 - Preset shadows (`a:prstShdw`) are drawn on pictures and shapes, as Word's vector fills (CR-081).
+- An anchored picture followed by a line break inside a run is drawn; it had been moved out of its paragraph, where FOP dropped it.
 
 ### HTML output
 - Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).
