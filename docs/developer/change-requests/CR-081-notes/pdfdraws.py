@@ -61,9 +61,17 @@ def _box(points):
 def page_draws(pdf, page_obj):
     d = show(pdf, page_obj).decode('latin-1')
     xo = {}
-    m = re.search(r'/XObject <<(.*?)>>', d, re.S)
+    res = d
+    r = re.search(r'/Resources (\d+) 0 R', d)
+    if r:                                   # FOP writes the resources as an object of their own
+        res = show(pdf, int(r.group(1))).decode('latin-1')
+    m = re.search(r'/XObject <<(.*?)>>', res, re.S)
     if m:
         xo = {k: int(v) for k, v in re.findall(r'/(\w+) (\d+) 0 R', m.group(1))}
+    else:
+        r = re.search(r'/XObject (\d+) 0 R', res)
+        if r:
+            xo = {k: int(v) for k, v in re.findall(r'/(\w+) (\d+) 0 R', show(pdf, int(r.group(1))).decode('latin-1'))}
     contents = re.search(r'/Contents (?:\[(.*?)\]|(\d+) 0 R)', d, re.S)
     objs = [int(x) for x in re.findall(r'(\d+) 0 R', contents.group(1))] if contents.group(1) else [int(contents.group(2))]
     data = b'\n'.join(show(pdf, o, raw=True) for o in objs)
@@ -132,6 +140,10 @@ def image_info(pdf, obj):
         w, h = re.search(r'/Width (\d+)', d), re.search(r'/Height (\d+)', d)
         filt = re.search(r'/Filter /(\w+)', d)
         cs = re.search(r'/ColorSpace /(\w+)', d)
+        icc = re.search(r'/ColorSpace \[ ?/ICCBased (\d+) 0 R ?\]', d)
+        if not cs and icc:                  # FOP's: an ICC profile, its component count /N
+            n = re.search(r'/N (\d+)', show(pdf, int(icc.group(1))).decode('latin-1'))
+            cs = re.match(r'(\w+)', 'DeviceRGB' if n and n.group(1) == '3' else 'DeviceGray' if n and n.group(1) == '1' else 'DeviceCMYK')
         _info_cache[key] = {'w': int(w.group(1)) if w else None, 'h': int(h.group(1)) if h else None,
                             'filter': filt.group(1) if filt else None, 'cs': cs.group(1) if cs else None,
                             'smask': _ref(d, 'SMask'), 'subtype': 'Form' if '/Subtype /Form' in d else 'Image'}

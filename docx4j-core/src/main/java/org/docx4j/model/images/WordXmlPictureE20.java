@@ -154,6 +154,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	// It'll be one or the other of these
 	private Inline inline;
 	private Anchor anchor;
+
+	/** The XSLT's node of the wp:inline or wp:anchor, whose unmarshalled copy has no parent: where a picture's
+	 *  paragraph is read from (effectClip), during the extension call that made this.  @since 17.3.7 */
+	private Node inlineNode;
     
     private WordXmlPictureE20(WordprocessingMLPackage wmlPackage, Object anchorOrInline) {
     	
@@ -166,6 +170,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 				this.anchor = (Anchor) anchorOrInline;				
 			} else if (anchorOrInline instanceof NodeIterator) { // from Xalan/XSLT
 				Node n = ((NodeIterator) anchorOrInline).nextNode();
+				this.inlineNode = n;
 				if (n != null) {
 					Object jaxb = null;
 					try {
@@ -376,7 +381,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
         		 context.getImageHandler(), wpInline, sourcePart, true);
     	
-        Document d = converter.createXslFoImageElement();
+        Document d = converter.withEffects(converter.createXslFoImageElement());
         converter.stampAnchorHints(d, context);
         converter.stampEffectExtent(d);
 
@@ -399,7 +404,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
         		 context.getImageHandler(), wpInline, sourcePart, true);
     	
-        Document d = converter.createXslFoImageElement();
+        Document d = converter.withEffects(converter.createXslFoImageElement());
         converter.stampAnchorHints(d, context);
         converter.stampEffectExtent(d);
 
@@ -409,6 +414,169 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 		return docfrag;
     }
     
+    // ---------------------------------------------------------------- effects (CR-081)
+
+    /**
+     * The picture with its effects (pic:spPr/a:effectLst: outer and inner shadow, glow, soft edge, reflection), as
+     * Word draws them (CR-081 phase 1): an fo:instream-foreign-object of the picture's frame holding one SVG, the
+     * effect pictures round the picture and the picture itself, as a data: URI of what the image handler wrote for it
+     * (so it is resampled, cropped and re-encoded as one with no effects is, and a JPEG passes through to the PDF).  d as it is where there are no effects, or
+     * they can't be drawn: no ShapeDrawer (docx4j-chart-render) on the classpath, a metafile, an unreadable bitmap.
+     * The anchor hints and the effect extent then go on the instream-foreign-object as on the external-graphic, so the
+     * picture is placed and wrapped as before.  Until 17.3.7 a picture's effects weren't drawn.  @since 17.3.7
+     */
+    Document withEffects(Document d) {
+    	if (!forXslFo || metaFileSvg != null || d == null || d.getDocumentElement() == null || dimensions == null) return d;
+    	org.docx4j.dml.CTEffectList fx = PictureEffects.effects(getPic());
+    	if (fx == null) return d;
+    	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
+    	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
+    	try {
+    		Document doc = XmlUtils.getNewDocumentBuilder().newDocument();
+    		// the picture as the image handler wrote it (resampled, cropped and re-encoded as CR-029 has it), as a data:
+    		// URI (the FOP fork admits only those in an SVG); else the part's own bytes, cropped in the SVG
+    		String href = PictureEffects.dataUri(getSrc());
+    		org.w3c.dom.Element svg = PictureEffects.svg(doc, wmlPackage, fx, w, h, picturePart, crop, href, href != null && isCropApplied(),
+    				effectClip());
+    		if (svg == null) return d;
+    		svg.setAttribute("width", length(w) + "pt");
+    		svg.setAttribute("height", length(h) + "pt");
+    		org.w3c.dom.Element ifo = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:instream-foreign-object");
+    		ifo.setAttribute("content-width", length(w) + "pt");
+    		ifo.setAttribute("content-height", length(h) + "pt");
+    		ifo.setAttribute("scaling", "non-uniform");
+    		ifo.appendChild(svg);
+    		doc.appendChild(ifo);
+    		return doc;
+    	} catch (Exception e) {
+    		log.warn("A picture's effects couldn't be drawn: " + e);
+    		return d;
+    	}
+    }
+
+    /**
+     * The picture with its effects in HTML, in the img's place: an inline svg of the picture's frame (its points as CSS
+     * pixels, 4/3 a point: CR-080 D14), its overflow visible, labelled as the img would be; an inline picture's effect
+     * extent round it as margin, as the PDF output pads it.  @since 17.3.7
+     */
+    @Override
+    protected org.w3c.dom.Element createHtmlEffectsElement(Document document) {
+    	if (forXslFo || metaFileSvg != null || dimensions == null) return null;
+    	org.docx4j.dml.CTEffectList fx = PictureEffects.effects(getPic());
+    	if (fx == null) return null;
+    	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
+    	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
+    	String href = getSrc() == null || getSrc().isEmpty() ? null : getSrc();
+    	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, fx, w, h, picturePart, crop, href, false, effectClip());
+    	if (svg == null) return null;
+    	svg.setAttribute("width", Long.toString(cssPixels(w, "pt")));
+    	svg.setAttribute("height", Long.toString(cssPixels(h, "pt")));
+    	if (id != null && !id.isEmpty()) svg.setAttribute("id", id);
+    	svg.setAttribute("role", "img");
+    	svg.setAttribute("aria-label", label());
+    	StringBuilder css = new StringBuilder("overflow:visible");
+    	if (inline != null && inline.getEffectExtent() != null) {
+    		org.docx4j.dml.wordprocessingDrawing.CTEffectExtent e = inline.getEffectExtent();
+    		css.append(";margin:").append(cssPixels(Math.max(0, e.getT()) / EMU_PER_PT, "pt")).append("px ")
+    			.append(cssPixels(Math.max(0, e.getR()) / EMU_PER_PT, "pt")).append("px ")
+    			.append(cssPixels(Math.max(0, e.getB()) / EMU_PER_PT, "pt")).append("px ")
+    			.append(cssPixels(Math.max(0, e.getL()) / EMU_PER_PT, "pt")).append("px");
+    	}
+    	if (style != null && !style.isEmpty()) css.append(';').append(style);
+    	svg.setAttribute("style", css.toString());
+    	return svg;
+    }
+
+    /** Whether a drawing (its wp:inline's DOM node, as the XSLT gives it) is all its paragraph shows; null where it is
+     *  in no paragraph */
+    static Boolean aloneInParagraph(Node inlineNode) {
+    	final String w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    	Node drawing = inlineNode.getParentNode();
+    	Node p = drawing;
+    	while (p != null && !(w.equals(p.getNamespaceURI()) && "p".equals(p.getLocalName()))) p = p.getParentNode();
+    	if (p == null) return null;
+    	return !showsOtherThan(p, drawing, w);
+    }
+
+    private static boolean showsOtherThan(Node n, Node drawing, String w) {
+    	for (Node c = n.getFirstChild(); c != null; c = c.getNextSibling()) {
+    		if (c == drawing || c.getNodeType() != Node.ELEMENT_NODE) continue;
+    		String name = c.getLocalName();
+    		if (w.equals(c.getNamespaceURI())) {
+    			if ("t".equals(name) || "delText".equals(name)) {
+    				if ("t".equals(name) && !c.getTextContent().trim().isEmpty()) return true;
+    				continue;
+    			}
+    			if ("drawing".equals(name) || "pict".equals(name) || "object".equals(name) || "sym".equals(name) || "tab".equals(name)
+    					|| "br".equals(name) || "cr".equals(name)) return true;
+    			if ("pPr".equals(name) || "rPr".equals(name) || "del".equals(name)) continue;
+    		}
+    		if (showsOtherThan(c, drawing, w)) return true;
+    	}
+    	return false;
+    }
+
+    /** As {@link #aloneInParagraph(Node)}, from the JAXB parents of a wp:inline (the visitor's) */
+    static Boolean aloneInParagraph(Inline inline) {
+    	Object drawing = inline.getParent();
+    	Object p = drawing;
+    	while (p instanceof org.jvnet.jaxb.lang.Child && !(p instanceof org.docx4j.wml.P)) p = ((org.jvnet.jaxb.lang.Child) p).getParent();
+    	if (!(p instanceof org.docx4j.wml.P) || drawing == null) return null;
+    	return !showsOtherThan(((org.docx4j.wml.P) p).getContent(), drawing);
+    }
+
+    private static boolean showsOtherThan(java.util.List<Object> content, Object drawing) {
+    	for (Object o : content) {
+    		Object v = XmlUtils.unwrap(o);
+    		if (v == drawing || v instanceof org.docx4j.wml.PPr || v instanceof org.docx4j.wml.RPr || v instanceof org.docx4j.wml.RunDel) continue;
+    		if (v instanceof org.docx4j.wml.Text) {
+    			String t = ((org.docx4j.wml.Text) v).getValue();
+    			if (t != null && !t.trim().isEmpty() && !(o instanceof JAXBElement && "delText".equals(((JAXBElement<?>) o).getName().getLocalPart()))) return true;
+    			continue;
+    		}
+    		if (v instanceof org.docx4j.wml.Drawing || v instanceof org.docx4j.wml.Pict || v instanceof org.docx4j.wml.CTObject
+    				|| v instanceof org.docx4j.wml.R.Sym || v instanceof org.docx4j.wml.R.Tab || v instanceof org.docx4j.wml.Br
+    				|| v instanceof org.docx4j.wml.R.Cr) return true;
+    		if (v instanceof org.docx4j.wml.ContentAccessor && showsOtherThan(((org.docx4j.wml.ContentAccessor) v).getContent(), drawing)) return true;
+    		if (v instanceof org.docx4j.wml.SdtElement && ((org.docx4j.wml.SdtElement) v).getSdtContent() != null
+    				&& showsOtherThan(((org.docx4j.wml.SdtElement) v).getSdtContent().getContent(), drawing)) return true;
+    	}
+    	return false;
+    }
+
+    /** The picture's label: its alt text, else its wp:docPr's description, else its name, as a shape's (HtmlShapes) */
+    private String label() {
+    	if (alt != null && !alt.trim().isEmpty()) return alt.trim();
+    	org.docx4j.dml.CTNonVisualDrawingProps pr = inline != null ? inline.getDocPr() : anchor != null ? anchor.getDocPr() : null;
+    	if (pr != null && pr.getDescr() != null && !pr.getDescr().trim().isEmpty()) return pr.getDescr().trim();
+    	if (pr != null && pr.getName() != null && !pr.getName().trim().isEmpty()) return pr.getName().trim();
+    	return "Picture";
+    }
+
+    /**
+     * Where an inline picture's effects are cut: Word cuts them at its paragraph, across the page (CR-081 phase 0
+     * findings §3; phase 1's fx91: a picture in a paragraph that goes on below it keeps a shadow 12.6pt below it and a
+     * reflection 48pt, with no effect extent).  docx4j can't cut at a paragraph's box (XSL-FO clips an inline object's
+     * overflow only at its own viewport: Enterprise CR-001 §6.6 item 65, which this works round), so it cuts only a
+     * picture that is all its paragraph shows, whose line is the paragraph: at the effect extent's top and bottom (Word's line has
+     * the text's descent below, 2.3pt at 12pt, and some of the paragraph's space before above: fxr50-24's reflection
+     * shows 27.9pt more above the extent than docx4j's).  Null, no cut: an anchored picture, as Word's, and an inline
+     * one sharing its paragraph.
+     */
+    private double[] effectClip() {
+    	if (inline == null) return null;
+    	Boolean alone = null;
+    	try {
+    		alone = inlineNode != null ? aloneInParagraph(inlineNode) : aloneInParagraph(inline);
+    	} catch (RuntimeException e) {
+    		log.debug("The picture's paragraph wasn't read: " + e);
+    	}
+    	if (!Boolean.TRUE.equals(alone)) return null;
+    	org.docx4j.dml.wordprocessingDrawing.CTEffectExtent e = inline.getEffectExtent();
+    	if (e == null) return new double[] { 0, 0 };
+    	return new double[] { Math.max(0, e.getT()) / EMU_PER_PT, Math.max(0, e.getB()) / EMU_PER_PT };
+    }
+
     /**
      * Word lays an inline picture out at its extent plus its effect extent (wp:effectExtent: the margin
      * its shadow, glow or soft edge needs on each side, ECMA-376 20.4.2.6), so the line holding it is

@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 /**
- * Draws a DrawingML shape, group or canvas as SVG, for an output docx4j-core writes itself (HTML: CR-080 phase 5).
+ * Draws a DrawingML shape, group or canvas as SVG, for an output docx4j-core writes itself (HTML: CR-080 phase 5), and
+ * a picture's effects, for the PDF and HTML outputs alike (CR-081).
  * docx4j-chart-render provides one (its ShapeRenderer, as it provides the {@link org.docx4j.model.chart.ChartRenderer});
  * without it a shape's text is still laid out where Word sets it, and nothing is drawn under it.
  *
@@ -47,6 +48,45 @@ public interface ShapeDrawer {
 	 * @return null where the graphic isn't one it draws
 	 */
 	Drawing draw(Object graphic, ThemeColors theme, long cx, long cy, Function<String, BufferedImage> pictures);
+
+	/**
+	 * A picture's effects ({@code a:effectLst}: outer and inner shadow, glow, soft edge, reflection) as Word draws them
+	 * round it (CR-081): pictures with alpha, under the picture, over it, or in its place (the picture with its soft
+	 * edge), in the order they are drawn, each placed in the picture's frame, w by h points.
+	 *
+	 * @param effects the picture's a:effectLst (a CTEffectList)
+	 * @param picture the stored bitmap, all of it (it may be a reduced copy)
+	 * @param crop what of the bitmap the frame shows ({@code a:srcRect}), or null for all of it
+	 * @param maxPixelsPerPoint an upper bound on an effect picture's resolution, 0 for none (Word's: 200 dpi, coarser
+	 *        for a wide blur)
+	 * @param problems the gaps are added here, stable codes ({@code render.effect.*})
+	 * @return null where this drawer draws no effects; empty where there are none to draw
+	 * @since 17.3.7
+	 */
+	default List<EffectPicture> drawEffects(Object effects, ThemeColors theme, double w, double h, BufferedImage picture,
+			org.docx4j.model.images.PictureCrop crop, double maxPixelsPerPoint, List<String> problems) {
+		return null;
+	}
+
+	/** Where an effect picture is drawn: under the picture, over it, or in its place */
+	enum EffectLayer {
+		UNDER, OVER, REPLACE
+	}
+
+	/** An effect picture, in the frame of the picture it is drawn for: points from its box's top left, y down */
+	interface EffectPicture {
+
+		/** Its pixels, not premultiplied */
+		BufferedImage getImage();
+
+		/** Where it goes */
+		Rectangle2D getPlace();
+
+		EffectLayer getLayer();
+
+		/** The effect's element name: outerShdw, glow, reflection, innerShdw, softEdge */
+		String getEffect();
+	}
 
 	/** A shape, group or canvas drawn, in its frame: points from its box's top left, y down */
 	interface Drawing {

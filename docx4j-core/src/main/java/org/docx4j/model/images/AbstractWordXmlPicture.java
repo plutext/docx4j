@@ -47,6 +47,21 @@ public abstract class AbstractWordXmlPicture {
 	 *  which moves out, is drawn too); false for a handler which does not.  @since 17.3.0 */
 	private boolean cropApplied;
 
+	/** The picture's part, a bitmap the output names (not a metafile drawn as SVG), for
+	 *  its effects (CR-081); null where there is none.  @since 17.3.7 */
+	protected BinaryPart picturePart;
+
+	/** @return whether the image handler cut the bitmap to the crop  @since 17.3.7 */
+	protected boolean isCropApplied() {
+		return cropApplied;
+	}
+
+	/** The picture with its effects for the HTML output, an element of document in the
+	 *  img's place; null where it has none drawn (WordXmlPictureE20, CR-081).  @since 17.3.7 */
+	protected Element createHtmlEffectsElement(Document document) {
+		return null;
+	}
+
 	/** @return the picture's crop; {@link PictureCrop#NONE} for the whole bitmap
 	 *  @since 17.3.0 */
 	public PictureCrop getCrop() {
@@ -120,8 +135,10 @@ public abstract class AbstractWordXmlPicture {
         try {
             // Create a DOM builder and parse the fragment
             Document document = XmlUtils.getNewDocumentBuilder().newDocument();
-            Element imageElement  = document.createElement("img");
+            Element effects = createHtmlEffectsElement(document);
+            Element imageElement  = effects != null ? effects : document.createElement("img");
 
+            if (effects == null) {
             if (src !=null && !src.equals(""))
             {
             	imageElement.setAttribute("src", src);
@@ -158,6 +175,7 @@ public abstract class AbstractWordXmlPicture {
             {
             	imageElement.setAttribute("height", Long.toString(cssPixels(dimensions.height, dimensions.heightUnit)));
             }
+            } // an <img>
 
             if (hlinkRef !=null && !hlinkRef.equals("")
             		&& !org.docx4j.convert.out.common.writer.LinkTargets.isSafe(hlinkRef))
@@ -373,6 +391,7 @@ public abstract class AbstractWordXmlPicture {
 			if (uri != null) {
 				this.setSrc(uri);
 			}
+			if (part != null) this.picturePart = (BinaryPart) part;
 		}
 	}
 

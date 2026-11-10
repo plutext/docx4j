@@ -3,7 +3,8 @@
 Status: ACCEPTED 2026-11-10 (Jason: "CR-081 decisions as recommended"): D1 to D10 as recommended, D7 as its own CR,
 CR-084 (§8). Proposed 2026-11-09, drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status).
 Phase 0 DONE 2026-11-10, in five rounds (`CR-081-notes/phase0-findings.md`). Phase 1 (pictures in a rectangle) needs nothing from CR-080. Phases 2 and 3 draw with its
-geometry. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+geometry. Phase 1 DONE 2026-11-11 (Jason: "shall we resume work on CR-081?", then "yes" to starting phase 1; "commit phase 1"): `CR-081-notes/phase1-findings.md`; 171 effect pictures against Word's at a mean alpha error of 0.70 of
+255, corpora 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -196,8 +197,27 @@ under `pic:spPr` (through the portfolio).
     FO (visitor and XSLT) and HTML; inline and anchored, the anchored wrap as phase 0 measured; the D10 cap and its
     hostile probes.
   - **Gate:** probes within tolerance; corpora unmoved.
+  - **Done 2026-11-11** (`CR-081-notes/phase1-findings.md`).
+    - The renderer is `org.docx4j.chart.render.api.Effects` (in chart-render's api package, beside CR-080's
+      `ShapeRenderer`, not §5's `org.docx4j.drawing.render`). It draws from the drawing's alpha through a painter, not
+      from an outline (§5.1), so a transparent picture's effects follow its strokes, as Word's do (fxr72).
+    - Core reaches it through `ShapeDrawer.drawEffects`. `PictureEffects` composes one SVG for the PDF (an
+      `fo:instream-foreign-object`) and for HTML (an inline `svg`). In the PDF the picture is a `data:` URI of the
+      image handler's output, since the FOP fork admits only `data:` resources in an SVG; CR-029's resampling and
+      crop are kept, and a JPEG still passes through.
+    - Charts keep their own `Drawing.Shadow` (D2).
+    - Six rules the probes showed are in findings §2: scale and skew as one matrix, the chain of effects, the fade
+      from the mirror line, the glow from the picture's own outline, `ctr`, and the clip being the paragraph's.
+    - The inline clip departs from Word (findings §3): only a picture alone in its paragraph is cut, at its effect
+      extent. FO can't clip to a paragraph's box: Enterprise CR-001 §6.6 item 65.
+    - D10's cap and its hostile tests are in `EffectsTest`.
+    - Tests: `EffectsTest` (the oracle, 171 pictures), `PictureEffectsFoTest` (both routes, 8),
+      `PictureEffectsHtmlTest` (both routes).
+    - Gates b413 to b415 against b412: 0 movers, events equal.
 - **Phase 2, picture frames** (needs CR-080.1).
   - `pic:spPr/a:prstGeom` and `a:custGeom` clip the picture; effects follow the outline; `a:ln` drawn.
+  - From phase 1: a picture's line casts its shadow too (16_en-ZA_num_tbl_10976's is 3.2pt small on every side until
+    it does); the picture styles' Perspective Shadow (sx 97%, kx 15°) tells sx·tan kx from tan kx (findings §2).
   - **Gate:** the 28 picture styles within tolerance.
 - **Phase 3, shapes and text boxes** (needs CR-080.2).
   - The same effects on a `wps:wsp`'s drawing, `a:effectRef` resolved.

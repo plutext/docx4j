@@ -31,14 +31,17 @@ Changes in Version 17.3.7
 - An inline text box is set on its line, its height kept; its text was lost with the DrawingML drawn.
 - A shape, group or canvas with no text takes a picture's place and wrapping, anchored or inline; it had been drawn out of the flow, or not at all inline (CR-080).
 - Anchored pictures wrap as Word wraps them: their effect extent counted, the wrap starting distT above, behind-text pictures wrapped, a picture above its paragraph drawn there, and the text after a top-and-bottom picture no longer a line low.
+- A picture's effects are drawn as Word draws them: outer and inner shadow, glow, soft edge and reflection; a JPEG still passes through (CR-081; needs docx4j-chart-render).
 
 ### HTML output
 - Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).
 - Pictures and charts are written at their size: their points as CSS pixels at 4/3, where they had been drawn at three quarters of their size against the text.
+- A picture's effects are drawn: the picture is an inline SVG with them (CR-081).
 
 ### Shapes
 - `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).
 - `org.docx4j.model.shapes.ShapeDrawer` draws a shape, group or canvas to SVG where docx4j-chart-render (which provides it) is on the classpath; `ShapeText` gives where Word sets a shape's text.
+- `ShapeDrawer.drawEffects` and docx4j-chart-render's `Effects` draw DrawingML effects as Word does; `docx4j.convert.out.effects.pixelsPerPoint` bounds their resolution.
 
 ### Text extraction
 - A numbered paragraph read without a numbering part in the package raises `part.absent` (REQ-801, WD 0.76).
