@@ -9,7 +9,8 @@ the flat picture styles' frames and effects against Word's (56 pictures at 0.76,
 b416 0 movers. Phase 3 DONE 2026-11-11 (Jason: "do phase 3", "commit phase 3"):
 `CR-081-notes/phase3-findings.md`; shapes' effects, `effectRef` resolved, 14 pictures at 0.44, gate b418 0 movers.
 Phase 4 DONE 2026-11-11 (Jason: "do phase 4", "commit phase 4"): `CR-081-notes/phase4-findings.md`; the 20 preset shadows
-as Word's vector fills, 46 within 0.02pt. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+as Word's vector fills, 46 within 0.02pt. Phase 5 split 2026-11-11 (Jason: "split phase 5 in two as suggested"):
+5a the 3-D geometry with a simple shading, 5b Word's lights and materials behind a go/no-go after 5a (§6). Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -280,15 +281,39 @@ under `pic:spPr` (through the portfolio).
   `w14:props3d`/`w14:scene3d`).
   - Drawn: the camera (presets, `rot`); the light rig (type, direction); top and bottom bevels (the 12
     `ST_BevelPresetType` profiles, width and height); extrusion and contour (depth, colour); the material presets.
-  - It is drawn as Word's PDF draws it. Phase 0 adds 3-D probes and settles whether Word writes a lit picture (as
-    expected) or vector shading, and at what resolution.
+  - It is drawn as Word's PDF draws it: one lit picture with alpha at 200 dpi in place of the drawing, a JPEG for a
+    picture and Flate for a shape, its shadow and reflection in it (phase 0 findings §4).
   - The renderer builds a height field from the outline and the bevel profile, shades it per light rig and material,
     lays extrusion layers under the camera's projection, and writes a picture with alpha, as the other effects are.
   - Until this phase, a 3-D drawing is drawn flat and reported (D9). That flat drawing is the floor that ships
     whatever happens to this phase.
-  - **Go/no-go first:** after phase 0's 3-D probes, the estimate is set from what Word's PDF holds (a picture at what
-    resolution, or shading), and Jason decides whether the phase goes ahead.
-  - **Gate:** the 3-D probes within the tolerance of §7 (Word doesn't differ from itself); corpora unmoved.
+  - **Split in two** (2026-11-11; Jason: "split phase 5 in two as suggested"). The geometry is specified and
+    predictable. Word's lighting is not documented and has to be fitted from its pictures, which is the open-ended part.
+    So the geometry comes first with a simple shading, and the fit follows behind a go/no-go of its own.
+- **Phase 5a, 3-D geometry** (registry CR-081.5; about a week, with its Word round):
+  - The camera's projection: the 62 `ST_PresetCameraType` presets (orthographic, oblique, perspective, with `fov`)
+    and `rot` (`lat`, `lon`, `rev`).
+  - The bevels, top and bottom: the 12 profiles, their width and height.
+  - Extrusion and contour: depth, width and colour; `z`.
+  - The drawing's silhouette, its frame and its extent, as Word's.
+  - The drawing's other effects in the one picture, as Word's.
+  - The shading is simple and not Word's: a diffuse light from the light rig's direction, every material matte. It
+    shows the bevel and the extrusion.
+  - A Word round first. Phase 0 probed 6 of the 62 cameras and estimated a 3-D drawing's frame from the layout (within
+    0.24pt). The round covers the rest of the cameras and measures the frame.
+  - A 3-D drawing is then drawn with its geometry, and reported until 5b (D9): its shading isn't Word's.
+  - **Gate:** the silhouette and placement within §7's tolerance (placement within 0.36pt, the silhouette's alpha
+    within 2/255). The shading's mean error against Word's pictures is reported, not gated. Corpora unmoved.
+- **Phase 5b, Word's lights and materials** (registry CR-081.5b):
+  - The 27 `ST_LightRigType` rigs and their directions, and the 15 `ST_PresetMaterialType` materials (metal,
+    the legacy materials, wireframe, translucent powder and clear among them), fitted from Word's pictures:
+    - phase 0's (`fxa0` to `fxa3`: 22 rigs and directions, 15 materials);
+    - a round for the rest.
+  - **Go/no-go first:** after 5a, from 5a's shading error and what the fit of phase 0's pictures shows. The estimate is
+    set then, and Jason decides whether the phase goes ahead.
+  - **Gate:** the shading within a tolerance set at the go/no-go, a mean error against Word's pictures. Word's model
+    is fitted, not documented, so §7's 2/255 a pixel is not expected. 5a's gate on the silhouette and placement stands.
+    Corpora unmoved.
 - **Phase 6, the gap report** (D9): every effect in the probes and a load-survey sample rendered; what isn't drawn as
   Word draws it is listed with its reason (`a:blip` colour effects until D7's follow-up, for example).
 - **Phase 7, CHANGELOG, Getting Started.**
@@ -352,6 +377,10 @@ under `pic:spPr` (through the portfolio).
   **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). Phase 0 found a 3-D drawing is one lit picture at 200 dpi, a JPEG
   for a picture and Flate for a shape (findings §4), and 17 of the 28 picture styles are 3-D (§7). Phase 5's
   estimate is set from that; its go/no-go stays Jason's, before the phase starts.
+  **Split 2026-11-11** (Jason: "split phase 5 in two as suggested"):
+  - 5a, the geometry with a simple shading, about a week;
+  - 5b, Word's lights and materials fitted, behind its own go/no-go after 5a, and gated on a mean shading error
+    rather than §7's 2/255 a pixel (§6).
 - **D6. Preset shadows** (`a:prstShdw`, 20 presets): phase 4, whatever the count. Recommendation: yes. They are cheap
   once the outer shadow exists.
   **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-081 decisions as recommended"). They are unblurred vector fills, one or two at fixed geometry
@@ -382,7 +411,8 @@ blur, pencil sketch and so on), where the `a:blip` is expected to be the already
 ## 10. Hand-offs
 
 The portfolio: the registry entry with its phases (CR-081.1 depends on nothing; CR-081.2 on CR-080.1; CR-081.3 on
-CR-080.2; CR-083.6 and CR-082's 3-D styles depend on CR-081.5). None to the
+CR-080.2; CR-083.6 and CR-082's 3-D styles depend on CR-081.5, phase 5a, which draws them; 5b, CR-081.5b, only
+improves their shading). None to the
 ports or the FO renderer fork.
 
 ## 11. Effort (rough)
@@ -390,6 +420,9 @@ ports or the FO renderer fork.
 Phase 0 three days (with the 3-D probes); phase 1 three days; phase 2 one day; phase 3 one day; phase 4 one day; phase 5
 (3-D): estimated after phase 0, behind its go/no-go (the earlier guess was two to three weeks); phases 6 and 7 two
 days. About two weeks without phase 5. Phases 0 to 4 are a usable first release, with 3-D drawn flat and reported.
+Phase 5, once split (2026-11-11):
+- 5a, the geometry, is about a week with its Word round;
+- 5b, the lighting fit, is estimated at its go/no-go after 5a. It is the open-ended part of the earlier guess.
 
 ## 12. Specifications
 
