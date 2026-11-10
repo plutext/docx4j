@@ -109,6 +109,8 @@ as its reproducer.
 
 ## 5. What this changes in the CR (for Jason)
 
+Accepted 2026-11-10 (Jason: "CR-080 decisions as recommended"), and written into the CR's phases 1 and 2 and §8.
+
 - **Phase 2: write an `a:xfrm`.** docx4j must write one in any `wps:spPr` that holds a text box, or Word can't save
   the file (§4). A shape read without one is drawn at its anchor's extent.
 - **Phase 2: no text in the 14 presets** of §2. Word draws none there.

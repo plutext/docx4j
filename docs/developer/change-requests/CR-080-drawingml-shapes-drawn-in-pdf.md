@@ -1,9 +1,10 @@
 # CR-080: DrawingML shapes drawn in PDF - preset and custom geometry, fills and lines, groups, canvases and connectors
 
-Status: PROPOSED 2026-11-09. Drafted on Jason's request ("let's draft CRs for the following items with the given
+Status: ACCEPTED 2026-11-10 (Jason: "CR-080 decisions as recommended"): D1 to D11 as recommended (§8), with phase 0's
+changes (§6). Proposed 2026-11-09, drafted on Jason's request ("let's draft CRs for the following items with the given
 suggested scope ... please evaluate what if any of that is worth porting"), one of four: this CR (shapes and geometry),
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
-proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Not started; D1 to D11 open (§8). Read
+proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`). Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -216,7 +217,11 @@ corpus documents can't be the only oracle.
   - **Gate:** probes and Word's PDFs on the share, the numbers committed.
 - **Phase 1, the engine.**
   - POI's `geom` repackaged, with the adapter from `CTCustomGeometry2D`; its `sqrt` made Office's, sqrt(|x|)
-    ([MS-OI29500] 2.1.1311, §12).
+    ([MS-OI29500] 2.1.1311, §12; Word confirmed it in phase 0). From POI 5.5.1 with `2acb5cf66a`, and with
+    `PaintStyle` (D1).
+  - docx4j's `presetShapeDefinitions.xml` repaired: `leftArrow`'s `y1` back to ECMA's `dy1`
+    (`CR-080-notes/licence-notes.md` §3). `org.docx4j.model.shapes.PresetGeometries` replaced by the repackaged
+    engine, or given its 4(b) notice.
   - The limits of D10 on every `custGeom`, each tested with a hostile probe, as CR-057 tested its cases.
   - `ShapeGeometry`, tested against phase 0's numbers (every preset's path within 0.1pt of Word's at 100 by 100pt, the
     text rectangles exact).
@@ -226,6 +231,12 @@ corpus documents can't be the only oracle.
   - Shapes in the FO, visitor and XSLT alike, with text boxes on top and the geometry's text rectangle used for the
     text. A shape whose `xfrm` is omitted has no text rectangle, as in Office ([MS-OI29500] 2.1.1315), and lays its
     text out in its box.
+  - Phase 0's rules (`CR-080-notes/phase0-findings.md` §5, accepted 2026-11-10):
+    - an `a:xfrm` written in any `wps:spPr` that holds a text box, or Word can't save the file (WD-003);
+    - no text drawn in the 14 presets where Word draws none;
+    - the line rules: the 0.14 pt hairline, flat caps and round joins by default, no miter limit from `lim`, the dash
+      table, the arrowhead sizes, and compound and inside lines as filled outlines;
+    - the fill-mode factors, and the line widths of each theme's style references.
   - **Gate:** the probes within tolerance; corpora unmoved (0 movers; colour only); the register's
     `drawingml-fills-not-painted` closed.
 - **Phase 3, groups, canvases and connectors.**
@@ -261,27 +272,38 @@ corpus documents can't be the only oracle.
 - **D1. The geometry engine.** (a) Repackage POI's `sl.draw.geom` with an adapter from docx4j's JAXB; (b) write one over
   `CTCustomGeometry2D` directly; (c) port docxide-pdf's Rust. Recommendation: **(a)**. It is the most used of the
   three, it is Java, and CR-011's repackaging route and attribution are already in place.
+  **Decided 2026-11-10: (a), as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended"). Copied from POI 5.5.1 with `2acb5cf66a`, not trunk, for Java 11,
+  with `PaintStyle` (`CR-080-notes/licence-notes.md`).
 - **D2. Where the code lives.** Geometry in docx4j-core (`org.docx4j.model.shapes`: no Batik, usable by HTML, pptx and
   the text model's outlines); drawing in docx4j-chart-render (it already holds `Fills`, `Drawing`, `SvgWriter` and
   shadows, and docx4j-export-fo depends on it). The module's name stays, since renaming an artifact costs consumers;
   its description becomes "DrawingML drawn to SVG: charts and shapes". Recommendation: yes. The alternative is a new
   module that chart-render depends on, which would move CR-039's published API.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 - **D3. Shapes as SVG in the FO** (`fo:instream-foreign-object`), with the text staying FO. Recommendation: yes. The
   text keeps docx4j's line breaking, fonts and Word layout, and the drawing is vector.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended"). Turned text stays text, turned, though Word draws it as glyph outlines
+  (phase 0 findings §5): it looks the same and stays searchable.
 - **D4. Shapes with no text take space and wrap**, in a phase of their own with its own gate (phase 4), through the
   picture path's existing wrap handling (phase 4's dispatch). Recommendation: yes. It is a layout change, and the
   corpora barely exercise it.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 - **D5. HTML output too**, from the same SVG. Recommendation: yes, phase 5.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 - **D6. VML shapes** (`v:shape` with `o:spt` or `v:path`, `v:rect`, `v:roundrect`, `v:oval`, `v:line`, `v:polyline`,
   `v:arc`, `v:curve`). Word reads them only where no DrawingML is written. Under CR-051's word mode docx4j reads the
   DrawingML Choice wherever there is one, so VML matters for documents from Word 2007 and earlier and from other
   producers. Recommendation: **a later CR**, once phase 0 has counted them: through docx4j's own table from [MS-ODRAW]
   §2.4.24 `MSOSPT` (o:spt to preset, with the adjust units mapped and checked against Word) for preset shape types,
   plus a `v:path` parser.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended"): a later CR, once the load survey's counts (queued) are in.
 - **D7. The oracle.** Word's PDFs through the bridge, paths read as numbers (`mutool trace`), then the raster against
   Word's. docxide-pdf's references are Word for Mac's online export, so they are not ours. Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended"). Phase 0 read the paths with `CR-080-notes/pdfpaths.py`, not
+  `mutool trace`.
 - **D8. docxide-pdf.** Port nothing for this CR; read it as a cross-check; any later port names its source file and
   commit in the file's header and gains a `legals/NOTICE` entry. Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 - **D9. Gaps are reported, not silent.** A shape that can't be drawn (an unknown preset, a malformed `custGeom`) is
   drawn as its bounding box outline, not dropped. It is reported with a stable code (`render.shape.unknown_preset`,
   `render.shape.bad_geometry`, `render.shape.vml` until D6's CR, `render.shape.over_limit`, and so on), once per
@@ -294,17 +316,21 @@ corpus documents can't be the only oracle.
   A listener on the conversion's settings may expose the same codes to a caller as a convenience. The codes are
   introduced here and used by CR-081 to CR-083 (Jason, 2026-11-09: what can't be output "is a gap").
   Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 - **D10. Limits against hostile geometry** (CR-057's concern), as rust-office-art's evaluator has them: at most 1 MiB
   of geometry XML, 1,024 guide evaluations, 256 paths and 8,192 path commands per shape, arc sweeps of 16 turns, and
   finite coordinates within the drawing's bounds. Past a limit the shape is drawn as its box and reported
   (`render.shape.over_limit`). Recommendation: yes, the numbers confirmed against the probes and the load survey's
   largest real `custGeom`.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended"). The probes are within the limits; the load survey's largest
+  `custGeom` (queued) confirms them.
 - **D11. MPL-2.0 sources are black-box only**, in all four CRs (Jason, 2026-11-09: "make the LibreOffice wording
   black-box only"). LibreOffice is run, not read: probe documents are converted with `soffice` and its output
   compared with Word's and docx4j's. Its source is not read while docx4j's code is written, because a Java translation
   of MPL-2.0 code would be a Modification under MPL-2.0 and would stay MPL. Apache OpenOffice, LibreOffice's
   Apache-licensed ancestor, offers no way round this: its `oox/source/drawingml/diagram/diagramlayoutatoms.cxx` is a
   3.5 KB stub, and the SmartArt layout work came after the fork. Recommendation: yes.
+  **Decided 2026-11-10: as recommended** (Jason, 2026-11-10: "CR-080 decisions as recommended").
 
 ## 9. Out of scope
 
