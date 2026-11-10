@@ -443,12 +443,12 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 			String text = doc.getDocumentElement().getTextContent();
 			String impl = flagName(flag) + ": ";
 
-			// docx4j.jaxb.mc.preferChoice is empty by default, so the mc:Fallback wins
-			// as it always has (see XSLTUtils.mcPreferredChoiceRequires for what
-			// choosing the Choice measured); testChoicePreferred covers the other way
-			assertTrue(impl + "mc:Fallback content lost", text.contains("fallback text"));
-			assertTrue(impl + "mc:Choice content rendered (should be Fallback only)",
-					!text.contains("choice text"));
+			// docx4j.jaxb.mc.preferChoice is wps by default since 17.3.7 (CR-080 D12), so a
+			// wps Choice wins; testChoicePreferred names it, testFallbackWhenNoneIsPreferred
+			// sets the property empty
+			assertTrue(impl + "mc:Choice[wps] content lost", text.contains("choice text"));
+			assertTrue(impl + "mc:Fallback rendered as well as the Choice",
+					!text.contains("fallback text"));
 			assertTrue(impl + "mc:Fallback content lost", text.contains("exotic fallback"));
 			assertTrue(impl + "an unsupported mc:Choice was rendered",
 					!text.contains("exotic choice"));
@@ -457,6 +457,29 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 
 			// the o:hr rule paragraph must not have broken the conversion
 			assertTrue(impl + "content after the horizontal rule lost", text.contains("after hr"));
+		}
+	}
+
+	/**
+	 * With {@code docx4j.jaxb.mc.preferChoice} empty, the Fallback wins, as it did by default
+	 * until 17.3.6.  Both pathways.
+	 *
+	 * @since 17.3.7
+	 */
+	@Test
+	public void testFallbackWhenNoneIsPreferred() throws Exception {
+
+		String before = org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", org.docx4j.jaxb.McSelection.PREFER_CHOICE_DEFAULT);
+		org.docx4j.Docx4jProperties.setProperty("docx4j.jaxb.mc.preferChoice", "");
+		try {
+			for (int flag : FLAGS) {
+				String text = w3cDomDocumentFromByteArray(toFO(phase5Pkg(), flag)).getDocumentElement().getTextContent();
+				String impl = flagName(flag) + ": ";
+				assertTrue(impl + "mc:Fallback content lost", text.contains("fallback text"));
+				assertTrue(impl + "mc:Choice content rendered (should be Fallback only)", !text.contains("choice text"));
+			}
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty("docx4j.jaxb.mc.preferChoice", before);
 		}
 	}
 
@@ -471,7 +494,7 @@ public class VisitorParityTest extends AbstractXSLFOTest {
 	@Test
 	public void testChoicePreferred() throws Exception {
 
-		String before = org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", "");
+		String before = org.docx4j.Docx4jProperties.getProperty("docx4j.jaxb.mc.preferChoice", org.docx4j.jaxb.McSelection.PREFER_CHOICE_DEFAULT);
 		org.docx4j.Docx4jProperties.setProperty("docx4j.jaxb.mc.preferChoice", "wps");
 		try {
 			for (int flag : FLAGS) {

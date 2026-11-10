@@ -2,6 +2,38 @@ CHANGELOG
 =========
 
 
+Version 17.3.7
+===============
+
+Release date
+------------
+
+[]
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Claude Opus 5.5
+
+Claude Fable 5.1
+
+
+Changes in Version 17.3.7
+--------------------------
+
+### PDF output
+- DrawingML shapes are drawn as Word draws them: fill, line and arrowheads under their text, which is set in the shape's text rectangle (CR-080).
+- `docx4j.jaxb.mc.preferChoice` now defaults to `wps`, so a shape's DrawingML is drawn, not its VML fallback (HTML too); set it empty for the old behaviour.
+- An inline text box is set on its line, its height kept; its text was lost with the DrawingML drawn.
+
+### Shapes
+- `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).
+
+
+
 Version 17.3.6
 ===============
 

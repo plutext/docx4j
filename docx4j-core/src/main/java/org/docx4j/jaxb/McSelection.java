@@ -48,13 +48,15 @@ import org.slf4j.LoggerFactory;
  * an element with Choices and no Fallback - the first Choice Word understands, else
  * nothing (WD REQ-305; ISO/IEC 29500-3 section 9.4): the element is absent.</p>
  *
- * <p><b>The property's default is empty</b>, so the Fallback is drawn.  Measured
- * over the real-document corpora for 17.1.0 (every element there is a {@code wps}
- * text box with a VML fallback), preferring {@code wps} moved two documents and both
- * fell; and the FO exporter does not yet draw an inline {@code wps} text box at all
- * (CR-021 §8.5).  Set {@code docx4j.jaxb.mc.preferChoice=wps} to take the Choice
- * where the fallback is missing or wrong for your documents.  {@code wpg},
- * {@code w14}, {@code wp14} and {@code v} are deliberately not suggested: a Choice
+ * <p><b>The property's default is {@code wps}</b> (since 17.3.7, CR-080 D12): a
+ * DrawingML shape's Choice is drawn, which the FO exporter paints as Word does (CR-080
+ * phase 2), where the VML Fallback Word writes beside it drew its strokes as outlined
+ * boxes and no fill.  Set the property empty ({@code docx4j.jaxb.mc.preferChoice=}) to
+ * draw the Fallback, as until 17.3.6.  The default was empty since 17.2.0: measured over
+ * the real-document corpora for 17.1.0, preferring {@code wps} moved two documents and
+ * both fell (CR-021 §8.5); for 17.3.7, with an inline shape set on its line, it moves
+ * six, all up (gate b401: corpus document 14372 a line, five probes).  {@code wpg},
+ * {@code w14}, {@code wp14} and {@code v} are deliberately not listed: a Choice
  * docx4j cannot draw is worse than the fallback the producer wrote for exactly
  * that case.</p>
  *
@@ -84,14 +86,19 @@ public final class McSelection {
 	private static final Logger log = LoggerFactory.getLogger(McSelection.class);
 
 	/** The property naming the {@code Requires} prefixes docx4j claims to understand,
-	 *  whitespace-separated; empty (the default) prefers the Fallback. */
+	 *  whitespace-separated; {@link #PREFER_CHOICE_DEFAULT} where it is unset, and empty
+	 *  prefers the Fallback. */
 	public static final String PROPERTY = "docx4j.jaxb.mc.preferChoice";
+
+	/** {@link #PROPERTY}'s value where it is unset: {@code wps}, a DrawingML shape's Choice
+	 *  drawn (until 17.3.6 empty, the Fallback).  @since 17.3.7 */
+	public static final String PREFER_CHOICE_DEFAULT = "wps";
 
 	private McSelection() {}
 
-	/** The value of {@link #PROPERTY}, empty when unset. */
+	/** The value of {@link #PROPERTY}, {@link #PREFER_CHOICE_DEFAULT} when unset. */
 	public static String preferredChoiceRequires() {
-		return Docx4jProperties.getProperty(PROPERTY, "");
+		return Docx4jProperties.getProperty(PROPERTY, PREFER_CHOICE_DEFAULT);
 	}
 
 	/**

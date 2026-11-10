@@ -5,8 +5,8 @@ changes (§6). Proposed 2026-11-09, drafted on Jason's request ("let's draft CRs
 suggested scope ... please evaluate what if any of that is worth porting"), one of four: this CR (shapes and geometry),
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
 proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`); phase 1
-done, the geometry engine and `ShapeGeometry` (§6); phase 2 built, shapes drawn, its D12 (c) open: the `wps` Choice
-drawn by default once 9775's text box loss is mended. Read
+done, the geometry engine and `ShapeGeometry` (§6); phase 2 done, shapes drawn, and by D12 (c) the `wps` Choice
+drawn by default (9775's loss mended, an inline text box set on its line). Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -326,8 +326,9 @@ corpus documents can't be the only oracle.
     - the fill-mode factors, and the line widths of each theme's style references.
   - **Gate:** the probes within tolerance; corpora unmoved (0 movers; colour only); the register's
     `drawingml-fills-not-painted` closed.
-  - **Built, committed 2026-11-10** (Jason: "commence phase 2 when ready", then "Commit both"). Not done: D12 (c)'s
-    second step, the `wps` Choice drawn by default (9775 is mended, b399), and its register gate waits on it.
+  - **Built, committed 2026-11-10** (Jason: "commence phase 2 when ready", then "Commit both"). D12 (c) done the
+    same day: 9775 mended (72fa46967), then the `wps` Choice drawn by default, an inline text box set on its line first
+    (below).
     - **`ShapeRenderer`** (docx4j-chart-render, `org.docx4j.chart.render.api`). It draws a shape's `spPr` and
       `wps:style` at its extent, through `ShapeGeometry`, into a `Drawing`, and as SVG over the bounds of all it
       paints, which can reach past the box.
@@ -431,6 +432,36 @@ corpus documents can't be the only oracle.
         - Not measured: whether Word sets a text box's text in both gaps, as it does a float's (CR-032 §3, tables);
           the probe is described in the register's `page-obstacles-opposite-sides`. The fork's fix (combine the
           band's free segments) and phase B's are the fork's.
+      - **The `wps` Choice drawn by default** (2026-11-10; Jason: "make the global default wps", over the PDF output
+        alone, then "Mend, then switch"). `McSelection.PREFER_CHOICE_DEFAULT` is `wps`; an empty value still takes
+        the Fallback. It is the one switch for every reader of the property: the FO and HTML exporters, TraversalUtil's
+        drawing walks, the preprocessor (only for an `mc:AlternateContent` in a parent the schema doesn't admit, of
+        which none is known), and PresentationML's walks, whose `a14` Choices it doesn't list.
+        - Gate b400 (the default changed) against b398: 14372 +1 line; probes `textbox-inset-stroke-list` +22,
+          `mc-textbox-branches-numbered` +4, `tables-textbox-in-cell` +2, and `mc-textbox-branches-bound-sdt` -1
+          (0.70 to 0.60). The last is an inline text box (`wp:inline`), whose text was lost: its container stayed in
+          the run's `fo:inline`, where FOP paints a block-container not at all and reserves it no height. The VML
+          Fallback's box is painted, but its height isn't reserved either.
+        - The mend, `XsltFOFunctions.placeInline`, both routes: an `fo:inline-container` of the shape's extent,
+          `alignment-adjust="after-edge"`, so its foot is on the baseline as an inline picture's and the line grows to
+          hold it. Inside it, a block-container of the extent, and the shape's container absolutely positioned at its
+          top left (FOP measures an absolute position in an inline-container itself from the page). On the probe:
+          both boxes on Word's lines, the second box's text 45.0pt above its paragraph's against Word's 45.1. Left:
+          FOP breaks the first box's paragraph before "control:", which Word keeps on the line above, so that box is
+          37pt right of Word's, and the line's text descent puts the lines after it 2.6pt low.
+        - Gate b401 (the mend) against b400: 4 probes up (`mc-textbox-branches-bound-sdt` 0.60 to 0.90,
+          `tables-textbox-in-cell` and `mc-textbox-branches-numbered` to 1.0, `numbering-stories` +3), none down.
+          Against b398, the whole switch: 6 movers, all up (14372 +1 line; the five probes), events equal but 14372's.
+        - HTML, the 13 corpus documents with a `wps:wsp` in their main part converted both ways: the XSLT route's
+          words are the same; the visitor's gain the text boxes' text (9775 +138 words, 5893 +78, 14372 +61, 5268
+          +48) and lose only the Fallback's `[null]` and `[img]` placeholders.
+        - Tests: `ShapeDrawingFoTest.anInlineShapeWithTextIsOnItsLine` (fails without `placeInline`);
+          `VisitorParityTest`'s default takes the Choice, `testFallbackWhenNoneIsPreferred` the property empty; six
+          tests restored the property as `""` when it was unset, which now means the Fallback, and restore the
+          default; `TextBoxLayoutTest`'s Fallback case sets the property empty. core-tests 2624 (30 skipped),
+          export-fo-tests 917 (9 skipped).
+        - Not done: Getting Started still says the property is empty by default; its canonical `.docx` wants the
+          edit, the md, html and pdf derived from it. An inline shape with no text isn't drawn yet (phase 4).
     - **Mutants:** 25, one rule each, against a passing baseline: 24 caught.
       - Three first survived, and the tests were strengthened until they were caught: the even-odd rule wanted
         `fp20-033`'s nested subpaths, one way round, in the oracle; a shape with no text that wraps wanted one wider
@@ -546,6 +577,9 @@ corpus documents can't be the only oracle.
   measured on its own.
   **Decided 2026-11-10: (c), as recommended** (Jason, 2026-11-10: "(c) After mending 9775"). Phase 2 stays open
   for it: 9775's loss in the DrawingML text box path, then the Choice drawn by default, each with its gate.
+  **Done 2026-11-10** (§6, phase 2): 9775 mended (b399); the Choice drawn by default, for every reader of the property
+  (Jason: "make the global default wps"), once an inline text box was set on its line (b401: 6 movers against 17.3.6's
+  default, all up).
 
 ## 9. Out of scope
 

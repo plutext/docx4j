@@ -103,15 +103,19 @@ HTML takes it too), `docx2fo.xslt`, and the unmarshalling preprocessor for the
 `mc:AlternateContent` that is not inside a `w:r` (which the docx4j content model does not
 keep).
 
-**It ships off** (the list is empty), because that is what measured better. Of the 25
+**It ships as `wps` since 17.3.7** (CR-080 D12): a DrawingML shape's Choice is drawn, which the
+FO exporter paints as Word does (CR-080 phase 2), with an inline shape set on its line in an
+`fo:inline-container`, its foot on the baseline. Gate b401 against 17.3.6's default: six
+documents move, all up (corpus 14372 a line; five probes), none down. Set it empty to draw the
+fallback. Until 17.3.6 it shipped off (the list empty), because that is what measured better
+then. Of the 25
 documents of the three corpora that carry an `mc:Choice Requires="wps"`, choosing it
 moved two and left 23 untouched, and both of those two fell - 0.932 -> 0.894 and
 0.927 -> 0.897, a sum of -0.067. In each, the Choice's DrawingML box lands within 0.6pt
 of the fallback's and of Word's (Word's page-number box y=791.3 x=474.7..524.8, the
 fallback's 790.7 x=476.5..524.5, the Choice's 791.0), so nothing visible is gained, while
 the header text and the page-number box then share one baseline where Word's are 4.8pt
-apart. `docx4j.jaxb.mc.preferChoice=wps` takes the Choice where a document's fallback is
-missing or wrong.
+apart (17.1.0).
 
 **White space in a `w:t` with no `xml:space="preserve"`.** `xml:space` is what makes an
 element's leading and trailing white space significant, and Word writes it whenever the
@@ -203,7 +207,7 @@ key in `docx4j.properties` still wins, and a deployment without either file gets
 | `docx4j.convert.out.fo.wordLayout.pageMasterByContent` | `auto` | A merged run of continuous sections whose top or bottom margins, or header or footer distances, differ gets a page master per part, and each page takes the masters of the section owning its first line, as Word gives it ([§7](#s7pagemasters)). `auto` does so where the FO renderer chooses page masters by content (the docx4j FO renderer's capability `page-master-by-content`, fork CR-017); `false` never; `true` writes them whatever the renderer, which ignores what it does not know. |
 | `docx4j.convert.out.fo.measuredRegionExtents` | `auto` | Header and footer extents are measured by the FO renderer from each master's static content (`fox:extent="measured"`), and the extent pre-pass is skipped ([§7](#s7measured)). `auto` does so where the renderer has the capability `measured-region-extents` (fork CR-018); `false` always runs the pre-pass; `true` asks whatever the renderer, which on one that does not measure leaves the body under the header. |
 | `docx4j.convert.out.fo.fieldErrors` | `en` | What a REF or PAGEREF field whose bookmark is missing prints: Word's English error text (`en`), or `cached`, the field's cached result, as 17.1.0 to 17.3.0 did ([§4.4](#s44missingbm)). |
-| `docx4j.jaxb.mc.preferChoice` | empty | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. Empty (the default, and what measured better) always takes the fallback, as docx4j always has (§1.3). Also HTML. |
+| `docx4j.jaxb.mc.preferChoice` | `wps` | The `mc:Choice/@Requires` prefixes we claim to be able to draw; the first `mc:Choice` naming only those wins over the `mc:Fallback`, as it does in Word. `wps` since 17.3.7 (CR-080 D12); empty always takes the fallback, the default until 17.3.6 (§1.3). Also HTML. |
 | `docx4j.fonts.runFontSelector.trimUnpreservedWhitespace` | `true` | The leading and trailing white space of a `w:t` with no `xml:space="preserve"` is dropped, as Word drops it (§1.3). Also HTML. |
 | `docx4j.convert.out.fo.hyphenate` | unset | Overrides the document's own `w:autoHyphenation`: `true` hyphenates every paragraph that does not suppress hyphenation, `false` hyphenates nothing. Unset, the document decides (§4.7). |
 

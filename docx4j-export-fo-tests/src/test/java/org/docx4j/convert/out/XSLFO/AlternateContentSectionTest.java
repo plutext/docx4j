@@ -117,7 +117,7 @@ public class AlternateContentSectionTest extends AbstractXSLFOTest {
 
 	@After
 	public void restore() {
-		Docx4jProperties.setProperty(McSelection.PROPERTY, preferBefore == null ? "" : preferBefore);
+		Docx4jProperties.setProperty(McSelection.PROPERTY, preferBefore == null ? McSelection.PREFER_CHOICE_DEFAULT : preferBefore);
 	}
 
 	/** word mode: the w14 Choice's paragraph and its section break, on two pages with both headers. */

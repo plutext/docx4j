@@ -82,7 +82,7 @@ public class McSelectionTest {
 
 	@Before
 	public void savePreference() {
-		savedPreference = Docx4jProperties.getProperty(McSelection.PROPERTY, "");
+		savedPreference = Docx4jProperties.getProperty(McSelection.PROPERTY, McSelection.PREFER_CHOICE_DEFAULT);
 		Docx4jProperties.setProperty(McSelection.PROPERTY, "");
 	}
 

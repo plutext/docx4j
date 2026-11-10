@@ -273,8 +273,17 @@ public class TextBoxLayoutTest extends AbstractXSLFOTest {
 				"<w:r><mc:AlternateContent xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\">"
 				+ "<mc:Choice Requires=\"wps\"><w:t>choice</w:t></mc:Choice><mc:Fallback><w:pict>")
 				.replace("</w:pict></w:r>", "</w:pict></mc:Fallback></mc:AlternateContent></w:r>");
-		assertEquals("a DrawingML shape's VML Fallback is not moved", "90pt",
-				positionedBox(fo(fallback, Docx4J.FLAG_NONE)).getAttribute("top"));
+		// the Fallback is drawn only with the Choice not preferred (docx4j.jaxb.mc.preferChoice wps by default
+		// since 17.3.7)
+		String before = org.docx4j.Docx4jProperties.getProperty(org.docx4j.jaxb.McSelection.PROPERTY,
+				org.docx4j.jaxb.McSelection.PREFER_CHOICE_DEFAULT);
+		org.docx4j.Docx4jProperties.setProperty(org.docx4j.jaxb.McSelection.PROPERTY, "");
+		try {
+			assertEquals("a DrawingML shape's VML Fallback is not moved", "90pt",
+					positionedBox(fo(fallback, Docx4J.FLAG_NONE)).getAttribute("top"));
+		} finally {
+			org.docx4j.Docx4jProperties.setProperty(org.docx4j.jaxb.McSelection.PROPERTY, before);
+		}
 		String line = spaced.replace("mso-position-vertical-relative:text", "mso-position-vertical-relative:line");
 		assertEquals("a box relative to the line is not moved", "90pt",
 				positionedBox(fo(line, Docx4J.FLAG_NONE)).getAttribute("top"));

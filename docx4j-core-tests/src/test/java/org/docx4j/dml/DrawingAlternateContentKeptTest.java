@@ -89,7 +89,7 @@ public class DrawingAlternateContentKeptTest {
 
 	@After
 	public void restorePreference() {
-		Docx4jProperties.setProperty(McSelection.PROPERTY, savedPreference == null ? "" : savedPreference);
+		Docx4jProperties.setProperty(McSelection.PROPERTY, savedPreference == null ? McSelection.PREFER_CHOICE_DEFAULT : savedPreference);
 	}
 
 	/** xdr:wsDr > mc:AlternateContent (Choice a14: twoCellAnchor; Fallback empty). */

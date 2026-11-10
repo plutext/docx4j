@@ -68,16 +68,19 @@ public class XSLTUtils {
 	 * x=528.0..581.8 and the fallback's {@code style="left:605.25pt"} put ours at
 	 * 519.9..803.5, most of it off the page.</p>
 	 *
-	 * <p><b>The default is empty - the preference is off.</b>  Measured over the 25
-	 * documents of three real-document corpora that carry an
+	 * <p><b>The default is {@code wps}</b> since 17.3.7 (CR-080 D12): a DrawingML shape's
+	 * Choice is drawn, which the FO exporter paints as Word does (CR-080 phase 2), with an inline
+	 * shape set on its line.  Gate b401 against 17.3.6's default: six documents move, all up
+	 * (corpus 14372 a line; five probes, two to 1.0), none down; the HTML visitor writes a text
+	 * box's text where the fallback wrote placeholders.  Until 17.3.6 the default was empty,
+	 * measured over the 25 documents of three real-document corpora that carry an
 	 * {@code mc:Choice Requires="wps"}, choosing it moved two and left 23 untouched, and
 	 * both of those two fell (0.932 -&gt; 0.894 and 0.927 -&gt; 0.897, a sum of -0.067):
 	 * in each the Choice's DrawingML box lands within 0.6pt of the fallback's and of
 	 * Word's, so nothing visible is gained, while the header-and-page-number pair it
 	 * draws lands on one baseline instead of two.  The header text box the rule was
-	 * written for is drawn correctly either way.  Set
-	 * {@code docx4j.jaxb.mc.preferChoice=wps} to take the Choice where the fallback is
-	 * missing or wrong for your documents.</p>
+	 * written for is drawn correctly either way.  Set {@code docx4j.jaxb.mc.preferChoice=}
+	 * (empty) to take the fallback, as until 17.3.6.</p>
 	 *
 	 * <p>{@code wpg} (shape groups), {@code w14}, {@code wp14} and {@code v} are
 	 * deliberately not suggested: a Choice we cannot in fact draw is worse than the

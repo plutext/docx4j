@@ -87,7 +87,7 @@ public class ResolveAlternateContentTest {
 
 	@After
 	public void restore() {
-		Docx4jProperties.setProperty(McSelection.PROPERTY, preferBefore == null ? "" : preferBefore);
+		Docx4jProperties.setProperty(McSelection.PROPERTY, preferBefore == null ? McSelection.PREFER_CHOICE_DEFAULT : preferBefore);
 	}
 
 	/** A DOCUMENT-only feature set still gets the header copied and spliced, and the caller's package keeps every element. */
