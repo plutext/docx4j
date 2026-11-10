@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -66,6 +67,12 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 	private static String inline(String sppr) {
 		return "<w:p><w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"2286000\" cy=\"1143000\"/>"
 				+ "<wp:docPr id=\"2\" name=\"Shape 2\"/>" + graphic(sppr, null, "<wps:bodyPr/>") + "</wp:inline></w:drawing></w:r></w:p>";
+	}
+
+	private static String inlineText(String sppr, String txbx) {
+		return "<w:p><w:r><w:t xml:space=\"preserve\">before </w:t></w:r><w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">"
+				+ "<wp:extent cx=\"2286000\" cy=\"1143000\"/><wp:docPr id=\"3\" name=\"Text Box 3\"/>" + graphic(sppr, txbx, "<wps:bodyPr/>")
+				+ "</wp:inline></w:drawing></w:r></w:p>";
 	}
 
 	private static String graphic(String sppr, String txbx, String bodyPr) {
@@ -186,6 +193,33 @@ public class ShapeDrawingFoTest extends AbstractXSLFOTest {
 	public void anInlineShapeWithNoTextIsNotDrawnYet() throws Exception {
 		for (int flags : BOTH) {
 			assertEquals("flags " + flags, 0, svgs(fo(inline(RED_RECT), flags)).getLength());
+		}
+	}
+
+	/** An inline shape with text is on its line in an fo:inline-container of its extent, its foot on the baseline,
+	 *  holding the box, drawn, with its text: in the run's fo:inline FOP painted the box's block-container not at
+	 *  all (probe mc-textbox-branches-bound-sdt, its text lost once the wps Choice was drawn).  @since 17.3.7 */
+	@Test
+	public void anInlineShapeWithTextIsOnItsLine() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = fo(inlineText(RED_RECT, "INLINE TEXT"), flags);
+			NodeList holders = doc.getElementsByTagNameNS(FO_NS, "inline-container");
+			assertEquals("flags " + flags, 1, holders.getLength());
+			Element holder = (Element) holders.item(0);
+			assertEquals("flags " + flags, "180pt", holder.getAttribute("width"));
+			assertEquals("flags " + flags, "90pt", holder.getAttribute("height"));
+			assertEquals("flags " + flags, "after-edge", holder.getAttribute("alignment-adjust"));
+			org.w3c.dom.Node para = holder.getParentNode();
+			while (para != null && !"block".equals(para.getLocalName())) para = para.getParentNode();
+			assertTrue("flags " + flags + ": in the paragraph's line", para != null && para.getTextContent().startsWith("before"));
+			Element box = firstElement(holder);
+			assertEquals("flags " + flags, "block-container", box.getLocalName());
+			assertEquals("flags " + flags, "", box.getAttribute("absolute-position"));
+			Element container = textContainer(doc, "INLINE TEXT");
+			assertNotNull("flags " + flags + ": drawn, with its text", container);
+			assertSame("flags " + flags, box, container.getParentNode());
+			assertEquals("flags " + flags, "absolute", container.getAttribute("absolute-position"));
+			assertEquals("flags " + flags, container.getAttribute("padding-top"), container.getAttribute("top"));
 		}
 	}
 

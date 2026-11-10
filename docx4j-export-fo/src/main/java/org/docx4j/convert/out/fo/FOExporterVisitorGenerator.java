@@ -382,7 +382,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 
 		Element container = XsltFOFunctions.createShapeTextBox(conversionContext, anchorOrInline, document);
 		if (container==null) return;
-		getCurrentParent().appendChild(container);
+		// an inline shape on its line, in an fo:inline-container of its extent (17.3.7)
+		getCurrentParent().appendChild(XsltFOFunctions.placeInline(document, container, anchorOrInline));
 		org.docx4j.wml.CTTxbxContent txbx = XsltFOFunctions.shapeTextBox(anchorOrInline);
 		if (txbx!=null) {
 			conversionContext.enterTextBox();

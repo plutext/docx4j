@@ -471,6 +471,40 @@ public class XsltFOFunctions {
 		return container;
     }
 
+    /**
+     * Where the shape's container goes: a wp:inline shape's in an fo:inline-container of its extent, on its line
+     * with its foot on the baseline as an inline picture's, the line growing to hold it, as Word sets it (probe
+     * mc-textbox-branches-bound-sdt: a 250 x 60pt box that fits after its paragraph's text sits beside it, the
+     * text at its foot; one that doesn't is on the next line, which is the box's height).  The container is
+     * absolutely positioned at the top left of a block-container of the extent inside it, below its own
+     * padding-top, as an anchored box is in its wrapper (FOP measures an absolute position in an
+     * inline-container itself from the page).  Until 17.3.7 the container stayed in the run's fo:inline, where FOP paints a block-container not at
+     * all and reserves it no height, so an inline text box's text was lost once its wps Choice was drawn
+     * (CR-080 D12).  A wp:anchor's container is returned as it is.  @since 17.3.7
+     */
+    static Element placeInline(Document document, Element container, Object anchorOrInline) {
+		if (!(anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Inline)) return container;
+		org.docx4j.dml.CTPositiveSize2D extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
+		if (extent==null || extent.getCx() <= 0 || extent.getCy() <= 0) return container;
+		Element holder = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline-container");
+		holder.setAttribute("width", FOTextBoxes.pt(extent.getCx() / 12700d));
+		holder.setAttribute("height", FOTextBoxes.pt(extent.getCy() / 12700d));
+		holder.setAttribute("alignment-adjust", "after-edge");
+		holder.setAttribute("overflow", "visible");
+		Element box = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block-container");
+		box.setAttribute("width", holder.getAttribute("width"));
+		box.setAttribute("height", holder.getAttribute("height"));
+		box.setAttribute("start-indent", "0pt");
+		box.setAttribute("end-indent", "0pt");
+		box.setAttribute("overflow", "visible");
+		container.setAttribute("absolute-position", "absolute");
+		container.setAttribute("left", "0pt");
+		container.setAttribute("top", container.hasAttribute("padding-top") ? container.getAttribute("padding-top") : "0pt");
+		box.appendChild(container);
+		holder.appendChild(box);
+		return holder;
+    }
+
     /** A shape wrapped square, tight or through lets text run beside it: its distL, distR
      *  and distB and the wrap's wrapText side, for WordLayoutFixups.textBesideBand.
      *  @since 17.3.1 */
@@ -547,7 +581,7 @@ public class XsltFOFunctions {
 			Document document = XmlUtils.getNewDocumentBuilder().newDocument();
 			Element container = createShapeTextBox(context, anchorOrInline, document);
 			if (container==null) return null;
-			document.appendChild(container);
+			document.appendChild(placeInline(document, container, anchorOrInline));
 			Node childResults = (childResultsIt==null || !FOShapes.hasText(shape(anchorOrInline))) ? null : childResultsIt.nextNode();
 			if (childResults!=null) {
 				XmlUtils.treeCopy(childResults, container);
