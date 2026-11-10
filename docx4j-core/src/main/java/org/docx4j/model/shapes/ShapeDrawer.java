@@ -72,7 +72,7 @@ public interface ShapeDrawer {
 
 	/**
 	 * A picture as Word draws it, in its frame: points from its box's top left, y down. Drawn in this order: the effect
-	 * pictures under it; the fill behind it, then the picture, both clipped to the outline; the effect pictures over it;
+	 * pictures under it; its preset shadow; the fill behind it, then the picture, both clipped to the outline; the effect pictures over it;
 	 * the line. Where an effect picture takes its place (a soft edge), that picture is drawn for the fill, the picture
 	 * and the line.
 	 *
@@ -92,9 +92,17 @@ public interface ShapeDrawer {
 		/** The effect pictures, in the order they are drawn */
 		List<EffectPicture> getEffects();
 
+		/**
+		 * The preset shadow ({@code a:prstShdw}: vector fills, CR-081 phase 4) as SVG, a user unit a point, its viewBox
+		 * where it is in the frame, drawn after the effect pictures under the picture; null for none
+		 */
+		default Document getShadow() {
+			return null;
+		}
+
 		/** Nothing is drawn round the picture or clipped from it, and it has no effects: it is drawn as a picture alone */
 		default boolean isPlain() {
-			return getClip() == null && getBehind() == null && getLine() == null && getEffects().isEmpty();
+			return getClip() == null && getBehind() == null && getLine() == null && getShadow() == null && getEffects().isEmpty();
 		}
 	}
 

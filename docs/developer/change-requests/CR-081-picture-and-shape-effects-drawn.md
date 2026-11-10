@@ -7,7 +7,9 @@ geometry. Phase 1 DONE 2026-11-11 (Jason: "shall we resume work on CR-081?", the
 255, corpora 0 movers. Phase 2 DONE 2026-11-11 (Jason: "start CR-081 phase 2", "comit phase 2"): `CR-081-notes/phase2-findings.md`;
 the flat picture styles' frames and effects against Word's (56 pictures at 0.76, 34 vector draws within 0.02pt), gate
 b416 0 movers. Phase 3 DONE 2026-11-11 (Jason: "do phase 3", "commit phase 3"):
-`CR-081-notes/phase3-findings.md`; shapes' effects, `effectRef` resolved, 14 pictures at 0.44, gate b418 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+`CR-081-notes/phase3-findings.md`; shapes' effects, `effectRef` resolved, 14 pictures at 0.44, gate b418 0 movers.
+Phase 4 DONE 2026-11-11 (Jason: "do phase 4", "commit phase 4"): `CR-081-notes/phase4-findings.md`; the 20 preset shadows
+as Word's vector fills, 46 within 0.02pt. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -257,6 +259,15 @@ under `pic:spPr` (through the portfolio).
       14_en-US_num_tbl_14372's two shapes gain their theme's shadow, each within 0.5pt of Word's golden.
 - **Phase 4, preset shadows** (D6): the 20 `a:prstShdw` presets as outer shadows with Word's parameters, measured in
   phase 0.
+  - **Done 2026-11-11** (Jason: "do phase 4", "commit phase 4"; `CR-081-notes/phase4-findings.md`). A round of probes
+    for what isn't measured follows (findings §3).
+    - Word draws them as unblurred vector fills, and docx4j now does too, on pictures and shapes, in every route. Each
+      is the outline moved `dist` along `dir`; some are first halved, sheared, mirrored or scaled about a point of the
+      box. shdw13, 17 and 18 add a second fill (findings §2).
+    - Against Word's PDFs of all 20 presets on a picture and on a shape: 46 fills within 0.02pt, their greys Word's.
+    - Only one `dist` and `dir` were probed; the second fill's colour is measured on black only (findings §3).
+    - Gate b420 against b419: 0 movers, events equal. No corpus document has a preset shadow.
+    - Tests: `PresetShadowTest` (the oracle, both drawings), `PictureEffectsFoTest` (+1, both routes).
 - **Phase 5, 3-D** (D5): `a:scene3d` and `a:sp3d` on pictures, shapes, SmartArt (CR-082) and WordArt (CR-083, from
   `w14:props3d`/`w14:scene3d`).
   - Drawn: the camera (presets, `rot`); the light rig (type, direction); top and bottom bevels (the 12

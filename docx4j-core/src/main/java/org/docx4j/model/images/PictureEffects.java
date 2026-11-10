@@ -56,7 +56,8 @@ import org.w3c.dom.Element;
 /**
  * A DrawingML picture in its frame, with its effects, drawn as Word draws them (CR-081 phases 1 and 2), for the PDF and
  * HTML outputs alike: one SVG of the picture's frame, a user unit a point, its overflow visible, holding the effect
- * pictures under the picture ({@code pic:spPr/a:effectLst}: outer shadow, glow, reflection), the fill behind it, the
+ * pictures under the picture ({@code pic:spPr/a:effectLst}: outer shadow, glow, reflection), its preset shadow (vector
+ * fills, {@code a:prstShdw}), the fill behind it, the
  * picture itself (an {@code image} of what the output names for it, so a JPEG passes through to the PDF), both clipped
  * to its outline ({@code a:prstGeom}, {@code a:custGeom}), the pictures over it (an inner shadow), then its line
  * ({@code a:ln}), wholly outside it; where there is a soft edge, the soft-edged picture in place of the fill, the
@@ -92,7 +93,7 @@ final class PictureEffects {
 		CTEffectList fx = pic.getSpPr().getEffectLst();
 		if (fx == null) return null;
 		boolean any = fx.getOuterShdw() != null || fx.getInnerShdw() != null || fx.getGlow() != null && fx.getGlow().getRad() > 0
-				|| fx.getSoftEdge() != null && fx.getSoftEdge().getRad() > 0 || fx.getReflection() != null;
+				|| fx.getSoftEdge() != null && fx.getSoftEdge().getRad() > 0 || fx.getReflection() != null || fx.getPrstShdw() != null;
 		return any ? fx : null;
 	}
 
@@ -186,6 +187,11 @@ final class PictureEffects {
 		for (ShapeDrawer.EffectPicture p : drawing.getEffects()) if (p.getLayer() == ShapeDrawer.EffectLayer.REPLACE) replaced = true;
 		for (ShapeDrawer.EffectLayer layer : new ShapeDrawer.EffectLayer[] { ShapeDrawer.EffectLayer.UNDER, ShapeDrawer.EffectLayer.REPLACE,
 				ShapeDrawer.EffectLayer.OVER }) {
+			if (layer == ShapeDrawer.EffectLayer.REPLACE) {
+				// the preset shadow, vector fills under the picture (CR-081 phase 4)
+				Element shadow = nested(document, drawing.getShadow(), prefix + "s-");
+				if (shadow != null) svg.appendChild(shadow);
+			}
 			if (layer == ShapeDrawer.EffectLayer.REPLACE && !replaced) {
 				// the fill behind, then the picture, in the outline
 				Element behind = nested(document, drawing.getBehind(), prefix + "b-");

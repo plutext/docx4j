@@ -370,6 +370,27 @@ public class PictureEffectsFoTest {
 		}
 	}
 
+	/**
+	 * A preset shadow (CR-081 phase 4) is vector fills under the picture: a picture with one alone is one SVG, its
+	 * shadow a nested svg before the picture, the picture still its own bytes
+	 */
+	@Test
+	public void aPresetShadowIsDrawnUnderThePicture() throws Exception {
+		String prst = "<a:effectLst><a:prstShdw prst=\"shdw3\" dist=\"76200\" dir=\"2700000\"><a:prstClr val=\"black\"/></a:prstShdw></a:effectLst>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document fo = fo(pkg(picture("png"), prst, null, true, null), flags);
+			assertEquals(route(flags), 0, fo.getElementsByTagNameNS(FO_NS, "external-graphic").getLength());
+			Element svg = onlySvg(fo, route(flags));
+			List<Element> nested = nested(svg);
+			assertEquals(route(flags), 1, nested.size());
+			assertTrue(route(flags), svg.getFirstChild() == nested.get(0));
+			// shdw3 leans left of the picture: its svg starts 89.29pt left of the frame
+			assertEquals(route(flags), -89.29, Double.parseDouble(nested.get(0).getAttribute("x")), 0.01);
+			assertEquals(route(flags), 1, images(svg).size());
+			assertTrue(route(flags), images(svg).get(0)[0].startsWith("data:image/png;base64,"));
+		}
+	}
+
 	/** The picture's own bytes in the SVG keep FOP's JPEG passthrough: the PDF holds the JPEG (DCTDecode) */
 	@Test
 	public void aJpegPassesThroughToThePdf() throws Exception {

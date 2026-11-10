@@ -122,6 +122,7 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		}
 		final Document behind = frame.getBehind() == null ? null : SvgWriter.toSvg(frame.getBehind(), frame.getBehindBounds());
 		final Document lineSvg = frame.getLine() == null ? null : SvgWriter.toSvg(frame.getLine(), frame.getLineBounds());
+		final Document shadow = frame.getShadow() == null ? null : SvgWriter.toSvg(frame.getShadow(), frame.getShadowBounds());
 		final Shape clip = frame.isBox() ? null : frame.getOutline();
 		return new PictureDrawing() {
 			@Override
@@ -142,6 +143,11 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 			@Override
 			public List<EffectPicture> getEffects() {
 				return out;
+			}
+
+			@Override
+			public Document getShadow() {
+				return shadow;
 			}
 		};
 	}

@@ -408,6 +408,91 @@ public final class Effects {
 		return new Picture(im, g.place(), Layer.UNDER, "reflection");
 	}
 
+	// ------------------------------------------------------------------ preset shadows (CR-081 phase 4)
+
+	/** A vector fill of a preset shadow: its shape, in the drawing's frame, and its colour */
+	public static final class Fill {
+		private final java.awt.Shape shape;
+		private final Color colour;
+
+		Fill(java.awt.Shape shape, Color colour) {
+			this.shape = shape;
+			this.colour = colour;
+		}
+
+		public java.awt.Shape getShape() {
+			return shape;
+		}
+
+		public Color getColour() {
+			return colour;
+		}
+	}
+
+	/** shdw3's far edge, at half the box's height, leans tan 60 degrees of that half: 93.53pt over a 108pt box */
+	private static final double PRESET_SHEAR = Math.tan(Math.toRadians(60)) / 2;
+
+	/**
+	 * A preset shadow ({@code a:prstShdw}) as Word draws it (CR-081 phase 4, D6): unblurred vector fills of the
+	 * drawing's outline, under it, moved {@code dist} along {@code dir} (clockwise from +x), each preset's own
+	 * transform about a point of the box first. Measured on Word's PDFs of every preset over a 144 by 108pt picture and
+	 * shape, dist 6pt at 45 degrees (fxr60, fxr61):
+	 * <ul>
+	 * <li>shdw1, 2, 5, 6, 14: the outline moved;</li>
+	 * <li>shdw3, 11 and 4, 12: half its height up from its foot, leaning left and right (its top edge tan 60 degrees of
+	 * that half across); shdw7, 15 and 8, 16 the same mirrored down from its foot;</li>
+	 * <li>shdw9: 75% about its top left; shdw10: 125% about its bottom right;</li>
+	 * <li>shdw19: half its height up from its foot; shdw20: mirrored down from its foot;</li>
+	 * <li>shdw13: a second fill twice as far; shdw17, 18: a second fill as far the other way; the second under the
+	 * first, in the colour 40% of the way to white (0.4 grey for black).</li>
+	 * </ul>
+	 * Word's presets named for another direction (shdw1 is "top left") are drawn along dir as well; the second fill's
+	 * colour is measured on black only.
+	 *
+	 * @param outline the drawing's outline, in its frame
+	 * @param box the box the presets' points are on: the drawing's, with its line where it has one
+	 * @return the fills in drawing order; none where the shadow has no colour
+	 */
+	public static List<Fill> presetShadow(org.docx4j.dml.CTPresetShadowEffect s, ThemeColors theme, java.awt.Shape outline, Rectangle2D box) {
+		List<Fill> out = new ArrayList<Fill>();
+		if (s == null || outline == null || box == null || s.getPrst() == null) return out;
+		Color c = colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
+		if (c == null) return out;
+		int n;
+		try {
+			n = Integer.parseInt(s.getPrst().value().substring(4));
+		} catch (RuntimeException e) {
+			return out;
+		}
+		double sx = 1, sy = 1, shear = 0, ax = 0, ay = 0;
+		switch (n) {
+			case 3: case 11: sy = 0.5; shear = PRESET_SHEAR; ax = 0.5; ay = 1; break;
+			case 4: case 12: sy = 0.5; shear = -PRESET_SHEAR; ax = 0.5; ay = 1; break;
+			case 7: case 15: sy = -0.5; shear = PRESET_SHEAR; ax = 0.5; ay = 1; break;
+			case 8: case 16: sy = -0.5; shear = -PRESET_SHEAR; ax = 0.5; ay = 1; break;
+			case 9: sx = sy = 0.75; break;
+			case 10: sx = sy = 1.25; ax = 1; ay = 1; break;
+			case 19: sy = 0.5; ax = 0.5; ay = 1; break;
+			case 20: sy = -1; ax = 0.5; ay = 1; break;
+			default: break;
+		}
+		double px = box.getX() + ax * box.getWidth(), py = box.getY() + ay * box.getHeight();
+		double dist = s.getDist() / 12700.0, dir = Math.toRadians(s.getDir() / 60000.0);
+		double dx = dist * Math.cos(dir), dy = dist * Math.sin(dir);
+		Color second = new Color((int) Math.round(c.getRed() + 0.4 * (255 - c.getRed())), (int) Math.round(c.getGreen() + 0.4 * (255 - c.getGreen())),
+				(int) Math.round(c.getBlue() + 0.4 * (255 - c.getBlue())), c.getAlpha());
+		double[][] layers = n == 13 ? new double[][] { { 2, 1 }, { 1, 0 } } : n == 17 || n == 18 ? new double[][] { { -1, 1 }, { 1, 0 } }
+				: new double[][] { { 1, 0 } };
+		for (double[] l : layers) {
+			AffineTransform t = AffineTransform.getTranslateInstance(l[0] * dx, l[0] * dy);
+			t.translate(px, py);
+			t.concatenate(new AffineTransform(sx, 0, shear, sy, 0, 0));
+			t.translate(-px, -py);
+			out.add(new Fill(t.createTransformedShape(outline), l[1] > 0 ? second : c));
+		}
+		return out;
+	}
+
 	/** The fade's alpha at f, 0 to 1 across the reflection along fadeDir */
 	static double fade(double f, double stA, double stPos, double endA, double endPos) {
 		if (stPos > endPos) return f <= stPos ? stA : 0;

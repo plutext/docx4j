@@ -292,6 +292,8 @@ public final class ShapeRenderer {
 		private final Shape outline;
 		private final boolean box;
 		private final Drawing behind, line;
+		private Drawing shadow;
+		private Rectangle2D.Double shadowBounds;
 		private final Rectangle2D.Double behindBounds, lineBounds;
 		private final List<String> problems;
 
@@ -342,7 +344,17 @@ public final class ShapeRenderer {
 
 		/** Nothing is drawn round the picture, and nothing of it is clipped */
 		public boolean isPlain() {
-			return box && behind == null && line == null;
+			return box && behind == null && line == null && shadow == null;
+		}
+
+		/** Its preset shadow ({@code a:prstShdw}: vector fills under it, phase 4); null where there is none */
+		public Drawing getShadow() {
+			return shadow;
+		}
+
+		/** What the preset shadow paints; null where there is none */
+		public Rectangle2D.Double getShadowBounds() {
+			return shadowBounds;
 		}
 	}
 
@@ -406,7 +418,24 @@ public final class ShapeRenderer {
 			}
 			if (lineBounds != null && !d.getItems().isEmpty()) lined = d;
 		}
-		return new PictureFrame(clip, isBox, behind, behindBounds, lined, lineBounds, problems);
+		PictureFrame frame = new PictureFrame(clip, isBox, behind, behindBounds, lined, lineBounds, problems);
+		// a preset shadow: the outline, with its line, moved and shaped as the preset says (phase 4)
+		if (spPr != null && spPr.getEffectLst() != null && spPr.getEffectLst().getPrstShdw() != null) {
+			Area cast = new Area(clip);
+			if (lined != null) cast.add(new Area(outline(lined.getItems())));
+			Rectangle2D drawnBox = lineBounds == null ? box : box.createUnion(lineBounds);
+			Drawing d = new Drawing(w, h);
+			Rectangle2D sb = null;
+			for (Effects.Fill f : Effects.presetShadow(spPr.getEffectLst().getPrstShdw(), theme, cast, drawnBox)) {
+				d.add(new Drawing.Area(f.getShape(), f.getColour(), null, 0, "shape.shadow"));
+				sb = union(sb, f.getShape().getBounds2D());
+			}
+			if (sb != null) {
+				frame.shadow = d;
+				frame.shadowBounds = rect(sb);
+			}
+		}
+		return frame;
 	}
 
 	/**
@@ -538,7 +567,7 @@ public final class ShapeRenderer {
 		if (of.flat3d && !problems.contains(FLAT_3D)) problems.add(FLAT_3D);
 		CTEffectList list = of.list;
 		if (list == null || list.getOuterShdw() == null && list.getInnerShdw() == null && (list.getGlow() == null || list.getGlow().getRad() <= 0)
-				&& (list.getSoftEdge() == null || list.getSoftEdge().getRad() <= 0) && list.getReflection() == null) {
+				&& (list.getSoftEdge() == null || list.getSoftEdge().getRad() <= 0) && list.getReflection() == null && list.getPrstShdw() == null) {
 			return bounds;
 		}
 		if (text && !problems.contains(TEXT_EFFECTS)) {
@@ -572,7 +601,17 @@ public final class ShapeRenderer {
 				: new Rectangle2D.Double(lineBounds.getX() - x, lineBounds.getY() - y, lineBounds.getWidth(), lineBounds.getHeight());
 		Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, maxPixelsPerPoint());
 		for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
-		if (r.isEmpty()) return bounds;
+		// a preset shadow: vector fills of the shape's outline, under it (phase 4)
+		List<Object> preset = new ArrayList<Object>();
+		if (list.getPrstShdw() != null) {
+			Rectangle2D drawn = lineBounds == null ? box : box.createUnion(lineBounds);
+			for (Effects.Fill f : Effects.presetShadow(list.getPrstShdw(), of.theme, outline(mine), drawn)) {
+				Drawing.Area a = new Drawing.Area(f.getShape(), f.getColour(), null, 0, "shape.shadow");
+				preset.add(a);
+				bounds = union(bounds, f.getShape().getBounds2D());
+			}
+		}
+		if (r.isEmpty() && preset.isEmpty()) return bounds;
 		List<Object> under = new ArrayList<Object>(), over = new ArrayList<Object>(), replace = new ArrayList<Object>();
 		for (Effects.Picture p : r.getPictures()) {
 			Rectangle2D.Double pl = p.getPlace();
@@ -581,6 +620,7 @@ public final class ShapeRenderer {
 			bounds = union(bounds, dp.getInto());
 		}
 		List<Object> out = new ArrayList<Object>(under);
+		out.addAll(preset);
 		if (!replace.isEmpty()) {
 			out.addAll(replace);
 		} else {
@@ -591,6 +631,27 @@ public final class ShapeRenderer {
 		items.subList(from, items.size()).clear();
 		items.addAll(out);
 		return bounds;
+	}
+
+	/** The outline of what these items paint: their fills' shapes and their strokes' outlines, one area */
+	static java.awt.Shape outline(List<Object> items) {
+		Area a = new Area();
+		for (Object o : items) {
+			if (o instanceof Drawing.Area) {
+				Drawing.Area d = (Drawing.Area) o;
+				if (d.getFill() != null || d.getGradient() != null || d.getPattern() != null) a.add(new Area(d.getShape()));
+				if (d.getLine() != null) {
+					java.awt.Stroke st = d.getStroke() != null ? d.getStroke() : new BasicStroke((float) Math.max(d.getLineWidth(), HAIRLINE));
+					a.add(new Area(st.createStrokedShape(d.getShape())));
+				}
+			} else if (o instanceof Drawing.Picture) {
+				Drawing.Picture p = (Drawing.Picture) o;
+				Area in = new Area(p.getInto());
+				if (p.getClip() != null) in.intersect(new Area(p.getClip()));
+				a.add(in);
+			}
+		}
+		return a;
 	}
 
 	/** What an area paints: its stroke's outline, or its shape */
