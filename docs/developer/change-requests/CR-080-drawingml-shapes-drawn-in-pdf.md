@@ -10,7 +10,7 @@ drawn by default (9775's loss mended, an inline text box set on its line); phase
 and by D13 (b) the `wpg` and `wpc` Choices drawn by default too; phase 4 done, a shape, group or canvas with no text a
 picture of its extent, placed and wrapped as a picture is, as Word's wrap probes show it does; phase 5 done, shapes
 drawn in HTML with their text over them, by both routes, and by D14 (c) pictures and charts in HTML at their size
-too. Read
+too; phase 6 built, the CHANGELOG and the register committed, the Getting Started guide's changes tracked for review. Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -671,6 +671,28 @@ corpus documents can't be the only oracle.
     - **Not done:** an anchored shape stays in its line in HTML, as an anchored picture does (no float, no
       position); VML shapes and text boxes, which HTML doesn't output at all (D6's later CR).
 - **Phase 6, CHANGELOG, Getting Started, the register.**
+  - **Built 2026-11-11** (Jason: "start CR-080 phase 6", then "yes" to committing all but the guide, which waits for
+    his review).
+    - **CHANGELOG** (17.3.7): a line for each phase, D12, D13 and D14, and the anchored-picture wrap fixes found by
+      phase 4's probes; the ones phases 4 and 5 hadn't written came with D14's commit (5e7defc04). This phase adds
+      `ShapeDrawer` and `ShapeText` under Shapes.
+    - **docx4j-chart-render's description** is now "DrawingML drawn to SVG: charts and shapes" (D2), naming the
+      `ShapeDrawer` it provides.
+    - **Getting Started**: the canonical `docs/Docx4j_GettingStarted.docx` carries six tracked changes (author Claude
+      Opus 5.5), for Jason's review in Word:
+      - `docx4j.jaxb.mc.preferChoice`'s default, `wps wpg wpc` from 17.3.7, where the guide said it was empty;
+      - that a text box is drawn from its VML fallback only with the property empty;
+      - HTML: shapes drawn with their text, and pictures and charts at their size (D14);
+      - PDF: a "Shapes" paragraph beside "Charts";
+      - docx4j-chart-render draws shapes too, in the bundles and the Charts section.
+
+      Rejecting them all gives back the guide's text exactly. Left out of phase 6's commit, in the working tree for
+      the review. The md, html and pdf are derived
+      (`etc/GenGettingStartedDocs.java`, against the release's bundles) and wait for the review and the release, as
+      17.3.6's did. Tool: `~/claude-scratch-archive/docx4j/getting-started-17.3.7/track4.py`.
+    - **The register** (Enterprise): `drawingml-fills-not-painted` fixed for DrawingML shapes, groups and canvases, in PDF
+      and HTML, VML open (D6) and effects CR-081's; gate b411 recorded; the open lead for the manual's SmartArt (p40)
+      pointed at CR-082.
 
 ## 7. Risks
 

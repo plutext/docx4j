@@ -38,6 +38,7 @@ Changes in Version 17.3.7
 
 ### Shapes
 - `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).
+- `org.docx4j.model.shapes.ShapeDrawer` draws a shape, group or canvas to SVG where docx4j-chart-render (which provides it) is on the classpath; `ShapeText` gives where Word sets a shape's text.
 
 ### Text extraction
 - A numbered paragraph read without a numbering part in the package raises `part.absent` (REQ-801, WD 0.76).

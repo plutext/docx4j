@@ -13,9 +13,10 @@
 	<name>docx4j-chart-render</name>
 
 	<description>
-		Charts drawn as Office draws them (CR-037): a classic chart from docx4j's read model to
-		Graphics2D, SVG (Batik's SVGGraphics2D) and PNG.  Provides docx4j-core's ChartRenderer;
-		docx4j-export-fo depends on it, so PDF output draws charts.
+		DrawingML drawn to SVG: charts and shapes.  Charts as Office draws them (CR-037): a classic
+		chart from docx4j's read model to Graphics2D, SVG (Batik's SVGGraphics2D) and PNG.  Shapes,
+		groups and canvases as Word draws them (CR-080).  Provides docx4j-core's ChartRenderer and
+		ShapeDrawer; docx4j-export-fo depends on it, so PDF output draws charts and shapes.
 	</description>
 
 	<build>
