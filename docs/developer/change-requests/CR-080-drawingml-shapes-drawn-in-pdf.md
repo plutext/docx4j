@@ -4,7 +4,8 @@ Status: ACCEPTED 2026-11-10 (Jason: "CR-080 decisions as recommended"): D1 to D1
 changes (§6). Proposed 2026-11-09, drafted on Jason's request ("let's draft CRs for the following items with the given
 suggested scope ... please evaluate what if any of that is worth porting"), one of four: this CR (shapes and geometry),
 CR-081 (picture and shape effects), CR-082 (SmartArt from its drawing cache), CR-083 (WordArt). Numbered in the order
-proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`). Read
+proposed for implementation: CR-081 to CR-083 draw with this CR's geometry. Phase 0 run (`CR-080-notes/`); phase 1
+done, the geometry engine and `ShapeGeometry` (§6). Read
 against docx4j c0a66b610 (VERSION_17_3_7), Apache POI trunk ae62bb5116 (`../poi`) and docxide-pdf 9508da2
 (2026-11-08), and the specifications in §12. Reviewed 2026-11-09 by a Claude Fable 5.1 session at Jason's request
 ("now have fable review the CRs please"). Its findings were applied on Jason's word ("apply the review's findings"):
@@ -226,6 +227,91 @@ corpus documents can't be the only oracle.
   - `ShapeGeometry`, tested against phase 0's numbers (every preset's path within 0.1pt of Word's at 100 by 100pt, the
     text rectangles exact).
   - **Gate:** core-tests.
+  - **Done 2026-11-10** (Jason: "commit then start phase 1", and asked before phase 2, "Commit both").
+    - **The engine.** POI 5.5.1's `sl.draw.geom` in `org.docx4j.org.apache.poi.sl.draw.geom`, 32 of its 34 files, each
+      under the Plutext notice, with `2acb5cf66a`, and `PaintStyle` with only its `PaintModifier`
+      (`CR-080-notes/licence-notes.md`). POI's `PresetGeometries` and `PresetParser` aren't copied: docx4j's own
+      `PresetGeometries` reads the one copy of the definitions into JAXB, and `GeometryReader` takes that, or a
+      document's `a:custGeom`, into POI's `CustomGeometry`. docx4j's changes to the copied files, each in its notice:
+      - `sqrt` of |x|;
+      - the built-in guides `wd12` and `hd10`;
+      - an arc of no radius leaves the point where it is;
+      - an arc on a flat ellipse runs along it, as Word draws it. The arc's start was `atan2(rx·sin θ, ry·cos θ)`, and
+        `sin(180°)` in doubles is 1.2e-16, not 0, so with `ry` 0 it gave 90° for 180°, and `donut`, `leftBrace` and
+        `rightBrace` at their limits started a quarter turn out (`fp13-039`, `-056`, `-087`). It is now the converted
+        start angle, and where the width is 0 the conversion gives 90° for a vertical angle, not 0.
+    - **The API.** `org.docx4j.model.shapes.ShapeGeometry.outlines`, of a `CTShapeProperties`, `CTPresetGeometry2D` or
+      `CTCustomGeometry2D`, at the shape's extent in EMU, gives `ShapeOutlines`, in points from the shape's top left,
+      y down:
+      - its paths, each a `Path2D` with its fill mode (`STPathFillMode`), stroke and `extrusionOk`;
+      - its text rectangle, the box where the geometry has none;
+      - its connection sites;
+      - `getProblem()`: `render.shape.unknown_preset`, `render.shape.bad_geometry` or `render.shape.over_limit` (D9),
+        with the box in place of the geometry.
+    - **D10's limits, as built.**
+      - 1 MiB, counted as characters of the geometry's names, formulas and points, as the XML is parsed before
+        docx4j sees it.
+      - 1,024 guides and adjust values, a preset's adjustments counted too.
+      - 256 paths, and 8,192 commands over them.
+      - An arc's sweep of 16 turns, checked as each arc is drawn, as a sweep can be a guide.
+      - Every coordinate finite and within ±2^31 EMU in the shape's space: the text rectangle and the connection sites
+        too. "Within the drawing's bounds" is read as the 32-bit coordinate space (§7's "an extent near 2^31 EMU"),
+        not the shape's box, as a callout's leader reaches past it (`fp10-001`).
+      - The most work they allow, 256 paths each in its own coordinates and so each evaluating 1,024 guides again,
+        takes 0.5 s.
+    - **The definitions, corrected** (licence notes §3).
+      - `leftArrow`'s `y1` named an undefined `dy`; it is ECMA's `dy1` again.
+      - `pie`'s text rectangle: ECMA's file swaps `t` and `r` (`t="ir" r="it"`), and so did docx4j's and POI's copies.
+        Word's glyphs sit in `il`, `it`, `ir`, `ib`.
+      - `upArrow`, which ECMA's file lacks (it has `upDownArrow` twice): docx4j's of 2014 had `upDownArrow`'s formulas,
+        which hold the one head to half the height. Word draws it as `downArrow` mirrored, its head to the full
+        height (`fp13-115`), which docx4j's now is.
+      - Otherwise docx4j's file is ECMA's 5th edition's, preset for preset.
+    - **`PresetGeometries`** has its 4(b) notice, and is read once by a holder, where its lazy start wasn't safe
+      between threads. `legals/NOTICE` names the geometry, POI commit `2acb5cf66a` and `PresetGeometries`.
+    - **Against Word.** `ShapeGeometryTest` holds phase 0's paths (`shapes/cr080-word.tsv.gz`, written by
+      `CR-080-notes/export_test_paths.py`). It compares fills and strokes as outlines, by the farthest any point of
+      either is from the other:
+
+      | Probes | Count | Farthest from Word's |
+      |---|---|---|
+      | Every preset at its defaults, 100 by 100 and 144 by 72 pt (`fp10`, `fp11`) | 374 | 0.038 pt (the gate: 0.1) |
+      | Every preset's adjustments at half and double (`fp12`, `fp13`) | 246 | 0.042 pt, but for Word's three departures below |
+      | Custom geometry: each formula, command and path attribute, the built-in guides, `sqrt` of a negative (`fp20`, `fp21`) | 38 | 0.009 pt |
+      | Text rectangles: 173 presets with text, at the top left and the bottom right (`fp70` to `fp77`) | 346 | 0.39 pt from where Word's glyph puts it |
+
+      - **The text rectangles can't be exact,** as the gate had it. Word lays its text out on a grid of 1/300 inch
+        (0.24 pt), and a glyph shows the rectangle only to within two steps of it. No one rounding of the edges
+        fits: rounded inward, 551 of the 692 edges agree to 0.035 pt; the left or top rounded to the nearest step
+        with the width or height added, rounded too, fits better, but not all. The placing is phase 2's, with the
+        text.
+      - **Word departs from the definitions** in the wedge callouts with their tip inside the shape
+        (`wedgeEllipseCallout`, `wedgeRectCallout`, `wedgeRoundRectCallout`, with `adj1` and `adj2` at half their
+        defaults: `fp12-121` to `-123`). Word puts the tip on the edge and draws no tail, where the definitions notch
+        in to it. That is one probe for each, so docx4j keeps the definitions, and the test names the three.
+      - A fill with no area paints nothing. Word's PDF has none for `line` and `lineInv`, and one for `diagStripe` at
+        100000.
+      - `curvedLeftArrow`'s connection site has `ang="cd3"`, undefined in ECMA's file and POI's. A site isn't drawn,
+        so its angle is NaN and the shape is drawn.
+    - **Hostile and broken geometry,** a test for each limit at it and past it, and for each code: an undefined guide,
+      an unknown formula, a command with no current point, a Bézier with too few or too many points, a bad
+      adjustment, a `prstGeom` with no `prst`.
+    - **Mutants:** 27, against a passing baseline, one rule each, the definitions' three corrections among them; 25
+      caught. The two that survived showed code doing nothing, now gone:
+      - a branch for an arc of no height, which the conversion already handled exactly, and which showed the first
+        account of the arc's fault, `tan(180°)`, to be wrong (`sin(180°)` was the cause);
+      - mapping a path's absent `w` to -1, which `ShapeGeometry` reads as not stated already.
+
+      The two arc mutants were run again on the code as it stands: both caught.
+    - **The suites:** core-tests 2624 (30 skipped) pass. `ShapeGeometryTest`, 29 tests, takes 7 s, its outline
+      distances read through a grid of half a point.
+  - **Unmeasured, with docx4j's reading meanwhile** (phase 1's list, for a later round):
+    - A guide in a path with its own `w` and `h`: POI's reading, that the guides' `w` and `h` are the path's, which a
+      test holds. `fp20-030` has numbers only.
+    - The rule by which Word places text on its 1/300-inch grid (phase 2).
+    - The wedge callouts' tip beyond one probe each.
+    - A `spPr` with both `a:custGeom` and `a:prstGeom`, which the schema doesn't allow: the custom one is taken.
+    - What Word does with a geometry past D10's limits, or one that can't be evaluated: docx4j draws the box (D9).
 - **Phase 2, drawing a single shape.**
   - `ShapeRenderer` (fills, lines, dashes, arrowheads, picture fills, style references) in docx4j-chart-render.
   - Shapes in the FO, visitor and XSLT alike, with text boxes on top and the geometry's text rectangle used for the

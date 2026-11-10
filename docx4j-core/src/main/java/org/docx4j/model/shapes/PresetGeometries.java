@@ -1,3 +1,11 @@
+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
+ * It is based on Apache POI's org.apache.poi.xslf.model.geom.PresetGeometries:
+ * the package name has been changed, and the definitions are read into docx4j's
+ * own JAXB classes; there may also be other changes.
+ *
+ * This notice is included to meet the condition in clause 4(b) of the License.
+ */
+
 package org.docx4j.model.shapes;
 
 /*
@@ -35,6 +43,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+ * The DrawingML preset shape definitions ({@code presetShapeDefinitions.xml}, from ECMA-376 Part 1), by preset name.
+ * {@link ShapeGeometry} evaluates them (CR-080).
+ */
 public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D> {
 	
 	// based on https://svn.apache.org/repos/asf/poi/trunk/src/ooxml/java/org/apache/poi/xslf/model/geom/PresetGeometries.java
@@ -42,12 +54,13 @@ public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D>
 	
 	private static Logger log = LoggerFactory.getLogger(PresetGeometries.class);	
 	
-    private static PresetGeometries _inst;
+    /** Read once, on first use, by whichever thread comes first (CR-080 phase 1). */
+    private static final class Holder {
+        static final PresetGeometries INSTANCE = new PresetGeometries();
+    }
     
     public static PresetGeometries getInstance(){
-        if(_inst == null) _inst = new PresetGeometries();
-
-        return _inst;
+        return Holder.INSTANCE;
     }
     
     private PresetGeometries(){

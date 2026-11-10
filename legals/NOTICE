@@ -54,8 +54,14 @@ which the ASF licenses under the Apache License, Version 2.0
 In particular, org.docx4j.org.apache.poi.hwmf and org.docx4j.org.apache.poi.hemf
 (Windows Metafile / Enhanced Metafile / EMF+ parsing and rendering), together with
 the org.docx4j.org.apache.poi.sl.draw, .sl.usermodel and .common.usermodel.fonts
-support classes they need, repackage portions of Apache POI 5.5.1
-(poi-scratchpad and poi), which the ASF licenses under the Apache License, Version 2.0
+support classes they need, and org.docx4j.org.apache.poi.sl.draw.geom (DrawingML
+preset and custom geometry), repackage portions of Apache POI 5.5.1 (poi-scratchpad
+and poi; the geometry also with POI commit 2acb5cf66a), which the ASF licenses under
+the Apache License, Version 2.0
+
+docx4j-core's org.docx4j.model.shapes.PresetGeometries is based on Apache POI's
+org.apache.poi.xslf.model.geom.PresetGeometries, which the ASF licenses under the
+Apache License, Version 2.0
 
 org.docx4j.org.apache.xerces.util.EncodingMap.java repackages a file 
 from xercesImpl 2.11.0.  The ASF licenses this file under the Apache License, Version 2.0
