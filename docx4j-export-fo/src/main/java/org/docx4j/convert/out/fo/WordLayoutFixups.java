@@ -3722,7 +3722,23 @@ public final class WordLayoutFixups {
 				String[] d = box.getAttribute("docx4j-anchor-dist").trim().split("\\s+");
 				double distT = d.length == 4 ? lengthPt(d[2] + "pt") : 0;
 				if (b.length == 4) {
-					wrapAround(box, "square", b[3], distT, lengthPt(b[2]), lengthPt(b[0]), lengthPt(b[1]));
+					double distL = lengthPt(b[0]), distR = lengthPt(b[1]);
+					double roomStart = x - distL, roomEnd = col - x - w - distR;
+					boolean bothSides = "both".equals(b[3]); // largest: Word takes one side, as the renderer does
+					if (bothSides && roomStart >= TEXT_BESIDE_MIN_PT && roomEnd >= TEXT_BESIDE_MIN_PT) {
+						/* Word sets a float's text on both sides of it, any line in either gap (CR-032
+						 * section 3, measured on tables; a text box's is not measured).  The renderer's
+						 * obstacle lays a band's lines on one side only (fop/CR-024 phase A), the wider, and
+						 * where two such boxes in one band choose different sides it leaves no room, so the
+						 * lines, empty ones too, go below both: 9775's two 566.9pt boxes, 105 and 125pt from
+						 * the column's edges, with a third at its end, moved the table under them 34pt down and
+						 * its first row's text boxes to the right of the page, 5 lines lost.  Until phase B
+						 * lays a line in segments, the text runs under such a box, as before CR-032 phase 5
+						 * (no text box was an obstacle on a gate before CR-080 D12).  @since 17.3.7 */
+						log.debug("A text box with room on both sides is not an obstacle: the renderer lays one side");
+					} else {
+						wrapAround(box, "square", b[3], distT, lengthPt(b[2]), distL, distR);
+					}
 				}
 			}
 		} else {

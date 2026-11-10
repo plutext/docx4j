@@ -1743,6 +1743,35 @@ public class WordLayoutFixupsTest {
 		}
 	}
 
+	private static String pageTextBox(String x, String w, String beside) {
+		return "<fo:block docx4j-pstyle=\"\"><fo:block-container docx4j-anchor=\"square\" docx4j-anchor-w=\"" + w + "pt\""
+				+ " docx4j-anchor-h=\"62pt\" docx4j-anchor-x=\"" + x + "pt\" docx4j-anchor-col=\"451pt\""
+				+ " docx4j-anchor-ml=\"72pt\" docx4j-anchor-y=\"page:20pt\" docx4j-anchor-dist=\"9 9 0 0\""
+				+ " docx4j-textbox-beside=\"" + beside + "\"><fo:block>box</fo:block></fo:block-container></fo:block>"
+				+ "<fo:block>after</fo:block>";
+	}
+
+	/** A page-anchored DrawingML text box wrapped both sides is an obstacle only where one side
+	 *  has too little room for text: the renderer lays a band's lines on one side, and where Word's
+	 *  text could use both gaps it runs under the box instead (9775: two boxes choosing different
+	 *  sides left no room, the table under them moved down and right).  largest is one side in Word
+	 *  too, and stays an obstacle.  @since 17.3.7 */
+	@Test
+	public void aPageTextBoxWithRoomOnBothSidesIsNoObstacle() {
+		String both = withObstacles(true, flow(pageTextBox("100", "250", "9pt 9pt 0pt both")));
+		assertTrue(both, both.contains("absolute-position=\"fixed\""));
+		assertFalse("91 and 92pt either side: " + both, both.contains("fox:wrap"));
+		String edge = withObstacles(true, flow(pageTextBox("20", "250", "9pt 9pt 0pt both")));
+		assertTrue("11pt at the start: " + edge, edge.contains("fox:wrap-sides=\"both\""));
+		assertTrue(edge, edge.contains("fox:wrap-distances=\"0pt 0pt 9pt 9pt\""));
+		String justUnder = withObstacles(true, flow(pageTextBox("80", "250", "9pt 9pt 0pt both")));
+		assertTrue("71pt at the start: " + justUnder, justUnder.contains("fox:wrap=\"square\""));
+		String largest = withObstacles(true, flow(pageTextBox("100", "250", "9pt 9pt 0pt largest")));
+		assertTrue(largest, largest.contains("fox:wrap-sides=\"largest\""));
+		String off = withObstacles(false, flow(pageTextBox("20", "250", "9pt 9pt 0pt both")));
+		assertFalse(off, off.contains("fox:wrap"));
+	}
+
 	/** A page-anchored table after content: positioned at its tblpY with the lines wrapped round
 	 *  it, where it stayed in the flow (probe table-floating-page-after: Word places it at its
 	 *  tblpY whatever precedes it).  @since 17.3.3 */

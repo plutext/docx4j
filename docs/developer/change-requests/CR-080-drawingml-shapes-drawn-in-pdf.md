@@ -326,8 +326,8 @@ corpus documents can't be the only oracle.
     - the fill-mode factors, and the line widths of each theme's style references.
   - **Gate:** the probes within tolerance; corpora unmoved (0 movers; colour only); the register's
     `drawingml-fills-not-painted` closed.
-  - **Built, committed 2026-11-10** (Jason: "commence phase 2 when ready", then "Commit both"). Not done: D12 (c),
-    9775 mended and the `wps` Choice drawn by default, is the rest of the phase, and its register gate waits on it.
+  - **Built, committed 2026-11-10** (Jason: "commence phase 2 when ready", then "Commit both"). Not done: D12 (c)'s
+    second step, the `wps` Choice drawn by default (9775 is mended, b399), and its register gate waits on it.
     - **`ShapeRenderer`** (docx4j-chart-render, `org.docx4j.chart.render.api`). It draws a shape's `spPr` and
       `wps:style` at its extent, through `ShapeGeometry`, into a `Drawing`, and as SVG over the bounds of all it
       paints, which can reach past the box.
@@ -412,6 +412,25 @@ corpus documents can't be the only oracle.
         Fallback draws its VML strokes as outlined boxes and no fill. But a white-filled text box that docx4j places
         otherwise than Word now hides body text, as FOP paints in document order.
       - The register: `drawingml-fills-not-painted` stays open (Enterprise, attempts b396 and b397).
+      - **9775 mended** (2026-11-10; diagnosed by a Fable 5.1 agent of this session, Jason: "if you can't
+        figure it out, run it in a fable session"). The loss is the FOP fork's page obstacles, not the drawing: with
+        `docx4j.convert.out.fo.wrapPageAnchored=false` the Choice scores 0.9951 too. Section 2's first paragraph
+        anchors three page text boxes wrapped both sides; as DrawingML boxes the fixups make them obstacles (a VML box
+        never is: its beside hint has three tokens, the wrap wants four, so CR-032 §4.5's "a DrawingML or VML text box
+        likewise" holds only for DrawingML). The fork lays a `both` obstacle's lines on its wider side and combines a
+        band's obstacles by the largest start and end intrusions. The two wide boxes chose the end, the third the
+        start, the band had -17.4pt, and its empty paragraphs cleared below: the table under them 33.8pt down, its
+        first row's text boxes at x 709.8 and off the page (Enterprise CR-001 §6.6 item 63).
+        - The workaround: a page text box wrapped `both`, with at least `TEXT_BESIDE_MIN_PT` (72pt) on each side, is
+          no obstacle; its text runs under it, as before CR-032 phase 5 (`WordLayoutFixups.anchorTextBox`;
+          `WordLayoutFixupsTest.aPageTextBoxWithRoomOnBothSidesIsNoObstacle`, which fails without it). `largest`,
+          `left`, `right`, and a box with less room on a side keep the obstacle.
+        - Gate b398 (by default) against b396: 0 movers, events equal. b399 (the Choice) against b397: 9775 +5 lines,
+          0.9951; nothing else. b399 against b398, what drawing the Choice by default now moves: 14372 +1, nothing
+          else.
+        - Not measured: whether Word sets a text box's text in both gaps, as it does a float's (CR-032 §3, tables);
+          the probe is described in the register's `page-obstacles-opposite-sides`. The fork's fix (combine the
+          band's free segments) and phase B's are the fork's.
     - **Mutants:** 25, one rule each, against a passing baseline: 24 caught.
       - Three first survived, and the tests were strengthened until they were caught: the even-odd rule wanted
         `fp20-033`'s nested subpaths, one way round, in the oracle; a shape with no text that wraps wanted one wider
