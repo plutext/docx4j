@@ -1,0 +1,44 @@
+id	task	picture	media	a	a14	layer
+hp-01	Recolor: Grayscale	calib-colour.png	image1.png	<a:grayscl/>		
+hp-02	Recolor: Sepia	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:srgbClr val=""D9C3A5""><a:tint val=""50000""/><a:satMod val=""180000""/></a:srgbClr></a:duotone>"		
+hp-03	Recolor: Washout	calib-colour.png	image1.png	"<a:lum bright=""70000"" contrast=""-70000""/>"		
+hp-04	Recolor: Black and White: 25%	calib-colour.png	image1.png	"<a:biLevel thresh=""25000""/>"		
+hp-05	Recolor: Black and White: 50%	calib-colour.png	image1.png	"<a:biLevel thresh=""50000""/>"		
+hp-06	Recolor: Black and White: 75%	calib-colour.png	image1.png	"<a:biLevel thresh=""75000""/>"		
+hp-07	Recolor: Dark variation 1	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""tx2""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-08	Recolor: Dark variation 2	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent1""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-09	Recolor: Dark variation 3	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent2""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-10	Recolor: Dark variation 4	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent3""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-11	Recolor: Dark variation 5	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent4""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-12	Recolor: Dark variation 6	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent5""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-13	Recolor: Dark variation 7	calib-colour.png	image1.png	"<a:duotone><a:prstClr val=""black""/><a:schemeClr val=""accent6""><a:tint val=""45000""/><a:satMod val=""400000""/></a:schemeClr></a:duotone>"		
+hp-14	Recolor: Light variation 1	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""bg2""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-15	Recolor: Light variation 2	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent1""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-16	Recolor: Light variation 3	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent2""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-17	Recolor: Light variation 4	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent3""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-18	Recolor: Light variation 5	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent4""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-19	Recolor: Light variation 6	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent5""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-20	Recolor: Light variation 7	calib-colour.png	image1.png	"<a:duotone><a:schemeClr val=""accent6""><a:shade val=""45000""/><a:satMod val=""135000""/></a:schemeClr><a:prstClr val=""white""/></a:duotone>"		
+hp-21	Color Saturation: the first (0%)	calib-colour.png	image2.png		"<a14:saturation sat=""0""/>"	hdphoto1.wdp
+hp-22	Color Saturation: the last (300%)	calib-colour.png	image3.png		"<a14:colorTemperature colorTemp=""4700""/> <a14:saturation sat=""400000""/>"	hdphoto1.wdp
+hp-23	Color Tone: the first (4700 K)	calib-colour.png	image1.png			
+hp-24	Color Tone: the last (11200 K)	calib-colour.png	image4.png		"<a14:colorTemperature colorTemp=""11200""/>"	hdphoto1.wdp
+hp-25	Transparency: 15%	calib-colour.png	image1.png	"<a:alphaModFix amt=""85000""/>"		
+hp-26	Transparency: 30%	calib-colour.png	image1.png	"<a:alphaModFix amt=""70000""/>"		
+hp-27	Transparency: 50%	calib-colour.png	image1.png	"<a:alphaModFix amt=""50000""/>"		
+hp-28	Transparency: 65%	calib-colour.png	image1.png	"<a:alphaModFix amt=""35000""/>"		
+hp-29	Transparency: 80%	calib-colour.png	image1.png	"<a:alphaModFix amt=""20000""/>"		
+hp-30	Transparency: 95%	calib-colour.png	image1.png	"<a:alphaModFix amt=""5000""/>"		
+hp-31	Set Transparent Color	calib-near.png	image5.png	"<a:clrChange><a:clrFrom><a:srgbClr val=""FF0000""/></a:clrFrom><a:clrTo><a:srgbClr val=""FF0000""><a:alpha val=""0""/></a:srgbClr></a:clrTo></a:clrChange>"	"<a14:sharpenSoften amount=""-50000""/>"	hdphoto2.wdp
+hp-32	Corrections: Soften 50%	calib-colour.png	image6.png		"<a14:sharpenSoften amount=""-50000""/>"	hdphoto1.wdp
+hp-33	Corrections: Sharpen 50%	calib-colour.png	image7.png		"<a14:sharpenSoften amount=""50000""/>"	hdphoto1.wdp
+hp-34	Corrections: Brightness -40% Contrast -40%	calib-colour.png	image8.png		"<a14:brightnessContrast bright=""40000"" contrast=""-40000""/>"	hdphoto1.wdp
+hp-35	Corrections: Brightness +40% Contrast -40%	calib-colour.png	image1.png			
+hp-36	Corrections: Brightness -40% Contrast +40%	calib-colour.png	image9.png		"<a14:brightnessContrast bright=""-40000"" contrast=""40000""/>"	hdphoto1.wdp
+hp-37	Corrections: Brightness +40% Contrast +40%	calib-colour.png	image10.png		"<a14:brightnessContrast bright=""40000"" contrast=""40000""/>"	hdphoto1.wdp
+hp-38	Corrections: Brightness +40% Contrast 0% (Normal)	calib-colour.png	image11.png		"<a14:brightnessContrast bright=""40000""/>"	hdphoto1.wdp
+hp-39	Artistic Effects: Pencil Sketch	calib-colour.png	image12.png		<a14:artisticPencilSketch/>	hdphoto1.wdp
+hp-40	Artistic Effects: Blur	calib-colour.png	image13.png		<a14:artisticBlur/>	hdphoto1.wdp
+hp-41	Remove Background	photo.png	image14.png		"<a14:backgroundRemoval t=""10000"" b=""90000"" l=""10000"" r=""90000""/>"	hdphoto3.wdp
+hp-42	The EMF: Recolor Grayscale	blocks.emf	image15.emf	<a:grayscl/>		
+hp-43	The EMF: Transparency 50%	blocks.emf	image15.emf	"<a:alphaModFix amt=""50000""/>"		

@@ -1,0 +1,87 @@
+probe	note	picture	filter	max	mean	alpha_max	reversed_max
+rk10-02	lum bright -60% contrast -60%	calib-grey.png	DCTDecode	0.8	0.28	0.0	
+rk10-03	lum bright -60% contrast -30%	calib-grey.png	FlateDecode	1.0	0.27	0.0	
+rk10-04	lum bright -60% contrast 0%	calib-grey.png	FlateDecode	1.0	0.4	0.0	
+rk10-05	lum bright -60% contrast 30%	calib-grey.png	FlateDecode	0.86	0.15	0.0	
+rk10-06	lum bright -60% contrast 60%	calib-grey.png	FlateDecode	1.0	0.21	0.0	
+rk10-07	lum bright -30% contrast -60%	calib-grey.png	DCTDecode	0.95	0.55	0.0	
+rk10-08	lum bright -30% contrast -30%	calib-grey.png	DCTDecode	0.93	0.4	0.0	
+rk10-09	lum bright -30% contrast 0%	calib-grey.png	DCTDecode	0.5	0.35	0.0	
+rk10-10	lum bright -30% contrast 30%	calib-grey.png	FlateDecode	0.89	0.28	0.0	
+rk10-11	lum bright -30% contrast 60%	calib-grey.png	FlateDecode	0.88	0.25	0.0	
+rk10-12	lum bright 0% contrast -60%	calib-grey.png	DCTDecode	0.9	0.5	0.0	
+rk10-13	lum bright 0% contrast -30%	calib-grey.png	DCTDecode	0.95	0.5	0.0	
+rk10-14	lum bright 0% contrast 30%	calib-grey.png	DCTDecode	0.93	0.35	0.0	
+rk10-15	lum bright 0% contrast 60%	calib-grey.png	FlateDecode	0.75	0.2	0.0	
+rk10-16	lum bright 30% contrast -60%	calib-grey.png	DCTDecode	0.85	0.45	0.0	
+rk10-17	lum bright 30% contrast -30%	calib-grey.png	DCTDecode	0.98	0.44	0.0	
+rk10-18	lum bright 30% contrast 0%	calib-grey.png	DCTDecode	0.5	0.35	0.0	
+rk10-19	lum bright 30% contrast 30%	calib-grey.png	FlateDecode	0.96	0.32	0.0	
+rk10-20	lum bright 30% contrast 60%	calib-grey.png	FlateDecode	0.63	0.15	0.0	
+rk10-21	lum bright 60% contrast -60%	calib-grey.png	DCTDecode	1.0	0.28	0.0	
+rk10-22	lum bright 60% contrast -30%	calib-grey.png	FlateDecode	1.0	0.27	0.0	
+rk10-23	lum bright 60% contrast 0%	calib-grey.png	FlateDecode	1.0	0.4	0.0	
+rk10-24	lum bright 60% contrast 30%	calib-grey.png	FlateDecode	1.0	0.15	0.0	
+rk10-25	lum bright 60% contrast 60%	calib-grey.png	FlateDecode	0.5	0.07	0.0	
+rk10-26	lum bright 100% contrast 0%	calib-grey.png	FlateDecode	0.0	0.0	0.0	
+rk10-27	lum bright -100% contrast 0%	calib-grey.png	FlateDecode	0.0	0.0	0.0	
+rk10-28	lum bright 0% contrast 100%	calib-grey.png	FlateDecode	0.0	0.0	0.0	
+rk10-29	lum bright 0% contrast -100%	calib-grey.png	FlateDecode	0.5	0.5	0.0	
+rk10-30	lum bright 20% contrast -40%	calib-grey.png	DCTDecode	0.8	0.4	0.0	
+rk10-31	lum bright -20% contrast 40%	calib-grey.png	FlateDecode	1.0	0.4	0.0	
+rk10-32	lum bright 30% contrast 0% on colour	calib-colour.png	FlateDecode	0.5	0.33	0.0	
+rk10-33	lum bright 0% contrast 30% on colour	calib-colour.png	FlateDecode	0.93	0.31	0.0	
+rk10-34	lum bright -30% contrast -30% on colour	calib-colour.png	FlateDecode	0.93	0.43	0.0	
+rk10-35	lum bright 40% contrast 40% on colour	calib-colour.png	FlateDecode	1.0	0.5	0.0	
+rk20-02	grayscl	calib-colour.png	DCTDecode	1.02	0.48	0.0	
+rk20-03	biLevel thresh 25%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-04	biLevel thresh 50%	calib-colour.png	FlateDecode	255.0	1.99	0.0	
+rk20-05	biLevel thresh 75%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-06	duotone black to white	calib-colour.png	DCTDecode	1.02	0.48	0.0	
+rk20-07	duotone black to red	calib-colour.png	FlateDecode	1.02	0.16	0.0	
+rk20-08	duotone blue to yellow	calib-colour.png	DCTDecode	3.85	1.0	0.0	
+rk20-10	hsl hue +60 degrees	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-11	hsl sat -50%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-12	hsl lum +25%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-13	tint hue 0 amt 50%	calib-colour.png	FlateDecode	7.0	0.58	0.0	
+rk20-14	tint hue 240 degrees amt 50%	calib-colour.png	FlateDecode	7.0	0.83	0.0	
+rk20-15	clrRepl green	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-16	fillOverlay mult red	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-17	fillOverlay screen blue	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk20-19	grayscl on the grey ramp	calib-grey.png	DCTDecode	0.0	0.0	0.0	
+rk20-20	duotone black to red on the grey ramp	calib-grey.png	FlateDecode	0.0	0.0	0.0	
+rk20-21	biLevel thresh 50% on the grey ramp	calib-grey.png	FlateDecode	0.0	0.0	0.0	
+rk30-02	alphaModFix amt 85%	calib-alpha.png	FlateDecode	5.0	1.6	0.7	
+rk30-03	alphaModFix amt 70%	calib-alpha.png	FlateDecode	6.0	1.79	0.8	
+rk30-04	alphaModFix amt 50%	calib-alpha.png	FlateDecode	6.0	1.37	0.5	
+rk30-05	alphaModFix amt 35%	calib-alpha.png	FlateDecode	6.0	2.31	0.6	
+rk30-06	alphaModFix amt 20%	calib-alpha.png	FlateDecode			0.4	
+rk30-07	alphaModFix amt 5%	calib-alpha.png	FlateDecode			0.65	
+rk30-09	alphaBiLevel thresh 50%	calib-alpha.png	FlateDecode	1.0	0.31	0.0	
+rk30-10	alphaCeiling	calib-alpha.png	FlateDecode	7.0	0.46	0.0	
+rk30-11	alphaFloor	calib-alpha.png	FlateDecode	0.0	0.0	0.0	
+rk30-12	alphaInv	calib-alpha.png	FlateDecode	0.0	0.0	0.0	
+rk30-13	alphaMod by a container of alphaModFix 50%	calib-alpha.png	FlateDecode	5.0	1.63	0.5	
+rk30-14	alphaRepl a 50%	calib-alpha.png	FlateDecode	7.0	1.15	0.5	
+rk30-15	alphaModFix amt 50% on an opaque picture	calib-colour.png	FlateDecode	3.0	1.24	0.5	
+rk50-02	grayscl then lum	calib-colour.png	FlateDecode	2.4	0.76	0.0	61.73
+rk50-03	lum then grayscl	calib-colour.png	FlateDecode	1.73	0.69	0.0	62.0
+rk50-04	duotone then lum	calib-colour.png	FlateDecode	2.4	0.42	0.0	61.73
+rk50-05	lum then duotone	calib-colour.png	FlateDecode	1.73	0.23	0.0	62.0
+rk50-06	alphaModFix then grayscl	calib-colour.png	DCTDecode	4.0	2.45	0.5	4.0
+rk50-07	grayscl then alphaModFix	calib-colour.png	DCTDecode	4.0	2.45	0.5	4.0
+rk50-08	biLevel then duotone	calib-colour.png	FlateDecode	255.0	0.66	0.0	255.0
+rk50-09	duotone then biLevel	calib-colour.png	FlateDecode	255.0	40.84	0.0	255.0
+rk70-01	VML, unadjusted	calib-grey.png	DCTDecode	0.0	0.0	0.0	
+rk70-02	VML gain 0.5	calib-grey.png	DCTDecode	0.25	0.25	0.0	
+rk70-03	VML gain 2	calib-grey.png	FlateDecode	0.5	0.25	0.0	
+rk70-04	VML blacklevel +0.2	calib-grey.png	DCTDecode	0.0	0.0	0.0	
+rk70-05	VML blacklevel -0.2	calib-grey.png	DCTDecode	0.0	0.0	0.0	
+rk70-06	VML gamma 2	calib-grey.png	DCTDecode	0.5	0.25	0.0	
+rk70-07	VML gamma 0.5	calib-grey.png	DCTDecode	0.47	0.25	0.0	
+rk70-08	VML Washout, as Word 2003 wrote it (gain 0.3, blacklevel 0.35)	calib-grey.png	DCTDecode	0.48	0.16	0.0	
+rk70-09	VML grayscale	calib-colour.png	DCTDecode	0.48	0.24	0.0	
+rk70-10	VML bilevel	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk70-11	VML chromakey red	calib-near.png	FlateDecode	0.0	0.0	0.0	
+rk70-12	VML, unadjusted, on the colours	calib-colour.png	FlateDecode	0.0	0.0	0.0	
+rk81-04	Recolor: Washout (hp-03), as Word wrote it	calib-grey.png	DCTDecode	0.97	0.34	0.0	

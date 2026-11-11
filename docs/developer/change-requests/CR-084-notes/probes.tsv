@@ -1,0 +1,176 @@
+set	file	page	probe	picture	note	summary
+cr084-phase0-presets	rk80-hand	-	rk80	as is	Jason's presets, made by hand in Word	build_hand_start.py's 43 pages
+cr084-phase0	rk10-lum	1	rk10-01	calib-grey.png	unadjusted (the control)	unadjusted | calib-grey.png
+cr084-phase0	rk10-lum	2	rk10-02	calib-grey.png	lum bright -60% contrast -60%	lum bright=-60000 contrast=-60000 | calib-grey.png
+cr084-phase0	rk10-lum	3	rk10-03	calib-grey.png	lum bright -60% contrast -30%	lum bright=-60000 contrast=-30000 | calib-grey.png
+cr084-phase0	rk10-lum	4	rk10-04	calib-grey.png	lum bright -60% contrast 0%	lum bright=-60000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	5	rk10-05	calib-grey.png	lum bright -60% contrast 30%	lum bright=-60000 contrast=30000 | calib-grey.png
+cr084-phase0	rk10-lum	6	rk10-06	calib-grey.png	lum bright -60% contrast 60%	lum bright=-60000 contrast=60000 | calib-grey.png
+cr084-phase0	rk10-lum	7	rk10-07	calib-grey.png	lum bright -30% contrast -60%	lum bright=-30000 contrast=-60000 | calib-grey.png
+cr084-phase0	rk10-lum	8	rk10-08	calib-grey.png	lum bright -30% contrast -30%	lum bright=-30000 contrast=-30000 | calib-grey.png
+cr084-phase0	rk10-lum	9	rk10-09	calib-grey.png	lum bright -30% contrast 0%	lum bright=-30000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	10	rk10-10	calib-grey.png	lum bright -30% contrast 30%	lum bright=-30000 contrast=30000 | calib-grey.png
+cr084-phase0	rk10-lum	11	rk10-11	calib-grey.png	lum bright -30% contrast 60%	lum bright=-30000 contrast=60000 | calib-grey.png
+cr084-phase0	rk10-lum	12	rk10-12	calib-grey.png	lum bright 0% contrast -60%	lum bright=0 contrast=-60000 | calib-grey.png
+cr084-phase0	rk10-lum	13	rk10-13	calib-grey.png	lum bright 0% contrast -30%	lum bright=0 contrast=-30000 | calib-grey.png
+cr084-phase0	rk10-lum	14	rk10-14	calib-grey.png	lum bright 0% contrast 30%	lum bright=0 contrast=30000 | calib-grey.png
+cr084-phase0	rk10-lum	15	rk10-15	calib-grey.png	lum bright 0% contrast 60%	lum bright=0 contrast=60000 | calib-grey.png
+cr084-phase0	rk10-lum	16	rk10-16	calib-grey.png	lum bright 30% contrast -60%	lum bright=30000 contrast=-60000 | calib-grey.png
+cr084-phase0	rk10-lum	17	rk10-17	calib-grey.png	lum bright 30% contrast -30%	lum bright=30000 contrast=-30000 | calib-grey.png
+cr084-phase0	rk10-lum	18	rk10-18	calib-grey.png	lum bright 30% contrast 0%	lum bright=30000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	19	rk10-19	calib-grey.png	lum bright 30% contrast 30%	lum bright=30000 contrast=30000 | calib-grey.png
+cr084-phase0	rk10-lum	20	rk10-20	calib-grey.png	lum bright 30% contrast 60%	lum bright=30000 contrast=60000 | calib-grey.png
+cr084-phase0	rk10-lum	21	rk10-21	calib-grey.png	lum bright 60% contrast -60%	lum bright=60000 contrast=-60000 | calib-grey.png
+cr084-phase0	rk10-lum	22	rk10-22	calib-grey.png	lum bright 60% contrast -30%	lum bright=60000 contrast=-30000 | calib-grey.png
+cr084-phase0	rk10-lum	23	rk10-23	calib-grey.png	lum bright 60% contrast 0%	lum bright=60000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	24	rk10-24	calib-grey.png	lum bright 60% contrast 30%	lum bright=60000 contrast=30000 | calib-grey.png
+cr084-phase0	rk10-lum	25	rk10-25	calib-grey.png	lum bright 60% contrast 60%	lum bright=60000 contrast=60000 | calib-grey.png
+cr084-phase0	rk10-lum	26	rk10-26	calib-grey.png	lum bright 100% contrast 0%	lum bright=100000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	27	rk10-27	calib-grey.png	lum bright -100% contrast 0%	lum bright=-100000 contrast=0 | calib-grey.png
+cr084-phase0	rk10-lum	28	rk10-28	calib-grey.png	lum bright 0% contrast 100%	lum bright=0 contrast=100000 | calib-grey.png
+cr084-phase0	rk10-lum	29	rk10-29	calib-grey.png	lum bright 0% contrast -100%	lum bright=0 contrast=-100000 | calib-grey.png
+cr084-phase0	rk10-lum	30	rk10-30	calib-grey.png	lum bright 20% contrast -40%	lum bright=20000 contrast=-40000 | calib-grey.png
+cr084-phase0	rk10-lum	31	rk10-31	calib-grey.png	lum bright -20% contrast 40%	lum bright=-20000 contrast=40000 | calib-grey.png
+cr084-phase0	rk10-lum	32	rk10-32	calib-colour.png	lum bright 30% contrast 0% on colour	lum bright=30000 contrast=0 | calib-colour.png
+cr084-phase0	rk10-lum	33	rk10-33	calib-colour.png	lum bright 0% contrast 30% on colour	lum bright=0 contrast=30000 | calib-colour.png
+cr084-phase0	rk10-lum	34	rk10-34	calib-colour.png	lum bright -30% contrast -30% on colour	lum bright=-30000 contrast=-30000 | calib-colour.png
+cr084-phase0	rk10-lum	35	rk10-35	calib-colour.png	lum bright 40% contrast 40% on colour	lum bright=40000 contrast=40000 | calib-colour.png
+cr084-phase0	rk20-colour	1	rk20-01	calib-colour.png	unadjusted (the control)	unadjusted | calib-colour.png
+cr084-phase0	rk20-colour	2	rk20-02	calib-colour.png	grayscl	grayscl | calib-colour.png
+cr084-phase0	rk20-colour	3	rk20-03	calib-colour.png	biLevel thresh 25%	biLevel thresh=25000 | calib-colour.png
+cr084-phase0	rk20-colour	4	rk20-04	calib-colour.png	biLevel thresh 50%	biLevel thresh=50000 | calib-colour.png
+cr084-phase0	rk20-colour	5	rk20-05	calib-colour.png	biLevel thresh 75%	biLevel thresh=75000 | calib-colour.png
+cr084-phase0	rk20-colour	6	rk20-06	calib-colour.png	duotone black to white	duotone prstClr val=black srgbClr val=FFFFFF | calib-colour.png
+cr084-phase0	rk20-colour	7	rk20-07	calib-colour.png	duotone black to red	duotone prstClr val=black srgbClr val=FF0000 | calib-colour.png
+cr084-phase0	rk20-colour	8	rk20-08	calib-colour.png	duotone blue to yellow	duotone srgbClr val=0000FF srgbClr val=FFFF00 | calib-colour.png
+cr084-phase0	rk20-colour	9	rk20-09	calib-colour.png	duotone accent1 shade to white	duotone schemeClr val=accent1 shade val=45000 satMod val=135000 prstClr val=white | calib-colour.png
+cr084-phase0	rk20-colour	10	rk20-10	calib-colour.png	hsl hue +60 degrees	hsl hue=3600000 sat=0 lum=0 | calib-colour.png
+cr084-phase0	rk20-colour	11	rk20-11	calib-colour.png	hsl sat -50%	hsl hue=0 sat=-50000 lum=0 | calib-colour.png
+cr084-phase0	rk20-colour	12	rk20-12	calib-colour.png	hsl lum +25%	hsl hue=0 sat=0 lum=25000 | calib-colour.png
+cr084-phase0	rk20-colour	13	rk20-13	calib-colour.png	tint hue 0 amt 50%	tint hue=0 amt=50000 | calib-colour.png
+cr084-phase0	rk20-colour	14	rk20-14	calib-colour.png	tint hue 240 degrees amt 50%	tint hue=14400000 amt=50000 | calib-colour.png
+cr084-phase0	rk20-colour	15	rk20-15	calib-colour.png	clrRepl green	clrRepl srgbClr val=00FF00 | calib-colour.png
+cr084-phase0	rk20-colour	16	rk20-16	calib-colour.png	fillOverlay mult red	fillOverlay blend=mult solidFill srgbClr val=FF0000 | calib-colour.png
+cr084-phase0	rk20-colour	17	rk20-17	calib-colour.png	fillOverlay screen blue	fillOverlay blend=screen solidFill srgbClr val=0000FF | calib-colour.png
+cr084-phase0	rk20-colour	18	rk20-18	calib-colour.png	blur 2 pt	blur rad=25400 grow=1 | calib-colour.png
+cr084-phase0	rk20-colour	19	rk20-19	calib-grey.png	grayscl on the grey ramp	grayscl | calib-grey.png
+cr084-phase0	rk20-colour	20	rk20-20	calib-grey.png	duotone black to red on the grey ramp	duotone prstClr val=black srgbClr val=FF0000 | calib-grey.png
+cr084-phase0	rk20-colour	21	rk20-21	calib-grey.png	biLevel thresh 50% on the grey ramp	biLevel thresh=50000 | calib-grey.png
+cr084-phase0	rk30-alpha	1	rk30-01	calib-alpha.png	unadjusted (the control)	unadjusted | calib-alpha.png
+cr084-phase0	rk30-alpha	2	rk30-02	calib-alpha.png	alphaModFix amt 85%	alphaModFix amt=85000 | calib-alpha.png
+cr084-phase0	rk30-alpha	3	rk30-03	calib-alpha.png	alphaModFix amt 70%	alphaModFix amt=70000 | calib-alpha.png
+cr084-phase0	rk30-alpha	4	rk30-04	calib-alpha.png	alphaModFix amt 50%	alphaModFix amt=50000 | calib-alpha.png
+cr084-phase0	rk30-alpha	5	rk30-05	calib-alpha.png	alphaModFix amt 35%	alphaModFix amt=35000 | calib-alpha.png
+cr084-phase0	rk30-alpha	6	rk30-06	calib-alpha.png	alphaModFix amt 20%	alphaModFix amt=20000 | calib-alpha.png
+cr084-phase0	rk30-alpha	7	rk30-07	calib-alpha.png	alphaModFix amt 5%	alphaModFix amt=5000 | calib-alpha.png
+cr084-phase0	rk30-alpha	8	rk30-08	calib-alpha.png	alphaModFix amt 0%	alphaModFix amt=0 | calib-alpha.png
+cr084-phase0	rk30-alpha	9	rk30-09	calib-alpha.png	alphaBiLevel thresh 50%	alphaBiLevel thresh=50000 | calib-alpha.png
+cr084-phase0	rk30-alpha	10	rk30-10	calib-alpha.png	alphaCeiling	alphaCeiling | calib-alpha.png
+cr084-phase0	rk30-alpha	11	rk30-11	calib-alpha.png	alphaFloor	alphaFloor | calib-alpha.png
+cr084-phase0	rk30-alpha	12	rk30-12	calib-alpha.png	alphaInv	alphaInv | calib-alpha.png
+cr084-phase0	rk30-alpha	13	rk30-13	calib-alpha.png	alphaMod by a container of alphaModFix 50%	alphaMod cont alphaModFix amt=50000 | calib-alpha.png
+cr084-phase0	rk30-alpha	14	rk30-14	calib-alpha.png	alphaRepl a 50%	alphaRepl a=50000 | calib-alpha.png
+cr084-phase0	rk30-alpha	15	rk30-15	calib-colour.png	alphaModFix amt 50% on an opaque picture	alphaModFix amt=50000 | calib-colour.png
+cr084-phase0	rk40-clrchange	1	rk40-01	calib-near.png	unadjusted (the control)	unadjusted | calib-near.png
+cr084-phase0	rk40-clrchange	2	rk40-02	calib-near.png	clrChange red to transparent (Set Transparent Color)	clrChange clrFrom srgbClr val=FF0000 clrTo srgbClr val=FF0000 alpha val=0 | calib-near.png
+cr084-phase0	rk40-clrchange	3	rk40-03	calib-near.png	clrChange red to blue	clrChange clrFrom srgbClr val=FF0000 clrTo srgbClr val=0000FF | calib-near.png
+cr084-phase0	rk40-clrchange	4	rk40-04	calib-near.png	clrChange red to transparent, useA 0	clrChange useA=0 clrFrom srgbClr val=FF0000 clrTo srgbClr val=FF0000 alpha val=0 | calib-near.png
+cr084-phase0	rk40-clrchange	5	rk40-05	calib-colour.png	clrChange 336699 to transparent on the colours	clrChange clrFrom srgbClr val=336699 clrTo srgbClr val=336699 alpha val=0 | calib-colour.png
+cr084-phase0	rk40-clrchange	6	rk40-06	calib-colour.png	clrChange white to transparent on the colours	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | calib-colour.png
+cr084-phase0	rk40-clrchange	7	rk40-07	calib-alpha.png	clrChange red at alpha 0 to blue, useA 1, on the alpha picture	clrChange useA=1 clrFrom srgbClr val=FF0000 alpha val=0 clrTo srgbClr val=0000FF | calib-alpha.png
+cr084-phase0	rk40-clrchange	8	rk40-08	calib-alpha.png	clrChange red to blue, useA 0, on the alpha picture	clrChange useA=0 clrFrom srgbClr val=FF0000 clrTo srgbClr val=0000FF | calib-alpha.png
+cr084-phase0	rk50-orders	1	rk50-01	calib-colour.png	unadjusted (the control)	unadjusted | calib-colour.png
+cr084-phase0	rk50-orders	2	rk50-02	calib-colour.png	grayscl then lum	grayscl lum bright=30000 contrast=30000 | calib-colour.png
+cr084-phase0	rk50-orders	3	rk50-03	calib-colour.png	lum then grayscl	lum bright=30000 contrast=30000 grayscl | calib-colour.png
+cr084-phase0	rk50-orders	4	rk50-04	calib-colour.png	duotone then lum	duotone prstClr val=black srgbClr val=FF0000 lum bright=30000 contrast=30000 | calib-colour.png
+cr084-phase0	rk50-orders	5	rk50-05	calib-colour.png	lum then duotone	lum bright=30000 contrast=30000 duotone prstClr val=black srgbClr val=FF0000 | calib-colour.png
+cr084-phase0	rk50-orders	6	rk50-06	calib-colour.png	alphaModFix then grayscl	alphaModFix amt=50000 grayscl | calib-colour.png
+cr084-phase0	rk50-orders	7	rk50-07	calib-colour.png	grayscl then alphaModFix	grayscl alphaModFix amt=50000 | calib-colour.png
+cr084-phase0	rk50-orders	8	rk50-08	calib-colour.png	biLevel then duotone	biLevel thresh=50000 duotone prstClr val=black srgbClr val=FF0000 | calib-colour.png
+cr084-phase0	rk50-orders	9	rk50-09	calib-colour.png	duotone then biLevel	duotone prstClr val=black srgbClr val=FF0000 biLevel thresh=50000 | calib-colour.png
+cr084-phase0	rk60-pictures	1	rk60-01	photo.png	the photo, unadjusted	unadjusted | photo.png
+cr084-phase0	rk60-pictures	2	rk60-02	photo.png	the photo, grayscl	grayscl | photo.png
+cr084-phase0	rk60-pictures	3	rk60-03	photo.png	the photo, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 | photo.png
+cr084-phase0	rk60-pictures	4	rk60-04	photo.png	the photo, alphaModFix 50%	alphaModFix amt=50000 | photo.png
+cr084-phase0	rk60-pictures	5	rk60-05	photo.png	the photo, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 | photo.png
+cr084-phase0	rk60-pictures	6	rk60-06	photo.jpeg	the photo as a JPEG, unadjusted	unadjusted | photo.jpeg
+cr084-phase0	rk60-pictures	7	rk60-07	photo.jpeg	the photo as a JPEG, grayscl	grayscl | photo.jpeg
+cr084-phase0	rk60-pictures	8	rk60-08	photo.jpeg	the photo as a JPEG, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 | photo.jpeg
+cr084-phase0	rk60-pictures	9	rk60-09	photo.jpeg	the photo as a JPEG, alphaModFix 50%	alphaModFix amt=50000 | photo.jpeg
+cr084-phase0	rk60-pictures	10	rk60-10	photo.jpeg	the photo as a JPEG, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 | photo.jpeg
+cr084-phase0	rk60-pictures	11	rk60-11	lineart-alpha.png	the transparent line art, unadjusted	unadjusted | lineart-alpha.png
+cr084-phase0	rk60-pictures	12	rk60-12	lineart-alpha.png	the transparent line art, grayscl	grayscl | lineart-alpha.png
+cr084-phase0	rk60-pictures	13	rk60-13	lineart-alpha.png	the transparent line art, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 | lineart-alpha.png
+cr084-phase0	rk60-pictures	14	rk60-14	lineart-alpha.png	the transparent line art, alphaModFix 50%	alphaModFix amt=50000 | lineart-alpha.png
+cr084-phase0	rk60-pictures	15	rk60-15	lineart-alpha.png	the transparent line art, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 | lineart-alpha.png
+cr084-phase0	rk60-pictures	16	rk60-16	calib-colour.png	the colours cropped to their middle quarter, unadjusted	srcRect l=25000 t=25000 r=25000 b=25000 | calib-colour.png
+cr084-phase0	rk60-pictures	17	rk60-17	calib-colour.png	the colours cropped to their middle quarter, grayscl	grayscl srcRect l=25000 t=25000 r=25000 b=25000 | calib-colour.png
+cr084-phase0	rk60-pictures	18	rk60-18	calib-colour.png	the colours cropped to their middle quarter, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 srcRect l=25000 t=25000 r=25000 b=25000 | calib-colour.png
+cr084-phase0	rk60-pictures	19	rk60-19	calib-colour.png	the colours cropped to their middle quarter, alphaModFix 50%	alphaModFix amt=50000 srcRect l=25000 t=25000 r=25000 b=25000 | calib-colour.png
+cr084-phase0	rk60-pictures	20	rk60-20	calib-colour.png	the colours cropped to their middle quarter, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 srcRect l=25000 t=25000 r=25000 b=25000 | calib-colour.png
+cr084-phase0	rk60-pictures	21	rk60-21	calib-colour.png	the colours with an outer shadow, unadjusted	effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | calib-colour.png
+cr084-phase0	rk60-pictures	22	rk60-22	calib-colour.png	the colours with an outer shadow, grayscl	grayscl effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | calib-colour.png
+cr084-phase0	rk60-pictures	23	rk60-23	calib-colour.png	the colours with an outer shadow, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | calib-colour.png
+cr084-phase0	rk60-pictures	24	rk60-24	calib-colour.png	the colours with an outer shadow, alphaModFix 50%	alphaModFix amt=50000 effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | calib-colour.png
+cr084-phase0	rk60-pictures	25	rk60-25	calib-colour.png	the colours with an outer shadow, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | calib-colour.png
+cr084-phase0	rk60-pictures	26	rk60-26	blocks.emf	the EMF, unadjusted	unadjusted | blocks.emf
+cr084-phase0	rk60-pictures	27	rk60-27	blocks.emf	the EMF, grayscl	grayscl | blocks.emf
+cr084-phase0	rk60-pictures	28	rk60-28	blocks.emf	the EMF, lum bright 30% contrast 30%	lum bright=30000 contrast=30000 | blocks.emf
+cr084-phase0	rk60-pictures	29	rk60-29	blocks.emf	the EMF, alphaModFix 50%	alphaModFix amt=50000 | blocks.emf
+cr084-phase0	rk60-pictures	30	rk60-30	blocks.emf	the EMF, duotone black to red	duotone prstClr val=black srgbClr val=FF0000 | blocks.emf
+cr084-phase0	rk60-pictures	31	rk60-31	lineart-alpha.png	the transparent line art with an outer shadow and alphaModFix 50%	alphaModFix amt=50000 effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | lineart-alpha.png
+cr084-phase0	rk60-pictures	32	rk60-32	lineart-alpha.png	the transparent line art with an outer shadow	effectLst outerShdw blurRad=50800 dist=76200 dir=2700000 algn=tl rotWithShape=0 srgbClr val=000000 alpha val=60000 | lineart-alpha.png
+cr084-phase0	rk70-vml	1	rk70-01	calib-grey.png	VML, unadjusted	VML v:imagedata (no attributes) | calib-grey.png
+cr084-phase0	rk70-vml	2	rk70-02	calib-grey.png	VML gain 0.5	VML v:imagedata gain="32768f" | calib-grey.png
+cr084-phase0	rk70-vml	3	rk70-03	calib-grey.png	VML gain 2	VML v:imagedata gain="2" | calib-grey.png
+cr084-phase0	rk70-vml	4	rk70-04	calib-grey.png	VML blacklevel +0.2	VML v:imagedata blacklevel="13107f" | calib-grey.png
+cr084-phase0	rk70-vml	5	rk70-05	calib-grey.png	VML blacklevel -0.2	VML v:imagedata blacklevel="-13107f" | calib-grey.png
+cr084-phase0	rk70-vml	6	rk70-06	calib-grey.png	VML gamma 2	VML v:imagedata gamma="2" | calib-grey.png
+cr084-phase0	rk70-vml	7	rk70-07	calib-grey.png	VML gamma 0.5	VML v:imagedata gamma="32768f" | calib-grey.png
+cr084-phase0	rk70-vml	8	rk70-08	calib-grey.png	VML Washout, as Word 2003 wrote it (gain 0.3, blacklevel 0.35)	VML v:imagedata gain="19661f" blacklevel="22938f" | calib-grey.png
+cr084-phase0	rk70-vml	9	rk70-09	calib-colour.png	VML grayscale	VML v:imagedata grayscale="t" | calib-colour.png
+cr084-phase0	rk70-vml	10	rk70-10	calib-colour.png	VML bilevel	VML v:imagedata bilevel="t" | calib-colour.png
+cr084-phase0	rk70-vml	11	rk70-11	calib-near.png	VML chromakey red	VML v:imagedata chromakey="red" | calib-near.png
+cr084-phase0	rk70-vml	12	rk70-12	calib-colour.png	VML, unadjusted, on the colours	VML v:imagedata (no attributes) | calib-colour.png
+cr084-phase0-presets	rk81-presets-grey	1	rk81-01	calib-grey.png	unadjusted (the control)	unadjusted | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	2	rk81-02	calib-grey.png	Recolor: Grayscale (hp-01), as Word wrote it	grayscl | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	3	rk81-03	calib-grey.png	Recolor: Sepia (hp-02), as Word wrote it	duotone prstClr val=black srgbClr val=D9C3A5 tint val=50000 satMod val=180000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	4	rk81-04	calib-grey.png	Recolor: Washout (hp-03), as Word wrote it	lum bright=70000 contrast=-70000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	5	rk81-05	calib-grey.png	Recolor: Black and White: 25% (hp-04), as Word wrote it	biLevel thresh=25000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	6	rk81-06	calib-grey.png	Recolor: Black and White: 50% (hp-05), as Word wrote it	biLevel thresh=50000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	7	rk81-07	calib-grey.png	Recolor: Black and White: 75% (hp-06), as Word wrote it	biLevel thresh=75000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	8	rk81-08	calib-grey.png	Recolor: Dark variation 1 (hp-07), as Word wrote it	duotone prstClr val=black schemeClr val=tx2 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	9	rk81-09	calib-grey.png	Recolor: Dark variation 2 (hp-08), as Word wrote it	duotone prstClr val=black schemeClr val=accent1 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	10	rk81-10	calib-grey.png	Recolor: Dark variation 3 (hp-09), as Word wrote it	duotone prstClr val=black schemeClr val=accent2 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	11	rk81-11	calib-grey.png	Recolor: Dark variation 4 (hp-10), as Word wrote it	duotone prstClr val=black schemeClr val=accent3 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	12	rk81-12	calib-grey.png	Recolor: Dark variation 5 (hp-11), as Word wrote it	duotone prstClr val=black schemeClr val=accent4 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	13	rk81-13	calib-grey.png	Recolor: Dark variation 6 (hp-12), as Word wrote it	duotone prstClr val=black schemeClr val=accent5 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	14	rk81-14	calib-grey.png	Recolor: Dark variation 7 (hp-13), as Word wrote it	duotone prstClr val=black schemeClr val=accent6 tint val=45000 satMod val=400000 | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	15	rk81-15	calib-grey.png	Recolor: Light variation 1 (hp-14), as Word wrote it	duotone schemeClr val=bg2 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	16	rk81-16	calib-grey.png	Recolor: Light variation 2 (hp-15), as Word wrote it	duotone schemeClr val=accent1 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	17	rk81-17	calib-grey.png	Recolor: Light variation 3 (hp-16), as Word wrote it	duotone schemeClr val=accent2 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	18	rk81-18	calib-grey.png	Recolor: Light variation 4 (hp-17), as Word wrote it	duotone schemeClr val=accent3 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	19	rk81-19	calib-grey.png	Recolor: Light variation 5 (hp-18), as Word wrote it	duotone schemeClr val=accent4 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	20	rk81-20	calib-grey.png	Recolor: Light variation 6 (hp-19), as Word wrote it	duotone schemeClr val=accent5 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk81-presets-grey	21	rk81-21	calib-grey.png	Recolor: Light variation 7 (hp-20), as Word wrote it	duotone schemeClr val=accent6 shade val=45000 satMod val=135000 prstClr val=white | calib-grey.png
+cr084-phase0-presets	rk82-presets-photo	1	rk82-01	photo.jpeg	unadjusted (the control)	unadjusted | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	2	rk82-02	photo.jpeg	Recolor: Grayscale (hp-01), as Word wrote it	grayscl | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	3	rk82-03	photo.jpeg	Recolor: Sepia (hp-02), as Word wrote it	duotone prstClr val=black srgbClr val=D9C3A5 tint val=50000 satMod val=180000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	4	rk82-04	photo.jpeg	Recolor: Washout (hp-03), as Word wrote it	lum bright=70000 contrast=-70000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	5	rk82-05	photo.jpeg	Recolor: Black and White: 25% (hp-04), as Word wrote it	biLevel thresh=25000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	6	rk82-06	photo.jpeg	Recolor: Black and White: 50% (hp-05), as Word wrote it	biLevel thresh=50000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	7	rk82-07	photo.jpeg	Recolor: Black and White: 75% (hp-06), as Word wrote it	biLevel thresh=75000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	8	rk82-08	photo.jpeg	Recolor: Dark variation 1 (hp-07), as Word wrote it	duotone prstClr val=black schemeClr val=tx2 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	9	rk82-09	photo.jpeg	Recolor: Dark variation 2 (hp-08), as Word wrote it	duotone prstClr val=black schemeClr val=accent1 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	10	rk82-10	photo.jpeg	Recolor: Dark variation 3 (hp-09), as Word wrote it	duotone prstClr val=black schemeClr val=accent2 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	11	rk82-11	photo.jpeg	Recolor: Dark variation 4 (hp-10), as Word wrote it	duotone prstClr val=black schemeClr val=accent3 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	12	rk82-12	photo.jpeg	Recolor: Dark variation 5 (hp-11), as Word wrote it	duotone prstClr val=black schemeClr val=accent4 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	13	rk82-13	photo.jpeg	Recolor: Dark variation 6 (hp-12), as Word wrote it	duotone prstClr val=black schemeClr val=accent5 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	14	rk82-14	photo.jpeg	Recolor: Dark variation 7 (hp-13), as Word wrote it	duotone prstClr val=black schemeClr val=accent6 tint val=45000 satMod val=400000 | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	15	rk82-15	photo.jpeg	Recolor: Light variation 1 (hp-14), as Word wrote it	duotone schemeClr val=bg2 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	16	rk82-16	photo.jpeg	Recolor: Light variation 2 (hp-15), as Word wrote it	duotone schemeClr val=accent1 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	17	rk82-17	photo.jpeg	Recolor: Light variation 3 (hp-16), as Word wrote it	duotone schemeClr val=accent2 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	18	rk82-18	photo.jpeg	Recolor: Light variation 4 (hp-17), as Word wrote it	duotone schemeClr val=accent3 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	19	rk82-19	photo.jpeg	Recolor: Light variation 5 (hp-18), as Word wrote it	duotone schemeClr val=accent4 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	20	rk82-20	photo.jpeg	Recolor: Light variation 6 (hp-19), as Word wrote it	duotone schemeClr val=accent5 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg
+cr084-phase0-presets	rk82-presets-photo	21	rk82-21	photo.jpeg	Recolor: Light variation 7 (hp-20), as Word wrote it	duotone schemeClr val=accent6 shade val=45000 satMod val=135000 prstClr val=white | photo.jpeg

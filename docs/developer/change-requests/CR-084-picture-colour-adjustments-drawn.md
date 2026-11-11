@@ -1,9 +1,52 @@
 # CR-084: picture colour adjustments drawn - recolour, brightness and contrast, transparency, the transparent colour
 
-Status: PROPOSED 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
+Status: ACCEPTED 2026-11-12 (Jason: "CR-084: the seven decisions in section 7 of CR-084-notes/phase0-findings.md as
+recommended; commit phase 0; start phase 1"). Phase 0 DONE: its rulings are in §6 and §8; D1, D4, D6 and D7, which section
+7 doesn't name, are taken as recommended. Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
 leaves `a:blip`'s colour effects out of CR-081, which is about `a:effectLst`. Not started; D1 to D9 open (§8). Needs
 nothing from CR-080 to CR-083. Read against docx4j 67b54b7fd, Apache POI trunk ae62bb5116, and the specifications in §12.
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
+
+Phase 0 started 2026-11-12 (Jason: "now let's do CR-084 phase 0"), by CR-081's route (word-bridge; `CR-084-notes/`):
+- Round 1, `cr084-phase0`, staged: 7 files, one probe a page, 132 probes (`build_recolour.py`, `probes.tsv`; checked by
+  CR-083's `check_wordart.py`). `lum` brightness by contrast on a 256-level grey ramp; the colour effects (`grayscl`,
+  `biLevel`, `duotone`, `hsl`, `tint`, `clrRepl`, `fillOverlay`, `blur`) on a calibration picture (the 6-level RGB cube,
+  24 hues, tints and shades); the alpha effects on an alpha calibration picture; `clrChange` near its colour, with and
+  without `useA`; two effects in both orders; four effects on the photo (PNG, JPEG), transparent line art, a cropped
+  picture, a picture with an outer shadow and an EMF; VML `v:imagedata`'s colour attributes. Each file starts with its
+  picture unadjusted.
+- The pictures are generated (16 px patches, so that a patch's centre survives a re-encoding), the EMF too (16
+  rectangles, written record by record), and shown in front of the text at a fixed place on the page.
+- Word's interface presets need Jason's hand: `build_hand_start.py` writes the starting document (43 pages: the 20
+  Recolor presets, saturation, tone, transparency, Set Transparent Color, corrections, two artistic effects, Remove
+  Background, two on the EMF), on the share as `cr084-recolour/cr084-recolour-start.docx`.
+- Jason applied them the same day (`cr084-recolour-hand.docx`); `build_hand_start.py harvest` reads it into
+  `presets-word.tsv`:
+  - Recolor writes `a:` children of the blip: Grayscale `a:grayscl`; Sepia a `duotone` of black and `D9C3A5` (tint 50%,
+    satMod 180%); Washout `a:lum bright="70000" contrast="-70000"`; Black and White `a:biLevel` at 25, 50 and 75%; the
+    dark variations duotones of black and a theme colour (`tx2`, `accent1` to `accent6`, tint 45%, satMod 400%); the
+    light variations duotones of a theme colour (`bg2`, `accent1` to `accent6`, shade 45%, satMod 135%) and white.
+  - Transparency writes `a:alphaModFix` (amount 100% less the preset); Set Transparent Color `a:clrChange` to the same
+    colour at alpha 0. Both, and Grayscale, are offered for the EMF too, and written the same way.
+  - Saturation, Tone, Corrections (sharpen and soften, brightness and contrast), Artistic Effects and Remove Background
+    write `a14:imgEffect`, and **the blip becomes the adjusted picture**, the original kept as `a14:imgLayer` (an HD
+    Photo, `.wdp`). Checked by pixels: the original Word kept is ours byte for byte, and saturation 0% turns every patch
+    grey. So D3 is settled: docx4j draws the blip and never needs the layer.
+  - Saturation's last preset is 400% (`sat="400000"`); a correction with brightness only writes no `contrast`.
+  - Three tasks landed one page off by hand: the 4700 K tone is on the 400% saturation page, +40%/-40% brightness and
+    contrast on the -40%/-40% page, and a Soften on the Set Transparent Color page; -40%/-40% wasn't recorded.
+- Set `cr084-phase0-presets` staged: the hand document as it is, and the 20 Recolor presets' XML on the grey ramp and
+  on the photo as a JPEG (42 probes).
+- Both sets ran the same day, all 14 jobs silent; read in `CR-084-notes/phase0-findings.md` (readers `read_recolour.py`,
+  `fit_recolour.py`; tables `phase0-word.json`, `fits-word.tsv`). In short:
+  - every effect's function is named and fitted on the stored sRGB values: `lum` is
+    `s (x - 1/2) + 1/2 + b (1 + s) / 2` (36 probes within 1.7 levels), grayscale Rec. 709 luma, duotone a line in luma
+    between `DrawingMLColors`' colours (the 15 preset colours within 2), the alpha effects as their names say;
+  - Word draws `hsl` black and a blurred blip not at all; applies the effects in written order, but `biLevel` before
+    `duotone`; crops before it adjusts; rasterises an adjusted EMF at 200 dpi; and a shadow follows the adjusted alpha;
+  - VML's `gain`, `blacklevel` and `gamma` are `lum` again (`blacklevel` = bright / 2), within half a level;
+  - the load survey: 46,859 documents with blip adjustments, 10,393 with `a14:imgProps` (all with a layer);
+  - proposed CR changes (D2, D3, D5, D8, D9, the tolerance) are in the findings' section 7, for Jason.
 
 ## 0. Summary
 
@@ -139,11 +182,17 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
     the table of interface presets to XML.
 - **Phase 1, the `a:` effects in PDF output.** `PictureRecolour` for the effects Word's interface writes, and the rest
   as phase 0 finds them, in CR-029's step. Unit tests against phase 0's numbers.
-  - **Gate:** phase 0's probes through docx4j's PDF within the tolerance; every picture without an adjustment
-    unchanged, byte for byte (the fidelity corpora's PDFs, and CR-029's tests).
-- **Phase 2, Word 2010's adjustments.** If phase 0 confirms the blip is already adjusted, a test that docx4j draws the
-  blip and never the `a14:imgLayer`, and the CR records it. Otherwise saturation, colour temperature, brightness and
-  contrast, sharpen and soften are drawn, and artistic effects reported.
+  - The functions are phase 0's (`CR-084-notes/phase0-findings.md` §3, `fit_recolour.py`), on the stored sRGB values;
+    `duotone`'s colours through `DrawingMLColors`.
+  - The order is the order written, except that `biLevel` comes before `duotone` (phase 0, decided 2026-11-12).
+  - `hsl` and `blur` follow the standard (offsets; a Gaussian blur), and are reported as departures from Word, which
+    draws `hsl` black and a blurred blip not at all (`render.picture.hsl`, `render.picture.blur`; D2).
+  - A vector picture with an adjustment is rasterised at 200 dpi, as Word does; one without stays vector (D5).
+  - **Gate:** phase 0's probes through docx4j's PDF within 2 levels of 255, but `tint` and semi-transparent colours
+    within 7 (Word's premultiplied storage), and the `biLevel` tie decided as Word's integer luma; every picture
+    without an adjustment unchanged, byte for byte (the fidelity corpora's PDFs, and CR-029's tests).
+- **Phase 2, Word 2010's adjustments.** Phase 0 confirmed the blip is already adjusted (findings §2; D3): a test that
+  docx4j draws the blip, with its `a:` children, and never the `a14:imgLayer`.
 - **Phase 3, VML** (D4). `v:imagedata`'s attributes through the same operations.
 - **Phase 4, HTML** (D6). The same adjusted picture, as a data URI or a stored file.
 - **Phase 5, CHANGELOG, Getting Started, the register.**
@@ -165,20 +214,27 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
 - **D2. Scope: all 17 effect children of `a:blip`.** The ones Word's interface writes are gated against Word. The rest
   follow phase 0's probes of Word's PDF, or the standard's text where Word draws nothing. Recommendation: yes. The
   elements are few, and each is a per-pixel function.
+  **Decided 2026-11-12**: yes; `hsl` and `blur`, which Word draws black and not at all, follow the standard and are
+  reported (`render.picture.hsl`, `render.picture.blur`).
 - **D3. Word 2010's adjustments** (`a14:imgProps`): phase 2, which draws them only if phase 0 finds the blip isn't
-  already adjusted. Recommendation: yes.
+  already adjusted. Recommendation: yes. **Settled by phase 0 (decided 2026-11-12)**: the blip is already adjusted, so
+  phase 2 is a test that docx4j draws it and never the layer.
 - **D4. VML in this CR** (phase 3). Recommendation: yes. The same operations, and the corpora have VML pictures with
   them.
 - **D5. Vector pictures with an adjustment** are drawn unadjusted and reported (`render.picture.recolour_vector`),
   unless phase 0 shows Word rasterises them. In that case they are rasterised at CR-029's resolution, as Word does.
-  Recommendation: follow phase 0.
+  Recommendation: follow phase 0. **Decided 2026-11-12, from phase 0**: Word rasterises an adjusted EMF at 200 dpi
+  and keeps an unadjusted one vector; docx4j does the same.
 - **D6. HTML output too** (phase 4). Recommendation: yes. A browser's CSS filters are not Word's arithmetic.
 - **D7. Encoding.** PNG where the result has transparency, otherwise the source's format, at CR-029's quality.
   Recommendation: yes.
 - **D8. The order: crop, recolour, resample.** The recolour is exact on the source's pixels, and costs no more than the
-  crop leaves. Recommendation: yes, unless phase 0 shows Word recolours after resampling.
+  crop leaves. Recommendation: yes, unless phase 0 shows Word recolours after resampling. **Decided 2026-11-12**: yes;
+  phase 0 found Word crops, then adjusts.
 - **D9. Gaps reported** with stable codes (`render.picture.recolour_vector`, `render.picture.artistic` and so on),
-  through CR-080 D9's two mechanisms. Recommendation: yes.
+  through CR-080 D9's two mechanisms. Recommendation: yes. **Decided 2026-11-12**: CR-081 phase 6's
+  `render.effect.blip_recolour` stays until phase 1 draws the effects; then only what stays undrawn is reported, under
+  `render.picture.*`.
 
 ## 9. Out of scope
 
