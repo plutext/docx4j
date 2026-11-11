@@ -25,6 +25,55 @@ text-rotation rule and its VML shape-type table"):
 - POI's `txXfrm` rule (CR-082) and its `ShapeType` table (CR-083, CR-080 D6) are written independently and not
   ported.
 
+Phase 0 started 2026-11-12 (Jason: "do CR-083 phase 0"), by CR-081's and CR-080's route (word-bridge, Word's re-save
+and PDF of purpose-built probes; `CR-083-notes/`):
+- Round 1, `cr083-phase0`, staged: 19 files, one probe a page, 467 probes (`build_wordart.py`, `probes.tsv`; checked by
+  `check_wordart.py`, which adds the VML schemas, the header parts and a w14 schema check of the run effects to
+  CR-081's `check_probes.py`, and catches 7 of 7 deliberate breaks), and Jason's document as it is (below). The 40 warps
+  in Word's form and in a fixed box with their default adjustments, and with one other in the fixed box, on one and two
+  lines; three lines on the multi-path presets; `fromWordArt`, autofit, wrap, insets and size;
+  the text's rectangle (ink or the font's height); the w14 effects flat and warped; two runs; 3-D; the same effects on
+  body text (D3, D10); and, for D6, the 40 warps as wps WordArt in a Word 2007 mode document (Word's save converts them
+  to VML or not: its o:spt numbers and shapetypes), one VML WordArt for each o:spt 136 to 175 with a shapetype carrying
+  only its o:spt (does Word draw by o:spt or by the path?), and text watermarks.
+- The text is Aptos, whose files Word's VM has in its cloud fonts (the share's snapshot), so that a warped outline can
+  be compared with the exact font.
+- The 15 WordArt gallery styles, Transform and 3-D applied through the interface, and the 15 Text Effects styles on
+  body text need Jason's hand, as CR-081's picture styles did: `build_hand_start.py` writes the starting document (36
+  pages). Jason applied them on 2026-11-12 (`cr083-styles-hand.docx`); `build_hand_start.py harvest` reads it into
+  `styles-word.tsv`. The WordArt gallery and the Text Effects gallery write the same run properties, style for style
+  (asserted for all 15); styles 5 and 10 (3-D) add `a:scene3d` and `a:sp3d` to a WordArt's `bodyPr`, while body text
+  gets `w14:props3d` alone, with no camera. Style 15 writes a `w14:shadow` with `sx="0" sy="0" algn="none"` (the
+  gallery's inner shadow, which w14 has no element for: the PDF will show what Word makes of it); styles 4 and 14 also
+  set the legacy `w:outline`, and 9 and 15 `w:spacing`. Bevel's first preset is "Round" in Word's interface
+  (`prst="circle"`). The 3-D Rotation page wrote no camera. Set `cr083-phase0-styles` (5 files: the hand document as
+  it is, and the 15 styles on WordArt flat, as Follow Path and as a Warp, and on body text; 60 probes) is staged after
+  round 1.
+- Word's own form, from a document Jason made by hand on 2026-11-11 (`cr083-wordart-jason.docx`, seven WordArt,
+  staged as it is): a `wps` text box (`txBox="1"`) with no fill and no line; `bodyPr` `wrap="none"`,
+  `fromWordArt="0"`, default insets, `a:spAutoFit` and `a:prstTxWarp`, a Transform (Follow Path) included; stored at
+  144 by 144 pt whatever its text. Bevel is written twice, as `bodyPr`'s `a:scene3d` and `a:sp3d` and as `w14:props3d`
+  on each run (no `w14:scene3d`); 3-D Rotation is `bodyPr`'s camera alone. The `mc:Fallback` is a VML `v:textbox`, not a
+  `v:textpath`, so a VML reader loses the warp. No Word-written warped WordArt was found on this machine before that
+  (the only hits were the standard's own examples). The generated WordArt carries a 0.25 pt grey line, so that the
+  box Word used shows in its PDF.
+- Found on the way: the VML WordArt on this machine's documents is nearly all Word's text watermark (o:spt 136 in a
+  header, `PowerPlusWaterMarkObject`), which docx4j doesn't draw today; phase 4 (D6) covers it, and the load survey's
+  counts will say how common it is.
+- Both sets ran on 2026-11-12, all 28 jobs silent; read the same day: `CR-083-notes/phase0-findings.md` (readers
+  `survey_wordart.py`, `warp_model.py`, `measure_warps.py`; tables `survey-word.tsv`, `warps-word.tsv`). In short:
+  - D2: Word draws the glyphs as paths over invisible text (transparency, not mode 3) for a warp, an outline, a
+    gradient fill; real text for a solid fill, and under shadow, glow and reflection pictures; for 3-D WordArt and a
+    fill with transparency, a picture or paths with no text at all.
+  - The box: `wrap="none"` sizes its width to the text, `spAutoFit` its height; `fromWordArt` changes nothing.
+  - D5: §20.1.9.19 is Word's method (the block's ink, arc length, the straight joining line, on the text rectangle):
+    157 of 198 two-path probes within 0.5 pt; textDeflate and textDeflateBottom read `ss` as the height; 11 presets
+    not yet explained. Follow Path scales the text by a rule still to fit; multi-path presets give each line a band.
+  - `w14:alpha` is a transparency, the reverse of `a:alpha`.
+  - D6: Word draws VML WordArt from its shapetype's path and formulas, not its `o:spt` (spt-only shapetypes draw
+    nothing), and writes no VML WordArt from DrawingML, so phase 4 evaluates VML geometry instead of a table.
+  - Proposed CR changes (D2, D3, D5, D6, D10) are in the findings' section 10, for Jason.
+
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 ## 0. Summary

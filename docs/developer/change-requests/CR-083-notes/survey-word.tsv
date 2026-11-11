@@ -1,0 +1,565 @@
+job	probe	note	page	chars	text	fonts	modes	fills	curvy	fill_colours	strokes	box	images	shadings
+wa00-hand-jason			1	87	Hello World - glow   Hello World - reflectionHello World – s	Calibri 36.024 #000000#ff:44 Calibri 36 #000000#ff:21 Calibri 30.8881 #000000#00:5 Calibri 30.8879 #000000#00:4 Calibri 30.888 #000000#00:4 Calibri 30.9121 #000000#00:3 Calibri 30.912 #000000#00:2 Calibri 30.9119 #000000#00:2 Calibri 30.8878 #000000#00:1 Calibri 30.8638 #000000#00:1	{0: 0}	21	21	000000:21			34	0
+wa10-warps-default-1	wa10-01	textArchDown, default, 1 line, in Word's form	1	7	WordArt	Aptos 26.184 #000000#00:3 Aptos 26.1839 #000000#00:2 Aptos 26.2079 #000000#00:1 Aptos 26.1841 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-02	textArchDownPour, default, 1 line, in Word's form	2	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-03	textArchUp, default, 1 line, in Word's form	3	7	WordArt	Aptos 26.1839 #000000#00:4 Aptos 26.208 #000000#00:2 Aptos 26.184 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-04	textArchUpPour, default, 1 line, in Word's form	4	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-05	textButton, default, 1 line, in Word's form	5	7	WordArt	Aptos 26.1839 #000000#00:4 Aptos 26.208 #000000#00:2 Aptos 26.184 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-06	textButtonPour, default, 1 line, in Word's form	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-07	textCanDown, default, 1 line, in Word's form	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-08	textCanUp, default, 1 line, in Word's form	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-09	textCascadeDown, default, 1 line, in Word's form	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-10	textCascadeUp, default, 1 line, in Word's form	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-11	textChevron, default, 1 line, in Word's form	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-12	textChevronInverted, default, 1 line, in Word's form	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-13	textCircle, default, 1 line, in Word's form	13	7	WordArt	Aptos 26.208 #000000#00:3 Aptos 26.1839 #000000#00:2 Aptos 26.1841 #000000#00:1 Aptos 26.2079 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-14	textCirclePour, default, 1 line, in Word's form	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-15	textCurveDown, default, 1 line, in Word's form	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-16	textCurveUp, default, 1 line, in Word's form	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-17	textDeflate, default, 1 line, in Word's form	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-18	textDeflateBottom, default, 1 line, in Word's form	18	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-19	textDeflateInflate, default, 1 line, in Word's form	19	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-20	textDeflateInflateDeflate, default, 1 line, in Word's form	20	5	WdA t	Aptos 36 #000000#00:5	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-21	textDeflateTop, default, 1 line, in Word's form	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-22	textDoubleWave1, default, 1 line, in Word's form	22	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-23	textFadeDown, default, 1 line, in Word's form	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-24	textFadeLeft, default, 1 line, in Word's form	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-25	textFadeRight, default, 1 line, in Word's form	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-26	textFadeUp, default, 1 line, in Word's form	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-27	textInflate, default, 1 line, in Word's form	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-28	textInflateBottom, default, 1 line, in Word's form	28	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-29	textInflateTop, default, 1 line, in Word's form	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-30	textPlain, default, 1 line, in Word's form	30	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-31	textRingInside, default, 1 line, in Word's form	31	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-32	textRingOutside, default, 1 line, in Word's form	32	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-33	textSlantDown, default, 1 line, in Word's form	33	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-34	textSlantUp, default, 1 line, in Word's form	34	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-35	textStop, default, 1 line, in Word's form	35	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-36	textTriangle, default, 1 line, in Word's form	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-37	textTriangleInverted, default, 1 line, in Word's form	37	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-38	textWave1, default, 1 line, in Word's form	38	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-39	textWave2, default, 1 line, in Word's form	39	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa10-warps-default-1	wa10-40	textWave4, default, 1 line, in Word's form	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa11-warps-default-2	wa11-01	textArchDown, default, 2 lines, in Word's form	1	15	WordArtTwolines	Aptos 21.528 #000000#00:5 Aptos 21.504 #000000#00:3 Aptos 21.5279 #000000#00:3 Aptos 21.5281 #000000#00:2 Aptos 21.5039 #000000#00:1 Aptos 21.5041 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-02	textArchDownPour, default, 2 lines, in Word's form	2	9	Two lines	Aptos 36.024 #000000#00:9	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-03	textArchUp, default, 2 lines, in Word's form	3	15	WordArtTwolines	Aptos 21.5281 #000000#00:4 Aptos 21.5279 #000000#00:3 Aptos 21.528 #000000#00:2 Aptos 21.5041 #000000#00:2 Aptos 21.504 #000000#00:2 Aptos 21.5519 #000000#00:1 Aptos 21.5039 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-04	textArchUpPour, default, 2 lines, in Word's form	4	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-05	textButton, default, 2 lines, in Word's form	5	16	WordArtTwo lines	Aptos 26.928 #000000#00:12 Aptos 26.9281 #000000#00:3 Aptos 26.9279 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-06	textButtonPour, default, 2 lines, in Word's form	6	7	WordAli	Aptos 36 #000000#00:5 Aptos 36.024 #000000#00:2	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-07	textCanDown, default, 2 lines, in Word's form	7	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-08	textCanUp, default, 2 lines, in Word's form	8	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-09	textCascadeDown, default, 2 lines, in Word's form	9	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-10	textCascadeUp, default, 2 lines, in Word's form	10	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-11	textChevron, default, 2 lines, in Word's form	11	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-12	textChevronInverted, default, 2 lines, in Word's form	12	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-13	textCircle, default, 2 lines, in Word's form	13	15	WordArtTwolines	Aptos 21.504 #000000#00:4 Aptos 21.5279 #000000#00:3 Aptos 21.5041 #000000#00:3 Aptos 21.528 #000000#00:3 Aptos 21.5281 #000000#00:1 Aptos 21.5039 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-14	textCirclePour, default, 2 lines, in Word's form	14	14	WordArtwo line	Aptos 36 #000000#00:7 Aptos 36.024 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-15	textCurveDown, default, 2 lines, in Word's form	15	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-16	textCurveUp, default, 2 lines, in Word's form	16	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-17	textDeflate, default, 2 lines, in Word's form	17	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-18	textDeflateBottom, default, 2 lines, in Word's form	18	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-19	textDeflateInflate, default, 2 lines, in Word's form	19	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-20	textDeflateInflateDeflate, default, 2 lines, in Word's form	20	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-21	textDeflateTop, default, 2 lines, in Word's form	21	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-22	textDoubleWave1, default, 2 lines, in Word's form	22	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-23	textFadeDown, default, 2 lines, in Word's form	23	13	WordArtwo lin	Aptos 36 #000000#00:7 Aptos 36.024 #000000#00:6	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-24	textFadeLeft, default, 2 lines, in Word's form	24	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-25	textFadeRight, default, 2 lines, in Word's form	25	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-26	textFadeUp, default, 2 lines, in Word's form	26	14	WordATwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:5	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-27	textInflate, default, 2 lines, in Word's form	27	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-28	textInflateBottom, default, 2 lines, in Word's form	28	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-29	textInflateTop, default, 2 lines, in Word's form	29	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-30	textPlain, default, 2 lines, in Word's form	30	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-31	textRingInside, default, 2 lines, in Word's form	31	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-32	textRingOutside, default, 2 lines, in Word's form	32	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-33	textSlantDown, default, 2 lines, in Word's form	33	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-34	textSlantUp, default, 2 lines, in Word's form	34	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-35	textStop, default, 2 lines, in Word's form	35	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-36	textTriangle, default, 2 lines, in Word's form	36	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-37	textTriangleInverted, default, 2 lines, in Word's form	37	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-38	textWave1, default, 2 lines, in Word's form	38	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-39	textWave2, default, 2 lines, in Word's form	39	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa11-warps-default-2	wa11-40	textWave4, default, 2 lines, in Word's form	40	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,347.3	1	0
+wa12-warps-adjusted-1	wa12-01	textArchDown, adjusted, 1 line	1	7	WordArt	Aptos 14.208 #000000#00:2 Aptos 14.184 #000000#00:2 Aptos 14.16 #000000#00:1 Aptos 14.1841 #000000#00:1 Aptos 14.1839 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-02	textArchDownPour, adjusted, 1 line	2	0			{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-03	textArchUp, adjusted, 1 line	3	7	WordArt	Aptos 14.208 #000000#00:3 Aptos 14.184 #000000#00:3 Aptos 14.16 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-04	textArchUpPour, adjusted, 1 line	4	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-05	textButton, adjusted, 1 line	5	7	WordArt	Aptos 14.208 #000000#00:3 Aptos 14.184 #000000#00:3 Aptos 14.16 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-06	textButtonPour, adjusted, 1 line	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-07	textCanDown, adjusted, 1 line	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-08	textCanUp, adjusted, 1 line	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-09	textCascadeDown, adjusted, 1 line	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-10	textCascadeUp, adjusted, 1 line	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-11	textChevron, adjusted, 1 line	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-12	textChevronInverted, adjusted, 1 line	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-13	textCircle, adjusted, 1 line	13	7	WordArt	Aptos 26.64 #000000#00:2 Aptos 26.6399 #000000#00:2 Aptos 26.664 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6401 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-14	textCirclePour, adjusted, 1 line	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-15	textCurveDown, adjusted, 1 line	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-16	textCurveUp, adjusted, 1 line	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-17	textDeflate, adjusted, 1 line	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-18	textDeflateBottom, adjusted, 1 line	18	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-19	textDeflateInflate, adjusted, 1 line	19	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-20	textDeflateInflateDeflate, adjusted, 1 line	20	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-21	textDeflateTop, adjusted, 1 line	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-22	textDoubleWave1, adjusted, 1 line	22	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-23	textFadeDown, adjusted, 1 line	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-24	textFadeLeft, adjusted, 1 line	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-25	textFadeRight, adjusted, 1 line	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-26	textFadeUp, adjusted, 1 line	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-27	textInflate, adjusted, 1 line	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-28	textInflateBottom, adjusted, 1 line	28	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-29	textInflateTop, adjusted, 1 line	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-30	textPlain, adjusted, 1 line	30	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-31	textRingInside, adjusted, 1 line	31	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-32	textRingOutside, adjusted, 1 line	32	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-33	textSlantDown, adjusted, 1 line	33	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-34	textSlantUp, adjusted, 1 line	34	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-35	textStop, adjusted, 1 line	35	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-36	textTriangle, adjusted, 1 line	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-37	textTriangleInverted, adjusted, 1 line	37	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-38	textWave1, adjusted, 1 line	38	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-39	textWave2, adjusted, 1 line	39	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa12-warps-adjusted-1	wa12-40	textWave4, adjusted, 1 line	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa13-warps-adjusted-2	wa13-01	textArchDown, adjusted, 2 lines	1	15	WordArtTwolines	Aptos 12.96 #000000#00:8 Aptos 12.9599 #000000#00:3 Aptos 12.936 #000000#00:2 Aptos 12.9601 #000000#00:1 Aptos 12.9359 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-02	textArchDownPour, adjusted, 2 lines	2	9	Two lines	Aptos 36.024 #000000#00:9	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-03	textArchUp, adjusted, 2 lines	3	15	WordArtTwolines	Aptos 12.96 #000000#00:9 Aptos 12.936 #000000#00:3 Aptos 12.9361 #000000#00:1 Aptos 12.9599 #000000#00:1 Aptos 12.9601 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-04	textArchUpPour, adjusted, 2 lines	4	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-05	textButton, adjusted, 2 lines	5	16	WordArtTwo lines	Aptos 15.864 #000000#00:13 Aptos 15.8639 #000000#00:1 Aptos 15.84 #000000#00:1 Aptos 15.8399 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-06	textButtonPour, adjusted, 2 lines	6	13	WordArwo line	Aptos 36.024 #000000#00:7 Aptos 36 #000000#00:6	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-07	textCanDown, adjusted, 2 lines	7	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-08	textCanUp, adjusted, 2 lines	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-09	textCascadeDown, adjusted, 2 lines	9	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-10	textCascadeUp, adjusted, 2 lines	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-11	textChevron, adjusted, 2 lines	11	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-12	textChevronInverted, adjusted, 2 lines	12	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-13	textCircle, adjusted, 2 lines	13	15	WordArtTwolines	Aptos 21.528 #000000#00:5 Aptos 21.5041 #000000#00:3 Aptos 21.5279 #000000#00:3 Aptos 21.504 #000000#00:2 Aptos 21.5039 #000000#00:2	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-14	textCirclePour, adjusted, 2 lines	14	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-15	textCurveDown, adjusted, 2 lines	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-16	textCurveUp, adjusted, 2 lines	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-17	textDeflate, adjusted, 2 lines	17	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-18	textDeflateBottom, adjusted, 2 lines	18	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-19	textDeflateInflate, adjusted, 2 lines	19	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-20	textDeflateInflateDeflate, adjusted, 2 lines	20	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-21	textDeflateTop, adjusted, 2 lines	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-22	textDoubleWave1, adjusted, 2 lines	22	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-23	textFadeDown, adjusted, 2 lines	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-24	textFadeLeft, adjusted, 2 lines	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-25	textFadeRight, adjusted, 2 lines	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-26	textFadeUp, adjusted, 2 lines	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-27	textInflate, adjusted, 2 lines	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-28	textInflateBottom, adjusted, 2 lines	28	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-29	textInflateTop, adjusted, 2 lines	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-30	textPlain, adjusted, 2 lines	30	6	WordAr	Aptos 36 #000000#00:6	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-31	textRingInside, adjusted, 2 lines	31	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-32	textRingOutside, adjusted, 2 lines	32	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-33	textSlantDown, adjusted, 2 lines	33	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-34	textSlantUp, adjusted, 2 lines	34	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-35	textStop, adjusted, 2 lines	35	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-36	textTriangle, adjusted, 2 lines	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-37	textTriangleInverted, adjusted, 2 lines	37	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-38	textWave1, adjusted, 2 lines	38	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-39	textWave2, adjusted, 2 lines	39	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa13-warps-adjusted-2	wa13-40	textWave4, adjusted, 2 lines	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-01	textButton, three lines	1	21	WordArtTwo linesThree	Aptos 26.976 #000000#00:11 Aptos 26.952 #000000#00:4 Aptos 26.9521 #000000#00:2 Aptos 26.9761 #000000#00:2 Aptos 26.9519 #000000#00:1 Aptos 26.9518 #000000#00:1	{0: 0}	20	15	000000:20	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-02	textButtonPour, three lines	2	14	WordAwo linhre	Aptos 36 #000000#00:8 Aptos 36.024 #000000#00:6	{0: 0}	3	3	000000:3	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-03	textDeflateInflate, three lines	3	15	WordArtTliThree	Aptos 36 #000000#00:12 Aptos 36.024 #000000#00:3	{0: 0}	3	3	000000:3	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-04	textDeflateInflateDeflate, three lines	4	21	WordArtTwo linesThree	Aptos 36 #000000#00:12 Aptos 36.024 #000000#00:9	{0: 0}	3	3	000000:3	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-05	textPlain, three lines	5	21	WordArtTwo linesThree	Aptos 36 #000000#00:12 Aptos 36.024 #000000#00:9	{0: 0}	3	3	000000:3	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-06	textInflate, three lines	6	21	WordArtTwo linesThree	Aptos 36 #000000#00:12 Aptos 36.024 #000000#00:9	{0: 0}	3	3	000000:3	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-07	textArchUp, three lines	7	20	WordArtTwolinesThree	Aptos 17.928 #000000#00:10 Aptos 17.9281 #000000#00:4 Aptos 17.952 #000000#00:2 Aptos 17.9041 #000000#00:1 Aptos 17.904 #000000#00:1 Aptos 17.9279 #000000#00:1 Aptos 17.9521 #000000#00:1	{0: 0}	20	15	000000:20	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa14-three-lines	wa14-08	textCircle, three lines	8	20	WordArtTwolinesThree	Aptos 17.928 #000000#00:8 Aptos 17.952 #000000#00:7 Aptos 17.9279 #000000#00:2 Aptos 17.9281 #000000#00:2 Aptos 17.9521 #000000#00:1	{0: 0}	20	15	000000:20	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa15-warps-fixed-1	wa15-01	textArchDown, default, 1 line	1	7	WordArt	Aptos 26.6399 #000000#00:2 Aptos 26.64 #000000#00:1 Aptos 26.664 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6401 #000000#00:1 Aptos 26.6881 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-02	textArchDownPour, default, 1 line	2	0			{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-03	textArchUp, default, 1 line	3	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-04	textArchUpPour, default, 1 line	4	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-05	textButton, default, 1 line	5	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-06	textButtonPour, default, 1 line	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-07	textCanDown, default, 1 line	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-08	textCanUp, default, 1 line	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-09	textCascadeDown, default, 1 line	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-10	textCascadeUp, default, 1 line	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-11	textChevron, default, 1 line	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-12	textChevronInverted, default, 1 line	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-13	textCircle, default, 1 line	13	7	WordArt	Aptos 26.6641 #000000#00:2 Aptos 26.64 #000000#00:2 Aptos 26.6399 #000000#00:1 Aptos 26.664 #000000#00:1 Aptos 26.6638 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-14	textCirclePour, default, 1 line	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-15	textCurveDown, default, 1 line	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-16	textCurveUp, default, 1 line	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-17	textDeflate, default, 1 line	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-18	textDeflateBottom, default, 1 line	18	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-19	textDeflateInflate, default, 1 line	19	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-20	textDeflateInflateDeflate, default, 1 line	20	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-21	textDeflateTop, default, 1 line	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-22	textDoubleWave1, default, 1 line	22	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-23	textFadeDown, default, 1 line	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-24	textFadeLeft, default, 1 line	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-25	textFadeRight, default, 1 line	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-26	textFadeUp, default, 1 line	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-27	textInflate, default, 1 line	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-28	textInflateBottom, default, 1 line	28	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-29	textInflateTop, default, 1 line	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-30	textPlain, default, 1 line	30	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-31	textRingInside, default, 1 line	31	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-32	textRingOutside, default, 1 line	32	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-33	textSlantDown, default, 1 line	33	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-34	textSlantUp, default, 1 line	34	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-35	textStop, default, 1 line	35	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-36	textTriangle, default, 1 line	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-37	textTriangleInverted, default, 1 line	37	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-38	textWave1, default, 1 line	38	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-39	textWave2, default, 1 line	39	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa15-warps-fixed-1	wa15-40	textWave4, default, 1 line	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa16-warps-fixed-2	wa16-01	textArchDown, default, 2 lines	1	15	WordArtTwolines	Aptos 21.504 #000000#00:7 Aptos 21.528 #000000#00:4 Aptos 21.5281 #000000#00:3 Aptos 21.5041 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-02	textArchDownPour, default, 2 lines	2	9	Two lines	Aptos 36.024 #000000#00:9	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-03	textArchUp, default, 2 lines	3	15	WordArtTwolines	Aptos 21.5281 #000000#00:4 Aptos 21.528 #000000#00:4 Aptos 21.5279 #000000#00:3 Aptos 21.5519 #000000#00:1 Aptos 21.5041 #000000#00:1 Aptos 21.5039 #000000#00:1 Aptos 21.504 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-04	textArchUpPour, default, 2 lines	4	14	WordArtwo line	Aptos 36 #000000#00:7 Aptos 36.024 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-05	textButton, default, 2 lines	5	16	WordArtTwo lines	Aptos 26.952 #000000#00:10 Aptos 26.9281 #000000#00:2 Aptos 26.928 #000000#00:2 Aptos 26.9519 #000000#00:1 Aptos 26.9278 #000000#00:1	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-06	textButtonPour, default, 2 lines	6	11	WordAwo lin	Aptos 36.024 #000000#00:6 Aptos 36 #000000#00:5	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-07	textCanDown, default, 2 lines	7	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-08	textCanUp, default, 2 lines	8	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-09	textCascadeDown, default, 2 lines	9	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-10	textCascadeUp, default, 2 lines	10	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-11	textChevron, default, 2 lines	11	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-12	textChevronInverted, default, 2 lines	12	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-13	textCircle, default, 2 lines	13	15	WordArtTwolines	Aptos 21.528 #000000#00:9 Aptos 21.5279 #000000#00:3 Aptos 21.5041 #000000#00:3	{0: 0}	15	11	000000:15	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-14	textCirclePour, default, 2 lines	14	14	WordArtwo line	Aptos 36 #000000#00:7 Aptos 36.024 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-15	textCurveDown, default, 2 lines	15	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-16	textCurveUp, default, 2 lines	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-17	textDeflate, default, 2 lines	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-18	textDeflateBottom, default, 2 lines	18	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-19	textDeflateInflate, default, 2 lines	19	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-20	textDeflateInflateDeflate, default, 2 lines	20	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-21	textDeflateTop, default, 2 lines	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-22	textDoubleWave1, default, 2 lines	22	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-23	textFadeDown, default, 2 lines	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-24	textFadeLeft, default, 2 lines	24	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-25	textFadeRight, default, 2 lines	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-26	textFadeUp, default, 2 lines	26	5	WordA	Aptos 36 #000000#00:5	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-27	textInflate, default, 2 lines	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-28	textInflateBottom, default, 2 lines	28	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-29	textInflateTop, default, 2 lines	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-30	textPlain, default, 2 lines	30	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-31	textRingInside, default, 2 lines	31	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-32	textRingOutside, default, 2 lines	32	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-33	textSlantDown, default, 2 lines	33	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-34	textSlantUp, default, 2 lines	34	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-35	textStop, default, 2 lines	35	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-36	textTriangle, default, 2 lines	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-37	textTriangleInverted, default, 2 lines	37	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-38	textWave1, default, 2 lines	38	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-39	textWave2, default, 2 lines	39	16	WordArtTwo lines	Aptos 36.024 #000000#00:9 Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa16-warps-fixed-2	wa16-40	textWave4, default, 2 lines	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:2	BFBFBF@0.25:1	144.0,252.0,301.4,396.0	1	0
+wa20-form	wa20-01	textArchUp, fromWordArt 1, noAutofit, wrap none	1	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-02	textArchUp, fromWordArt 1, noAutofit, wrap square	2	7	WordArt	Aptos 30.624 #000000#00:3 Aptos 30.6239 #000000#00:1 Aptos 30.6481 #000000#00:1 Aptos 30.6479 #000000#00:1 Aptos 30.6482 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-03	textArchUp, fromWordArt 1, spAutoFit, wrap none	3	7	WordArt	Aptos 26.1839 #000000#00:4 Aptos 26.208 #000000#00:2 Aptos 26.184 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-04	textArchUp, fromWordArt 1, normAutofit, wrap square	4	7	WordArt	Aptos 30.624 #000000#00:3 Aptos 30.6239 #000000#00:1 Aptos 30.6481 #000000#00:1 Aptos 30.6479 #000000#00:1 Aptos 30.6482 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-05	textArchUp, fromWordArt 0, noAutofit, wrap none	5	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-06	textArchUp, fromWordArt 0, noAutofit, wrap square	6	7	WordArt	Aptos 30.624 #000000#00:3 Aptos 30.6239 #000000#00:1 Aptos 30.6481 #000000#00:1 Aptos 30.6479 #000000#00:1 Aptos 30.6482 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-07	textArchUp, fromWordArt 0, spAutoFit, wrap none	7	7	WordArt	Aptos 26.1839 #000000#00:4 Aptos 26.208 #000000#00:2 Aptos 26.184 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-08	textArchUp, fromWordArt 0, normAutofit, wrap square	8	7	WordArt	Aptos 30.624 #000000#00:3 Aptos 30.6239 #000000#00:1 Aptos 30.6481 #000000#00:1 Aptos 30.6479 #000000#00:1 Aptos 30.6482 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-09	textArchUp, no insets	9	7	WordArt	Aptos 27 #000000#00:4 Aptos 26.9999 #000000#00:2 Aptos 27.0001 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,272.1,396.0	1	0
+wa20-form	wa20-10	textInflate, fromWordArt 1, noAutofit, wrap none	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-11	textInflate, fromWordArt 1, noAutofit, wrap square	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-12	textInflate, fromWordArt 1, spAutoFit, wrap none	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-13	textInflate, fromWordArt 1, normAutofit, wrap square	13	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-14	textInflate, fromWordArt 0, noAutofit, wrap none	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-15	textInflate, fromWordArt 0, noAutofit, wrap square	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-16	textInflate, fromWordArt 0, spAutoFit, wrap none	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-17	textInflate, fromWordArt 0, normAutofit, wrap square	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-18	textInflate, no insets	18	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,272.1,396.0	1	0
+wa20-form	wa20-19	textWave1, fromWordArt 1, noAutofit, wrap none	19	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-20	textWave1, fromWordArt 1, noAutofit, wrap square	20	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-21	textWave1, fromWordArt 1, spAutoFit, wrap none	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-22	textWave1, fromWordArt 1, normAutofit, wrap square	22	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-23	textWave1, fromWordArt 0, noAutofit, wrap none	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-24	textWave1, fromWordArt 0, noAutofit, wrap square	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-25	textWave1, fromWordArt 0, spAutoFit, wrap none	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa20-form	wa20-26	textWave1, fromWordArt 0, normAutofit, wrap square	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,432.0,396.0	1	0
+wa20-form	wa20-27	textWave1, no insets	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,272.1,396.0	1	0
+wa20-form	wa20-28	textArchUp, 18 pt	28	7	WordArt	Aptos 15.312 #000000#00:3 Aptos 15.288 #000000#00:2 Aptos 15.3121 #000000#00:1 Aptos 15.3119 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,222.6,396.0	1	0
+wa20-form	wa20-29	textArchUp, 72 pt	29	7	WordArt	Aptos 52.368 #000000#00:2 Aptos 52.3678 #000000#00:2 Aptos 52.3921 #000000#00:1 Aptos 52.3679 #000000#00:1 Aptos 52.3923 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,414.4,396.0	1	0
+wa20-form	wa20-30	textInflate, 18 pt	30	7	WordArt	Aptos 18.024 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,222.6,396.0	1	0
+wa20-form	wa20-31	textInflate, 72 pt	31	7	WordArt	Aptos 72.024 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,414.4,396.0	1	0
+wa20-form	wa20-32	textInflate, a square box 144 by 144 pt	32	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa20-form	wa20-33	textCircle, a square box 216 by 216 pt	33	7	WordArt	Aptos 29.28 #000000#00:3 Aptos 29.2799 #000000#00:2 Aptos 29.256 #000000#00:1 Aptos 29.2801 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,468.0	1	0
+wa20-form	wa20-34	textNoShape, as Word inserts WordArt: fromWordArt 0, spAutoFit, wrap none, 144 by 144 pt	34	51	"91440/45720/91440/45720 144x144pt; ""WordArt""WordArt"	Aptos 12 #000000#ff:44 Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,303.3	0	0
+wa20-form	wa20-35	textArchUp, as Word writes Follow Path, with no line (Word's own: no fill, no line)	35	51	"91440/45720/91440/45720 144x144pt; ""WordArt""WordArt"	Aptos 12 #000000#ff:44 Aptos 26.184 #000000#00:3 Aptos 26.1839 #000000#00:2 Aptos 26.1841 #000000#00:2	{0: 0}	7	5	000000:7			1	0
+wa21-text-rect	wa21-01	"textPlain, the text ""WordArt"""	1	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa21-text-rect	wa21-02	"textPlain, the text ""wave"""	2	4	wave	Aptos 36 #000000#00:4	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,238.4,396.0	1	0
+wa21-text-rect	wa21-03	"textPlain, the text ""Warpy"""	3	5	Warpy	Aptos 36 #000000#00:5	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,256.6,396.0	1	0
+wa21-text-rect	wa21-04	"textPlain, the text ""  WordArt  """	4	0			{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,301.1,396.0	1	0
+wa21-text-rect	wa21-05	"textInflate, the text ""WordArt"""	5	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa21-text-rect	wa21-06	"textInflate, the text ""wave"""	6	4	wave	Aptos 36 #000000#00:4	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,238.4,396.0	1	0
+wa21-text-rect	wa21-07	"textInflate, the text ""Warpy"""	7	5	Warpy	Aptos 36 #000000#00:5	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,256.6,396.0	1	0
+wa21-text-rect	wa21-08	"textInflate, the text ""  WordArt  """	8	0			{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,301.1,396.0	1	0
+wa21-text-rect	wa21-09	"textArchUp, the text ""WordArt"""	9	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa21-text-rect	wa21-10	"textArchUp, the text ""wave"""	10	4	wave	Aptos 28.5599 #000000#00:1 Aptos 28.5601 #000000#00:1 Aptos 28.5841 #000000#00:1 Aptos 28.5838 #000000#00:1	{0: 0}	4	2	000000:4	BFBFBF@0.25:1	144.0,252.0,238.4,396.0	1	0
+wa21-text-rect	wa21-11	"textArchUp, the text ""Warpy"""	11	5	Warpy	Aptos 25.0319 #000000#00:3 Aptos 25.0559 #000000#00:1 Aptos 25.0081 #000000#00:1	{0: 0}	5	4	000000:5	BFBFBF@0.25:1	144.0,252.0,256.6,396.0	1	0
+wa21-text-rect	wa21-12	"textArchUp, the text ""  WordArt  """	12	7	WordArt	Aptos 26.952 #000000#00:3 Aptos 26.9279 #000000#00:1 Aptos 26.9281 #000000#00:1 Aptos 26.928 #000000#00:1 Aptos 26.9521 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,301.1,396.0	1	0
+wa30-effects-flat	wa30-01	flat, solid fill red, w:color black	1	7	WordArt	Aptos 36 #c00000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-02	flat, solid fill red at alpha 40000	2	0			{0: 0}	1	1	C00000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-03	flat, no fill, black outline 1 pt (hollow)	3	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	0	0		BFBFBF@0.25:1 000000@1.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-04	flat, no fill, no outline (invisible)	4	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-05	flat, outline 0.25 pt red	5	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-06	flat, outline 3 pt red	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-07	flat, outline 3 pt red, dash	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-08	flat, outline 3 pt red, sysDot, round cap	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-09	flat, outline 3 pt red, bevel join	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-10	flat, outline 3 pt red, miter join	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-11	flat, outline 6 pt red, compound dbl	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:1 FF0000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-12	flat, outline 3 pt gradient red to blue	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	2	2	000000:1 pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-13	flat, gradient fill red to blue, linear 0 degrees	13	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-14	flat, gradient fill red to blue, linear 90 degrees	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-15	flat, gradient fill three stops, linear 45 degrees	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-16	flat, gradient fill red to blue, path circle	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	0	0
+wa30-effects-flat	wa30-17	flat, shadow, outer, bottom right, alpha 60000	17	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-18	flat, shadow, outer, bottom right, alpha 20000	18	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-19	flat, shadow, no blur, 6 pt at 45 degrees	19	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-20	flat, shadow, perspective (sx 100%, sy 23%, kx -1200000, algn bl)	20	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-21	flat, glow 5 pt orange alpha 60000	21	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-22	flat, glow 18 pt blue alpha 40000	22	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-23	flat, reflection, tight	23	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-24	flat, reflection, half, 4 pt offset	24	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa30-effects-flat	wa30-25	flat, outline, gradient fill, shadow and glow	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1 1E3764@1.00:1	144.0,252.0,286.6,396.0	2	0
+wa31-effects-warped	wa31-01	textArchUp, no fill, black outline 1 pt (hollow)	1	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	0	0		000000@1.00:7 BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-02	textArchUp, outline 3 pt red	2	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	FF0000@3.00:7 BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-03	textArchUp, gradient fill red to blue, linear 0 degrees	3	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	pattern:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-04	textArchUp, shadow, outer, bottom right, alpha 60000	4	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	8	0
+wa31-effects-warped	wa31-05	textArchUp, glow 5 pt orange alpha 60000	5	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	8	0
+wa31-effects-warped	wa31-06	textArchUp, reflection, tight	6	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.6398 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6641 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	8	0
+wa31-effects-warped	wa31-07	textWave1, no fill, black outline 1 pt (hollow)	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	0	0		BFBFBF@0.25:1 000000@1.00:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-08	textWave1, outline 3 pt red	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FF0000@3.00:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-09	textWave1, gradient fill red to blue, linear 0 degrees	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa31-effects-warped	wa31-10	textWave1, shadow, outer, bottom right, alpha 60000	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	2	0
+wa31-effects-warped	wa31-11	textWave1, glow 5 pt orange alpha 60000	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	2	0
+wa31-effects-warped	wa31-12	textWave1, reflection, tight	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	2	0
+wa40-runs	wa40-01	flat, two runs: 24 pt red, 48 pt blue	1	7	WordArt	Aptos 24 #c00000#ff:4 Aptos 48.024 #2f5597#ff:3	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,273.9,396.0	0	0
+wa40-runs	wa40-02	textPlain, two runs: 24 pt red, 48 pt blue	2	3	Art	Aptos 48 #000000#00:3	{0: 0}	2	2	C00000:1 2E5597:1	BFBFBF@0.25:1	144.0,252.0,273.9,396.0	1	0
+wa40-runs	wa40-03	textArchUp, two runs: 24 pt red, 48 pt blue	3	7	WordArt	Aptos 16.392 #000000#00:3 Aptos 16.368 #000000#00:1 Aptos 32.7601 #000000#00:1 Aptos 32.784 #000000#00:1 Aptos 32.7842 #000000#00:1	{0: 0}	7	5	C00000:4 2E5597:3	BFBFBF@0.25:1	144.0,252.0,273.9,396.0	1	0
+wa40-runs	wa40-04	textInflate, two runs: 24 pt red, 48 pt blue	4	3	Art	Aptos 48 #000000#00:3	{0: 0}	2	2	C00000:1 2E5597:1	BFBFBF@0.25:1	144.0,252.0,273.9,396.0	1	0
+wa40-runs	wa40-05	textCircle, two runs: 24 pt red, 48 pt blue	5	7	WordArt	Aptos 16.392 #000000#00:3 Aptos 32.7841 #000000#00:2 Aptos 16.3919 #000000#00:1 Aptos 32.7839 #000000#00:1	{0: 0}	7	5	C00000:4 2E5597:3	BFBFBF@0.25:1	144.0,252.0,273.9,396.0	1	0
+wa40-runs	wa40-06	textWave1, two runs: 24 pt red, 48 pt blue	6	3	Art	Aptos 48 #000000#00:3	{0: 0}	2	2	C00000:1 2E5597:1	BFBFBF@0.25:1	144.0,252.0,273.9,396.0	1	0
+wa40-runs	wa40-07	textDeflateInflate, two lines, 24 pt red then 48 pt blue	7	16	WordArtTwo lines	Aptos 48.024 #000000#00:9 Aptos 24.024 #000000#00:7	{0: 0}	2	2	C00000:1 2E5597:1	BFBFBF@0.25:1	144.0,252.0,349.1,396.0	1	0
+wa40-runs	wa40-08	textPlain, two runs, Aptos then Aptos bold	8	0			{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,290.1,396.0	1	0
+wa60-3d	wa60-01	Word's Bevel Circle: bodyPr scene3d and sp3d, w14:props3d on the run	1	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa60-3d	wa60-02	Word's Bevel Circle on a gold fill	2	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa60-3d	wa60-03	Word's 3-D Rotation: bodyPr scene3d isometricLeftDown alone	3	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa60-3d	wa60-04	Word's 3-D Rotation and Bevel together	4	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wa60-3d	wa60-05	flat, w14 bevel circle 3 pt	5	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-06	flat, w14 bevel angle 6 pt, metal	6	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-07	flat, w14 extrusion 4.5 pt, perspectiveRelaxed	7	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-08	flat, w14 bevel and extrusion, isometricOffAxis1Right	8	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-09	flat, bodyPr scene3d isometricOffAxis1Right and sp3d, no w14:props3d	9	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-10	flat, bodyPr scene3d and flatTx	10	7	WordArt	Aptos 36 #ffc000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-11	textArchUp, w14 bevel circle 3 pt	11	0			{0: 0}	7	5	FFC000:7	BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wa60-3d	wa60-12	textWave1, bodyPr scene3d isometricOffAxis1Right and sp3d	12	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,396.0	1	0
+wb50-body-effects	wb50-01	solid fill red, w:color black	1	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36 #c00000#ff:16 Aptos 13.92 #c00000#ff:15	{0: 0}	0	0				0	0
+wb50-body-effects	wb50-02	solid fill red at alpha 40000	2	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	2	2	C00000:2			0	0
+wb50-body-effects	wb50-03	no fill, black outline 1 pt (hollow)	3	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	0	0		000000@1.00:2		0	0
+wb50-body-effects	wb50-04	no fill, no outline (invisible)	4	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				0	0
+wb50-body-effects	wb50-05	outline 0.25 pt red	5	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@0.25:2		0	0
+wb50-body-effects	wb50-06	outline 3 pt red	6	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@3.00:2		0	0
+wb50-body-effects	wb50-07	outline 3 pt red, dash	7	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@3.00:2		0	0
+wb50-body-effects	wb50-08	outline 3 pt red, sysDot, round cap	8	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@3.00:2		0	0
+wb50-body-effects	wb50-09	outline 3 pt red, bevel join	9	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@3.00:2		0	0
+wb50-body-effects	wb50-10	outline 3 pt red, miter join	10	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FF0000@3.00:2		0	0
+wb50-body-effects	wb50-11	outline 6 pt red, compound dbl	11	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	4	4	000000:2 FF0000:2			0	0
+wb50-body-effects	wb50-12	outline 3 pt gradient red to blue	12	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	4	4	000000:2 pattern:2			0	0
+wb50-body-effects	wb50-13	gradient fill red to blue, linear 0 degrees	13	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			0	0
+wb50-body-effects	wb50-14	gradient fill red to blue, linear 90 degrees	14	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			0	0
+wb50-body-effects	wb50-15	gradient fill three stops, linear 45 degrees	15	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			0	0
+wb50-body-effects	wb50-16	gradient fill red to blue, path circle	16	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			0	0
+wb50-body-effects	wb50-17	shadow, outer, bottom right, alpha 60000	17	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-18	shadow, outer, bottom right, alpha 20000	18	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-19	shadow, no blur, 6 pt at 45 degrees	19	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-20	shadow, perspective (sx 100%, sy 23%, kx -1200000, algn bl)	20	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-21	glow 5 pt orange alpha 60000	21	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-22	glow 18 pt blue alpha 40000	22	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-23	reflection, tight	23	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-24	reflection, half, 4 pt offset	24	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wb50-body-effects	wb50-25	outline, gradient fill, shadow and glow	25	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2	1E3764@1.00:2		4	0
+wb60-body-3d	wb60-01	w14 bevel circle 3 pt	1	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wb60-body-3d	wb60-02	w14 bevel angle 6 pt, metal	2	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wb60-body-3d	wb60-03	w14 extrusion 4.5 pt, perspectiveRelaxed	3	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wb60-body-3d	wb60-04	w14 bevel and extrusion, isometricOffAxis1Right	4	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wb60-body-3d	wb60-05	w14 props3d bevel without scene3d	5	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wg00-hand-styles			1	199	ha-01: WordArt style 1 of 15 (row 1, column 1).Select the wo	Aptos 9.048 #000000#ff:192 Aptos 27.144 #000000#ff:7	{0: 0}	0	0				1	0
+wg00-hand-styles			2	199	ha-02: WordArt style 2 of 15 (row 1, column 2).Select the wo	Aptos 9.048 #000000#ff:192 Aptos 27.144 #156082#ff:7	{0: 0}	0	0				1	0
+wg00-hand-styles			3	192	ha-03: WordArt style 3 of 15 (row 1, column 3).Select the wo	Aptos 9.048 #000000#ff:192	{0: 0}	1	1	F6C5AC:1	E97131@0.66:1		0	0
+wg00-hand-styles			4	199	ha-04: WordArt style 4 of 15 (row 1, column 4).Select the wo	Aptos 9.048 #000000#ff:192 Aptos-Bold 27.144 #000000#00:7	{0: 0}	1	1	FFFFFF:1	A02A93@0.60:1		1	0
+wg00-hand-styles			5	192	ha-05: WordArt style 5 of 15 (row 1, column 5).Select the wo	Aptos 9.048 #000000#ff:192	{0: 0}	0	0				1	0
+wg00-hand-styles			6	199	ha-06: WordArt style 6 of 15 (row 2, column 1).Select the wo	Aptos 9.048 #000000#ff:192 Aptos 27.144 #000000#00:7	{0: 0}	1	1	pattern:1			0	0
+wg00-hand-styles			7	199	ha-07: WordArt style 7 of 15 (row 2, column 2).Select the wo	Aptos 9.048 #000000#ff:192 Aptos 27.144 #000000#00:7	{0: 0}	1	1	pattern:1			1	0
+wg00-hand-styles			8	192	ha-08: WordArt style 8 of 15 (row 2, column 3).Select the wo	Aptos 9.048 #000000#ff:192	{0: 0}	1	1	pattern:1	0F9ED5@0.75:1		0	0
+wg00-hand-styles			9	192	ha-09: WordArt style 9 of 15 (row 2, column 4).Select the wo	Aptos 9.048 #000000#ff:192	{0: 0}	1	1	FEFEFD:1	156082@0.56:1		1	0
+wg00-hand-styles			10	193	ha-10: WordArt style 10 of 15 (row 2, column 5).Select the w	Aptos 9.048 #000000#ff:193	{0: 0}	0	0				1	0
+wg00-hand-styles			11	193	ha-11: WordArt style 11 of 15 (row 3, column 1).Select the w	Aptos 9.048 #000000#ff:193	{0: 0}	1	1	000000:1	FFFFFF@0.56:1		1	0
+wg00-hand-styles			12	193	ha-12: WordArt style 12 of 15 (row 3, column 2).Select the w	Aptos 9.048 #000000#ff:193	{0: 0}	3	3	A02A93:2 262626:1	FFFFFF@0.40:1		0	0
+wg00-hand-styles			13	193	ha-13: WordArt style 13 of 15 (row 3, column 3).Select the w	Aptos 9.048 #000000#ff:193	{0: 0}	1	1	A02A93:1	FFFFFF@0.56:1		1	0
+wg00-hand-styles			14	200	ha-14: WordArt style 14 of 15 (row 3, column 4).Select the w	Aptos 9.048 #000000#ff:193 Aptos-Bold 27.12 #000000#00:7	{0: 0}	1	1	FFFFFF:1	E97131@0.39:1		1	0
+wg00-hand-styles			15	200	ha-15: WordArt style 15 of 15 (row 3, column 5).Select the w	Aptos 9.048 #000000#ff:193 Aptos-Bold 27.144 #e8e8e8#ff:7	{0: 0}	0	0				1	0
+wg00-hand-styles			16	255	ha-16: WordArt style 1 with Transform: Arch.Select the word 	Aptos 9.048 #000000#ff:248 Aptos 19.728 #000000#00:3 Aptos 19.7279 #000000#00:1 Aptos 19.7041 #000000#00:1 Aptos 19.7281 #000000#00:1 Aptos 19.704 #000000#00:1	{0: 0}	7	5	000000:7			8	0
+wg00-hand-styles			17	245	ha-17: WordArt style 1 with Transform: Square.Select the wor	Aptos 9.048 #000000#ff:245	{0: 0}	1	1	000000:1			2	0
+wg00-hand-styles			18	249	ha-18: WordArt style 1 with Transform: Inflate.Select the wo	Aptos 9.048 #000000#ff:249	{0: 0}	1	1	000000:1			2	0
+wg00-hand-styles			19	255	ha-19: WordArt style 1 with Transform: Wave: Down.Select the	Aptos 9.048 #000000#ff:255	{0: 0}	1	1	000000:1			2	0
+wg00-hand-styles			20	247	ha-20: WordArt style 1 with Bevel: Circle.Select the word be	Aptos 9.048 #000000#ff:179 Aptos 6.888 #000000#ff:51 SegoeUI-Bold 6.888 #000000#ff:17	{0: 0}	2	1	F8DCDD:2	D13438@0.19:8 D13438@0.36:1		1	0
+wg00-hand-styles			21	222	ha-21: WordArt style 1 with 3-D Rotation: the first Perspect	Aptos 9.048 #000000#ff:215 Aptos 27.144 #000000#ff:7	{0: 0}	0	0				1	0
+wg00-hand-styles			22	206	hb-01: Text Effects style 1 of 15 (row 1, column 1), on body	Aptos 9.048 #000000#ff:190 Aptos 27.12 #000000#ff:16	{0: 0}	0	0				1	0
+wg00-hand-styles			23	206	hb-02: Text Effects style 2 of 15 (row 1, column 2), on body	Aptos 9.048 #000000#ff:190 Aptos 27.12 #156082#ff:16	{0: 0}	0	0				1	0
+wg00-hand-styles			24	206	hb-03: Text Effects style 3 of 15 (row 1, column 3), on body	Aptos 9.048 #000000#ff:190 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	F6C5AC:1	E97131@0.66:1		0	0
+wg00-hand-styles			25	206	hb-04: Text Effects style 4 of 15 (row 1, column 4), on body	Aptos 9.048 #000000#ff:190 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	FFFFFF:1	A02A93@0.60:1		1	0
+wg00-hand-styles			26	190	hb-05: Text Effects style 5 of 15 (row 1, column 5), on body	Aptos 9.048 #000000#ff:190	{0: 0}	0	0				1	0
+wg00-hand-styles			27	206	hb-06: Text Effects style 6 of 15 (row 2, column 1), on body	Aptos 9.048 #000000#ff:190 Aptos 27.12 #000000#00:16	{0: 0}	1	1	pattern:1			0	0
+wg00-hand-styles			28	206	hb-07: Text Effects style 7 of 15 (row 2, column 2), on body	Aptos 9.048 #000000#ff:190 Aptos 27.12 #000000#00:16	{0: 0}	1	1	pattern:1			1	0
+wg00-hand-styles			29	206	hb-08: Text Effects style 8 of 15 (row 2, column 3), on body	Aptos 9.048 #000000#ff:190 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	pattern:1	0F9ED5@0.75:1		0	0
+wg00-hand-styles			30	206	hb-09: Text Effects style 9 of 15 (row 2, column 4), on body	Aptos 9.048 #000000#ff:190 Aptos-Bold 27.144 #000000#00:16	{0: 0}	1	1	FEFEFD:1	156082@0.56:1		1	0
+wg00-hand-styles			31	191	hb-10: Text Effects style 10 of 15 (row 2, column 5), on bod	Aptos 9.048 #000000#ff:191	{0: 0}	0	0				1	0
+wg00-hand-styles			32	207	hb-11: Text Effects style 11 of 15 (row 3, column 1), on bod	Aptos 9.048 #000000#ff:191 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	000000:1	FFFFFF@0.56:1		1	0
+wg00-hand-styles			33	207	hb-12: Text Effects style 12 of 15 (row 3, column 2), on bod	Aptos 9.048 #000000#ff:191 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	262626:1	FFFFFF@0.40:1		1	0
+wg00-hand-styles			34	207	hb-13: Text Effects style 13 of 15 (row 3, column 3), on bod	Aptos 9.048 #000000#ff:191 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	A02A93:1	FFFFFF@0.56:1		1	0
+wg00-hand-styles			35	207	hb-14: Text Effects style 14 of 15 (row 3, column 4), on bod	Aptos 9.048 #000000#ff:191 Aptos-Bold 27.12 #000000#00:16	{0: 0}	1	1	FFFFFF:1	E97131@0.39:1		1	0
+wg00-hand-styles			36	207	hb-15: Text Effects style 15 of 15 (row 3, column 5), on bod	Aptos 9.048 #000000#ff:191 Aptos-Bold 27.12 #e8e8e8#ff:16	{0: 0}	0	0				1	0
+wg10-styles-flat	wg10-01	gallery style 1 on textNoShape, in Word's form	1	7	WordArt	Aptos 36 #000000#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,307.0	1	0
+wg10-styles-flat	wg10-02	gallery style 2 on textNoShape, in Word's form	2	7	WordArt	Aptos 36 #156082#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,286.6,307.0	1	0
+wg10-styles-flat	wg10-03	gallery style 3 on textNoShape, in Word's form	3	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	F6C5AC:1	BFBFBF@0.25:1 E97131@0.88:1	144.0,252.0,294.6,303.3	0	0
+wg10-styles-flat	wg10-04	gallery style 4 on textNoShape, in Word's form	4	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FFFFFF:1	BFBFBF@0.25:1 A02A93@0.80:1	144.0,252.0,294.6,307.0	1	0
+wg10-styles-flat	wg10-05	gallery style 5 on textNoShape, in Word's form	5	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg10-styles-flat	wg10-06	gallery style 6 on textNoShape, in Word's form	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	0	0
+wg10-styles-flat	wg10-07	gallery style 7 on textNoShape, in Word's form	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,304.2	1	0
+wg10-styles-flat	wg10-08	gallery style 8 on textNoShape, in Word's form	8	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1 0F9ED5@1.00:1	144.0,252.0,294.6,303.3	0	0
+wg10-styles-flat	wg10-09	gallery style 9 on textNoShape, in Word's form	9	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FEFEFD:1	BFBFBF@0.25:1 156082@0.75:1	144.0,252.0,298.1,306.1	1	0
+wg10-styles-flat	wg10-10	gallery style 10 on textNoShape, in Word's form	10	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg10-styles-flat	wg10-11	gallery style 11 on textNoShape, in Word's form	11	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FFFFFF@0.75:1	144.0,252.0,294.6,305.2	1	0
+wg10-styles-flat	wg10-12	gallery style 12 on textNoShape, in Word's form	12	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	262626:1	BFBFBF@0.25:1 FFFFFF@0.53:1	144.0,252.0,294.6,304.6	1	0
+wg10-styles-flat	wg10-13	gallery style 13 on textNoShape, in Word's form	13	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	A02A93:1	BFBFBF@0.25:1 FFFFFF@0.75:1	144.0,252.0,294.6,305.2	1	0
+wg10-styles-flat	wg10-14	gallery style 14 on textNoShape, in Word's form	14	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FFFFFF:1	BFBFBF@0.25:1 E97131@0.52:1	144.0,252.0,294.6,304.6	1	0
+wg10-styles-flat	wg10-15	gallery style 15 on textNoShape, in Word's form	15	7	WordArt	Aptos-Bold 36 #e8e8e8#ff:7	{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,298.1,303.3	1	0
+wg11-styles-arch	wg11-01	gallery style 1 on textArchUp, in Word's form	1	7	WordArt	Aptos 26.1839 #000000#00:3 Aptos 26.2081 #000000#00:2 Aptos 26.1841 #000000#00:1 Aptos 26.2079 #000000#00:1	{0: 0}	7	5	000000:7	BFBFBF@0.25:1	144.0,252.0,286.6,307.0	8	0
+wg11-styles-arch	wg11-02	gallery style 2 on textArchUp, in Word's form	2	7	WordArt	Aptos 26.1839 #000000#00:3 Aptos 26.2081 #000000#00:2 Aptos 26.1841 #000000#00:1 Aptos 26.2079 #000000#00:1	{0: 0}	7	5	156082:7	BFBFBF@0.25:1	144.0,252.0,286.6,307.0	8	0
+wg11-styles-arch	wg11-03	gallery style 3 on textArchUp, in Word's form	3	7	WordArt	Aptos-Bold 26.616 #000000#00:4 Aptos-Bold 26.6159 #000000#00:2 Aptos-Bold 26.6399 #000000#00:1	{0: 0}	7	5	F6C5AC:7	E97131@0.88:7 BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg11-styles-arch	wg11-04	gallery style 4 on textArchUp, in Word's form	4	7	WordArt	Aptos-Bold 26.6161 #000000#00:3 Aptos-Bold 26.6159 #000000#00:2 Aptos-Bold 26.6399 #000000#00:1 Aptos-Bold 26.5921 #000000#00:1	{0: 0}	7	5	FFFFFF:7	A02A93@0.80:7 BFBFBF@0.25:1	144.0,252.0,294.6,307.0	8	0
+wg11-styles-arch	wg11-05	gallery style 5 on textArchUp, in Word's form	5	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg11-styles-arch	wg11-06	gallery style 6 on textArchUp, in Word's form	6	7	WordArt	Aptos 26.1839 #000000#00:4 Aptos 26.208 #000000#00:2 Aptos 26.184 #000000#00:1	{0: 0}	7	5	pattern:7	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wg11-styles-arch	wg11-07	gallery style 7 on textArchUp, in Word's form	7	7	WordArt	Aptos 26.184 #000000#00:3 Aptos 26.1841 #000000#00:2 Aptos 26.2081 #000000#00:1 Aptos 26.208 #000000#00:1	{0: 0}	7	5	pattern:7	BFBFBF@0.25:1	144.0,252.0,286.6,304.2	8	0
+wg11-styles-arch	wg11-08	gallery style 8 on textArchUp, in Word's form	8	7	WordArt	Aptos-Bold 26.616 #000000#00:4 Aptos-Bold 26.6159 #000000#00:2 Aptos-Bold 26.6399 #000000#00:1	{0: 0}	7	5	pattern:7	0F9ED5@1.00:7 BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg11-styles-arch	wg11-09	gallery style 9 on textArchUp, in Word's form	9	7	WordArt	Aptos-Bold 26.784 #000000#00:2 Aptos-Bold 26.7841 #000000#00:2 Aptos-Bold 26.8081 #000000#00:1 Aptos-Bold 26.7839 #000000#00:1 Aptos-Bold 26.808 #000000#00:1	{0: 0}	7	5	FEFEFD:7	156082@0.75:7 BFBFBF@0.25:1	144.0,252.0,298.1,306.1	8	0
+wg11-styles-arch	wg11-10	gallery style 10 on textArchUp, in Word's form	10	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg11-styles-arch	wg11-11	gallery style 11 on textArchUp, in Word's form	11	7	WordArt	Aptos-Bold 26.6159 #000000#00:3 Aptos-Bold 26.616 #000000#00:2 Aptos-Bold 26.6161 #000000#00:2	{0: 0}	7	5	000000:7	FFFFFF@0.75:7 BFBFBF@0.25:1	144.0,252.0,294.6,305.2	8	0
+wg11-styles-arch	wg11-12	gallery style 12 on textArchUp, in Word's form	12	7	WordArt	Aptos-Bold 26.616 #000000#00:2 Aptos-Bold 26.6159 #000000#00:2 Aptos-Bold 26.6161 #000000#00:1 Aptos-Bold 26.592 #000000#00:1 Aptos-Bold 26.64 #000000#00:1	{0: 0}	7	5	262626:7	FFFFFF@0.53:7 BFBFBF@0.25:1	144.0,252.0,294.6,304.6	8	0
+wg11-styles-arch	wg11-13	gallery style 13 on textArchUp, in Word's form	13	7	WordArt	Aptos-Bold 26.6159 #000000#00:3 Aptos-Bold 26.616 #000000#00:2 Aptos-Bold 26.6161 #000000#00:2	{0: 0}	7	5	A02A93:7	FFFFFF@0.75:7 BFBFBF@0.25:1	144.0,252.0,294.6,305.2	8	0
+wg11-styles-arch	wg11-14	gallery style 14 on textArchUp, in Word's form	14	7	WordArt	Aptos-Bold 26.616 #000000#00:2 Aptos-Bold 26.6159 #000000#00:2 Aptos-Bold 26.6161 #000000#00:1 Aptos-Bold 26.592 #000000#00:1 Aptos-Bold 26.64 #000000#00:1	{0: 0}	7	5	FFFFFF:7	E97131@0.52:7 BFBFBF@0.25:1	144.0,252.0,294.6,304.6	8	0
+wg11-styles-arch	wg11-15	gallery style 15 on textArchUp, in Word's form	15	7	WordArt	Aptos-Bold 26.8081 #000000#00:2 Aptos-Bold 26.808 #000000#00:1 Aptos-Bold 26.7841 #000000#00:1 Aptos-Bold 26.7839 #000000#00:1 Aptos-Bold 26.7599 #000000#00:1 Aptos-Bold 26.7598 #000000#00:1	{0: 0}	7	5	E8E8E8:7	BFBFBF@0.25:1	144.0,252.0,298.1,303.3	8	0
+wg12-styles-wave	wg12-01	gallery style 1 on textWave1, in Word's form	1	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1	144.0,252.0,286.6,307.0	2	0
+wg12-styles-wave	wg12-02	gallery style 2 on textWave1, in Word's form	2	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	156082:1	BFBFBF@0.25:1	144.0,252.0,286.6,307.0	2	0
+wg12-styles-wave	wg12-03	gallery style 3 on textWave1, in Word's form	3	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	F6C5AC:1	BFBFBF@0.25:1 E97131@0.88:1	144.0,252.0,294.6,303.3	1	0
+wg12-styles-wave	wg12-04	gallery style 4 on textWave1, in Word's form	4	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FFFFFF:1	BFBFBF@0.25:1 A02A93@0.80:1	144.0,252.0,294.6,307.0	2	0
+wg12-styles-wave	wg12-05	gallery style 5 on textWave1, in Word's form	5	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg12-styles-wave	wg12-06	gallery style 6 on textWave1, in Word's form	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,303.3	1	0
+wg12-styles-wave	wg12-07	gallery style 7 on textWave1, in Word's form	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1	144.0,252.0,286.6,304.2	2	0
+wg12-styles-wave	wg12-08	gallery style 8 on textWave1, in Word's form	8	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	pattern:1	BFBFBF@0.25:1 0F9ED5@1.00:1	144.0,252.0,294.6,303.3	1	0
+wg12-styles-wave	wg12-09	gallery style 9 on textWave1, in Word's form	9	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FEFEFD:1	BFBFBF@0.25:1 156082@0.75:1	144.0,252.0,298.1,306.1	2	0
+wg12-styles-wave	wg12-10	gallery style 10 on textWave1, in Word's form	10	0			{0: 0}	0	0		BFBFBF@0.25:1	144.0,252.0,294.6,303.3	1	0
+wg12-styles-wave	wg12-11	gallery style 11 on textWave1, in Word's form	11	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	000000:1	BFBFBF@0.25:1 FFFFFF@0.75:1	144.0,252.0,294.6,305.2	2	0
+wg12-styles-wave	wg12-12	gallery style 12 on textWave1, in Word's form	12	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	262626:1	BFBFBF@0.25:1 FFFFFF@0.53:1	144.0,252.0,294.6,304.6	2	0
+wg12-styles-wave	wg12-13	gallery style 13 on textWave1, in Word's form	13	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	A02A93:1	BFBFBF@0.25:1 FFFFFF@0.75:1	144.0,252.0,294.6,305.2	2	0
+wg12-styles-wave	wg12-14	gallery style 14 on textWave1, in Word's form	14	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	FFFFFF:1	BFBFBF@0.25:1 E97131@0.52:1	144.0,252.0,294.6,304.6	2	0
+wg12-styles-wave	wg12-15	gallery style 15 on textWave1, in Word's form	15	7	WordArt	Aptos-Bold 36 #000000#00:7	{0: 0}	1	1	E8E8E8:1	BFBFBF@0.25:1	144.0,252.0,298.1,303.3	2	0
+wg20-styles-body	wg20-01	gallery style 1 on body text	1	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:90 Aptos 36.024 #000000#ff:16	{0: 0}	0	0				2	0
+wg20-styles-body	wg20-02	gallery style 2 on body text	2	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #156082#ff:16 Aptos 13.92 #156082#ff:15	{0: 0}	0	0				2	0
+wg20-styles-body	wg20-03	gallery style 3 on body text	3	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36.024 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	F6C5AC:2	E97131@0.88:2		0	0
+wg20-styles-body	wg20-04	gallery style 4 on body text	4	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	FFFFFF:2	A02A93@0.80:2		2	0
+wg20-styles-body	wg20-05	gallery style 5 on body text	5	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wg20-styles-body	wg20-06	gallery style 6 on body text	6	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36.024 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			0	0
+wg20-styles-body	wg20-07	gallery style 7 on body text	7	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos 36 #000000#00:16 Aptos 13.92 #000000#00:15	{0: 0}	2	2	pattern:2			2	0
+wg20-styles-body	wg20-08	gallery style 8 on body text	8	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	pattern:2	0F9ED5@1.00:2		0	0
+wg20-styles-body	wg20-09	gallery style 9 on body text	9	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	FEFEFD:2	156082@0.75:2		2	0
+wg20-styles-body	wg20-10	gallery style 10 on body text	10	75	Plain words before the effect, , and plain words after it in	Aptos 13.92 #000000#ff:75	{0: 0}	0	0				2	0
+wg20-styles-body	wg20-11	gallery style 11 on body text	11	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36.024 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	000000:2	FFFFFF@0.75:2		2	0
+wg20-styles-body	wg20-12	gallery style 12 on body text	12	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36.024 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	262626:2	FFFFFF@0.53:2		2	0
+wg20-styles-body	wg20-13	gallery style 13 on body text	13	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36.024 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	A02A93:2	FFFFFF@0.75:2		2	0
+wg20-styles-body	wg20-14	gallery style 14 on body text	14	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36 #000000#00:16 Aptos-Bold 13.92 #000000#00:15	{0: 0}	2	2	FFFFFF:2	E97131@0.52:2		2	0
+wg20-styles-body	wg20-15	gallery style 15 on body text	15	106	Body text effectPlain words before the effect, this run has 	Aptos 13.92 #000000#ff:75 Aptos-Bold 36.024 #e8e8e8#ff:16 Aptos-Bold 13.92 #e8e8e8#ff:15	{0: 0}	0	0				2	0
+wv10-dml-mode12	wv10-01	textArchDown in Word 2007 mode	1	7	WordArt	Aptos 26.6401 #000000#00:2 Aptos 26.664 #000000#00:2 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1 Aptos 26.6639 #000000#00:1	{0: 0}	7	5	000000:7			1	0
+wv10-dml-mode12	wv10-02	textArchDownPour in Word 2007 mode	2	0			{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-03	textArchUp in Word 2007 mode	3	7	WordArt	Aptos 26.6401 #000000#00:2 Aptos 26.6639 #000000#00:2 Aptos 26.664 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7			1	0
+wv10-dml-mode12	wv10-04	textArchUpPour in Word 2007 mode	4	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-05	textButton in Word 2007 mode	5	7	WordArt	Aptos 26.6401 #000000#00:2 Aptos 26.6639 #000000#00:2 Aptos 26.664 #000000#00:1 Aptos 26.6399 #000000#00:1 Aptos 26.64 #000000#00:1	{0: 0}	7	5	000000:7			1	0
+wv10-dml-mode12	wv10-06	textButtonPour in Word 2007 mode	6	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-07	textCanDown in Word 2007 mode	7	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-08	textCanUp in Word 2007 mode	8	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-09	textCascadeDown in Word 2007 mode	9	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-10	textCascadeUp in Word 2007 mode	10	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-11	textChevron in Word 2007 mode	11	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-12	textChevronInverted in Word 2007 mode	12	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-13	textCircle in Word 2007 mode	13	7	WordArt	Aptos 26.664 #000000#00:2 Aptos 26.64 #000000#00:2 Aptos 26.6641 #000000#00:1 Aptos 26.6639 #000000#00:1 Aptos 26.6399 #000000#00:1	{0: 0}	7	5	000000:7			1	0
+wv10-dml-mode12	wv10-14	textCirclePour in Word 2007 mode	14	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-15	textCurveDown in Word 2007 mode	15	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-16	textCurveUp in Word 2007 mode	16	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-17	textDeflate in Word 2007 mode	17	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-18	textDeflateBottom in Word 2007 mode	18	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-19	textDeflateInflate in Word 2007 mode	19	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-20	textDeflateInflateDeflate in Word 2007 mode	20	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-21	textDeflateTop in Word 2007 mode	21	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-22	textDoubleWave1 in Word 2007 mode	22	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-23	textFadeDown in Word 2007 mode	23	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-24	textFadeLeft in Word 2007 mode	24	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-25	textFadeRight in Word 2007 mode	25	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-26	textFadeUp in Word 2007 mode	26	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-27	textInflate in Word 2007 mode	27	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-28	textInflateBottom in Word 2007 mode	28	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-29	textInflateTop in Word 2007 mode	29	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-30	textPlain in Word 2007 mode	30	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-31	textRingInside in Word 2007 mode	31	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-32	textRingOutside in Word 2007 mode	32	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-33	textSlantDown in Word 2007 mode	33	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-34	textSlantUp in Word 2007 mode	34	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-35	textStop in Word 2007 mode	35	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-36	textTriangle in Word 2007 mode	36	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-37	textTriangleInverted in Word 2007 mode	37	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-38	textWave1 in Word 2007 mode	38	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-39	textWave2 in Word 2007 mode	39	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv10-dml-mode12	wv10-40	textWave4 in Word 2007 mode	40	7	WordArt	Aptos 36 #000000#00:7	{0: 0}	1	1	000000:1			1	0
+wv20-vml-spt-mode12	wv20-01	o:spt 136, shapetype with only its o:spt	1	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-02	o:spt 137, shapetype with only its o:spt	2	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-03	o:spt 138, shapetype with only its o:spt	3	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-04	o:spt 139, shapetype with only its o:spt	4	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-05	o:spt 140, shapetype with only its o:spt	5	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-06	o:spt 141, shapetype with only its o:spt	6	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-07	o:spt 142, shapetype with only its o:spt	7	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-08	o:spt 143, shapetype with only its o:spt	8	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-09	o:spt 144, shapetype with only its o:spt	9	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-10	o:spt 145, shapetype with only its o:spt	10	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-11	o:spt 146, shapetype with only its o:spt	11	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-12	o:spt 147, shapetype with only its o:spt	12	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-13	o:spt 148, shapetype with only its o:spt	13	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-14	o:spt 149, shapetype with only its o:spt	14	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-15	o:spt 150, shapetype with only its o:spt	15	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-16	o:spt 151, shapetype with only its o:spt	16	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-17	o:spt 152, shapetype with only its o:spt	17	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-18	o:spt 153, shapetype with only its o:spt	18	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-19	o:spt 154, shapetype with only its o:spt	19	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-20	o:spt 155, shapetype with only its o:spt	20	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-21	o:spt 156, shapetype with only its o:spt	21	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-22	o:spt 157, shapetype with only its o:spt	22	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-23	o:spt 158, shapetype with only its o:spt	23	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-24	o:spt 159, shapetype with only its o:spt	24	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-25	o:spt 160, shapetype with only its o:spt	25	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-26	o:spt 161, shapetype with only its o:spt	26	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-27	o:spt 162, shapetype with only its o:spt	27	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-28	o:spt 163, shapetype with only its o:spt	28	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-29	o:spt 164, shapetype with only its o:spt	29	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-30	o:spt 165, shapetype with only its o:spt	30	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-31	o:spt 166, shapetype with only its o:spt	31	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-32	o:spt 167, shapetype with only its o:spt	32	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-33	o:spt 168, shapetype with only its o:spt	33	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-34	o:spt 169, shapetype with only its o:spt	34	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-35	o:spt 170, shapetype with only its o:spt	35	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-36	o:spt 171, shapetype with only its o:spt	36	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-37	o:spt 172, shapetype with only its o:spt	37	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-38	o:spt 173, shapetype with only its o:spt	38	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-39	o:spt 174, shapetype with only its o:spt	39	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-40	o:spt 175, shapetype with only its o:spt	40	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-41	o:spt 136, the shapetype whole, as Word writes a watermark	41	0			{0: 0}	0	0				0	0
+wv20-vml-spt-mode12	wv20-42	o:spt 136, the shapetype whole but its top line slanted	42	0			{0: 0}	7	7	000000:7			0	0
+wv30-watermarks	wv30-01	diagonal, silver at 50%, as Word writes the DRAFT watermark	1	393	oy ex over wc e waermar s rawn, n e eaer, en . oy ex over wc	Aptos 11.04 #000000#ff:393	{0: 0}	9	9	C0C0C0:9			0	0
+wv30-watermarks	wv30-02	horizontal, silver at 50%	2	393	oy ex over wc e waermar s rawn, n e eaer, en . oy ex over wc	Aptos 11.04 #000000#ff:393	{0: 0}	9	9	C0C0C0:9			0	0
+wv30-watermarks	wv30-03	diagonal, red, opaque, two words	3	393	oy ex over wc e waermar s rawn, n e eaer, en . oy ex over wc	Aptos 11.04 #000000#ff:393	{0: 0}	9	9	C00000:9			0	0

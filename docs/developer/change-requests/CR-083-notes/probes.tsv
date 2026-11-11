@@ -1,0 +1,530 @@
+set	file	page	probe	kind	mode	note	summary
+cr083-phase0	wa00-hand-jason	-	wa00	as is	15	Jason's, made by hand in Word	seven WordArt "Hello World - ...": plain, shadow, reflection, bevel, 3D rotation, follow path, glow
+cr083-phase0-styles	wg00-hand-styles	-	wg00	as is	15	Jason's, made by hand in Word	build_hand_start.py's 36 pages: the 15 WordArt styles, Transforms Arch, Square, Inflate, Wave: Down, Bevel Round (circle), 3-D Rotation (not applied), the 15 Text Effects on body text
+cr083-phase0	wa10-warps-default-1	1	wa10-01	wordart	15	textArchDown, default, 1 line, in Word's form	textArchDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	2	wa10-02	wordart	15	textArchDownPour, default, 1 line, in Word's form	textArchDownPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	3	wa10-03	wordart	15	textArchUp, default, 1 line, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	4	wa10-04	wordart	15	textArchUpPour, default, 1 line, in Word's form	textArchUpPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	5	wa10-05	wordart	15	textButton, default, 1 line, in Word's form	textButton adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	6	wa10-06	wordart	15	textButtonPour, default, 1 line, in Word's form	textButtonPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	7	wa10-07	wordart	15	textCanDown, default, 1 line, in Word's form	textCanDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	8	wa10-08	wordart	15	textCanUp, default, 1 line, in Word's form	textCanUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	9	wa10-09	wordart	15	textCascadeDown, default, 1 line, in Word's form	textCascadeDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	10	wa10-10	wordart	15	textCascadeUp, default, 1 line, in Word's form	textCascadeUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	11	wa10-11	wordart	15	textChevron, default, 1 line, in Word's form	textChevron adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	12	wa10-12	wordart	15	textChevronInverted, default, 1 line, in Word's form	textChevronInverted adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	13	wa10-13	wordart	15	textCircle, default, 1 line, in Word's form	textCircle adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	14	wa10-14	wordart	15	textCirclePour, default, 1 line, in Word's form	textCirclePour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	15	wa10-15	wordart	15	textCurveDown, default, 1 line, in Word's form	textCurveDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	16	wa10-16	wordart	15	textCurveUp, default, 1 line, in Word's form	textCurveUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	17	wa10-17	wordart	15	textDeflate, default, 1 line, in Word's form	textDeflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	18	wa10-18	wordart	15	textDeflateBottom, default, 1 line, in Word's form	textDeflateBottom adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	19	wa10-19	wordart	15	textDeflateInflate, default, 1 line, in Word's form	textDeflateInflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	20	wa10-20	wordart	15	textDeflateInflateDeflate, default, 1 line, in Word's form	textDeflateInflateDeflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	21	wa10-21	wordart	15	textDeflateTop, default, 1 line, in Word's form	textDeflateTop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	22	wa10-22	wordart	15	textDoubleWave1, default, 1 line, in Word's form	textDoubleWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	23	wa10-23	wordart	15	textFadeDown, default, 1 line, in Word's form	textFadeDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	24	wa10-24	wordart	15	textFadeLeft, default, 1 line, in Word's form	textFadeLeft adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	25	wa10-25	wordart	15	textFadeRight, default, 1 line, in Word's form	textFadeRight adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	26	wa10-26	wordart	15	textFadeUp, default, 1 line, in Word's form	textFadeUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	27	wa10-27	wordart	15	textInflate, default, 1 line, in Word's form	textInflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	28	wa10-28	wordart	15	textInflateBottom, default, 1 line, in Word's form	textInflateBottom adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	29	wa10-29	wordart	15	textInflateTop, default, 1 line, in Word's form	textInflateTop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	30	wa10-30	wordart	15	textPlain, default, 1 line, in Word's form	textPlain adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	31	wa10-31	wordart	15	textRingInside, default, 1 line, in Word's form	textRingInside adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	32	wa10-32	wordart	15	textRingOutside, default, 1 line, in Word's form	textRingOutside adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	33	wa10-33	wordart	15	textSlantDown, default, 1 line, in Word's form	textSlantDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	34	wa10-34	wordart	15	textSlantUp, default, 1 line, in Word's form	textSlantUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	35	wa10-35	wordart	15	textStop, default, 1 line, in Word's form	textStop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	36	wa10-36	wordart	15	textTriangle, default, 1 line, in Word's form	textTriangle adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	37	wa10-37	wordart	15	textTriangleInverted, default, 1 line, in Word's form	textTriangleInverted adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	38	wa10-38	wordart	15	textWave1, default, 1 line, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	39	wa10-39	wordart	15	textWave2, default, 1 line, in Word's form	textWave2 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa10-warps-default-1	40	wa10-40	wordart	15	textWave4, default, 1 line, in Word's form	textWave4 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa11-warps-default-2	1	wa11-01	wordart	15	textArchDown, default, 2 lines, in Word's form	textArchDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	2	wa11-02	wordart	15	textArchDownPour, default, 2 lines, in Word's form	textArchDownPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	3	wa11-03	wordart	15	textArchUp, default, 2 lines, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	4	wa11-04	wordart	15	textArchUpPour, default, 2 lines, in Word's form	textArchUpPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	5	wa11-05	wordart	15	textButton, default, 2 lines, in Word's form	textButton adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	6	wa11-06	wordart	15	textButtonPour, default, 2 lines, in Word's form	textButtonPour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	7	wa11-07	wordart	15	textCanDown, default, 2 lines, in Word's form	textCanDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	8	wa11-08	wordart	15	textCanUp, default, 2 lines, in Word's form	textCanUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	9	wa11-09	wordart	15	textCascadeDown, default, 2 lines, in Word's form	textCascadeDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	10	wa11-10	wordart	15	textCascadeUp, default, 2 lines, in Word's form	textCascadeUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	11	wa11-11	wordart	15	textChevron, default, 2 lines, in Word's form	textChevron adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	12	wa11-12	wordart	15	textChevronInverted, default, 2 lines, in Word's form	textChevronInverted adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	13	wa11-13	wordart	15	textCircle, default, 2 lines, in Word's form	textCircle adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	14	wa11-14	wordart	15	textCirclePour, default, 2 lines, in Word's form	textCirclePour adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	15	wa11-15	wordart	15	textCurveDown, default, 2 lines, in Word's form	textCurveDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	16	wa11-16	wordart	15	textCurveUp, default, 2 lines, in Word's form	textCurveUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	17	wa11-17	wordart	15	textDeflate, default, 2 lines, in Word's form	textDeflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	18	wa11-18	wordart	15	textDeflateBottom, default, 2 lines, in Word's form	textDeflateBottom adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	19	wa11-19	wordart	15	textDeflateInflate, default, 2 lines, in Word's form	textDeflateInflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	20	wa11-20	wordart	15	textDeflateInflateDeflate, default, 2 lines, in Word's form	textDeflateInflateDeflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	21	wa11-21	wordart	15	textDeflateTop, default, 2 lines, in Word's form	textDeflateTop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	22	wa11-22	wordart	15	textDoubleWave1, default, 2 lines, in Word's form	textDoubleWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	23	wa11-23	wordart	15	textFadeDown, default, 2 lines, in Word's form	textFadeDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	24	wa11-24	wordart	15	textFadeLeft, default, 2 lines, in Word's form	textFadeLeft adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	25	wa11-25	wordart	15	textFadeRight, default, 2 lines, in Word's form	textFadeRight adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	26	wa11-26	wordart	15	textFadeUp, default, 2 lines, in Word's form	textFadeUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	27	wa11-27	wordart	15	textInflate, default, 2 lines, in Word's form	textInflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	28	wa11-28	wordart	15	textInflateBottom, default, 2 lines, in Word's form	textInflateBottom adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	29	wa11-29	wordart	15	textInflateTop, default, 2 lines, in Word's form	textInflateTop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	30	wa11-30	wordart	15	textPlain, default, 2 lines, in Word's form	textPlain adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	31	wa11-31	wordart	15	textRingInside, default, 2 lines, in Word's form	textRingInside adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	32	wa11-32	wordart	15	textRingOutside, default, 2 lines, in Word's form	textRingOutside adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	33	wa11-33	wordart	15	textSlantDown, default, 2 lines, in Word's form	textSlantDown adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	34	wa11-34	wordart	15	textSlantUp, default, 2 lines, in Word's form	textSlantUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	35	wa11-35	wordart	15	textStop, default, 2 lines, in Word's form	textStop adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	36	wa11-36	wordart	15	textTriangle, default, 2 lines, in Word's form	textTriangle adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	37	wa11-37	wordart	15	textTriangleInverted, default, 2 lines, in Word's form	textTriangleInverted adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	38	wa11-38	wordart	15	textWave1, default, 2 lines, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	39	wa11-39	wordart	15	textWave2, default, 2 lines, in Word's form	textWave2 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa11-warps-default-2	40	wa11-40	wordart	15	textWave4, default, 2 lines, in Word's form	textWave4 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt / Two lines"
+cr083-phase0	wa15-warps-fixed-1	1	wa15-01	wordart	15	textArchDown, default, 1 line	textArchDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	2	wa15-02	wordart	15	textArchDownPour, default, 1 line	textArchDownPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	3	wa15-03	wordart	15	textArchUp, default, 1 line	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	4	wa15-04	wordart	15	textArchUpPour, default, 1 line	textArchUpPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	5	wa15-05	wordart	15	textButton, default, 1 line	textButton adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	6	wa15-06	wordart	15	textButtonPour, default, 1 line	textButtonPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	7	wa15-07	wordart	15	textCanDown, default, 1 line	textCanDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	8	wa15-08	wordart	15	textCanUp, default, 1 line	textCanUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	9	wa15-09	wordart	15	textCascadeDown, default, 1 line	textCascadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	10	wa15-10	wordart	15	textCascadeUp, default, 1 line	textCascadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	11	wa15-11	wordart	15	textChevron, default, 1 line	textChevron adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	12	wa15-12	wordart	15	textChevronInverted, default, 1 line	textChevronInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	13	wa15-13	wordart	15	textCircle, default, 1 line	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	14	wa15-14	wordart	15	textCirclePour, default, 1 line	textCirclePour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	15	wa15-15	wordart	15	textCurveDown, default, 1 line	textCurveDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	16	wa15-16	wordart	15	textCurveUp, default, 1 line	textCurveUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	17	wa15-17	wordart	15	textDeflate, default, 1 line	textDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	18	wa15-18	wordart	15	textDeflateBottom, default, 1 line	textDeflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	19	wa15-19	wordart	15	textDeflateInflate, default, 1 line	textDeflateInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	20	wa15-20	wordart	15	textDeflateInflateDeflate, default, 1 line	textDeflateInflateDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	21	wa15-21	wordart	15	textDeflateTop, default, 1 line	textDeflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	22	wa15-22	wordart	15	textDoubleWave1, default, 1 line	textDoubleWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	23	wa15-23	wordart	15	textFadeDown, default, 1 line	textFadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	24	wa15-24	wordart	15	textFadeLeft, default, 1 line	textFadeLeft adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	25	wa15-25	wordart	15	textFadeRight, default, 1 line	textFadeRight adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	26	wa15-26	wordart	15	textFadeUp, default, 1 line	textFadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	27	wa15-27	wordart	15	textInflate, default, 1 line	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	28	wa15-28	wordart	15	textInflateBottom, default, 1 line	textInflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	29	wa15-29	wordart	15	textInflateTop, default, 1 line	textInflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	30	wa15-30	wordart	15	textPlain, default, 1 line	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	31	wa15-31	wordart	15	textRingInside, default, 1 line	textRingInside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	32	wa15-32	wordart	15	textRingOutside, default, 1 line	textRingOutside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	33	wa15-33	wordart	15	textSlantDown, default, 1 line	textSlantDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	34	wa15-34	wordart	15	textSlantUp, default, 1 line	textSlantUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	35	wa15-35	wordart	15	textStop, default, 1 line	textStop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	36	wa15-36	wordart	15	textTriangle, default, 1 line	textTriangle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	37	wa15-37	wordart	15	textTriangleInverted, default, 1 line	textTriangleInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	38	wa15-38	wordart	15	textWave1, default, 1 line	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	39	wa15-39	wordart	15	textWave2, default, 1 line	textWave2 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa15-warps-fixed-1	40	wa15-40	wordart	15	textWave4, default, 1 line	textWave4 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa16-warps-fixed-2	1	wa16-01	wordart	15	textArchDown, default, 2 lines	textArchDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	2	wa16-02	wordart	15	textArchDownPour, default, 2 lines	textArchDownPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	3	wa16-03	wordart	15	textArchUp, default, 2 lines	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	4	wa16-04	wordart	15	textArchUpPour, default, 2 lines	textArchUpPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	5	wa16-05	wordart	15	textButton, default, 2 lines	textButton adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	6	wa16-06	wordart	15	textButtonPour, default, 2 lines	textButtonPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	7	wa16-07	wordart	15	textCanDown, default, 2 lines	textCanDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	8	wa16-08	wordart	15	textCanUp, default, 2 lines	textCanUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	9	wa16-09	wordart	15	textCascadeDown, default, 2 lines	textCascadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	10	wa16-10	wordart	15	textCascadeUp, default, 2 lines	textCascadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	11	wa16-11	wordart	15	textChevron, default, 2 lines	textChevron adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	12	wa16-12	wordart	15	textChevronInverted, default, 2 lines	textChevronInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	13	wa16-13	wordart	15	textCircle, default, 2 lines	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	14	wa16-14	wordart	15	textCirclePour, default, 2 lines	textCirclePour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	15	wa16-15	wordart	15	textCurveDown, default, 2 lines	textCurveDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	16	wa16-16	wordart	15	textCurveUp, default, 2 lines	textCurveUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	17	wa16-17	wordart	15	textDeflate, default, 2 lines	textDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	18	wa16-18	wordart	15	textDeflateBottom, default, 2 lines	textDeflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	19	wa16-19	wordart	15	textDeflateInflate, default, 2 lines	textDeflateInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	20	wa16-20	wordart	15	textDeflateInflateDeflate, default, 2 lines	textDeflateInflateDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	21	wa16-21	wordart	15	textDeflateTop, default, 2 lines	textDeflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	22	wa16-22	wordart	15	textDoubleWave1, default, 2 lines	textDoubleWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	23	wa16-23	wordart	15	textFadeDown, default, 2 lines	textFadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	24	wa16-24	wordart	15	textFadeLeft, default, 2 lines	textFadeLeft adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	25	wa16-25	wordart	15	textFadeRight, default, 2 lines	textFadeRight adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	26	wa16-26	wordart	15	textFadeUp, default, 2 lines	textFadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	27	wa16-27	wordart	15	textInflate, default, 2 lines	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	28	wa16-28	wordart	15	textInflateBottom, default, 2 lines	textInflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	29	wa16-29	wordart	15	textInflateTop, default, 2 lines	textInflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	30	wa16-30	wordart	15	textPlain, default, 2 lines	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	31	wa16-31	wordart	15	textRingInside, default, 2 lines	textRingInside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	32	wa16-32	wordart	15	textRingOutside, default, 2 lines	textRingOutside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	33	wa16-33	wordart	15	textSlantDown, default, 2 lines	textSlantDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	34	wa16-34	wordart	15	textSlantUp, default, 2 lines	textSlantUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	35	wa16-35	wordart	15	textStop, default, 2 lines	textStop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	36	wa16-36	wordart	15	textTriangle, default, 2 lines	textTriangle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	37	wa16-37	wordart	15	textTriangleInverted, default, 2 lines	textTriangleInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	38	wa16-38	wordart	15	textWave1, default, 2 lines	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	39	wa16-39	wordart	15	textWave2, default, 2 lines	textWave2 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa16-warps-fixed-2	40	wa16-40	wordart	15	textWave4, default, 2 lines	textWave4 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa12-warps-adjusted-1	1	wa12-01	wordart	15	textArchDown, adjusted, 1 line	textArchDown adj adj=3600000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	2	wa12-02	wordart	15	textArchDownPour, adjusted, 1 line	textArchDownPour adj adj1=0 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	3	wa12-03	wordart	15	textArchUp, adjusted, 1 line	textArchUp adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	4	wa12-04	wordart	15	textArchUpPour, adjusted, 1 line	textArchUpPour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	5	wa12-05	wordart	15	textButton, adjusted, 1 line	textButton adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	6	wa12-06	wordart	15	textButtonPour, adjusted, 1 line	textButtonPour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	7	wa12-07	wordart	15	textCanDown, adjusted, 1 line	textCanDown adj adj=24999; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	8	wa12-08	wordart	15	textCanUp, adjusted, 1 line	textCanUp adj adj=91666; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	9	wa12-09	wordart	15	textCascadeDown, adjusted, 1 line	textCascadeDown adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	10	wa12-10	wordart	15	textCascadeUp, adjusted, 1 line	textCascadeUp adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	11	wa12-11	wordart	15	textChevron, adjusted, 1 line	textChevron adj adj=37500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	12	wa12-12	wordart	15	textChevronInverted, adjusted, 1 line	textChevronInverted adj adj=87500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	13	wa12-13	wordart	15	textCircle, adjusted, 1 line	textCircle adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	14	wa12-14	wordart	15	textCirclePour, adjusted, 1 line	textCirclePour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	15	wa12-15	wordart	15	textCurveDown, adjusted, 1 line	textCurveDown adj adj=14084; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	16	wa12-16	wordart	15	textCurveUp, adjusted, 1 line	textCurveUp adj adj=14084; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	17	wa12-17	wordart	15	textDeflate, adjusted, 1 line	textDeflate adj adj=28125; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	18	wa12-18	wordart	15	textDeflateBottom, adjusted, 1 line	textDeflateBottom adj adj=76562; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	19	wa12-19	wordart	15	textDeflateInflate, adjusted, 1 line	textDeflateInflate adj adj=72500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	20	wa12-20	wordart	15	textDeflateInflateDeflate, adjusted, 1 line	textDeflateInflateDeflate adj adj=36000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	21	wa12-21	wordart	15	textDeflateTop, adjusted, 1 line	textDeflateTop adj adj=70312; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	22	wa12-22	wordart	15	textDoubleWave1, adjusted, 1 line	textDoubleWave1 adj adj1=9375 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	23	wa12-23	wordart	15	textFadeDown, adjusted, 1 line	textFadeDown adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	24	wa12-24	wordart	15	textFadeLeft, adjusted, 1 line	textFadeLeft adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	25	wa12-25	wordart	15	textFadeRight, adjusted, 1 line	textFadeRight adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	26	wa12-26	wordart	15	textFadeUp, adjusted, 1 line	textFadeUp adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	27	wa12-27	wordart	15	textInflate, adjusted, 1 line	textInflate adj adj=15000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	28	wa12-28	wordart	15	textInflateBottom, adjusted, 1 line	textInflateBottom adj adj=90000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	29	wa12-29	wordart	15	textInflateTop, adjusted, 1 line	textInflateTop adj adj=12500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	30	wa12-30	wordart	15	textPlain, adjusted, 1 line	textPlain adj adj=60000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	31	wa12-31	wordart	15	textRingInside, adjusted, 1 line	textRingInside adj adj=86750; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	32	wa12-32	wordart	15	textRingOutside, adjusted, 1 line	textRingOutside adj adj=86750; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	33	wa12-33	wordart	15	textSlantDown, adjusted, 1 line	textSlantDown adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	34	wa12-34	wordart	15	textSlantUp, adjusted, 1 line	textSlantUp adj adj=17857; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	35	wa12-35	wordart	15	textStop, adjusted, 1 line	textStop adj adj=41071; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	36	wa12-36	wordart	15	textTriangle, adjusted, 1 line	textTriangle adj adj=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	37	wa12-37	wordart	15	textTriangleInverted, adjusted, 1 line	textTriangleInverted adj adj=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	38	wa12-38	wordart	15	textWave1, adjusted, 1 line	textWave1 adj adj1=15000 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	39	wa12-39	wordart	15	textWave2, adjusted, 1 line	textWave2 adj adj1=15000 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa12-warps-adjusted-1	40	wa12-40	wordart	15	textWave4, adjusted, 1 line	textWave4 adj adj1=9375 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa13-warps-adjusted-2	1	wa13-01	wordart	15	textArchDown, adjusted, 2 lines	textArchDown adj adj=3600000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	2	wa13-02	wordart	15	textArchDownPour, adjusted, 2 lines	textArchDownPour adj adj1=0 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	3	wa13-03	wordart	15	textArchUp, adjusted, 2 lines	textArchUp adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	4	wa13-04	wordart	15	textArchUpPour, adjusted, 2 lines	textArchUpPour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	5	wa13-05	wordart	15	textButton, adjusted, 2 lines	textButton adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	6	wa13-06	wordart	15	textButtonPour, adjusted, 2 lines	textButtonPour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	7	wa13-07	wordart	15	textCanDown, adjusted, 2 lines	textCanDown adj adj=24999; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	8	wa13-08	wordart	15	textCanUp, adjusted, 2 lines	textCanUp adj adj=91666; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	9	wa13-09	wordart	15	textCascadeDown, adjusted, 2 lines	textCascadeDown adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	10	wa13-10	wordart	15	textCascadeUp, adjusted, 2 lines	textCascadeUp adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	11	wa13-11	wordart	15	textChevron, adjusted, 2 lines	textChevron adj adj=37500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	12	wa13-12	wordart	15	textChevronInverted, adjusted, 2 lines	textChevronInverted adj adj=87500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	13	wa13-13	wordart	15	textCircle, adjusted, 2 lines	textCircle adj adj=14400000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	14	wa13-14	wordart	15	textCirclePour, adjusted, 2 lines	textCirclePour adj adj1=10800000 adj2=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	15	wa13-15	wordart	15	textCurveDown, adjusted, 2 lines	textCurveDown adj adj=14084; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	16	wa13-16	wordart	15	textCurveUp, adjusted, 2 lines	textCurveUp adj adj=14084; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	17	wa13-17	wordart	15	textDeflate, adjusted, 2 lines	textDeflate adj adj=28125; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	18	wa13-18	wordart	15	textDeflateBottom, adjusted, 2 lines	textDeflateBottom adj adj=76562; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	19	wa13-19	wordart	15	textDeflateInflate, adjusted, 2 lines	textDeflateInflate adj adj=72500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	20	wa13-20	wordart	15	textDeflateInflateDeflate, adjusted, 2 lines	textDeflateInflateDeflate adj adj=36000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	21	wa13-21	wordart	15	textDeflateTop, adjusted, 2 lines	textDeflateTop adj adj=70312; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	22	wa13-22	wordart	15	textDoubleWave1, adjusted, 2 lines	textDoubleWave1 adj adj1=9375 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	23	wa13-23	wordart	15	textFadeDown, adjusted, 2 lines	textFadeDown adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	24	wa13-24	wordart	15	textFadeLeft, adjusted, 2 lines	textFadeLeft adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	25	wa13-25	wordart	15	textFadeRight, adjusted, 2 lines	textFadeRight adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	26	wa13-26	wordart	15	textFadeUp, adjusted, 2 lines	textFadeUp adj adj=12499; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	27	wa13-27	wordart	15	textInflate, adjusted, 2 lines	textInflate adj adj=15000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	28	wa13-28	wordart	15	textInflateBottom, adjusted, 2 lines	textInflateBottom adj adj=90000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	29	wa13-29	wordart	15	textInflateTop, adjusted, 2 lines	textInflateTop adj adj=12500; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	30	wa13-30	wordart	15	textPlain, adjusted, 2 lines	textPlain adj adj=60000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	31	wa13-31	wordart	15	textRingInside, adjusted, 2 lines	textRingInside adj adj=86750; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	32	wa13-32	wordart	15	textRingOutside, adjusted, 2 lines	textRingOutside adj adj=86750; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	33	wa13-33	wordart	15	textSlantDown, adjusted, 2 lines	textSlantDown adj adj=82142; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	34	wa13-34	wordart	15	textSlantUp, adjusted, 2 lines	textSlantUp adj adj=17857; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	35	wa13-35	wordart	15	textStop, adjusted, 2 lines	textStop adj adj=41071; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	36	wa13-36	wordart	15	textTriangle, adjusted, 2 lines	textTriangle adj adj=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	37	wa13-37	wordart	15	textTriangleInverted, adjusted, 2 lines	textTriangleInverted adj adj=75000; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	38	wa13-38	wordart	15	textWave1, adjusted, 2 lines	textWave1 adj adj1=15000 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	39	wa13-39	wordart	15	textWave2, adjusted, 2 lines	textWave2 adj adj1=15000 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa13-warps-adjusted-2	40	wa13-40	wordart	15	textWave4, adjusted, 2 lines	textWave4 adj adj1=9375 adj2=0; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa14-three-lines	1	wa14-01	wordart	15	textButton, three lines	textButton adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	2	wa14-02	wordart	15	textButtonPour, three lines	textButtonPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	3	wa14-03	wordart	15	textDeflateInflate, three lines	textDeflateInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	4	wa14-04	wordart	15	textDeflateInflateDeflate, three lines	textDeflateInflateDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	5	wa14-05	wordart	15	textPlain, three lines	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	6	wa14-06	wordart	15	textInflate, three lines	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	7	wa14-07	wordart	15	textArchUp, three lines	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa14-three-lines	8	wa14-08	wordart	15	textCircle, three lines	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines / Three"
+cr083-phase0	wa20-form	1	wa20-01	wordart	15	textArchUp, fromWordArt 1, noAutofit, wrap none	textArchUp adj default; fromWordArt 1 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	2	wa20-02	wordart	15	textArchUp, fromWordArt 1, noAutofit, wrap square	textArchUp adj default; fromWordArt 1 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	3	wa20-03	wordart	15	textArchUp, fromWordArt 1, spAutoFit, wrap none	textArchUp adj default; fromWordArt 1 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	4	wa20-04	wordart	15	textArchUp, fromWordArt 1, normAutofit, wrap square	textArchUp adj default; fromWordArt 1 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	5	wa20-05	wordart	15	textArchUp, fromWordArt 0, noAutofit, wrap none	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	6	wa20-06	wordart	15	textArchUp, fromWordArt 0, noAutofit, wrap square	textArchUp adj default; fromWordArt 0 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	7	wa20-07	wordart	15	textArchUp, fromWordArt 0, spAutoFit, wrap none	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	8	wa20-08	wordart	15	textArchUp, fromWordArt 0, normAutofit, wrap square	textArchUp adj default; fromWordArt 0 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	9	wa20-09	wordart	15	textArchUp, no insets	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 0/0/0/0 288x144pt; "WordArt"
+cr083-phase0	wa20-form	10	wa20-10	wordart	15	textInflate, fromWordArt 1, noAutofit, wrap none	textInflate adj default; fromWordArt 1 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	11	wa20-11	wordart	15	textInflate, fromWordArt 1, noAutofit, wrap square	textInflate adj default; fromWordArt 1 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	12	wa20-12	wordart	15	textInflate, fromWordArt 1, spAutoFit, wrap none	textInflate adj default; fromWordArt 1 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	13	wa20-13	wordart	15	textInflate, fromWordArt 1, normAutofit, wrap square	textInflate adj default; fromWordArt 1 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	14	wa20-14	wordart	15	textInflate, fromWordArt 0, noAutofit, wrap none	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	15	wa20-15	wordart	15	textInflate, fromWordArt 0, noAutofit, wrap square	textInflate adj default; fromWordArt 0 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	16	wa20-16	wordart	15	textInflate, fromWordArt 0, spAutoFit, wrap none	textInflate adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	17	wa20-17	wordart	15	textInflate, fromWordArt 0, normAutofit, wrap square	textInflate adj default; fromWordArt 0 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	18	wa20-18	wordart	15	textInflate, no insets	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 0/0/0/0 288x144pt; "WordArt"
+cr083-phase0	wa20-form	19	wa20-19	wordart	15	textWave1, fromWordArt 1, noAutofit, wrap none	textWave1 adj default; fromWordArt 1 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	20	wa20-20	wordart	15	textWave1, fromWordArt 1, noAutofit, wrap square	textWave1 adj default; fromWordArt 1 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	21	wa20-21	wordart	15	textWave1, fromWordArt 1, spAutoFit, wrap none	textWave1 adj default; fromWordArt 1 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	22	wa20-22	wordart	15	textWave1, fromWordArt 1, normAutofit, wrap square	textWave1 adj default; fromWordArt 1 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	23	wa20-23	wordart	15	textWave1, fromWordArt 0, noAutofit, wrap none	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	24	wa20-24	wordart	15	textWave1, fromWordArt 0, noAutofit, wrap square	textWave1 adj default; fromWordArt 0 noAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	25	wa20-25	wordart	15	textWave1, fromWordArt 0, spAutoFit, wrap none	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	26	wa20-26	wordart	15	textWave1, fromWordArt 0, normAutofit, wrap square	textWave1 adj default; fromWordArt 0 normAutofit wrap square ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	27	wa20-27	wordart	15	textWave1, no insets	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 0/0/0/0 288x144pt; "WordArt"
+cr083-phase0	wa20-form	28	wa20-28	wordart	15	textArchUp, 18 pt	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	29	wa20-29	wordart	15	textArchUp, 72 pt	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	30	wa20-30	wordart	15	textInflate, 18 pt	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	31	wa20-31	wordart	15	textInflate, 72 pt	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa20-form	32	wa20-32	wordart	15	textInflate, a square box 144 by 144 pt	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa20-form	33	wa20-33	wordart	15	textCircle, a square box 216 by 216 pt	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 216x216pt; "WordArt"
+cr083-phase0	wa20-form	34	wa20-34	wordart	15	textNoShape, as Word inserts WordArt: fromWordArt 0, spAutoFit, wrap none, 144 by 144 pt	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa20-form	35	wa20-35	wordart	15	textArchUp, as Word writes Follow Path, with no line (Word's own: no fill, no line)	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"
+cr083-phase0	wa21-text-rect	1	wa21-01	wordart	15	textPlain, the text "WordArt"	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa21-text-rect	2	wa21-02	wordart	15	textPlain, the text "wave"	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "wave"
+cr083-phase0	wa21-text-rect	3	wa21-03	wordart	15	textPlain, the text "Warpy"	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "Warpy"
+cr083-phase0	wa21-text-rect	4	wa21-04	wordart	15	textPlain, the text "  WordArt  "	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "  WordArt  "
+cr083-phase0	wa21-text-rect	5	wa21-05	wordart	15	textInflate, the text "WordArt"	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa21-text-rect	6	wa21-06	wordart	15	textInflate, the text "wave"	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "wave"
+cr083-phase0	wa21-text-rect	7	wa21-07	wordart	15	textInflate, the text "Warpy"	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "Warpy"
+cr083-phase0	wa21-text-rect	8	wa21-08	wordart	15	textInflate, the text "  WordArt  "	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "  WordArt  "
+cr083-phase0	wa21-text-rect	9	wa21-09	wordart	15	textArchUp, the text "WordArt"	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa21-text-rect	10	wa21-10	wordart	15	textArchUp, the text "wave"	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "wave"
+cr083-phase0	wa21-text-rect	11	wa21-11	wordart	15	textArchUp, the text "Warpy"	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "Warpy"
+cr083-phase0	wa21-text-rect	12	wa21-12	wordart	15	textArchUp, the text "  WordArt  "	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "  WordArt  "
+cr083-phase0	wa30-effects-flat	1	wa30-01	wordart	15	flat, solid fill red, w:color black	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	2	wa30-02	wordart	15	flat, solid fill red at alpha 40000	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	3	wa30-03	wordart	15	flat, no fill, black outline 1 pt (hollow)	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill textOutline
+cr083-phase0	wa30-effects-flat	4	wa30-04	wordart	15	flat, no fill, no outline (invisible)	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill textOutline
+cr083-phase0	wa30-effects-flat	5	wa30-05	wordart	15	flat, outline 0.25 pt red	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	6	wa30-06	wordart	15	flat, outline 3 pt red	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	7	wa30-07	wordart	15	flat, outline 3 pt red, dash	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	8	wa30-08	wordart	15	flat, outline 3 pt red, sysDot, round cap	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	9	wa30-09	wordart	15	flat, outline 3 pt red, bevel join	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	10	wa30-10	wordart	15	flat, outline 3 pt red, miter join	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	11	wa30-11	wordart	15	flat, outline 6 pt red, compound dbl	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	12	wa30-12	wordart	15	flat, outline 3 pt gradient red to blue	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa30-effects-flat	13	wa30-13	wordart	15	flat, gradient fill red to blue, linear 0 degrees	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	14	wa30-14	wordart	15	flat, gradient fill red to blue, linear 90 degrees	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	15	wa30-15	wordart	15	flat, gradient fill three stops, linear 45 degrees	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	16	wa30-16	wordart	15	flat, gradient fill red to blue, path circle	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa30-effects-flat	17	wa30-17	wordart	15	flat, shadow, outer, bottom right, alpha 60000	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa30-effects-flat	18	wa30-18	wordart	15	flat, shadow, outer, bottom right, alpha 20000	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa30-effects-flat	19	wa30-19	wordart	15	flat, shadow, no blur, 6 pt at 45 degrees	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa30-effects-flat	20	wa30-20	wordart	15	flat, shadow, perspective (sx 100%, sy 23%, kx -1200000, algn bl)	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa30-effects-flat	21	wa30-21	wordart	15	flat, glow 5 pt orange alpha 60000	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; glow
+cr083-phase0	wa30-effects-flat	22	wa30-22	wordart	15	flat, glow 18 pt blue alpha 40000	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; glow
+cr083-phase0	wa30-effects-flat	23	wa30-23	wordart	15	flat, reflection, tight	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; reflection
+cr083-phase0	wa30-effects-flat	24	wa30-24	wordart	15	flat, reflection, half, 4 pt offset	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; reflection
+cr083-phase0	wa30-effects-flat	25	wa30-25	wordart	15	flat, outline, gradient fill, shadow and glow	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; glow shadow textFill textOutline
+cr083-phase0	wa31-effects-warped	1	wa31-01	wordart	15	textArchUp, no fill, black outline 1 pt (hollow)	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill textOutline
+cr083-phase0	wa31-effects-warped	2	wa31-02	wordart	15	textArchUp, outline 3 pt red	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa31-effects-warped	3	wa31-03	wordart	15	textArchUp, gradient fill red to blue, linear 0 degrees	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa31-effects-warped	4	wa31-04	wordart	15	textArchUp, shadow, outer, bottom right, alpha 60000	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa31-effects-warped	5	wa31-05	wordart	15	textArchUp, glow 5 pt orange alpha 60000	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; glow
+cr083-phase0	wa31-effects-warped	6	wa31-06	wordart	15	textArchUp, reflection, tight	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; reflection
+cr083-phase0	wa31-effects-warped	7	wa31-07	wordart	15	textWave1, no fill, black outline 1 pt (hollow)	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill textOutline
+cr083-phase0	wa31-effects-warped	8	wa31-08	wordart	15	textWave1, outline 3 pt red	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textOutline
+cr083-phase0	wa31-effects-warped	9	wa31-09	wordart	15	textWave1, gradient fill red to blue, linear 0 degrees	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill
+cr083-phase0	wa31-effects-warped	10	wa31-10	wordart	15	textWave1, shadow, outer, bottom right, alpha 60000	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; shadow
+cr083-phase0	wa31-effects-warped	11	wa31-11	wordart	15	textWave1, glow 5 pt orange alpha 60000	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; glow
+cr083-phase0	wa31-effects-warped	12	wa31-12	wordart	15	textWave1, reflection, tight	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; reflection
+cr083-phase0	wa40-runs	1	wa40-01	wordart	15	flat, two runs: 24 pt red, 48 pt blue	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	2	wa40-02	wordart	15	textPlain, two runs: 24 pt red, 48 pt blue	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	3	wa40-03	wordart	15	textArchUp, two runs: 24 pt red, 48 pt blue	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	4	wa40-04	wordart	15	textInflate, two runs: 24 pt red, 48 pt blue	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	5	wa40-05	wordart	15	textCircle, two runs: 24 pt red, 48 pt blue	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	6	wa40-06	wordart	15	textWave1, two runs: 24 pt red, 48 pt blue	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa40-runs	7	wa40-07	wordart	15	textDeflateInflate, two lines, 24 pt red then 48 pt blue	textDeflateInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt / Two lines"
+cr083-phase0	wa40-runs	8	wa40-08	wordart	15	textPlain, two runs, Aptos then Aptos bold	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wa60-3d	1	wa60-01	wordart	15	Word's Bevel Circle: bodyPr scene3d and sp3d, w14:props3d on the run	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d; bodyPr 3-D
+cr083-phase0	wa60-3d	2	wa60-02	wordart	15	Word's Bevel Circle on a gold fill	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textFill; bodyPr 3-D
+cr083-phase0	wa60-3d	3	wa60-03	wordart	15	Word's 3-D Rotation: bodyPr scene3d isometricLeftDown alone	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; bodyPr 3-D
+cr083-phase0	wa60-3d	4	wa60-04	wordart	15	Word's 3-D Rotation and Bevel together	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d; bodyPr 3-D
+cr083-phase0	wa60-3d	5	wa60-05	wordart	15	flat, w14 bevel circle 3 pt	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; props3d scene3d textFill
+cr083-phase0	wa60-3d	6	wa60-06	wordart	15	flat, w14 bevel angle 6 pt, metal	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; props3d scene3d textFill
+cr083-phase0	wa60-3d	7	wa60-07	wordart	15	flat, w14 extrusion 4.5 pt, perspectiveRelaxed	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; props3d scene3d textFill
+cr083-phase0	wa60-3d	8	wa60-08	wordart	15	flat, w14 bevel and extrusion, isometricOffAxis1Right	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; props3d scene3d textFill
+cr083-phase0	wa60-3d	9	wa60-09	wordart	15	flat, bodyPr scene3d isometricOffAxis1Right and sp3d, no w14:props3d	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill; bodyPr 3-D
+cr083-phase0	wa60-3d	10	wa60-10	wordart	15	flat, bodyPr scene3d and flatTx	textNoShape adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill; bodyPr 3-D
+cr083-phase0	wa60-3d	11	wa60-11	wordart	15	textArchUp, w14 bevel circle 3 pt	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; props3d scene3d textFill
+cr083-phase0	wa60-3d	12	wa60-12	wordart	15	textWave1, bodyPr scene3d isometricOffAxis1Right and sp3d	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"; textFill; bodyPr 3-D
+cr083-phase0	wb50-body-effects	1	wb50-01	body	15	solid fill red, w:color black	textFill solidFill srgbClr
+cr083-phase0	wb50-body-effects	2	wb50-02	body	15	solid fill red at alpha 40000	textFill solidFill srgbClr alpha
+cr083-phase0	wb50-body-effects	3	wb50-03	body	15	no fill, black outline 1 pt (hollow)	textOutline solidFill srgbClr prstDash round textFill noFill
+cr083-phase0	wb50-body-effects	4	wb50-04	body	15	no fill, no outline (invisible)	textOutline noFill prstDash round textFill noFill
+cr083-phase0	wb50-body-effects	5	wb50-05	body	15	outline 0.25 pt red	textOutline solidFill srgbClr prstDash round
+cr083-phase0	wb50-body-effects	6	wb50-06	body	15	outline 3 pt red	textOutline solidFill srgbClr prstDash round
+cr083-phase0	wb50-body-effects	7	wb50-07	body	15	outline 3 pt red, dash	textOutline solidFill srgbClr prstDash round
+cr083-phase0	wb50-body-effects	8	wb50-08	body	15	outline 3 pt red, sysDot, round cap	textOutline solidFill srgbClr prstDash round
+cr083-phase0	wb50-body-effects	9	wb50-09	body	15	outline 3 pt red, bevel join	textOutline solidFill srgbClr prstDash bevel
+cr083-phase0	wb50-body-effects	10	wb50-10	body	15	outline 3 pt red, miter join	textOutline solidFill srgbClr prstDash miter
+cr083-phase0	wb50-body-effects	11	wb50-11	body	15	outline 6 pt red, compound dbl	textOutline solidFill srgbClr prstDash round
+cr083-phase0	wb50-body-effects	12	wb50-12	body	15	outline 3 pt gradient red to blue	textOutline gradFill gsLst gs srgbClr gs srgbClr lin prstDash round
+cr083-phase0	wb50-body-effects	13	wb50-13	body	15	gradient fill red to blue, linear 0 degrees	textFill gradFill gsLst gs srgbClr gs srgbClr lin
+cr083-phase0	wb50-body-effects	14	wb50-14	body	15	gradient fill red to blue, linear 90 degrees	textFill gradFill gsLst gs srgbClr gs srgbClr lin
+cr083-phase0	wb50-body-effects	15	wb50-15	body	15	gradient fill three stops, linear 45 degrees	textFill gradFill gsLst gs srgbClr gs srgbClr gs srgbClr lin
+cr083-phase0	wb50-body-effects	16	wb50-16	body	15	gradient fill red to blue, path circle	textFill gradFill gsLst gs srgbClr gs srgbClr path fillToRect
+cr083-phase0	wb50-body-effects	17	wb50-17	body	15	shadow, outer, bottom right, alpha 60000	shadow srgbClr alpha
+cr083-phase0	wb50-body-effects	18	wb50-18	body	15	shadow, outer, bottom right, alpha 20000	shadow srgbClr alpha
+cr083-phase0	wb50-body-effects	19	wb50-19	body	15	shadow, no blur, 6 pt at 45 degrees	shadow srgbClr alpha
+cr083-phase0	wb50-body-effects	20	wb50-20	body	15	shadow, perspective (sx 100%, sy 23%, kx -1200000, algn bl)	shadow srgbClr alpha
+cr083-phase0	wb50-body-effects	21	wb50-21	body	15	glow 5 pt orange alpha 60000	glow srgbClr alpha
+cr083-phase0	wb50-body-effects	22	wb50-22	body	15	glow 18 pt blue alpha 40000	glow srgbClr alpha
+cr083-phase0	wb50-body-effects	23	wb50-23	body	15	reflection, tight	reflection
+cr083-phase0	wb50-body-effects	24	wb50-24	body	15	reflection, half, 4 pt offset	reflection
+cr083-phase0	wb50-body-effects	25	wb50-25	body	15	outline, gradient fill, shadow and glow	glow srgbClr alpha shadow srgbClr alpha textOutline solidFill srgbClr prstDash round textFill gradFill gsLst gs srgbClr gs srgbClr lin
+cr083-phase0	wb60-body-3d	1	wb60-01	body	15	w14 bevel circle 3 pt	textFill solidFill srgbClr scene3d camera lightRig rot props3d bevelT
+cr083-phase0	wb60-body-3d	2	wb60-02	body	15	w14 bevel angle 6 pt, metal	textFill solidFill srgbClr scene3d camera lightRig rot props3d bevelT
+cr083-phase0	wb60-body-3d	3	wb60-03	body	15	w14 extrusion 4.5 pt, perspectiveRelaxed	textFill solidFill srgbClr scene3d camera lightRig rot props3d extrusionClr srgbClr
+cr083-phase0	wb60-body-3d	4	wb60-04	body	15	w14 bevel and extrusion, isometricOffAxis1Right	textFill solidFill srgbClr scene3d camera lightRig rot props3d bevelT
+cr083-phase0	wb60-body-3d	5	wb60-05	body	15	w14 props3d bevel without scene3d	textFill solidFill srgbClr props3d bevelT
+cr083-phase0	wv30-watermarks	1	wv30-01	watermark	15	diagonal, silver at 50%, as Word writes the DRAFT watermark	header watermark o:spt 136 rotation 315 "WATERMARK" 468x117pt
+cr083-phase0	wv30-watermarks	2	wv30-02	watermark	15	horizontal, silver at 50%	header watermark o:spt 136 rotation 0 "WATERMARK" 468x117pt
+cr083-phase0	wv30-watermarks	3	wv30-03	watermark	15	diagonal, red, opaque, two words	header watermark o:spt 136 rotation 315 "TOP SECRET" 468x117pt
+cr083-phase0	wv20-vml-spt-mode12	1	wv20-01	vml	12	o:spt 136, shapetype with only its o:spt	o:spt 136 type #_x0000_t136; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	2	wv20-02	vml	12	o:spt 137, shapetype with only its o:spt	o:spt 137 type #_x0000_t137; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	3	wv20-03	vml	12	o:spt 138, shapetype with only its o:spt	o:spt 138 type #_x0000_t138; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	4	wv20-04	vml	12	o:spt 139, shapetype with only its o:spt	o:spt 139 type #_x0000_t139; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	5	wv20-05	vml	12	o:spt 140, shapetype with only its o:spt	o:spt 140 type #_x0000_t140; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	6	wv20-06	vml	12	o:spt 141, shapetype with only its o:spt	o:spt 141 type #_x0000_t141; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	7	wv20-07	vml	12	o:spt 142, shapetype with only its o:spt	o:spt 142 type #_x0000_t142; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	8	wv20-08	vml	12	o:spt 143, shapetype with only its o:spt	o:spt 143 type #_x0000_t143; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	9	wv20-09	vml	12	o:spt 144, shapetype with only its o:spt	o:spt 144 type #_x0000_t144; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	10	wv20-10	vml	12	o:spt 145, shapetype with only its o:spt	o:spt 145 type #_x0000_t145; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	11	wv20-11	vml	12	o:spt 146, shapetype with only its o:spt	o:spt 146 type #_x0000_t146; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	12	wv20-12	vml	12	o:spt 147, shapetype with only its o:spt	o:spt 147 type #_x0000_t147; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	13	wv20-13	vml	12	o:spt 148, shapetype with only its o:spt	o:spt 148 type #_x0000_t148; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	14	wv20-14	vml	12	o:spt 149, shapetype with only its o:spt	o:spt 149 type #_x0000_t149; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	15	wv20-15	vml	12	o:spt 150, shapetype with only its o:spt	o:spt 150 type #_x0000_t150; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	16	wv20-16	vml	12	o:spt 151, shapetype with only its o:spt	o:spt 151 type #_x0000_t151; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	17	wv20-17	vml	12	o:spt 152, shapetype with only its o:spt	o:spt 152 type #_x0000_t152; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	18	wv20-18	vml	12	o:spt 153, shapetype with only its o:spt	o:spt 153 type #_x0000_t153; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	19	wv20-19	vml	12	o:spt 154, shapetype with only its o:spt	o:spt 154 type #_x0000_t154; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	20	wv20-20	vml	12	o:spt 155, shapetype with only its o:spt	o:spt 155 type #_x0000_t155; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	21	wv20-21	vml	12	o:spt 156, shapetype with only its o:spt	o:spt 156 type #_x0000_t156; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	22	wv20-22	vml	12	o:spt 157, shapetype with only its o:spt	o:spt 157 type #_x0000_t157; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	23	wv20-23	vml	12	o:spt 158, shapetype with only its o:spt	o:spt 158 type #_x0000_t158; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	24	wv20-24	vml	12	o:spt 159, shapetype with only its o:spt	o:spt 159 type #_x0000_t159; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	25	wv20-25	vml	12	o:spt 160, shapetype with only its o:spt	o:spt 160 type #_x0000_t160; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	26	wv20-26	vml	12	o:spt 161, shapetype with only its o:spt	o:spt 161 type #_x0000_t161; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	27	wv20-27	vml	12	o:spt 162, shapetype with only its o:spt	o:spt 162 type #_x0000_t162; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	28	wv20-28	vml	12	o:spt 163, shapetype with only its o:spt	o:spt 163 type #_x0000_t163; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	29	wv20-29	vml	12	o:spt 164, shapetype with only its o:spt	o:spt 164 type #_x0000_t164; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	30	wv20-30	vml	12	o:spt 165, shapetype with only its o:spt	o:spt 165 type #_x0000_t165; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	31	wv20-31	vml	12	o:spt 166, shapetype with only its o:spt	o:spt 166 type #_x0000_t166; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	32	wv20-32	vml	12	o:spt 167, shapetype with only its o:spt	o:spt 167 type #_x0000_t167; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	33	wv20-33	vml	12	o:spt 168, shapetype with only its o:spt	o:spt 168 type #_x0000_t168; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	34	wv20-34	vml	12	o:spt 169, shapetype with only its o:spt	o:spt 169 type #_x0000_t169; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	35	wv20-35	vml	12	o:spt 170, shapetype with only its o:spt	o:spt 170 type #_x0000_t170; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	36	wv20-36	vml	12	o:spt 171, shapetype with only its o:spt	o:spt 171 type #_x0000_t171; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	37	wv20-37	vml	12	o:spt 172, shapetype with only its o:spt	o:spt 172 type #_x0000_t172; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	38	wv20-38	vml	12	o:spt 173, shapetype with only its o:spt	o:spt 173 type #_x0000_t173; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	39	wv20-39	vml	12	o:spt 174, shapetype with only its o:spt	o:spt 174 type #_x0000_t174; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	40	wv20-40	vml	12	o:spt 175, shapetype with only its o:spt	o:spt 175 type #_x0000_t175; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	41	wv20-41	vml	12	o:spt 136, the shapetype whole, as Word writes a watermark	o:spt 136 type #_x0000_t136w; "WordArt"
+cr083-phase0	wv20-vml-spt-mode12	42	wv20-42	vml	12	o:spt 136, the shapetype whole but its top line slanted	o:spt 136 type #_x0000_t136x; "WordArt"
+cr083-phase0	wv10-dml-mode12	1	wv10-01	wordart	12	textArchDown in Word 2007 mode	textArchDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	2	wv10-02	wordart	12	textArchDownPour in Word 2007 mode	textArchDownPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	3	wv10-03	wordart	12	textArchUp in Word 2007 mode	textArchUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	4	wv10-04	wordart	12	textArchUpPour in Word 2007 mode	textArchUpPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	5	wv10-05	wordart	12	textButton in Word 2007 mode	textButton adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	6	wv10-06	wordart	12	textButtonPour in Word 2007 mode	textButtonPour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	7	wv10-07	wordart	12	textCanDown in Word 2007 mode	textCanDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	8	wv10-08	wordart	12	textCanUp in Word 2007 mode	textCanUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	9	wv10-09	wordart	12	textCascadeDown in Word 2007 mode	textCascadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	10	wv10-10	wordart	12	textCascadeUp in Word 2007 mode	textCascadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	11	wv10-11	wordart	12	textChevron in Word 2007 mode	textChevron adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	12	wv10-12	wordart	12	textChevronInverted in Word 2007 mode	textChevronInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	13	wv10-13	wordart	12	textCircle in Word 2007 mode	textCircle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	14	wv10-14	wordart	12	textCirclePour in Word 2007 mode	textCirclePour adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	15	wv10-15	wordart	12	textCurveDown in Word 2007 mode	textCurveDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	16	wv10-16	wordart	12	textCurveUp in Word 2007 mode	textCurveUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	17	wv10-17	wordart	12	textDeflate in Word 2007 mode	textDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	18	wv10-18	wordart	12	textDeflateBottom in Word 2007 mode	textDeflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	19	wv10-19	wordart	12	textDeflateInflate in Word 2007 mode	textDeflateInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	20	wv10-20	wordart	12	textDeflateInflateDeflate in Word 2007 mode	textDeflateInflateDeflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	21	wv10-21	wordart	12	textDeflateTop in Word 2007 mode	textDeflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	22	wv10-22	wordart	12	textDoubleWave1 in Word 2007 mode	textDoubleWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	23	wv10-23	wordart	12	textFadeDown in Word 2007 mode	textFadeDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	24	wv10-24	wordart	12	textFadeLeft in Word 2007 mode	textFadeLeft adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	25	wv10-25	wordart	12	textFadeRight in Word 2007 mode	textFadeRight adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	26	wv10-26	wordart	12	textFadeUp in Word 2007 mode	textFadeUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	27	wv10-27	wordart	12	textInflate in Word 2007 mode	textInflate adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	28	wv10-28	wordart	12	textInflateBottom in Word 2007 mode	textInflateBottom adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	29	wv10-29	wordart	12	textInflateTop in Word 2007 mode	textInflateTop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	30	wv10-30	wordart	12	textPlain in Word 2007 mode	textPlain adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	31	wv10-31	wordart	12	textRingInside in Word 2007 mode	textRingInside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	32	wv10-32	wordart	12	textRingOutside in Word 2007 mode	textRingOutside adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	33	wv10-33	wordart	12	textSlantDown in Word 2007 mode	textSlantDown adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	34	wv10-34	wordart	12	textSlantUp in Word 2007 mode	textSlantUp adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	35	wv10-35	wordart	12	textStop in Word 2007 mode	textStop adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	36	wv10-36	wordart	12	textTriangle in Word 2007 mode	textTriangle adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	37	wv10-37	wordart	12	textTriangleInverted in Word 2007 mode	textTriangleInverted adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	38	wv10-38	wordart	12	textWave1 in Word 2007 mode	textWave1 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	39	wv10-39	wordart	12	textWave2 in Word 2007 mode	textWave2 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0	wv10-dml-mode12	40	wv10-40	wordart	12	textWave4 in Word 2007 mode	textWave4 adj default; fromWordArt 0 noAutofit wrap none ins 91440/45720/91440/45720 288x144pt; "WordArt"
+cr083-phase0-styles	wg10-styles-flat	1	wg10-01	wordart	15	gallery style 1 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg10-styles-flat	2	wg10-02	wordart	15	gallery style 2 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg10-styles-flat	3	wg10-03	wordart	15	gallery style 3 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textOutline
+cr083-phase0-styles	wg10-styles-flat	4	wg10-04	wordart	15	gallery style 4 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	5	wg10-05	wordart	15	gallery style 5 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg10-styles-flat	6	wg10-06	wordart	15	gallery style 6 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	7	wg10-07	wordart	15	gallery style 7 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; reflection textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	8	wg10-08	wordart	15	gallery style 8 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	9	wg10-09	wordart	15	gallery style 9 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; glow textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	10	wg10-10	wordart	15	gallery style 10 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg10-styles-flat	11	wg10-11	wordart	15	gallery style 11 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg10-styles-flat	12	wg10-12	wordart	15	gallery style 12 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg10-styles-flat	13	wg10-13	wordart	15	gallery style 13 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg10-styles-flat	14	wg10-14	wordart	15	gallery style 14 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg10-styles-flat	15	wg10-15	wordart	15	gallery style 15 on textNoShape, in Word's form	textNoShape adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	1	wg11-01	wordart	15	gallery style 1 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	2	wg11-02	wordart	15	gallery style 2 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	3	wg11-03	wordart	15	gallery style 3 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textOutline
+cr083-phase0-styles	wg11-styles-arch	4	wg11-04	wordart	15	gallery style 4 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	5	wg11-05	wordart	15	gallery style 5 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg11-styles-arch	6	wg11-06	wordart	15	gallery style 6 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	7	wg11-07	wordart	15	gallery style 7 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; reflection textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	8	wg11-08	wordart	15	gallery style 8 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	9	wg11-09	wordart	15	gallery style 9 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; glow textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	10	wg11-10	wordart	15	gallery style 10 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg11-styles-arch	11	wg11-11	wordart	15	gallery style 11 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	12	wg11-12	wordart	15	gallery style 12 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	13	wg11-13	wordart	15	gallery style 13 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg11-styles-arch	14	wg11-14	wordart	15	gallery style 14 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg11-styles-arch	15	wg11-15	wordart	15	gallery style 15 on textArchUp, in Word's form	textArchUp adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	1	wg12-01	wordart	15	gallery style 1 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	2	wg12-02	wordart	15	gallery style 2 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	3	wg12-03	wordart	15	gallery style 3 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textOutline
+cr083-phase0-styles	wg12-styles-wave	4	wg12-04	wordart	15	gallery style 4 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	5	wg12-05	wordart	15	gallery style 5 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg12-styles-wave	6	wg12-06	wordart	15	gallery style 6 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	7	wg12-07	wordart	15	gallery style 7 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; reflection textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	8	wg12-08	wordart	15	gallery style 8 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	9	wg12-09	wordart	15	gallery style 9 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; glow textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	10	wg12-10	wordart	15	gallery style 10 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; props3d textOutline; bodyPr 3-D
+cr083-phase0-styles	wg12-styles-wave	11	wg12-11	wordart	15	gallery style 11 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	12	wg12-12	wordart	15	gallery style 12 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	13	wg12-13	wordart	15	gallery style 13 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg12-styles-wave	14	wg12-14	wordart	15	gallery style 14 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textFill textOutline
+cr083-phase0-styles	wg12-styles-wave	15	wg12-15	wordart	15	gallery style 15 on textWave1, in Word's form	textWave1 adj default; fromWordArt 0 spAutoFit wrap none ins 91440/45720/91440/45720 144x144pt; "WordArt"; shadow textOutline
+cr083-phase0-styles	wg20-styles-body	1	wg20-01	body	15	gallery style 1 on body text	shadow schemeClr alpha textOutline noFill prstDash round
+cr083-phase0-styles	wg20-styles-body	2	wg20-02	body	15	gallery style 2 on body text	shadow srgbClr alpha textOutline noFill prstDash round
+cr083-phase0-styles	wg20-styles-body	3	wg20-03	body	15	gallery style 3 on body text	textOutline solidFill schemeClr prstDash round
+cr083-phase0-styles	wg20-styles-body	4	wg20-04	body	15	gallery style 4 on body text	shadow srgbClr alpha textOutline solidFill schemeClr prstDash round textFill solidFill srgbClr
+cr083-phase0-styles	wg20-styles-body	5	wg20-05	body	15	gallery style 5 on body text	textOutline noFill prstDash round props3d bevelT
+cr083-phase0-styles	wg20-styles-body	6	wg20-06	body	15	gallery style 6 on body text	textOutline noFill prstDash round textFill gradFill gsLst gs srgbClr gs srgbClr lin
+cr083-phase0-styles	wg20-styles-body	7	wg20-07	body	15	gallery style 7 on body text	reflection textOutline noFill prstDash round textFill gradFill gsLst gs schemeClr lumMod gs schemeClr gs schemeClr lumMod lumOff lin
+cr083-phase0-styles	wg20-styles-body	8	wg20-08	body	15	gallery style 8 on body text	textOutline solidFill schemeClr prstDash round textFill gradFill gsLst gs schemeClr gs schemeClr lumMod lumOff gs schemeClr lumMod lumOff lin
+cr083-phase0-styles	wg20-styles-body	9	wg20-09	body	15	gallery style 9 on body text	glow schemeClr alpha textOutline solidFill schemeClr prstDash round textFill solidFill srgbClr tint
+cr083-phase0-styles	wg20-styles-body	10	wg20-10	body	15	gallery style 10 on body text	textOutline noFill prstDash round props3d bevelT contourClr schemeClr lumMod
+cr083-phase0-styles	wg20-styles-body	11	wg20-11	body	15	gallery style 11 on body text	shadow schemeClr lumMod textOutline solidFill schemeClr prstDash round
+cr083-phase0-styles	wg20-styles-body	12	wg20-12	body	15	gallery style 12 on body text	shadow schemeClr textOutline solidFill schemeClr prstDash round
+cr083-phase0-styles	wg20-styles-body	13	wg20-13	body	15	gallery style 13 on body text	shadow schemeClr lumMod lumOff textOutline solidFill schemeClr prstDash round
+cr083-phase0-styles	wg20-styles-body	14	wg20-14	body	15	gallery style 14 on body text	shadow schemeClr textOutline solidFill schemeClr prstDash round textFill solidFill srgbClr
+cr083-phase0-styles	wg20-styles-body	15	wg20-15	body	15	gallery style 15 on body text	shadow srgbClr alpha textOutline noFill prstDash round

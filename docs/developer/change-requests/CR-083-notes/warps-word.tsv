@@ -1,0 +1,241 @@
+probe	note	paths	box_w	box_h	max	mean
+wa10-01	textArchDown, default, 1 line, in Word's form	1				
+wa10-02	textArchDownPour, default, 1 line, in Word's form	2	142.55	51.35	0.152	0.034
+wa10-03	textArchUp, default, 1 line, in Word's form	1				
+wa10-04	textArchUpPour, default, 1 line, in Word's form	2	142.55	51.35	0.155	0.026
+wa10-05	textButton, default, 1 line, in Word's form	3				
+wa10-06	textButtonPour, default, 1 line, in Word's form	6				
+wa10-07	textCanDown, default, 1 line, in Word's form	2	142.55	51.35	2.141	0.35
+wa10-08	textCanUp, default, 1 line, in Word's form	2	142.55	51.35	2.077	0.349
+wa10-09	textCascadeDown, default, 1 line, in Word's form	2	142.55	51.35	0.05	0.012
+wa10-10	textCascadeUp, default, 1 line, in Word's form	2	142.55	51.35	0.054	0.012
+wa10-11	textChevron, default, 1 line, in Word's form	2	142.55	51.35	0.051	0.012
+wa10-12	textChevronInverted, default, 1 line, in Word's form	2	142.55	51.35	0.054	0.013
+wa10-13	textCircle, default, 1 line, in Word's form	1				
+wa10-14	textCirclePour, default, 1 line, in Word's form	2	142.55	51.35	2.634	0.361
+wa10-15	textCurveDown, default, 1 line, in Word's form	2	142.55	51.35	0.061	0.013
+wa10-16	textCurveUp, default, 1 line, in Word's form	2	142.55	51.35	0.06	0.013
+wa10-17	textDeflate, default, 1 line, in Word's form	2	142.55	51.35	0.063	0.013
+wa10-18	textDeflateBottom, default, 1 line, in Word's form	2	142.55	51.35	0.114	0.018
+wa10-19	textDeflateInflate, default, 1 line, in Word's form	4				
+wa10-20	textDeflateInflateDeflate, default, 1 line, in Word's form	6				
+wa10-21	textDeflateTop, default, 1 line, in Word's form	2	142.55	51.35	0.105	0.016
+wa10-22	textDoubleWave1, default, 1 line, in Word's form	2	142.55	51.35	0.073	0.019
+wa10-23	textFadeDown, default, 1 line, in Word's form	2	142.55	51.35	0.057	0.009
+wa10-24	textFadeLeft, default, 1 line, in Word's form	2	142.55	51.35	0.05	0.012
+wa10-25	textFadeRight, default, 1 line, in Word's form	2	142.55	51.35	0.052	0.012
+wa10-26	textFadeUp, default, 1 line, in Word's form	2	142.55	51.35	0.056	0.009
+wa10-27	textInflate, default, 1 line, in Word's form	2	142.55	51.35	0.065	0.014
+wa10-28	textInflateBottom, default, 1 line, in Word's form	2	142.55	51.35	0.063	0.013
+wa10-29	textInflateTop, default, 1 line, in Word's form	2	142.55	51.35	0.056	0.012
+wa10-30	textPlain, default, 1 line, in Word's form	2	142.55	51.35	0.052	0.013
+wa10-31	textRingInside, default, 1 line, in Word's form	2	142.55	51.35	0.846	0.071
+wa10-32	textRingOutside, default, 1 line, in Word's form	2	142.55	51.35	0.604	0.072
+wa10-33	textSlantDown, default, 1 line, in Word's form	2	142.55	51.35	0.05	0.011
+wa10-34	textSlantUp, default, 1 line, in Word's form	2	142.55	51.35	0.053	0.012
+wa10-35	textStop, default, 1 line, in Word's form	2	142.55	51.35	2.633	0.8
+wa10-36	textTriangle, default, 1 line, in Word's form	2	142.55	51.35	0.054	0.013
+wa10-37	textTriangleInverted, default, 1 line, in Word's form	2	142.55	51.35	0.058	0.012
+wa10-38	textWave1, default, 1 line, in Word's form	2	142.55	51.35	0.137	0.037
+wa10-39	textWave2, default, 1 line, in Word's form	2	142.55	51.35	0.136	0.036
+wa10-40	textWave4, default, 1 line, in Word's form	2	142.55	51.35	0.076	0.018
+wa11-01	textArchDown, default, 2 lines, in Word's form	1				
+wa11-02	textArchDownPour, default, 2 lines, in Word's form	2	157.45	95.3	0.1	0.015
+wa11-03	textArchUp, default, 2 lines, in Word's form	1				
+wa11-04	textArchUpPour, default, 2 lines, in Word's form	2	157.45	95.3	0.073	0.013
+wa11-05	textButton, default, 2 lines, in Word's form	3				
+wa11-06	textButtonPour, default, 2 lines, in Word's form	6				
+wa11-07	textCanDown, default, 2 lines, in Word's form	2	157.45	95.3	0.238	0.057
+wa11-08	textCanUp, default, 2 lines, in Word's form	2	157.45	95.3	0.26	0.059
+wa11-09	textCascadeDown, default, 2 lines, in Word's form	2	157.45	95.3	0.097	0.014
+wa11-10	textCascadeUp, default, 2 lines, in Word's form	2	157.45	95.3	0.096	0.014
+wa11-11	textChevron, default, 2 lines, in Word's form	2	157.45	95.3	0.098	0.015
+wa11-12	textChevronInverted, default, 2 lines, in Word's form	2	157.45	95.3	0.097	0.016
+wa11-13	textCircle, default, 2 lines, in Word's form	1				
+wa11-14	textCirclePour, default, 2 lines, in Word's form	2	157.45	95.3	3.435	0.452
+wa11-15	textCurveDown, default, 2 lines, in Word's form	2	157.45	95.3	0.112	0.019
+wa11-16	textCurveUp, default, 2 lines, in Word's form	2	157.45	95.3	0.114	0.022
+wa11-17	textDeflate, default, 2 lines, in Word's form	2	157.45	95.3	0.12	0.024
+wa11-18	textDeflateBottom, default, 2 lines, in Word's form	2	157.45	95.3	0.235	0.042
+wa11-19	textDeflateInflate, default, 2 lines, in Word's form	4				
+wa11-20	textDeflateInflateDeflate, default, 2 lines, in Word's form	6				
+wa11-21	textDeflateTop, default, 2 lines, in Word's form	2	157.45	95.3	0.226	0.031
+wa11-22	textDoubleWave1, default, 2 lines, in Word's form	2	157.45	95.3	0.164	0.052
+wa11-23	textFadeDown, default, 2 lines, in Word's form	2	157.45	95.3	0.057	0.012
+wa11-24	textFadeLeft, default, 2 lines, in Word's form	2	157.45	95.3	0.094	0.015
+wa11-25	textFadeRight, default, 2 lines, in Word's form	2	157.45	95.3	0.094	0.015
+wa11-26	textFadeUp, default, 2 lines, in Word's form	2	157.45	95.3	0.089	0.013
+wa11-27	textInflate, default, 2 lines, in Word's form	2	157.45	95.3	0.116	0.025
+wa11-28	textInflateBottom, default, 2 lines, in Word's form	2	157.45	95.3	0.123	0.021
+wa11-29	textInflateTop, default, 2 lines, in Word's form	2	157.45	95.3	0.104	0.019
+wa11-30	textPlain, default, 2 lines, in Word's form	2	157.45	95.3	0.094	0.016
+wa11-31	textRingInside, default, 2 lines, in Word's form	2	157.45	95.3	5.171	0.616
+wa11-32	textRingOutside, default, 2 lines, in Word's form	2	157.45	95.3	5.212	0.377
+wa11-33	textSlantDown, default, 2 lines, in Word's form	2	157.45	95.3	0.099	0.014
+wa11-34	textSlantUp, default, 2 lines, in Word's form	2	157.45	95.3	0.097	0.014
+wa11-35	textStop, default, 2 lines, in Word's form	2	157.45	95.3	0.154	0.019
+wa11-36	textTriangle, default, 2 lines, in Word's form	2	157.45	95.3	0.097	0.017
+wa11-37	textTriangleInverted, default, 2 lines, in Word's form	2	157.45	95.3	0.101	0.017
+wa11-38	textWave1, default, 2 lines, in Word's form	2	157.45	95.3	0.338	0.111
+wa11-39	textWave2, default, 2 lines, in Word's form	2	157.45	95.3	0.343	0.108
+wa11-40	textWave4, default, 2 lines, in Word's form	2	157.45	95.3	0.176	0.051
+wa15-01	textArchDown, default, 1 line	1				
+wa15-02	textArchDownPour, default, 1 line	2	142.55	144.0	0.919	0.182
+wa15-03	textArchUp, default, 1 line	1				
+wa15-04	textArchUpPour, default, 1 line	2	142.55	144.0	0.112	0.015
+wa15-05	textButton, default, 1 line	3				
+wa15-06	textButtonPour, default, 1 line	6				
+wa15-07	textCanDown, default, 1 line	2	142.55	144.0	2.695	0.53
+wa15-08	textCanUp, default, 1 line	2	142.55	144.0	2.942	0.532
+wa15-09	textCascadeDown, default, 1 line	2	142.55	144.0	0.058	0.014
+wa15-10	textCascadeUp, default, 1 line	2	142.55	144.0	0.061	0.013
+wa15-11	textChevron, default, 1 line	2	142.55	144.0	0.059	0.014
+wa15-12	textChevronInverted, default, 1 line	2	142.55	144.0	0.059	0.014
+wa15-13	textCircle, default, 1 line	1				
+wa15-14	textCirclePour, default, 1 line	2	142.55	144.0	0.207	0.024
+wa15-15	textCurveDown, default, 1 line	2	142.55	144.0	0.121	0.027
+wa15-16	textCurveUp, default, 1 line	2	142.55	144.0	0.117	0.03
+wa15-17	textDeflate, default, 1 line	2	142.55	144.0	0.161	0.036
+wa15-18	textDeflateBottom, default, 1 line	2	142.55	144.0	0.376	0.053
+wa15-19	textDeflateInflate, default, 1 line	4				
+wa15-20	textDeflateInflateDeflate, default, 1 line	6				
+wa15-21	textDeflateTop, default, 1 line	2	142.55	144.0	0.326	0.041
+wa15-22	textDoubleWave1, default, 1 line	2	142.55	144.0	0.278	0.083
+wa15-23	textFadeDown, default, 1 line	2	142.55	144.0	0.065	0.009
+wa15-24	textFadeLeft, default, 1 line	2	142.55	144.0	0.074	0.015
+wa15-25	textFadeRight, default, 1 line	2	142.55	144.0	0.075	0.015
+wa15-26	textFadeUp, default, 1 line	2	142.55	144.0	0.061	0.01
+wa15-27	textInflate, default, 1 line	2	142.55	144.0	0.161	0.038
+wa15-28	textInflateBottom, default, 1 line	2	142.55	144.0	0.135	0.028
+wa15-29	textInflateTop, default, 1 line	2	142.55	144.0	0.134	0.021
+wa15-30	textPlain, default, 1 line	2	142.55	144.0	0.051	0.014
+wa15-31	textRingInside, default, 1 line	2	142.55	144.0	5.926	0.858
+wa15-32	textRingOutside, default, 1 line	2	142.55	144.0	5.705	0.775
+wa15-33	textSlantDown, default, 1 line	2	142.55	144.0	0.062	0.014
+wa15-34	textSlantUp, default, 1 line	2	142.55	144.0	0.06	0.013
+wa15-35	textStop, default, 1 line	2	142.55	144.0	2.874	1.014
+wa15-36	textTriangle, default, 1 line	2	142.55	144.0	0.104	0.021
+wa15-37	textTriangleInverted, default, 1 line	2	142.55	144.0	0.11	0.02
+wa15-38	textWave1, default, 1 line	2	142.55	144.0	0.652	0.199
+wa15-39	textWave2, default, 1 line	2	142.55	144.0	0.65	0.196
+wa15-40	textWave4, default, 1 line	2	142.55	144.0	0.272	0.085
+wa16-01	textArchDown, default, 2 lines	1				
+wa16-02	textArchDownPour, default, 2 lines	2	157.45	144.0	4.258	0.813
+wa16-03	textArchUp, default, 2 lines	1				
+wa16-04	textArchUpPour, default, 2 lines	2	157.45	144.0	3.839	0.415
+wa16-05	textButton, default, 2 lines	3				
+wa16-06	textButtonPour, default, 2 lines	6				
+wa16-07	textCanDown, default, 2 lines	2	157.45	144.0	0.219	0.062
+wa16-08	textCanUp, default, 2 lines	2	157.45	144.0	0.215	0.06
+wa16-09	textCascadeDown, default, 2 lines	2	157.45	144.0	0.099	0.016
+wa16-10	textCascadeUp, default, 2 lines	2	157.45	144.0	0.105	0.015
+wa16-11	textChevron, default, 2 lines	2	157.45	144.0	0.096	0.016
+wa16-12	textChevronInverted, default, 2 lines	2	157.45	144.0	0.11	0.016
+wa16-13	textCircle, default, 2 lines	1				
+wa16-14	textCirclePour, default, 2 lines	2	157.45	144.0	8.051	1.042
+wa16-15	textCurveDown, default, 2 lines	2	157.45	144.0	0.135	0.031
+wa16-16	textCurveUp, default, 2 lines	2	157.45	144.0	0.142	0.036
+wa16-17	textDeflate, default, 2 lines	2	157.45	144.0	0.213	0.042
+wa16-18	textDeflateBottom, default, 2 lines	2	157.45	144.0	0.373	0.06
+wa16-19	textDeflateInflate, default, 2 lines	4				
+wa16-20	textDeflateInflateDeflate, default, 2 lines	6				
+wa16-21	textDeflateTop, default, 2 lines	2	157.45	144.0	0.352	0.046
+wa16-22	textDoubleWave1, default, 2 lines	2	157.45	144.0	0.302	0.09
+wa16-23	textFadeDown, default, 2 lines	2	157.45	144.0	0.065	0.013
+wa16-24	textFadeLeft, default, 2 lines	2	157.45	144.0	0.104	0.017
+wa16-25	textFadeRight, default, 2 lines	2	157.45	144.0	0.1	0.016
+wa16-26	textFadeUp, default, 2 lines	2	157.45	144.0	0.086	0.014
+wa16-27	textInflate, default, 2 lines	2	157.45	144.0	0.208	0.045
+wa16-28	textInflateBottom, default, 2 lines	2	157.45	144.0	0.155	0.035
+wa16-29	textInflateTop, default, 2 lines	2	157.45	144.0	0.123	0.023
+wa16-30	textPlain, default, 2 lines	2	157.45	144.0	0.096	0.017
+wa16-31	textRingInside, default, 2 lines	2	157.45	144.0	7.275	1.087
+wa16-32	textRingOutside, default, 2 lines	2	157.45	144.0	5.454	0.698
+wa16-33	textSlantDown, default, 2 lines	2	157.45	144.0	0.098	0.014
+wa16-34	textSlantUp, default, 2 lines	2	157.45	144.0	0.109	0.014
+wa16-35	textStop, default, 2 lines	2	157.45	144.0	3.133	1.004
+wa16-36	textTriangle, default, 2 lines	2	157.45	144.0	0.179	0.021
+wa16-37	textTriangleInverted, default, 2 lines	2	157.45	144.0	0.158	0.021
+wa16-38	textWave1, default, 2 lines	2	157.45	144.0	0.648	0.213
+wa16-39	textWave2, default, 2 lines	2	157.45	144.0	0.638	0.204
+wa16-40	textWave4, default, 2 lines	2	157.45	144.0	0.295	0.088
+wa12-01	textArchDown, adjusted, 1 line	1				
+wa12-02	textArchDownPour, adjusted, 1 line	2	142.55	144.0	2.62	0.336
+wa12-03	textArchUp, adjusted, 1 line	1				
+wa12-04	textArchUpPour, adjusted, 1 line	2	142.55	144.0	0.092	0.017
+wa12-05	textButton, adjusted, 1 line	3				
+wa12-06	textButtonPour, adjusted, 1 line	6				
+wa12-07	textCanDown, adjusted, 1 line	2	142.55	144.0	3.121	0.951
+wa12-08	textCanUp, adjusted, 1 line	2	142.55	144.0	2.196	0.401
+wa12-09	textCascadeDown, adjusted, 1 line	2	142.55	144.0	0.051	0.014
+wa12-10	textCascadeUp, adjusted, 1 line	2	142.55	144.0	0.051	0.014
+wa12-11	textChevron, adjusted, 1 line	2	142.55	144.0	0.067	0.014
+wa12-12	textChevronInverted, adjusted, 1 line	2	142.55	144.0	0.053	0.014
+wa12-13	textCircle, adjusted, 1 line	1				
+wa12-14	textCirclePour, adjusted, 1 line	2	142.55	144.0	5.798	0.714
+wa12-15	textCurveDown, adjusted, 1 line	2	142.55	144.0	0.06	0.014
+wa12-16	textCurveUp, adjusted, 1 line	2	142.55	144.0	0.062	0.014
+wa12-17	textDeflate, adjusted, 1 line	2	142.55	144.0	0.247	0.055
+wa12-18	textDeflateBottom, adjusted, 1 line	2	142.55	144.0	0.159	0.031
+wa12-19	textDeflateInflate, adjusted, 1 line	4				
+wa12-20	textDeflateInflateDeflate, adjusted, 1 line	6				
+wa12-21	textDeflateTop, adjusted, 1 line	2	142.55	144.0	0.459	0.053
+wa12-22	textDoubleWave1, adjusted, 1 line	2	142.55	144.0	0.416	0.129
+wa12-23	textFadeDown, adjusted, 1 line	2	142.55	144.0	0.056	0.012
+wa12-24	textFadeLeft, adjusted, 1 line	2	142.55	144.0	0.051	0.014
+wa12-25	textFadeRight, adjusted, 1 line	2	142.55	144.0	0.052	0.013
+wa12-26	textFadeUp, adjusted, 1 line	2	142.55	144.0	0.054	0.013
+wa12-27	textInflate, adjusted, 1 line	2	142.55	144.0	0.128	0.029
+wa12-28	textInflateBottom, adjusted, 1 line	2	142.55	144.0	0.056	0.014
+wa12-29	textInflateTop, adjusted, 1 line	2	142.55	144.0	0.061	0.014
+wa12-30	textPlain, adjusted, 1 line	2	142.55	144.0	0.041	0.011
+wa12-31	textRingInside, adjusted, 1 line	2	142.55	144.0	0.197	0.027
+wa12-32	textRingOutside, adjusted, 1 line	2	142.55	144.0	0.197	0.026
+wa12-33	textSlantDown, adjusted, 1 line	2	142.55	144.0	0.052	0.014
+wa12-34	textSlantUp, adjusted, 1 line	2	142.55	144.0	0.052	0.014
+wa12-35	textStop, adjusted, 1 line	2	142.55	144.0	0.315	0.041
+wa12-36	textTriangle, adjusted, 1 line	2	142.55	144.0	4.143	0.486
+wa12-37	textTriangleInverted, adjusted, 1 line	2	142.55	144.0	0.065	0.015
+wa12-38	textWave1, adjusted, 1 line	2	142.55	144.0	0.823	0.229
+wa12-39	textWave2, adjusted, 1 line	2	142.55	144.0	0.818	0.226
+wa12-40	textWave4, adjusted, 1 line	2	142.55	144.0	0.44	0.132
+wa13-01	textArchDown, adjusted, 2 lines	1				
+wa13-02	textArchDownPour, adjusted, 2 lines	2	157.45	144.0	4.166	0.453
+wa13-03	textArchUp, adjusted, 2 lines	1				
+wa13-04	textArchUpPour, adjusted, 2 lines	2	157.45	144.0	4.151	0.595
+wa13-05	textButton, adjusted, 2 lines	3				
+wa13-06	textButtonPour, adjusted, 2 lines	6				
+wa13-07	textCanDown, adjusted, 2 lines	2	157.45	144.0	0.106	0.026
+wa13-08	textCanUp, adjusted, 2 lines	2	157.45	144.0	2.831	0.633
+wa13-09	textCascadeDown, adjusted, 2 lines	2	157.45	144.0	0.094	0.017
+wa13-10	textCascadeUp, adjusted, 2 lines	2	157.45	144.0	0.099	0.017
+wa13-11	textChevron, adjusted, 2 lines	2	157.45	144.0	0.108	0.016
+wa13-12	textChevronInverted, adjusted, 2 lines	2	157.45	144.0	0.101	0.017
+wa13-13	textCircle, adjusted, 2 lines	1				
+wa13-14	textCirclePour, adjusted, 2 lines	2	157.45	144.0	7.151	0.408
+wa13-15	textCurveDown, adjusted, 2 lines	2	157.45	144.0	0.1	0.018
+wa13-16	textCurveUp, adjusted, 2 lines	2	157.45	144.0	0.103	0.018
+wa13-17	textDeflate, adjusted, 2 lines	2	157.45	144.0	0.372	0.06
+wa13-18	textDeflateBottom, adjusted, 2 lines	2	157.45	144.0	0.173	0.039
+wa13-19	textDeflateInflate, adjusted, 2 lines	4				
+wa13-20	textDeflateInflateDeflate, adjusted, 2 lines	6				
+wa13-21	textDeflateTop, adjusted, 2 lines	2	157.45	144.0	0.47	0.055
+wa13-22	textDoubleWave1, adjusted, 2 lines	2	157.45	144.0	0.476	0.133
+wa13-23	textFadeDown, adjusted, 2 lines	2	157.45	144.0	0.087	0.016
+wa13-24	textFadeLeft, adjusted, 2 lines	2	157.45	144.0	0.096	0.017
+wa13-25	textFadeRight, adjusted, 2 lines	2	157.45	144.0	0.096	0.017
+wa13-26	textFadeUp, adjusted, 2 lines	2	157.45	144.0	0.092	0.016
+wa13-27	textInflate, adjusted, 2 lines	2	157.45	144.0	0.154	0.035
+wa13-28	textInflateBottom, adjusted, 2 lines	2	157.45	144.0	0.102	0.018
+wa13-29	textInflateTop, adjusted, 2 lines	2	157.45	144.0	0.098	0.017
+wa13-30	textPlain, adjusted, 2 lines	2	157.45	144.0	0.076	0.015
+wa13-31	textRingInside, adjusted, 2 lines	2	157.45	144.0	6.187	0.502
+wa13-32	textRingOutside, adjusted, 2 lines	2	157.45	144.0	6.399	0.601
+wa13-33	textSlantDown, adjusted, 2 lines	2	157.45	144.0	0.094	0.017
+wa13-34	textSlantUp, adjusted, 2 lines	2	157.45	144.0	0.099	0.016
+wa13-35	textStop, adjusted, 2 lines	2	157.45	144.0	3.224	0.93
+wa13-36	textTriangle, adjusted, 2 lines	2	157.45	144.0	0.329	0.028
+wa13-37	textTriangleInverted, adjusted, 2 lines	2	157.45	144.0	0.107	0.017
+wa13-38	textWave1, adjusted, 2 lines	2	157.45	144.0	0.82	0.249
+wa13-39	textWave2, adjusted, 2 lines	2	157.45	144.0	0.812	0.237
+wa13-40	textWave4, adjusted, 2 lines	2	157.45	144.0	0.473	0.129
