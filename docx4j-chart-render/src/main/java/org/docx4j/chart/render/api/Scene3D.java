@@ -62,18 +62,17 @@ import org.docx4j.model.color.ThemeColors;
  * <li>An oblique camera shears depth towards the corner it names; zoom scales about the centre.</li>
  * </ul>
  *
- * <p>The shading, as Word's pictures read (CR-081-notes/phase5b-light.tsv): each light rig a few directional lights in
- * the camera's space, each with a diffuse and a highlight's strength, and an ambient; each material a highlight's
- * strength and sharpness. The four rigs and three materials of Word's picture styles (twoPt, threePt, contrasting and
- * soft; warmMatte, matte and plastic) are fitted; the others are drawn with threePt's lights or warmMatte, and
- * {@link #SHADING} is reported (phase 5b-2).</p>
+ * <p>The shading, as Word's pictures read (CR-081-notes/phase5b-light.tsv, phase5b2-findings.md): each light rig four
+ * (freezing and brightRoom five) directional lights that turn with the drawing, each with a diffuse and a highlight's
+ * colour, and an ambient; each material its terms as {@link Material}'s. All 27 rigs and the materials but
+ * legacyWireframe are fitted; that one, and none, are drawn as warmMatte, and {@link #SHADING} is reported.</p>
  *
  * @since 17.3.7 (CR-081 phase 5a)
  */
 public final class Scene3D {
 
-	/** A 3-D drawing whose light rig, its rotation, or material isn't Word's yet: drawn with Word's geometry and the
-	 *  nearest of the fitted lights and materials (threePt, warmMatte), not its own (phase 5b-2) */
+	/** A 3-D drawing whose material isn't Word's (legacyWireframe, none): drawn with Word's geometry and warmMatte, not
+	 *  its own */
 	public static final String SHADING = "render.effect.3d_shading";
 
 	/**
@@ -337,6 +336,38 @@ public final class Scene3D {
 	}
 
 	/**
+	 * What Word's shading shows of the other presets' profiles, read from it as hardEdge's and relaxedInset's were (phase
+	 * 5b-2, round cr081-phase5b2-r1's fxh5 at 24 by 12 pt; invert_profiles.py b2): 65 heights, scaled to their highest.
+	 * Word lights a preset at its mesh's vertices and blends between, so its shading shows normals blended across the
+	 * facets, a longer, gentler rise than the silhouette's (slope: the silhouette is at its height a third of the way in;
+	 * the shading rises over most of the width). The silhouette keeps {@link #PROFILES}; the shading takes its normal
+	 * from these. Against Word's at 24 by 12 and 6 by 3 pt they are 1.1 to 5.0 / 255 where PROFILES were 2.3 to 16.6;
+	 * cross, whose cliff its shading can't show, keeps PROFILES.
+	 */
+	private static final Map<STBevelPresetType, double[]> SHADES = new EnumMap<STBevelPresetType, double[]>(STBevelPresetType.class);
+
+	static {
+		SHADES.put(STBevelPresetType.ANGLE, new double[] { 0.000, 0.016, 0.031, 0.047, 0.063, 0.079, 0.094, 0.110, 0.126, 0.141, 0.157, 0.173, 0.189, 0.204, 0.220, 0.236, 0.252, 0.267, 0.283, 0.299, 0.314, 0.330, 0.346, 0.362, 0.377, 0.393, 0.409, 0.424, 0.440, 0.456, 0.472, 0.487, 0.503, 0.519, 0.534, 0.550, 0.566, 0.582, 0.597, 0.613, 0.629, 0.645, 0.660, 0.676, 0.692, 0.707, 0.723, 0.739, 0.755, 0.770, 0.786, 0.802, 0.817, 0.833, 0.849, 0.865, 0.880, 0.896, 0.912, 0.927, 0.943, 0.959, 0.975, 0.990, 1.000 });
+		SHADES.put(STBevelPresetType.ART_DECO, new double[] { 0.000, 0.056, 0.103, 0.136, 0.163, 0.185, 0.203, 0.220, 0.237, 0.252, 0.263, 0.271, 0.279, 0.286, 0.293, 0.299, 0.304, 0.308, 0.312, 0.314, 0.316, 0.326, 0.381, 0.461, 0.517, 0.562, 0.599, 0.632, 0.661, 0.686, 0.710, 0.732, 0.752, 0.771, 0.788, 0.804, 0.820, 0.835, 0.849, 0.862, 0.874, 0.885, 0.895, 0.905, 0.914, 0.923, 0.931, 0.939, 0.946, 0.953, 0.959, 0.965, 0.970, 0.975, 0.979, 0.983, 0.987, 0.990, 0.993, 0.995, 0.997, 0.998, 0.999, 1.000, 1.000 });
+		SHADES.put(STBevelPresetType.CONVEX, new double[] { 0.000, 0.020, 0.037, 0.047, 0.051, 0.054, 0.056, 0.056, 0.057, 0.058, 0.060, 0.062, 0.065, 0.069, 0.073, 0.077, 0.082, 0.087, 0.093, 0.099, 0.106, 0.113, 0.121, 0.129, 0.138, 0.147, 0.157, 0.168, 0.179, 0.190, 0.202, 0.215, 0.227, 0.240, 0.254, 0.268, 0.282, 0.297, 0.312, 0.328, 0.344, 0.361, 0.378, 0.396, 0.415, 0.434, 0.454, 0.475, 0.497, 0.520, 0.543, 0.568, 0.595, 0.623, 0.653, 0.687, 0.727, 0.789, 0.930, 0.972, 0.986, 0.992, 0.996, 0.999, 1.000 });
+		SHADES.put(STBevelPresetType.COOL_SLANT, new double[] { 0.000, 0.071, 0.134, 0.184, 0.231, 0.274, 0.316, 0.356, 0.396, 0.435, 0.474, 0.512, 0.550, 0.587, 0.625, 0.662, 0.699, 0.736, 0.771, 0.802, 0.829, 0.853, 0.874, 0.893, 0.911, 0.927, 0.943, 0.955, 0.964, 0.972, 0.980, 0.985, 0.990, 0.994, 0.996, 0.998, 0.999, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000 });
+		SHADES.put(STBevelPresetType.DIVOT, new double[] { 0.000, 0.102, 0.193, 0.267, 0.331, 0.385, 0.434, 0.479, 0.520, 0.556, 0.591, 0.623, 0.651, 0.678, 0.702, 0.723, 0.744, 0.762, 0.780, 0.797, 0.814, 0.830, 0.846, 0.861, 0.873, 0.883, 0.893, 0.903, 0.912, 0.919, 0.926, 0.932, 0.938, 0.943, 0.946, 0.944, 0.923, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.920, 0.922, 0.943, 0.965, 0.976, 0.984, 0.989, 0.993, 0.996, 0.998, 1.000, 1.000 });
+		SHADES.put(STBevelPresetType.RIBLET, new double[] { 0.000, 0.081, 0.151, 0.205, 0.251, 0.291, 0.327, 0.361, 0.393, 0.422, 0.450, 0.476, 0.502, 0.525, 0.548, 0.570, 0.592, 0.612, 0.632, 0.652, 0.671, 0.689, 0.707, 0.724, 0.741, 0.758, 0.774, 0.789, 0.804, 0.819, 0.833, 0.846, 0.857, 0.867, 0.876, 0.884, 0.891, 0.896, 0.901, 0.905, 0.908, 0.910, 0.912, 0.913, 0.914, 0.914, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.915, 0.918, 0.927, 0.951, 0.980, 0.991, 0.996, 0.999, 1.000 });
+		SHADES.put(STBevelPresetType.SLOPE, new double[] { 0.000, 0.113, 0.213, 0.299, 0.385, 0.470, 0.556, 0.642, 0.727, 0.800, 0.853, 0.892, 0.921, 0.943, 0.959, 0.972, 0.980, 0.987, 0.991, 0.994, 0.996, 0.998, 0.999, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 0.999, 0.998, 0.996, 0.994, 0.991, 0.986, 0.980, 0.971, 0.957, 0.940, 0.917, 0.886, 0.845, 0.789, 0.715, 0.630, 0.544, 0.459, 0.373, 0.287, 0.201, 0.116, 0.034, -0.016, -0.044, -0.064, -0.079, -0.088, -0.093, -0.096, -0.097 });
+		SHADES.put(STBevelPresetType.SOFT_ROUND, new double[] { 0.000, 0.223, 0.415, 0.557, 0.675, 0.772, 0.850, 0.915, 0.961, 0.993, 1.000, 0.998, 0.991, 0.970, 0.944, 0.914, 0.882, 0.849, 0.816, 0.783, 0.750, 0.719, 0.689, 0.660, 0.633, 0.607, 0.582, 0.558, 0.535, 0.514, 0.493, 0.474, 0.455, 0.437, 0.419, 0.402, 0.386, 0.371, 0.358, 0.345, 0.333, 0.322, 0.311, 0.301, 0.292, 0.283, 0.275, 0.267, 0.260, 0.254, 0.248, 0.242, 0.237, 0.232, 0.228, 0.224, 0.221, 0.218, 0.216, 0.214, 0.212, 0.211, 0.210, 0.209, 0.209 });
+	}
+
+	/** The slope, height over width, of a preset's shading profile at t, or NaN where it has none */
+	static double shadeSlope(STBevelPresetType p, double t) {
+		double[] table = p == null ? null : SHADES.get(p);
+		if (table == null) return Double.NaN;
+		int n = table.length - 1;
+		double x = Math.max(0, Math.min(1, t)) * n;
+		int i = Math.min(n - 1, (int) Math.floor(x));
+		return (table[i + 1] - table[i]) * n;
+	}
+
+	/**
 	 * A bevel's profile at a fraction t of its width in from the outline (0 there, 1 at the face). The circle is the
 	 * quarter circle (its table reads as one within its pixels), whose slope its shading needs: the table's steps would
 	 * band it (phase 5b-1)
@@ -446,7 +477,8 @@ public final class Scene3D {
 
 		// the frame's centre: the model's origin
 		double cx = w / 2, cy = h / 2;
-		Raster r = new Raster(cam, cx, cy, s);
+		boolean layered = light.material.translucent();
+		Raster r = new Raster(cam, cx, cy, s, layered);
 
 		// the front: a height field over the grid
 		double[] zf = new double[gw * gh];
@@ -472,13 +504,24 @@ public final class Scene3D {
 						zds = zAt(zf, inside, dd, c, b, a);
 				double gxs = ((zbs - zas) + (zds - zcs)) / (2 * q), gys = ((zcs - zas) + (zds - zbs)) / (2 * q);
 				double[] n = cam.turnVector(-gxs, -gys, 1);
+				if (layered && n[2] < 0) continue;     // a translucent drawing's cap facing away isn't drawn
 				int colour = texel(tex, x, y, true);
 				if (rim > 0 && bevelH == 0 && contourColour != null && minDist(dist, inside, a, b, c, dd) < rim) colour = contourColour.getRGB();
 				// a circle top bevel is lit as Word lights it: at its profile's cuts, the colour blended between them
 				// (phase 5b findings section 5)
 				double gl = Math.hypot(gxs, gys), dCell = meanInside(dist, inside, a, b, c, dd);
-				int shaded = cuts > 0 && dCell < bevelW && gl > 1e-9 ? blended(colour, gxs / gl, gys / gl, dCell / bevelW, cuts, bevelW, bevelH, cam, light)
-						: shade(colour, n, light);
+				int shaded;
+				double shadeSlope = bevelH > 0 && dCell < bevelW ? shadeSlope(topProfile, dCell / bevelW) : Double.NaN;
+				if (cuts > 0 && dCell < bevelW && gl > 1e-9) {
+					shaded = blended(colour, gxs / gl, gys / gl, dCell / bevelW, cuts, bevelW, bevelH, cam, light);
+				} else if (!Double.isNaN(shadeSlope)) {
+					// the preset's shading profile, along the distance's gradient (its direction in)
+					double ddx = ((dist[b] - dist[a]) + (dist[dd] - dist[c])) / (2 * q), ddy = ((dist[c] - dist[a]) + (dist[dd] - dist[b])) / (2 * q);
+					double dl = Math.hypot(ddx, ddy), sl = shadeSlope * bevelH / bevelW;
+					shaded = dl > 1e-9 ? shade(colour, cam.turnVector(-sl * ddx / dl, -sl * ddy / dl, 1), light) : shade(colour, n, light);
+				} else {
+					shaded = shade(colour, n, light);
+				}
 				r.quad(pa[0], pa[1], za, pb[0], pb[1], zb, pd[0], pd[1], zd, pc[0], pc[1], zc, shaded);
 			}
 		}
@@ -519,7 +562,9 @@ public final class Scene3D {
 					double za = zBack - backZ(dist[a], backW, backH, backProfile), zb = zBack - backZ(dist[b], backW, backH, backProfile),
 							zc = zBack - backZ(dist[c], backW, backH, backProfile), zd = zBack - backZ(dist[dd], backW, backH, backProfile);
 					double gxs = ((zb - za) + (zd - zc)) / (2 * q), gys = ((zc - za) + (zd - zb)) / (2 * q);
-					r.quad(px, py, za, px + q, py, zb, px + q, py + q, zd, px, py + q, zc, shade(back, cam.turnVector(gxs, gys, -1), light));
+					double[] nb = cam.turnVector(gxs, gys, -1);
+					if (layered && nb[2] < 0) continue;
+					r.quad(px, py, za, px + q, py, zb, px + q, py + q, zd, px, py + q, zc, shade(back, nb, light));
 				}
 			}
 		}
@@ -696,12 +741,66 @@ public final class Scene3D {
 	 * fit_light_model.py from cr081-phase5b-r1 to -r3, the four rigs under the three materials on a deep circle bevel,
 	 * front on, turned and from behind; the mean error against Word's 1.64 / 255): the ambient, then each light's
 	 * {x, y, z, diffuse, highlight}, in the drawing's own space (x right, y down, z out of its face; towards the light)
-	 * for dir t and no rot. The lights turn with the drawing: the camera turns round a lit drawing.
+	 * for dir t and no rot. The lights turn with the drawing: the camera turns round a lit drawing. The other 23 (phase
+	 * 5b-2: phase5b2-findings.md, by fit_rigs_b2.py from cr081-phase5b2-r1's fxh1 to fxh3, each rig under warmMatte and
+	 * matte from five views) are coloured: the ambient {r, g, b}, then each light's {x, y, z, diffuse r, g, b, highlight
+	 * r, g, b}; four lights, five for freezing and brightRoom, whose fits a fifth improves (worst 6.22 to 3.75 / 255, and
+	 * mean 3.66 to 2.50).
 	 */
 	private static final Map<STLightRigType, double[][]> RIGS = new EnumMap<STLightRigType, double[][]>(STLightRigType.class);
 
-	/** Word's materials, fitted with the rigs: {the highlight's strength, its exponent}; matte has none */
-	private static final Map<STPresetMaterialType, double[]> MATERIALS = new EnumMap<STPresetMaterialType, double[]>(STPresetMaterialType.class);
+	/** Word's materials */
+	private static final Map<STPresetMaterialType, Material> MATERIALS = new EnumMap<STPresetMaterialType, Material>(STPresetMaterialType.class);
+
+	/**
+	 * A material (phase 5b findings, and phase 5b-2's: phase5b2-findings.md, by fit_materials_b2.py and
+	 * fit_translucent_b2.py from cr081-phase5b2-r1's fxh4, the grey ellipse under threePt from four views):
+	 * <pre>
+	 * colour = min(255, (c (A + own + diffuse sum D_i max(0, n.L_i)) + 255 wash) max(0, n.v)^edge
+	 *                   + 255 highlight sum S_i max(0, R_i.v)^exponent + 255 rim (1 - max(0, n.v))^rimExponent)
+	 * </pre>
+	 * R_i Phong's reflection, or Blinn's half vector for the legacy materials (legacyPlastic 2.78 / 255 against Phong's
+	 * 6.35); a translucent one's alpha alpha0 + alpha1 |n.v| a layer, clamped. A material's own light was read under threePt
+	 * only: whether it is its own or scales the rig's ambient isn't measured.
+	 */
+	static final class Material {
+		final double own, diffuse, wash, edge, highlight, exponent, rim, rimExponent, alpha0, alpha1;
+		final boolean blinn;
+
+		Material(double own, double diffuse, double wash, double edge, double highlight, double exponent, double rim, double rimExponent,
+				boolean blinn) {
+			this(own, diffuse, wash, edge, highlight, exponent, rim, rimExponent, blinn, 1, 0);
+		}
+
+		Material(double own, double diffuse, double wash, double edge, double highlight, double exponent, double rim, double rimExponent,
+				boolean blinn, double alpha0, double alpha1) {
+			this.own = own;
+			this.diffuse = diffuse;
+			this.wash = wash;
+			this.edge = edge;
+			this.highlight = highlight;
+			this.exponent = exponent;
+			this.rim = rim;
+			this.rimExponent = rimExponent;
+			this.blinn = blinn;
+			this.alpha0 = alpha0;
+			this.alpha1 = alpha1;
+		}
+
+		/**
+		 * Word draws a translucent drawing's caps (its face and back, with their bevels) only where they face the viewer, and
+		 * its sides from both sides, a side seen from inside lit as facing the viewer (phase 5b-2's translucency: the rules
+		 * against Word's alpha, 1.46 and 1.59 / 255 where the nearest surface alone is 14.69 and 19.66)
+		 */
+		boolean translucent() {
+			return alpha0 != 1 || alpha1 != 0;
+		}
+
+		/** 5b-1's: the rig's light, and a Phong highlight */
+		static Material phong(double highlight, double exponent) {
+			return new Material(0, 1, 0, 0, highlight, exponent, 0, 1, false);
+		}
+	}
 
 	static {
 		RIGS.put(STLightRigType.TWO_PT, new double[][] { { 0.2485 }, { -0.4122, 0.5038, 0.7591, 0.6103, 0.1507 },
@@ -715,24 +814,178 @@ public final class Scene3D {
 		RIGS.put(STLightRigType.SOFT, new double[][] { { 0.4287 }, { 0.0347, -0.0918, 0.9952, 0.3839, 0.0075 },
 				{ -0.3997, -0.9150, -0.0555, 0.3321, 0.0084 }, { 0.2447, -0.6879, 0.6833, 0.1711, 0.2199 },
 				{ 0.9771, -0.2100, 0.0340, 0.2694, 0 } });
-		MATERIALS.put(STPresetMaterialType.MATTE, new double[] { 0, 1 });
-		MATERIALS.put(STPresetMaterialType.WARM_MATTE, new double[] { 1, 8.02 });
-		MATERIALS.put(STPresetMaterialType.PLASTIC, new double[] { 1.9135, 11.47 });
+		// legacyFlat1: mean 1.27, worst 1.66 / 255
+		RIGS.put(STLightRigType.LEGACY_FLAT_1, new double[][] { { 0.2995, 0.2995, 0.2995 },
+				{ -0.5130, 0.7787, 0.3612, 0.3075, 0.3075, 0.3075, 0.0014, 0.0014, 0.0014 },
+				{ 0.9377, 0.0206, 0.3468, 0.3252, 0.3252, 0.3252, 0.0000, 0.0000, 0.0000 },
+				{ -0.0058, 0.0162, 0.9999, 0.8317, 0.8317, 0.8317, 0.1692, 0.1692, 0.1692 },
+				{ -0.4547, -0.8258, 0.3335, 0.3242, 0.3242, 0.3242, 0.0101, 0.0101, 0.0101 } });
+		// legacyFlat2: mean 1.06, worst 1.67 / 255
+		RIGS.put(STLightRigType.LEGACY_FLAT_2, new double[][] { { 0.4188, 0.4188, 0.4188 },
+				{ -0.6406, -0.7543, 0.1438, 0.4944, 0.4944, 0.4944, 0.1669, 0.1669, 0.1669 },
+				{ 0.8865, -0.0761, -0.4564, 0.2435, 0.2435, 0.2435, 0.0000, 0.0000, 0.0000 },
+				{ 0.2849, -0.6587, 0.6964, 0.2418, 0.2418, 0.2418, 0.0000, 0.0000, 0.0000 },
+				{ 0.7114, 0.6296, 0.3123, 0.2498, 0.2498, 0.2498, 0.0012, 0.0012, 0.0012 } });
+		// legacyFlat3: mean 0.77, worst 1.13 / 255
+		RIGS.put(STLightRigType.LEGACY_FLAT_3, new double[][] { { 0.4833, 0.4833, 0.4833 },
+				{ -0.9733, 0.0070, 0.2293, 0.4005, 0.4005, 0.4005, 0.1614, 0.1614, 0.1614 },
+				{ 0.9867, 0.0220, -0.1614, 0.2978, 0.2978, 0.2978, 0.0021, 0.0021, 0.0021 },
+				{ 0.2802, 0.4772, 0.8329, 0.1793, 0.1793, 0.1793, 0.0000, 0.0000, 0.0000 },
+				{ 0.3744, -0.8689, 0.3239, 0.1152, 0.1152, 0.1152, 0.0059, 0.0059, 0.0059 } });
+		// legacyFlat4: mean 1.97, worst 2.89 / 255
+		RIGS.put(STLightRigType.LEGACY_FLAT_4, new double[][] { { 0.5200, 0.5200, 0.5200 },
+				{ 0.4940, 0.3199, 0.8085, 0.1210, 0.1210, 0.1210, 0.0000, 0.0000, 0.0000 },
+				{ 0.9566, -0.2906, 0.0205, 0.2875, 0.2875, 0.2875, 0.0034, 0.0034, 0.0034 },
+				{ -0.6945, 0.6956, 0.1835, 0.0002, 0.0002, 0.0002, 0.1435, 0.1435, 0.1435 },
+				{ -0.4926, 0.8465, 0.2021, 0.4779, 0.4779, 0.4779, 0.0037, 0.0037, 0.0037 } });
+		// legacyNormal1: mean 0.90, worst 1.21 / 255
+		RIGS.put(STLightRigType.LEGACY_NORMAL_1, new double[][] { { 0.1422, 0.1422, 0.1422 },
+				{ -0.6525, 0.6278, 0.4245, 0.2049, 0.2049, 0.2049, 0.0010, 0.0010, 0.0010 },
+				{ 0.8925, 0.2302, 0.3878, 0.2037, 0.2037, 0.2037, 0.0000, 0.0000, 0.0000 },
+				{ 0.0003, 0.0071, 1.0000, 0.7997, 0.7997, 0.7997, 0.1969, 0.1969, 0.1969 },
+				{ -0.2392, -0.8954, 0.3756, 0.2105, 0.2105, 0.2105, 0.0078, 0.0078, 0.0078 } });
+		// legacyNormal2: mean 0.89, worst 1.38 / 255
+		RIGS.put(STLightRigType.LEGACY_NORMAL_2, new double[][] { { 0.2233, 0.2233, 0.2233 },
+				{ -0.6747, -0.7257, 0.1351, 0.6082, 0.6082, 0.6082, 0.1938, 0.1938, 0.1938 },
+				{ 0.8696, -0.0872, -0.4860, 0.1496, 0.1496, 0.1496, 0.0000, 0.0000, 0.0000 },
+				{ 0.2696, -0.6525, 0.7082, 0.1600, 0.1600, 0.1600, 0.0000, 0.0001, 0.0000 },
+				{ 0.7326, 0.6266, 0.2660, 0.1599, 0.1599, 0.1599, 0.0015, 0.0015, 0.0015 } });
+		// legacyNormal3: mean 0.72, worst 1.12 / 255
+		RIGS.put(STLightRigType.LEGACY_NORMAL_3, new double[][] { { 0.2713, 0.2713, 0.2713 },
+				{ -0.9760, 0.0073, 0.2175, 0.5491, 0.5491, 0.5491, 0.1913, 0.1913, 0.1913 },
+				{ 0.9894, 0.0296, -0.1423, 0.1793, 0.1793, 0.1793, 0.0004, 0.0004, 0.0004 },
+				{ 0.3237, 0.4448, 0.8351, 0.1034, 0.1034, 0.1034, 0.0000, 0.0000, 0.0000 },
+				{ 0.3939, -0.8647, 0.3117, 0.0669, 0.0669, 0.0669, 0.0030, 0.0030, 0.0030 } });
+		// legacyNormal4: mean 1.03, worst 1.48 / 255
+		RIGS.put(STLightRigType.LEGACY_NORMAL_4, new double[][] { { 0.2356, 0.2356, 0.2356 },
+				{ 0.9089, -0.2529, -0.3316, 0.1813, 0.1813, 0.1813, 0.0000, 0.0000, 0.0000 },
+				{ 0.4398, -0.4188, 0.7945, 0.1158, 0.1158, 0.1158, 0.0036, 0.0035, 0.0035 },
+				{ -0.6611, 0.7423, 0.1090, 0.6095, 0.6095, 0.6095, 0.1981, 0.1981, 0.1981 },
+				{ 0.4714, 0.7377, 0.4832, 0.1299, 0.1299, 0.1299, 0.0001, 0.0000, 0.0001 } });
+		// legacyHarsh1: mean 0.69, worst 1.02 / 255
+		RIGS.put(STLightRigType.LEGACY_HARSH_1, new double[][] { { 0.0450, 0.0450, 0.0450 },
+				{ -0.1650, -0.4964, 0.8523, 0.0029, 0.0029, 0.0029, 0.0041, 0.0041, 0.0041 },
+				{ 0.3196, -0.6023, 0.7316, 0.0000, 0.0000, 0.0000, 0.0034, 0.0034, 0.0034 },
+				{ -0.0023, -0.0001, 1.0000, 1.0115, 1.0115, 1.0115, 0.2292, 0.2292, 0.2292 },
+				{ -0.1251, 0.4137, 0.9018, 0.0005, 0.0005, 0.0005, 0.0028, 0.0028, 0.0028 } });
+		// legacyHarsh2: mean 0.71, worst 1.12 / 255
+		RIGS.put(STLightRigType.LEGACY_HARSH_2, new double[][] { { 0.0461, 0.0461, 0.0461 },
+				{ -0.7199, -0.6646, 0.2000, 0.2525, 0.2525, 0.2525, 0.0618, 0.0618, 0.0618 },
+				{ -0.6959, -0.7089, 0.1152, 0.5411, 0.5411, 0.5411, 0.1640, 0.1640, 0.1640 },
+				{ 0.9778, 0.0252, 0.2081, 0.2211, 0.2211, 0.2211, 0.0001, 0.0001, 0.0001 },
+				{ 0.3086, -0.9411, -0.1384, 0.0091, 0.0091, 0.0091, 0.0045, 0.0045, 0.0045 } });
+		// legacyHarsh3: mean 0.82, worst 1.16 / 255
+		RIGS.put(STLightRigType.LEGACY_HARSH_3, new double[][] { { 0.0487, 0.0487, 0.0487 },
+				{ -0.9772, -0.0259, 0.2108, 0.3525, 0.3525, 0.3525, 0.0687, 0.0687, 0.0687 },
+				{ -0.9631, 0.0123, 0.2689, 0.1349, 0.1349, 0.1349, 0.0723, 0.0723, 0.0723 },
+				{ -0.9892, 0.0181, 0.1457, 0.3097, 0.3097, 0.3097, 0.0923, 0.0923, 0.0923 },
+				{ 0.9775, 0.0029, 0.2109, 0.2218, 0.2218, 0.2218, 0.0000, 0.0003, 0.0001 } });
+		// legacyHarsh4: mean 0.71, worst 1.08 / 255
+		RIGS.put(STLightRigType.LEGACY_HARSH_4, new double[][] { { 0.0474, 0.0474, 0.0474 },
+				{ -0.7636, 0.6137, 0.2007, 0.1179, 0.1179, 0.1179, 0.0000, 0.0000, 0.0000 },
+				{ -0.6480, 0.7606, 0.0401, 0.1398, 0.1398, 0.1398, 0.0091, 0.0091, 0.0091 },
+				{ -0.6998, 0.6990, 0.1473, 0.5436, 0.5436, 0.5436, 0.2141, 0.2141, 0.2141 },
+				{ 0.9784, -0.0058, 0.2068, 0.2227, 0.2227, 0.2227, 0.0002, 0.0002, 0.0002 } });
+		// balanced: mean 1.24, worst 1.87 / 255
+		RIGS.put(STLightRigType.BALANCED, new double[][] { { 0.1323, 0.1323, 0.1323 },
+				{ -0.4093, 0.5322, 0.7411, 1.0405, 1.0405, 1.0405, 0.3046, 0.3046, 0.3046 },
+				{ 0.7547, 0.3425, -0.5596, 0.0029, 0.0029, 0.0029, 0.0372, 0.0372, 0.0372 },
+				{ 0.7702, 0.0714, -0.6338, 0.4772, 0.4772, 0.4772, 0.1163, 0.1163, 0.1163 },
+				{ 0.3453, -0.9373, 0.0470, 0.9914, 0.9914, 0.9914, 0.2825, 0.2825, 0.2825 } });
+		// harsh: mean 1.26, worst 1.81 / 255
+		RIGS.put(STLightRigType.HARSH, new double[][] { { 0.2659, 0.2659, 0.2659 },
+				{ -0.7119, -0.6353, 0.2993, 0.5735, 0.5735, 0.5735, 0.1313, 0.1313, 0.1313 },
+				{ -0.4183, 0.6639, 0.6199, 0.0439, 0.0439, 0.0439, 0.0061, 0.0061, 0.0061 },
+				{ -0.7616, -0.5369, 0.3629, 0.3061, 0.3061, 0.3061, 0.1193, 0.1193, 0.1193 },
+				{ -0.6846, 0.6638, 0.3010, 0.8488, 0.8488, 0.8488, 0.2449, 0.2449, 0.2449 } });
+		// flood: mean 1.75, worst 2.47 / 255
+		RIGS.put(STLightRigType.FLOOD, new double[][] { { 0.1257, 0.1257, 0.1257 },
+				{ -0.9567, -0.1859, 0.2239, 0.2682, 0.2682, 0.2682, 0.1077, 0.1077, 0.1077 },
+				{ 0.1249, -0.8991, 0.4196, 0.5557, 0.5557, 0.5557, 0.1519, 0.1519, 0.1519 },
+				{ -0.7672, 0.5645, 0.3046, 1.0892, 1.0892, 1.0892, 0.3191, 0.3191, 0.3191 },
+				{ -0.9611, -0.2438, 0.1297, 0.8097, 0.8097, 0.8097, 0.2116, 0.2116, 0.2116 } });
+		// morning: mean 2.18, worst 4.31 / 255
+		RIGS.put(STLightRigType.MORNING, new double[][] { { 0.0223, 0.0195, 0.0258 },
+				{ -0.4497, -0.2611, 0.8542, 0.4326, 0.4304, 0.3568, 0.0000, 0.0000, 0.0001 },
+				{ -0.6809, 0.6607, 0.3160, 1.5276, 1.4664, 1.3779, 0.1337, 0.1317, 0.1225 },
+				{ 0.9824, -0.1697, -0.0783, 0.4280, 0.4074, 0.3785, 0.1645, 0.1570, 0.1307 },
+				{ 0.9564, -0.1881, -0.2233, 0.4483, 0.4046, 0.3081, 0.1164, 0.1053, 0.0946 } });
+		// sunrise: mean 1.64, worst 2.27 / 255
+		RIGS.put(STLightRigType.SUNRISE, new double[][] { { 0.0120, 0.0113, 0.0019 },
+				{ -0.6850, 0.6904, 0.2327, 0.9249, 0.8725, 0.7406, 0.1741, 0.1676, 0.1328 },
+				{ 0.9711, -0.1780, -0.1587, 1.4873, 1.2931, 0.9784, 0.0007, 0.0009, 0.0024 },
+				{ -0.6566, 0.5887, 0.4715, 0.5625, 0.4554, 0.4224, 0.0001, 0.0000, 0.0001 },
+				{ -0.4588, -0.2845, 0.8418, 0.4105, 0.4206, 0.3474, 0.0004, 0.0006, 0.0005 } });
+		// sunset: mean 1.64, worst 2.05 / 255
+		RIGS.put(STLightRigType.SUNSET, new double[][] { { 0.0202, 0.0201, 0.0174 },
+				{ -0.4208, 0.1547, 0.8939, 0.1443, 0.2598, 0.1938, 0.0000, 0.0001, 0.0003 },
+				{ 0.8972, -0.4203, -0.1359, 0.7213, 0.6432, 0.3633, 0.0086, 0.0012, 0.0013 },
+				{ -0.6922, 0.6369, 0.3393, 1.4678, 0.7604, 0.6529, 0.1355, 0.0374, 0.0306 },
+				{ -0.0894, 0.1027, 0.9907, 0.2159, 0.1714, 0.1194, 0.0031, 0.0000, 0.0021 } });
+		// chilly: mean 1.35, worst 1.94 / 255
+		RIGS.put(STLightRigType.CHILLY, new double[][] { { 0.1061, 0.1140, 0.1106 },
+				{ -0.7150, 0.6626, 0.2230, 0.4551, 0.4615, 0.4951, 0.0743, 0.0794, 0.0807 },
+				{ 0.7984, -0.5792, -0.1648, 0.4069, 0.4318, 0.4690, 0.1175, 0.1271, 0.1403 },
+				{ -0.6099, 0.6635, 0.4333, 0.8828, 0.8658, 0.9693, 0.0000, 0.0000, 0.0000 },
+				{ -0.1408, -0.3585, 0.9228, 0.4414, 0.4331, 0.4381, 0.0021, 0.0015, 0.0009 } });
+		// freezing: mean 2.10, worst 3.75 / 255
+		RIGS.put(STLightRigType.FREEZING, new double[][] { { 0.0039, 0.0099, 0.0155 },
+				{ -0.6805, 0.6656, 0.3064, 1.1447, 1.1621, 1.5129, 0.1116, 0.1211, 0.1399 },
+				{ 0.9943, -0.1068, 0.0063, 0.1393, 0.1423, 0.1741, 0.1094, 0.1337, 0.1567 },
+				{ 0.9756, -0.1193, -0.1844, 0.4104, 0.5183, 0.6135, 0.0527, 0.0585, 0.0669 },
+				{ -0.4696, -0.2540, 0.8455, 0.3709, 0.4513, 0.4652, 0.0002, 0.0008, 0.0002 },
+				{ 0.9466, -0.2619, -0.1881, 0.4142, 0.5170, 0.5563, 0.1471, 0.1874, 0.2105 } });
+		// flat: mean 2.01, worst 6.71 / 255
+		RIGS.put(STLightRigType.FLAT, new double[][] { { 0.9980, 0.9964, 0.9952 },
+				{ 0.8214, 0.2268, -0.5233, 0.0000, 0.0099, 0.0008, 0.1438, 0.1912, 0.2383 },
+				{ -0.7336, 0.6530, 0.1880, 0.0223, 0.0272, 0.0314, 1.0464, 1.0424, 1.0390 },
+				{ -0.1614, -0.9526, 0.2577, 0.0128, 0.0175, 0.0231, 0.2184, 0.2155, 0.2125 },
+				{ 0.8636, -0.0343, -0.5030, 0.0037, 0.0064, 0.0056, 0.5049, 0.6066, 0.6713 } });
+		// glow: mean 1.50, worst 2.72 / 255
+		RIGS.put(STLightRigType.GLOW, new double[][] { { 0.9949, 0.9949, 0.9949 },
+				{ -0.9987, 0.0047, 0.0517, 0.0459, 0.0459, 0.0459, 0.2382, 0.2382, 0.2382 },
+				{ -0.9584, -0.0147, -0.2851, 0.0171, 0.0171, 0.0171, 0.0378, 0.0378, 0.0378 },
+				{ -1.0000, -0.0009, 0.0034, 0.9259, 0.9259, 0.9259, 0.0239, 0.0239, 0.0239 },
+				{ 1.0000, 0.0020, 0.0027, 0.6963, 0.6963, 0.6963, 0.1967, 0.1967, 0.1967 } });
+		// brightRoom: mean 2.50, worst 3.35 / 255
+		RIGS.put(STLightRigType.BRIGHT_ROOM, new double[][] { { 1.0162, 1.0163, 1.0162 },
+				{ -0.4810, 0.8421, -0.2441, 0.5692, 0.5691, 0.5678, 0.0000, 0.0004, 0.0018 },
+				{ -0.1836, 0.8169, 0.5468, 0.0002, 0.0000, 0.0000, 0.2899, 0.2898, 0.2897 },
+				{ 0.9914, -0.0162, -0.1296, 0.9795, 0.9794, 0.9790, 0.0000, 0.0002, 0.0009 },
+				{ -0.9950, -0.0956, -0.0287, 1.0075, 1.0074, 1.0070, 0.0004, 0.0003, 0.0003 },
+				{ -0.3151, -0.8445, -0.4330, 0.4254, 0.4250, 0.4256, 0.0000, 0.0001, 0.0004 } });
+		MATERIALS.put(STPresetMaterialType.MATTE, Material.phong(0, 1));
+		MATERIALS.put(STPresetMaterialType.WARM_MATTE, Material.phong(1, 8.02));
+		MATERIALS.put(STPresetMaterialType.PLASTIC, Material.phong(1.9135, 11.47));
+		// phase 5b-2, under threePt (mean / worst against Word's four views); own = (ka - 1) x threePt's ambient 0.0290
+		MATERIALS.put(STPresetMaterialType.LEGACY_MATTE, new Material(0, 1.0079, -0.0013, 0.0055, 0, 1, 0, 1, false));                 // 1.35 / 1.98
+		MATERIALS.put(STPresetMaterialType.LEGACY_PLASTIC, new Material(0.0242, 1.0312, -0.0201, 0.0055, 3.3159, 32.46, 0, 1, true));   // 2.78 / 3.52
+		MATERIALS.put(STPresetMaterialType.LEGACY_METAL, new Material(-0.0127, 0.6917, -0.0072, 0.0232, 1.6212, 32.54, 0.0060, 0.5, true)); // 1.76 / 2.26
+		MATERIALS.put(STPresetMaterialType.METAL, new Material(0.0142, 1.0176, -0.0029, 0.1965, 3.9463, 12.27, 0.7361, 2.9826, false)); // 4.09 / 4.56
+		MATERIALS.put(STPresetMaterialType.POWDER, new Material(0.1238, 1.7703, -0.0735, 0.6495, 0.7699, 3.795, 0.8310, 1.5646, false)); // 3.09 / 4.93
+		MATERIALS.put(STPresetMaterialType.DK_EDGE, new Material(0.0491, 1.0753, -0.0480, 0.5975, 2.9125, 31.47, 0.0504, 0.5, false)); // 3.77 / 4.51
+		MATERIALS.put(STPresetMaterialType.SOFT_EDGE, new Material(0.0333, 1.0146, -0.0188, 0.0387, 2.8905, 31.59, 0.6520, 4.01, false)); // 3.09 / 3.28
+		MATERIALS.put(STPresetMaterialType.FLAT, new Material(0.6362, 0.0161, 0.1531, 0.4982, 1.9940, 39.58, 0.1605, 0.5758, false));  // 2.45 / 3.16
+		MATERIALS.put(STPresetMaterialType.SOFTMETAL, new Material(0.0119, 0.9796, 0.0055, 0, 2.5347, 7.909, 0, 1, false));             // 3.21 / 3.88
+		// translucent: alpha a0 + a1 |n.v| a layer (mean / worst alpha, and over a white page)
+		MATERIALS.put(STPresetMaterialType.CLEAR, new Material(-0.0290, 1.2107, -0.0873, 0.3984, 3.7928, 19.22, 0.1625, 0.5, false, 1, -0.9));       // 1.46 / 2.13; 4.25 / 4.99
+		MATERIALS.put(STPresetMaterialType.TRANSLUCENT_POWDER, new Material(0.1463, 1.0417, -0.0175, 0, 1.3410, 3.021, 0.8107, 2.4769, false, -0.01, 0.71)); // 1.45 / 2.30; 5.00 / 7.82
 	}
 
-	/** A drawing's lights in the camera's space, and its material's highlight */
+	/** A drawing's lights in the camera's space, and its material */
 	static final class Lighting {
-		final double ambient, highlight, exponent;
-		/** {x, y, z, diffuse, highlight} */
+		/** the rig's ambient, {r, g, b} */
+		final double[] ambient;
+		/** {x, y, z, diffuse r, g, b, highlight r, g, b} */
 		final double[][] lights;
-		/** The rig, its rotation or the material isn't one fitted */
+		final Material material;
+		/** The rig or the material isn't one fitted */
 		final boolean approximate;
 
-		Lighting(double ambient, double[][] lights, double highlight, double exponent, boolean approximate) {
+		Lighting(double[] ambient, double[][] lights, Material material, boolean approximate) {
 			this.ambient = ambient;
 			this.lights = lights;
-			this.highlight = highlight;
-			this.exponent = exponent;
+			this.material = material;
 			this.approximate = approximate;
 		}
 	}
@@ -740,7 +993,7 @@ public final class Scene3D {
 	/**
 	 * The drawing's lighting: its rig's lights turned about the drawing's z by its direction, from t (tl turns them 45
 	 * degrees anticlockwise on the page, fxg1-15; the other directions by the same rule, not measured), then by its
-	 * rotation's rev, clockwise (fxg1-13, -14: rev 120 degrees); then with the drawing, into the camera's space
+	 * rotation's rev, clockwise (fxg1-13, -14: rev 120 degrees), after its rot's lat and lon; then with the drawing, into the camera's space
 	 * (phase 5b findings section 2); its material's highlight
 	 */
 	static Lighting lighting(CTScene3D scene, CTShape3D sp, Camera cam) {
@@ -749,7 +1002,7 @@ public final class Scene3D {
 		boolean approximate = !RIGS.containsKey(type);
 		double[][] def = RIGS.containsKey(type) ? RIGS.get(type) : RIGS.get(STLightRigType.THREE_PT);
 		STPresetMaterialType mt = sp != null ? sp.getPrstMaterial() : STPresetMaterialType.WARM_MATTE;
-		double[] mat = MATERIALS.get(mt);
+		Material mat = MATERIALS.get(mt);
 		if (mat == null) {
 			approximate = true;
 			mat = MATERIALS.get(STPresetMaterialType.WARM_MATTE);
@@ -767,18 +1020,27 @@ public final class Scene3D {
 		default: break;
 		}
 		CTSphereCoords rot = rig != null ? rig.getRot() : null;
+		double lat = 0, lon = 0;
 		if (rot != null) {
 			turn += rot.getRev() / 60000.0;
-			if (rot.getLat() % 21600000 != 0 || rot.getLon() % 21600000 != 0) approximate = true;     // phase 5b-2
+			lat = Math.toRadians(rot.getLat() / 60000.0);
+			lon = Math.toRadians(rot.getLon() / 60000.0);
 		}
 		double c = Math.cos(Math.toRadians(turn)), sn = Math.sin(Math.toRadians(turn));
+		double cl = Math.cos(lat), sl = Math.sin(lat), co = Math.cos(lon), so = Math.sin(lon);
 		double[][] lights = new double[def.length - 1][];
 		for (int i = 1; i < def.length; i++) {
 			double[] d = def[i];
-			double[] t = cam.turnVector(d[0] * c - d[1] * sn, d[0] * sn + d[1] * c, d[2]);
-			lights[i - 1] = new double[] { t[0], t[1], t[2], d[3], d[4] };
+			// the rig's rot: lat turns it about x, then lon about y (phase 5b-2, fxh5-25 to -29: lat 30 and 330, lon 30
+			// and 330, and both, within 2.2 / 255), then dir and rev about z
+			double x0 = d[0], y0 = d[1] * cl - d[2] * sl, z0 = d[1] * sl + d[2] * cl;
+			double x1 = x0 * co + z0 * so, z1 = -x0 * so + z0 * co;
+			double[] t = cam.turnVector(x1 * c - y0 * sn, x1 * sn + y0 * c, z1);
+			lights[i - 1] = d.length == 9 ? new double[] { t[0], t[1], t[2], d[3], d[4], d[5], d[6], d[7], d[8] }
+					: new double[] { t[0], t[1], t[2], d[3], d[3], d[3], d[4], d[4], d[4] };
 		}
-		return new Lighting(def[0][0], lights, mat[0], mat[1], approximate);
+		double[] ambient = def[0].length == 3 ? def[0] : new double[] { def[0][0], def[0][0], def[0][0] };
+		return new Lighting(ambient, lights, mat, approximate);
 	}
 
 	/**
@@ -803,7 +1065,7 @@ public final class Scene3D {
 		double f = t1 > t0 ? (t - t0) / (t1 - t0) : 0;
 		int c0 = shade(argb, cam.turnVector(-ux * h * Math.cos(p0), -uy * h * Math.cos(p0), w * Math.sin(p0)), light);
 		int c1 = shade(argb, cam.turnVector(-ux * h * Math.cos(p1), -uy * h * Math.cos(p1), w * Math.sin(p1)), light);
-		int out = argb & 0xff000000;
+		int out = clamp((c0 >>> 24) * (1 - f) + (c1 >>> 24) * f) << 24;     // a translucent material's alpha, as its colour
 		for (int sh = 0; sh <= 16; sh += 8) {
 			double v = ((c0 >> sh) & 0xff) * (1 - f) + ((c1 >> sh) & 0xff) * f;
 			out |= clamp(v) << sh;
@@ -824,25 +1086,47 @@ public final class Scene3D {
 	}
 
 	/**
-	 * Word's shading: the colour times the ambient and each light's diffuse share, then each light's highlight added,
-	 * white (Phong's: its reflection's with the view, (0, 0, 1); Blinn's half vector fits Word's turned views less well,
-	 * 2.51 / 255 against 1.64), clamped
+	 * Word's shading: the colour times the ambient and each light's diffuse share, then each light's highlight added
+	 * (Phong's: its reflection's with the view, (0, 0, 1); Blinn's half vector fits Word's turned views less well, 2.51 /
+	 * 255 against 1.64, but the legacy materials' better), clamped; the material's terms as {@link Material}'s
 	 */
 	static int shade(int argb, double[] n, Lighting l) {
 		double len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 		if (len == 0) return argb;
 		double nx = n[0] / len, ny = n[1] / len, nz = n[2] / len;
-		double diffuse = l.ambient, spec = 0;
+		Material m = l.material;
+		if (m.translucent() && nz < 0) {     // a side seen from inside: lit as facing the viewer
+			nx = -nx;
+			ny = -ny;
+			nz = -nz;
+		}
+		double[] diffuse = { l.ambient[0] + m.own, l.ambient[1] + m.own, l.ambient[2] + m.own }, spec = new double[3];
 		for (double[] li : l.lights) {
 			double d = nx * li[0] + ny * li[1] + nz * li[2];
 			if (d <= 0) continue;
-			diffuse += li[3] * d;
-			double rv = 2 * d * nz - li[2];
-			if (l.highlight > 0 && li[4] > 0 && rv > 0) spec += li[4] * Math.pow(rv, l.exponent);
+			for (int k = 0; k < 3; k++) diffuse[k] += m.diffuse * li[3 + k] * d;
+			if (m.highlight <= 0) continue;
+			double rv;
+			if (m.blinn) {
+				double hx = li[0], hy = li[1], hz = li[2] + 1, hl = Math.sqrt(hx * hx + hy * hy + hz * hz);
+				rv = hl > 0 ? (nx * hx + ny * hy + nz * hz) / hl : 0;
+			} else {
+				rv = 2 * d * nz - li[2];
+			}
+			if (rv <= 0) continue;
+			double p = Math.pow(rv, m.exponent);
+			for (int k = 0; k < 3; k++) spec[k] += li[6 + k] * p;
 		}
-		double add = 255 * l.highlight * spec;
-		int a = argb >>> 24, rr = (argb >> 16) & 0xff, gg = (argb >> 8) & 0xff, bb = argb & 0xff;
-		return (a << 24) | (clamp(rr * diffuse + add) << 16) | (clamp(gg * diffuse + add) << 8) | clamp(bb * diffuse + add);
+		double facing = Math.max(0, nz), edge = m.edge > 0 ? Math.pow(facing, m.edge) : 1;
+		double rim = m.rim > 0 ? 255 * m.rim * Math.pow(1 - facing, m.rimExponent) : 0;
+		int a = argb >>> 24;
+		if (m.alpha1 != 0 || m.alpha0 != 1) a = clamp(a * Math.max(0, Math.min(1, m.alpha0 + m.alpha1 * nz)));
+		int out = a << 24;
+		for (int k = 0, sh = 16; k < 3; k++, sh -= 8) {
+			double c = (argb >> sh) & 0xff;
+			out |= clamp((c * diffuse[k] + 255 * m.wash) * edge + 255 * m.highlight * spec[k] + rim) << sh;
+		}
+		return out;
 	}
 
 	private static int clamp(double v) {
@@ -942,12 +1226,19 @@ public final class Scene3D {
 		private final List<double[]> tris = new ArrayList<double[]>();
 		private final List<Integer> colours = new ArrayList<Integer>();
 		private double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+		/** Translucent surfaces: one surface's triangles meeting at a sample replace, not composite, each other */
+		private final boolean layered;
 
 		Raster(Camera cam, double cx, double cy, double s) {
+			this(cam, cx, cy, s, false);
+		}
+
+		Raster(Camera cam, double cx, double cy, double s, boolean layered) {
 			this.cam = cam;
 			this.cx = cx;
 			this.cy = cy;
 			this.s = s;
+			this.layered = layered;
 		}
 
 		void quad(double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3, double x4, double y4,
@@ -999,7 +1290,9 @@ public final class Scene3D {
 						int i = y * W + x;
 						// an edge cell's partial alpha is composited, not replaced: over what is behind it, under what is
 						// in front (else the face's antialiased edge leaves a seam over the sides it stands in front of)
-						if (z >= zb[i]) {
+						if (layered && Math.abs(z - zb[i]) < 1e-6) {
+							px[i] = colour;
+						} else if (z >= zb[i]) {
 							px[i] = (colour >>> 24) == 255 || px[i] == 0 ? colour : over(colour, px[i]);
 							zb[i] = z;
 						} else if ((px[i] >>> 24) < 255) {

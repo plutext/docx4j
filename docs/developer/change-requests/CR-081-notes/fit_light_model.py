@@ -2,8 +2,8 @@
 # This file is part of docx4j.
 """CR-081 phase 5b-1: the rigs' lights fitted in the drawing's own space, from every probe of rounds 1 to 3: Word's
 colours (export_3d_light.py's oracle) against docx4j's own geometry, the normal at each point as Scene3D draws it (its
-normal map: Scene3DTest.theShadingIsWords run with SCENE3D_DEBUG=normals SCENE3D_DUMP=<dir>, each probe's <probe>.png
-and its place and view's direction in <probe>.txt).
+normal map: Scene3DTest.theShadingIsWords, with normals-hook.patch applied, run with SCENE3D_DEBUG=normals
+SCENE3D_DUMP=<dir>, each probe's <probe>.png and its place and view's direction in <probe>.txt).
 
     colour = min(255, c (A + sum_i D_i max(0, n.L_i)) + 255 ks_m sum_i S_i max(0, n.H_i)^p_m), H_i = |L_i + v|
 n, L and v in the drawing's space; a rig's lights turned about its z by dir (tl -45 degrees) and rev (clockwise).

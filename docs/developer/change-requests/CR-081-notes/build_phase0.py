@@ -50,6 +50,10 @@ The sets:
   cr081-phase5b-r5 how finely Word cuts a bevel's profile, which it lights at the cuts and blends between (a 6 pt circle
                    in four 22.5 degree pieces, a 2 pt in two): circle bevels from 1.8 to 24 pt wide, the picture styles'
                    sizes among them, and their hardEdge and relaxedInset, on a grey shape under twoPt rev 120
+  cr081-phase5b2-r1 phase 5b-2's first round (2026-11-11; Jason: "start phase 5b-2"): the other 23 rigs on the grey
+                   extruded ellipse from five views (warmMatte, and matte from three); the other 12 materials under
+                   threePt from four views; the other 9 bevel presets at 24 by 12 and 6 by 3 pt under twoPt rev 120;
+                   the six unmeasured directions and a rig rotated by lat and lon, under threePt on the deep rectangle
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -728,6 +732,52 @@ def fam_bevel_cuts():
     return ([sh(f'circle {w} x {h} pt', 'circle', w, h) for w, h in sizes]
             + [sh('hardEdge 24 x 12 pt', 'hardEdge', 24, 12), sh('relaxedInset 30 x 9 pt', 'relaxedInset', 30, 9)])
 
+RIGS_B2 = ('legacyFlat1', 'legacyFlat2', 'legacyFlat3', 'legacyFlat4', 'legacyNormal1', 'legacyNormal2', 'legacyNormal3',
+           'legacyNormal4', 'legacyHarsh1', 'legacyHarsh2', 'legacyHarsh3', 'legacyHarsh4', 'balanced', 'harsh', 'flood',
+           'morning', 'sunrise', 'sunset', 'chilly', 'freezing', 'flat', 'glow', 'brightRoom')
+MATERIALS_B2 = ('legacyMatte', 'legacyPlastic', 'legacyMetal', 'legacyWireframe', 'metal', 'translucentPowder', 'powder',
+                'dkEdge', 'softEdge', 'clear', 'flat', 'softmetal')
+VIEWS_B2 = ((0, 0), (0, 60), (60, 0), (0, 300), (330, 150))
+
+def _turned(note, la, lo, light, material='warmMatte'):
+    deep = bevel('circle', 457200, 228600)
+    side = '<a:extrusionClr><a:srgbClr val="808080"/></a:extrusionClr>'
+    a = {'prstMaterial': material} if material != 'warmMatte' else {}
+    camera = cam('orthographicFront', lat=la, lon=lo) if (la, lo) != (0, 0) else cam('orthographicFront')
+    return Probe(note, shape=True, geom='ellipse', fill=GREY, anchor='fixed', scene=scene(camera, light)
+                 + sp3d(deep + side, extrusionH=457200, **a))
+
+def fam_rigs_b2(rigs):
+    def fam():
+        out = []
+        for r in rigs:
+            for k, (la, lo) in enumerate(VIEWS_B2):
+                out.append(_turned(f'{r}, warmMatte, lat {la} lon {lo}', la, lo, rig(r)))
+                if k in (0, 1, 4):
+                    out.append(_turned(f'{r}, matte, lat {la} lon {lo}', la, lo, rig(r), 'matte'))
+        return out
+    return fam
+
+def fam_materials_b2():
+    return [_turned(f'threePt, {m}, lat {la} lon {lo}', la, lo, rig('threePt'), m)
+            for m in MATERIALS_B2 for la, lo in VIEWS_B2[:3] + VIEWS_B2[4:]]
+
+def fam_presets_dirs_b2():
+    two = rig('twoPt', rev=120)
+    front = cam('orthographicFront')
+    out = []
+    for p in ('angle', 'artDeco', 'convex', 'coolSlant', 'cross', 'divot', 'riblet', 'slope', 'softRound'):
+        for w, h in ((24, 12), (6, 3)):
+            out.append(Probe(f'{p} {w} x {h} pt', shape=True, fill=GREY, anchor='fixed',
+                             scene=scene(front, two) + sp3d(bevel(p, w * 12700, h * 12700))))
+    deep = bevel('circle', 457200, 228600)
+    for d in ('l', 'r', 'b', 'bl', 'br', 'tr'):
+        out.append(Probe(f'threePt from {d}, warmMatte', shape=True, fill=GREY, anchor='fixed', scene=scene(front, rig('threePt', d)) + sp3d(deep)))
+    for la, lo in ((30, 0), (330, 0), (0, 30), (0, 330), (30, 30)):
+        light = f'<a:lightRig rig="threePt" dir="t"><a:rot lat="{la * DEG}" lon="{lo * DEG}" rev="0"/></a:lightRig>'
+        out.append(Probe(f'threePt rot lat {la} lon {lo}, warmMatte', shape=True, fill=GREY, anchor='fixed', scene=scene(front, light) + sp3d(deep)))
+    return out
+
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -909,6 +959,13 @@ SETS = {
     'cr081-phase5b-r5': [
         ('fxg5-bevel-cuts', fam_bevel_cuts, THEME_2023),
     ],
+    'cr081-phase5b2-r1': [
+        ('fxh1-rigs-a', fam_rigs_b2(RIGS_B2[:8]), THEME_2023),
+        ('fxh2-rigs-b', fam_rigs_b2(RIGS_B2[8:16]), THEME_2023),
+        ('fxh3-rigs-c', fam_rigs_b2(RIGS_B2[16:]), THEME_2023),
+        ('fxh4-materials', fam_materials_b2, THEME_2023),
+        ('fxh5-presets-dirs', fam_presets_dirs_b2, THEME_2023),
+    ],
     'cr081-phase5b-r1': [
         ('fxg1-light', fam_light, THEME_2023),
     ],
@@ -927,7 +984,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300, 'cr081-phase5a-r4': 300, 'cr081-phase5a-r5': 300, 'cr081-phase5b-r1': 300, 'cr081-phase5b-r2': 300, 'cr081-phase5b-r3': 300, 'cr081-phase5b-r4': 300, 'cr081-phase5b-r5': 300}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300, 'cr081-phase5a-r4': 300, 'cr081-phase5a-r5': 300, 'cr081-phase5b-r1': 300, 'cr081-phase5b-r2': 300, 'cr081-phase5b-r3': 300, 'cr081-phase5b-r4': 300, 'cr081-phase5b-r5': 300, 'cr081-phase5b2-r1': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 

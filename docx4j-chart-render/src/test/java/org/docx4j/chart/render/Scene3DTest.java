@@ -69,6 +69,13 @@ public class Scene3DTest {
 	 * (CR-081 section 6: about 6 / 255, set at the first fit). Word's model is fitted, not documented.
 	 */
 	private static final double SHADING_TOLERANCE = 6;
+	/**
+	 * Phase 5b-2's, set at its first fit: its turned views of the strong highlights (metal, powder) and the translucent
+	 * materials miss most where a bevel meets a side, a crease docx4j's geometry puts a fraction of a pixel from Word's
+	 * (16 to 18 / 255 on about a sixth of the points, the model's error there as large); 250 of its 257 probes are within
+	 * 6, all within 8.5 (phase5b2-findings.md section 8)
+	 */
+	private static final double SHADING_TOLERANCE_B2 = 9;
 
 	private static final List<Map<String, Object>> PROBES = new ArrayList<Map<String, Object>>();
 	private static ThemeColors theme;
@@ -100,8 +107,12 @@ public class Scene3DTest {
 	 * A 3-D drawing's shading against Word's (CR-081 phase 5b-1): every probe of the rounds cr081-phase5b-r1 and -r2
 	 * (cr081-word-3d-light.jsonl.gz, from CR-081-notes/export_3d_light.py): the picture styles' four light rigs under their
 	 * three materials on a deep circle bevel, a rectangle's and an ellipse's; turned rigs, another direction, turned
-	 * cameras, an extrusion, a blue fill, the photo. At every point of a 1.5 pt grid where both pictures are opaque, round
-	 * it, the colours' mean difference is within {@link #SHADING_TOLERANCE}.
+	 * cameras, an extrusion, a blue fill, the photo; and phase 5b-2's round cr081-phase5b2-r1: the other 23 rigs on an
+	 * extruded ellipse from five views, the other materials but legacyWireframe from four, the other presets' shading,
+	 * the six other directions and rigs rotated by lat and lon. At every point of a 1.5 pt grid where both pictures are
+	 * opaque, round it, the colours' mean difference is within {@link #SHADING_TOLERANCE} (5b-2's within
+	 * {@link #SHADING_TOLERANCE_B2}); for a translucent material, where both are not quite clear, the pictures over a white
+	 * page.
 	 */
 	@Test
 	public void theShadingIsWords() throws Exception {
@@ -138,6 +149,7 @@ public class Scene3DTest {
 			double x0 = Json.number(word.get("x0")), y0 = Json.number(word.get("y0")), step = Json.number(word.get("step"));
 			int cols = (int) Math.round(Json.number(word.get("cols"))), rows = (int) Math.round(Json.number(word.get("rows")));
 			String rgb = (String) word.get("rgb");
+			boolean overWhite = Boolean.TRUE.equals(word.get("overWhite"));
 			double err = 0;
 			int n = 0, words = 0;
 			for (int j = 0; j < rows; j++) {
@@ -145,7 +157,7 @@ public class Scene3DTest {
 					String cell = rgb.substring((j * cols + i) * 6, (j * cols + i) * 6 + 6);
 					if (cell.charAt(0) == '.') continue;
 					words++;
-					int mine = opaque(pic, x0 + i * step, y0 + j * step);
+					int mine = overWhite ? overWhite(pic, x0 + i * step, y0 + j * step) : opaque(pic, x0 + i * step, y0 + j * step);
 					if (mine == 0) continue;
 					int c = Integer.parseInt(cell, 16);
 					err += (Math.abs(((c >> 16) & 0xff) - ((mine >> 16) & 0xff)) + Math.abs(((c >> 8) & 0xff) - ((mine >> 8) & 0xff))
@@ -156,14 +168,15 @@ public class Scene3DTest {
 			double mean = n > 0 ? err / n : 255;
 			sum += mean;
 			worst = Math.max(worst, mean);
-			boolean bad = mean > SHADING_TOLERANCE || n < 0.9 * words;
+			double tolerance = ((String) p.get("probe")).startsWith("fxh") ? SHADING_TOLERANCE_B2 : SHADING_TOLERANCE;
+			boolean bad = mean > tolerance || n < 0.9 * words;
 			if (bad) failed++;
 			report.append(String.format(Locale.ROOT, "%n  %s %-60s %5.2f / 255 over %d of Word's %d points%s", p.get("probe"), p.get("note"), mean, n, words,
 					bad ? "  PAST" : ""));
 		}
-		System.out.println(String.format(Locale.ROOT, "Scene3DTest shading: %d probes, mean %.2f / 255, worst %.2f, %d past %.1f%s", probes.size(),
-				sum / probes.size(), worst, failed, SHADING_TOLERANCE, report));
-		assertTrue(failed + " of " + probes.size() + " probes past " + SHADING_TOLERANCE + ":" + report, failed == 0);
+		System.out.println(String.format(Locale.ROOT, "Scene3DTest shading: %d probes, mean %.2f / 255, worst %.2f, %d past %.1f (5b-2's %.1f)%s",
+				probes.size(), sum / probes.size(), worst, failed, SHADING_TOLERANCE, SHADING_TOLERANCE_B2, report));
+		assertTrue(failed + " of " + probes.size() + " probes past their tolerance:" + report, failed == 0);
 	}
 
 	/** docx4j's colour at a point of the frame, where it and its neighbours are opaque; else 0 */
@@ -174,6 +187,23 @@ public class Scene3DTest {
 		if (ix < 1 || iy < 1 || ix + 1 >= img.getWidth() || iy + 1 >= img.getHeight()) return 0;
 		for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) if ((img.getRGB(ix + dx, iy + dy) >>> 24) < 250) return 0;
 		return img.getRGB(ix, iy) | 0xff000000;
+	}
+
+	/**
+	 * docx4j's picture over a white page at a point of the frame, where it and its neighbours aren't quite clear (a
+	 * translucent material's, phase 5b-2); else 0
+	 */
+	private static int overWhite(Scene3D.Picture pic, double x, double y) {
+		BufferedImage img = pic.getImage();
+		Rectangle2D.Double place = pic.getPlace();
+		int ix = (int) Math.floor((x - place.x) / place.width * img.getWidth()), iy = (int) Math.floor((y - place.y) / place.height * img.getHeight());
+		if (ix < 1 || iy < 1 || ix + 1 >= img.getWidth() || iy + 1 >= img.getHeight()) return 0;
+		for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) if ((img.getRGB(ix + dx, iy + dy) >>> 24) < 5) return 0;
+		int c = img.getRGB(ix, iy);
+		double a = (c >>> 24) / 255.0;
+		int out = 0xff000000;
+		for (int sh = 16; sh >= 0; sh -= 8) out |= (int) Math.round(a * ((c >> sh) & 0xff) + (1 - a) * 255) << sh;
+		return out;
 	}
 
 	/** The rounds' synthetic photo (CR-081-notes/build_phase0.py's photo()): a gradient, a green hill, a red disc top left */
@@ -259,9 +289,12 @@ public class Scene3DTest {
 		java.awt.geom.Rectangle2D a = ((org.docx4j.chart.render.api.Drawing.Picture) alone.getDrawing().getItems().get(0)).getInto();
 		assertTrue(p.getInto() + " over " + a, p.getInto().getMaxY() > a.getMaxY() + 1 && p.getInto().getMaxX() > a.getMaxX() + 1);
 		assertTrue(three.getProblems().toString(), !three.getProblems().contains(Scene3D.SHADING));
-		assertTrue(problems(fill + scene.replace("threePt", "morning"), false, false).contains(Scene3D.SHADING));
-		assertTrue(problems(fill + scene.replace("<a:sp3d ", "<a:sp3d prstMaterial=\"metal\" "), false, false).contains(Scene3D.SHADING));
-		assertTrue(problems(fill + scene.replace("dir=\"t\"/>", "dir=\"t\"><a:rot lat=\"1200000\" lon=\"0\" rev=\"0\"/></a:lightRig>"), false, false)
+		// every rig and every material but legacyWireframe is Word's (phase 5b-2)
+		assertTrue(!problems(fill + scene.replace("threePt", "morning"), false, false).contains(Scene3D.SHADING));
+		assertTrue(!problems(fill + scene.replace("<a:sp3d ", "<a:sp3d prstMaterial=\"metal\" "), false, false).contains(Scene3D.SHADING));
+		assertTrue(problems(fill + scene.replace("<a:sp3d ", "<a:sp3d prstMaterial=\"legacyWireframe\" "), false, false).contains(Scene3D.SHADING));
+		// a rig turned by lat or lon is Word's too (phase 5b-2)
+		assertTrue(!problems(fill + scene.replace("dir=\"t\"/>", "dir=\"t\"><a:rot lat=\"1200000\" lon=\"0\" rev=\"0\"/></a:lightRig>"), false, false)
 				.contains(Scene3D.SHADING));
 		assertTrue(three.getProblems().toString(), !three.getProblems().contains(org.docx4j.chart.render.api.ShapeRenderer.FLAT_3D));
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn flat = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill), null, theme, 1828800,

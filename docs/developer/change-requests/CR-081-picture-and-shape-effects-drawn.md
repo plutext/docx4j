@@ -15,7 +15,9 @@ DONE 2026-11-11 (Jason: "CR-081 phase 5a: start it", "connect the renderer to th
 `CR-081-notes/phase5a-findings.md`; five Word rounds, 270 silhouettes within 0.60pt, gates b425 to b427 0 movers. Phase 5b
 split at its go/no-go (Jason: "yes, do 5b-1, defer 5b-2"): 5b-1, the picture styles' four light rigs and three
 materials, DONE 2026-11-11 (Jason: "commit it and mark it done"): `CR-081-notes/phase5b-findings.md`; five Word rounds,
-100 probes within 6/255 (mean 1.82), gates b428 and b430 0 movers; 5b-2, the rest, deferred. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+100 probes within 6/255 (mean 1.82), gates b428 and b430 0 movers; 5b-2, the rest, started 2026-11-11 (Jason: "start
+phase 5b-2"), DONE 2026-11-11 (Jason: "commit both and mark 5b-2 done"): `CR-081-notes/phase5b2-findings.md`; one
+Word round, 357 probes (mean 2.07/255), gate b439 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -325,10 +327,24 @@ under `pic:spPr` (through the portfolio).
       Gouraud shading is;
     - hardEdge's and relaxedInset's true profiles, grooves and all, are read from the shading;
     - the gate is 6/255 a probe, met by all 100 (mean 1.82).
-  - **5b-2, the rest** (registry CR-081.5c; deferred, about 1 to 1.5 weeks): the other 23 rigs, coloured ones among
+  - **5b-2, the rest** (registry CR-081.5c; started 2026-11-11, about 1 to 1.5 weeks): the other 23 rigs, coloured ones among
     them, and their directions; the other 12 materials, wireframe, clear and translucentPowder, dkEdge and softEdge
     among them, which aren't plain surfaces; the other presets' grooves (divot, riblet) and cuts. Until then
     `render.effect.3d_shading` reports them.
+    **DONE 2026-11-11** (Jason: "commit both and mark 5b-2 done"; `phase5b2-findings.md`; round cr081-phase5b2-r1, 261
+    probes):
+    - the 23 rigs are coloured, each an ambient and four lights (freezing and brightRoom five), fitted within a mean
+      of 2.5/255 a rig;
+    - all eight directions are measured, and a rig's rot turns it by lat about x, then lon about y;
+    - eight presets shade by profiles of their own, apart from their geometry;
+    - each material is its own light, a diffuse, a wash, edge darkening, a highlight (Blinn's for the legacy ones,
+      Phong's for the rest) and a rim that brightens towards the edges;
+    - clear and translucentPowder are drawn in two layers: the caps only where they face the viewer, the sides from
+      both sides, each layer's alpha linear in |n.v| (Word's alpha within 1.5/255);
+    - legacyWireframe (Word's own mesh lines) is still reported, as is material none;
+    - **gate:** 9/255 a probe, set at the first fit; 250 of 257 within 6. The seven past 6 are turned views of the
+      strong highlights and the translucent materials, where a bevel meets a side a fraction of a pixel from Word's;
+    - b439 against b431: 0 movers, and 4994's pages are identical.
   - What follows is the phase as first written:
 - **Phase 5b as first written** (registry CR-081.5b, now 5b-1 and 5b-2):
   - The 27 `ST_LightRigType` rigs and their directions, and the 15 `ST_PresetMaterialType` materials (metal,

@@ -7,7 +7,8 @@ depth's slope is the one whose colours on the four sides are nearest Word's; the
 pixel's (lost to antialiasing) taken as the second's, and the profile scaled so that its ridge is the bevel's height
 (the envelope's 1). Printed as 65 heights at t = 0, 1/64 ... 1 for Scene3D's PROFILES.
 
-usage: invert_profiles.py <r5 results dir>"""
+usage: invert_profiles.py <r5 results dir>
+       invert_profiles.py <5b-2 r1 results dir> b2   (the other nine presets, cr081-phase5b2-r1's fxh5)"""
 import os, sys
 import numpy as np
 import fit_cuts as fc
@@ -39,7 +40,20 @@ def table(slopes, w):
     z /= z.max()
     return np.interp(np.linspace(0, w, 65), fine, z)
 
+PRESETS_B2 = ('angle', 'artDeco', 'convex', 'coolSlant', 'cross', 'divot', 'riblet', 'slope', 'softRound')
+
+def java_name(p):
+    return {'angle': 'ANGLE', 'artDeco': 'ART_DECO', 'convex': 'CONVEX', 'coolSlant': 'COOL_SLANT', 'cross': 'CROSS',
+            'divot': 'DIVOT', 'riblet': 'RIBLET', 'slope': 'SLOPE', 'softRound': 'SOFT_ROUND'}[p]
+
 if __name__ == '__main__':
+    if len(sys.argv) > 2 and sys.argv[2] == 'b2':
+        # phase 5b-2: cr081-phase5b2-r1's fxh5, each preset at 24 by 12 pt (pages 1, 3, ...)
+        pdf = os.path.join(sys.argv[1], 'fxh5-presets-dirs-a', 'fxh5-presets-dirs.pdf')
+        for k, p in enumerate(PRESETS_B2):
+            t = table(invert(pdf, 2 * k + 1, 24.0), 24.0)
+            print(f'		PROFILES.put(STBevelPresetType.{java_name(p)}, new double[] {{ ' + ', '.join(f'{v:.3f}' for v in t) + ' });')
+        sys.exit(0)
     pdf = os.path.join(sys.argv[1], 'fxg5-bevel-cuts-a', 'fxg5-bevel-cuts.pdf')
     for page, name, w in ((13, 'HARD_EDGE', 24.0), (14, 'RELAXED_INSET', 30.0)):
         t = table(invert(pdf, page, w), w)

@@ -1,0 +1,96 @@
+# CR-081 phase 5b-2's measuring hooks, not committed in Scene3D: apply over 5b-2's Scene3D.java and Scene3DTest.java to make
+# the normal maps the fits read (SCENE3D_DEBUG=normals, SCENE3D_LAYER=back, SCENE3D_DUMP=<dir>; phase5b2-findings.md)
+--- a/docx4j-chart-render/src/main/java/org/docx4j/chart/render/api/Scene3D.java
++++ b/docx4j-chart-render/src/main/java/org/docx4j/chart/render/api/Scene3D.java
+@@ -287,6 +287,13 @@
+ 			return new double[] { x1 * cRev + y2 * sRev, -x1 * sRev + y2 * cRev, z2 };
+ 		}
+ 
++		/** EXPERIMENT (phase 5b-2's fit): a direction turned back into the drawing's space */
++		double[] unturn(double X, double Y, double Z) {
++			double x1 = cRev * X - sRev * Y, y2 = sRev * X + cRev * Y;
++			double y = cLat * y2 - sLat * Z, z1 = sLat * y2 + cLat * Z;
++			return new double[] { cLon * x1 + sLon * z1, y, -sLon * x1 + cLon * z1 };
++		}
++
+ 		/** A direction turned (a normal) */
+ 		double[] turnVector(double x, double y, double z) {
+ 			return turn(x, y, z);
+@@ -436,6 +443,10 @@
+ 		double rim = sp == null ? 0 : sp.getContourW() / 12700.0 / 2;
+ 		Color contourColour = rim > 0 && sp.getContourClr() != null ? Fills.awt(DrawingMLColors.resolve(sp.getContourClr(), theme)) : null;
+ 		Lighting light = lighting(scene, sp, cam);
++		if (NORMALS) {     // EXPERIMENT (phase 5b-2's fit): a normal map, the drawing's own space
++			light.cam = cam;
++			VIEW = cam.unturn(0, 0, 1);
++		}
+ 		int cuts = bevelH > 0 && bevelW > 0 && (topProfile == null || topProfile == STBevelPresetType.CIRCLE) ? cuts(bevelW, bevelH) : 0;
+ 
+ 		// the face and the outline, sampled at the grid (one cell a pixel at the picture's resolution)
+@@ -972,8 +983,15 @@
+ 		MATERIALS.put(STPresetMaterialType.TRANSLUCENT_POWDER, new Material(0.1463, 1.0417, -0.0175, 0, 1.3410, 3.021, 0.8107, 2.4769, false, -0.01, 0.71)); // 1.45 / 2.30; 5.00 / 7.82
+ 	}
+ 
+-	/** A drawing's lights in the camera's space, and its material */
++	/** A drawing's lights in the camera's space, and its material's highlight */
++	/** EXPERIMENT (phase 5b-2's fit): shade() paints the normal in the drawing's space, (n + 1) / 2; VIEW is the last view */
++	public static final boolean NORMALS = "normals".equals(System.getenv("SCENE3D_DEBUG"));
++	public static double[] VIEW;
++	/** EXPERIMENT (phase 5b-2's translucency): the raster keeps the farthest surface, not the nearest */
++	static final boolean BACK = "back".equals(System.getenv("SCENE3D_LAYER"));
++
+ 	static final class Lighting {
++		Camera cam;     // EXPERIMENT
+ 		/** the rig's ambient, {r, g, b} */
+ 		final double[] ambient;
+ 		/** {x, y, z, diffuse r, g, b, highlight r, g, b} */
+@@ -1094,6 +1112,10 @@
+ 		double len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+ 		if (len == 0) return argb;
+ 		double nx = n[0] / len, ny = n[1] / len, nz = n[2] / len;
++		if (NORMALS && l.cam != null) {     // EXPERIMENT
++			double[] m = l.cam.unturn(nx, ny, nz);
++			return (argb & 0xff000000) | (clamp((m[0] + 1) * 127.5) << 16) | (clamp((m[1] + 1) * 127.5) << 8) | clamp((m[2] + 1) * 127.5);
++		}
+ 		Material m = l.material;
+ 		if (m.translucent() && nz < 0) {     // a side seen from inside: lit as facing the viewer
+ 			nx = -nx;
+@@ -1268,7 +1290,7 @@
+ 			if ((long) W * H > 80_000_000L) return null;
+ 			int[] px = new int[W * H];
+ 			double[] zb = new double[W * H];
+-			java.util.Arrays.fill(zb, -Double.MAX_VALUE);
++			java.util.Arrays.fill(zb, BACK ? Double.MAX_VALUE : -Double.MAX_VALUE);
+ 			for (int t = 0; t < tris.size(); t++) {
+ 				double[] v = tris.get(t);
+ 				int colour = colours.get(t);
+@@ -1290,7 +1312,12 @@
+ 						int i = y * W + x;
+ 						// an edge cell's partial alpha is composited, not replaced: over what is behind it, under what is
+ 						// in front (else the face's antialiased edge leaves a seam over the sides it stands in front of)
+-						if (layered && Math.abs(z - zb[i]) < 1e-6) {
++						if (BACK) {     // EXPERIMENT: the farthest surface
++							if (z <= zb[i]) {
++								px[i] = colour;
++								zb[i] = z;
++							}
++						} else if (layered && Math.abs(z - zb[i]) < 1e-6) {
+ 							px[i] = colour;
+ 						} else if (z >= zb[i]) {
+ 							px[i] = (colour >>> 24) == 255 || px[i] == 0 ? colour : over(colour, px[i]);
+--- a/docx4j-chart-render/src/test/java/org/docx4j/chart/render/Scene3DTest.java
++++ b/docx4j-chart-render/src/test/java/org/docx4j/chart/render/Scene3DTest.java
+@@ -144,6 +144,13 @@
+ 			List<String> problems = new ArrayList<String>();
+ 			Scene3D.Picture pic = Scene3D.draw(face, outline, w, h, sp.getScene3D(), sp.getSp3D(), theme, Effects.BASE_PIXELS_PER_POINT, problems);
+ 			assertTrue((String) p.get("probe"), pic != null);
++			if (System.getenv("SCENE3D_DUMP") != null) {     // EXPERIMENT (phase 5b-2's fit)
++				javax.imageio.ImageIO.write(pic.getImage(), "png", new java.io.File(System.getenv("SCENE3D_DUMP"), p.get("probe") + ".png"));
++				java.nio.file.Files.write(new java.io.File(System.getenv("SCENE3D_DUMP"), p.get("probe") + ".txt").toPath(),
++						(pic.getPlace().x + " " + pic.getPlace().y + " " + pic.getPlace().width + " " + pic.getPlace().height
++								+ (Scene3D.VIEW != null ? " " + Scene3D.VIEW[0] + " " + Scene3D.VIEW[1] + " " + Scene3D.VIEW[2] : "")).getBytes());
++				continue;
++			}
+ 			assertTrue(p.get("probe") + " " + problems, !problems.contains(Scene3D.SHADING));
+ 			Map<String, Object> word = Json.object(p.get("word"));
+ 			double x0 = Json.number(word.get("x0")), y0 = Json.number(word.get("y0")), step = Json.number(word.get("step"));
