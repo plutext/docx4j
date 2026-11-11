@@ -130,6 +130,32 @@ public class Scene3DTest {
 		assertTrue(failed + " of " + n + " probes past " + TOLERANCE + " pt:" + report, failed == 0);
 	}
 
+	/**
+	 * A 3-D shape's drawing (CR-081 phase 5a) is one picture in place of its fill and line, its shading reported, its
+	 * shadow cast by that picture; a flat shape's isn't
+	 */
+	@Test
+	public void a3dShapeIsOnePicture() throws Exception {
+		String fill = "<a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/>"
+				+ "</a:prstGeom><a:solidFill><a:srgbClr val=\"4472C4\"/></a:solidFill>";
+		String shadow = "<a:effectLst><a:outerShdw blurRad=\"50800\" dist=\"38100\" dir=\"2700000\" algn=\"tl\" rotWithShape=\"0\">"
+				+ "<a:prstClr val=\"black\"><a:alpha val=\"40000\"/></a:prstClr></a:outerShdw></a:effectLst>";
+		String scene = "<a:scene3d><a:camera prst=\"isometricTopUp\"/><a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d>"
+				+ "<a:sp3d extrusionH=\"457200\"/>";
+		org.docx4j.chart.render.api.ShapeRenderer.Drawn three = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill + shadow + scene), null,
+				theme, 1828800, 1371600, null);
+		List<Object> items = three.getDrawing().getItems();
+		assertTrue(String.valueOf(items), items.size() == 2);    // its shadow, then it
+		assertTrue(items.get(1) instanceof org.docx4j.chart.render.api.Drawing.Picture);
+		org.docx4j.chart.render.api.Drawing.Picture p = (org.docx4j.chart.render.api.Drawing.Picture) items.get(1);
+		assertTrue("wider than its frame: " + p.getInto(), p.getInto().getWidth() > 150);
+		assertTrue(three.getProblems().toString(), three.getProblems().contains(Scene3D.SHADING));
+		assertTrue(three.getProblems().toString(), !three.getProblems().contains(org.docx4j.chart.render.api.ShapeRenderer.FLAT_3D));
+		org.docx4j.chart.render.api.ShapeRenderer.Drawn flat = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill), null, theme, 1828800,
+				1371600, null);
+		assertTrue(flat.getDrawing().getItems().get(0) instanceof org.docx4j.chart.render.api.Drawing.Area);
+	}
+
 	/** The picture's 0.5 alpha crossings, each row's and column's first and last, points from the frame's centre */
 	static List<double[]> crossings(Scene3D.Picture pic, double cx, double cy) {
 		BufferedImage img = pic.getImage();

@@ -391,6 +391,24 @@ public class PictureEffectsFoTest {
 		}
 	}
 
+	/**
+	 * A 3-D picture (CR-081 phase 5a) is one picture with alpha in its place, its geometry Word's: isometricTopUp turns
+	 * the frame into a rhombus wider than it, so the picture reaches past the frame's left edge
+	 */
+	@Test
+	public void a3dPictureIsOnePictureInItsPlace() throws Exception {
+		String scene = "<a:scene3d><a:camera prst=\"isometricTopUp\"/><a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d><a:sp3d/>";
+		for (int flags : BOTH) {
+			org.w3c.dom.Document fo = fo(pkg(picture("png"), scene, null, true, null), flags);
+			assertEquals(route(flags), 0, fo.getElementsByTagNameNS(FO_NS, "external-graphic").getLength());
+			Element svg = onlySvg(fo, route(flags));
+			List<String[]> images = images(svg);
+			assertEquals(route(flags), 1, images.size());
+			assertTrue(route(flags), images.get(0)[0].startsWith("data:image/png;base64,"));
+			assertTrue(route(flags) + ": x " + images.get(0)[1], Double.parseDouble(images.get(0)[1]) < 0);
+		}
+	}
+
 	/** The picture's own bytes in the SVG keep FOP's JPEG passthrough: the PDF holds the JPEG (DCTDecode) */
 	@Test
 	public void aJpegPassesThroughToThePdf() throws Exception {

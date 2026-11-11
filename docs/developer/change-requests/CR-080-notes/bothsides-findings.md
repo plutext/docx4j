@@ -87,3 +87,44 @@ Two cases outside the eight questions:
   the left gap stays empty.
 - 3a's first line therefore starts at 441.65, the right gap plus the left and first-line indents.
 - 6a (a 15pt left gap) matches Word, by that.
+
+## 4. The second rounds (`fop-cr024-bothsides-r2`, 2026-11-11)
+
+Asked by the fork's session for CR-024 phase B, on Jason's order there ("it is worth it. do the minimum-width round and
+the table wider than either gap measurement"). Two files on fb10's geometry (`build_bothsides2.py`,
+`probes-bothsides2.tsv`), one case a page, Word silent.
+
+**The narrow segment's minimum is 18 pt** (fb20, "a a a ..." text). The band lines' text, by the gap:
+
+| Cases | The gap | 16 pt | 17 pt | 18 pt and up |
+|---|---|---|---|---|
+| A, 10 pt text | left, distL 9 pt | empty | empty | used |
+| B, 20 pt text | left, distL 9 pt | empty | empty | used |
+| C, 10 pt text | right, distR 9 pt | empty | empty | used |
+| D, 10 pt text | left, distL 0 | empty | (not probed) | used |
+
+- An 18 pt gap takes two 10 pt words (x 72.02 to 86.03), or one 20 pt word (to 83.10).
+- So the minimum doesn't follow the font size or the side, and it is the free gap's, not the object's distance from
+  the margin.
+- 18 pt is a quarter inch (360 twips). Every band line uses it but the first.
+
+**A table in the band** (fb30: 12 words of anchor paragraph, then the table, then a paragraph):
+
+| Case | Gaps (pt) | Table | Word: where | Word: x, width (pt) |
+|---|---|---|---|---|
+| T1 | 141.65 / 141.65 | fixed, 200 pt | below the object, its top at the object's foot (227.08) | 72.02, 200.48 |
+| T2 | 141.65 / 141.65 | autofit, a 190 pt word | below the object, not shrunk | 72.02, 189.92 |
+| T3 | 100 / 183.3 | fixed, 120 pt | the right gap, in the band (top 118.08) | 340.22, 120.53 |
+| T4 | 183 / 100.3 | fixed, 120 pt | the left gap, in the band | 72.02, 120.53 |
+| T5 | 100 / 183.3 | fixed, 80 pt | the left gap: the first, not the wider | 72.02, 80.45 |
+| T6 | 141.65 / 141.65 | 100% | below the object | 72.02, 451.40 |
+
+- Nothing is set beside a table in the band.
+- The next paragraph starts below the table, in both segments where it is still in the band (T3, T5: 72.0 to 160.2
+  and 340.2 to 522.0).
+
+docx4j (b424's jars, r73):
+- T1, T3, T4 and T6 are Word's.
+- T2's autofit table is 199.78 pt wide against Word's 189.92.
+- T5's table goes in the right gap, where Word takes the left.
+- After T3 to T5, the next paragraph's band lines are one piece in one gap (phase A's).

@@ -378,9 +378,18 @@ public final class Scene3D {
 		boolean[] inside = new boolean[gw * gh];
 		for (int y = 0; y < gh; y++) for (int x = 0; x < gw; x++) inside[y * gw + x] = (maskImg.getRaster().getSample(x, y, 0) & 0xff) >= 128;
 
-		// the distance in from the outline, points (exact, Felzenszwalb and Huttenlocher's two passes)
+		// the signed distance from the outline, points, positive inside (exact, Felzenszwalb and Huttenlocher's two passes):
+		// the outline is half a cell beyond the last sample on its side, so each cell's distance to the nearest sample of
+		// the other side, less half a cell
 		double[] dist = distanceInside(inside, gw, gh);
-		for (int i = 0; i < dist.length; i++) dist[i] /= s;
+		boolean[] outside = new boolean[inside.length];
+		for (int i = 0; i < inside.length; i++) outside[i] = !inside[i];
+		double[] away = distanceInside(outside, gw, gh);
+		double[] sdf = new double[dist.length];
+		for (int i = 0; i < dist.length; i++) {
+			sdf[i] = inside[i] ? (dist[i] - 0.5) / s : -(away[i] - 0.5) / s;
+			dist[i] = Math.max(0, sdf[i]);
+		}
 
 		// the frame's centre: the model's origin
 		double cx = w / 2, cy = h / 2;
@@ -398,17 +407,21 @@ public final class Scene3D {
 				int a = y * gw + x, b = a + 1, c = a + gw, dd = c + 1;
 				if (!inside[a] && !inside[b] && !inside[c] && !inside[dd]) continue;
 				double px = (x + gx0 + 0.5) / s - cx, py = (y + gy0 + 0.5) / s - cy, q = 1 / s;
-				// a cell with a corner outside is drawn to the outline at its corners' height (the edge's antialiasing)
-				double za = zAt(zf, inside, a, b, c, dd), zb = zAt(zf, inside, b, a, dd, c), zc = zAt(zf, inside, c, dd, a, b),
-						zd = zAt(zf, inside, dd, c, b, a);
-				// the normal from the height field's slope
-				double gxs = ((zb - za) + (zd - zc)) / (2 * q), gys = ((zc - za) + (zd - zb)) / (2 * q);
+				// a cell with a corner outside: that corner moved onto the outline, at the bevel's foot, so that the face
+				// ends at the outline and the picture's supersampling alone antialiases it (an edge cell's partial alpha
+				// had antialiased it twice: a two-pixel ramp, a corner rounder than Word's)
+				double[] pa = onOutline(sdf, inside, gw, gh, x, y, px, py, s), pb = onOutline(sdf, inside, gw, gh, x + 1, y, px + q, py, s),
+						pc = onOutline(sdf, inside, gw, gh, x, y + 1, px, py + q, s), pd = onOutline(sdf, inside, gw, gh, x + 1, y + 1, px + q, py + q, s);
+				double foot = z0 - bevelH;
+				double za = inside[a] ? zf[a] : foot, zb = inside[b] ? zf[b] : foot, zc = inside[c] ? zf[c] : foot, zd = inside[dd] ? zf[dd] : foot;
+				// the normal from the height field's slope, where the cell is inside
+				double zas = zAt(zf, inside, a, b, c, dd), zbs = zAt(zf, inside, b, a, dd, c), zcs = zAt(zf, inside, c, dd, a, b),
+						zds = zAt(zf, inside, dd, c, b, a);
+				double gxs = ((zbs - zas) + (zds - zcs)) / (2 * q), gys = ((zcs - zas) + (zds - zbs)) / (2 * q);
 				double[] n = cam.turnVector(-gxs, -gys, 1);
-				int colour = texel(tex, x, y, inside[a] || inside[b] || inside[c] || inside[dd]);
+				int colour = texel(tex, x, y, true);
 				int shaded = shade(colour, n, light);
-				double cover = (inside[a] ? 1 : 0) + (inside[b] ? 1 : 0) + (inside[c] ? 1 : 0) + (inside[dd] ? 1 : 0);
-				if (cover < 4) shaded = withAlpha(shaded, cover / 4);
-				r.quad(px, py, za, px + q, py, zb, px + q, py + q, zd, px, py + q, zc, shaded);
+				r.quad(pa[0], pa[1], za, pb[0], pb[1], zb, pd[0], pd[1], zd, pc[0], pc[1], zc, shaded);
 			}
 		}
 
@@ -456,6 +469,21 @@ public final class Scene3D {
 		return r.picture();
 	}
 
+	/**
+	 * A grid sample's place, points from the frame's centre: where it is outside the outline, moved onto it along the
+	 * signed distance's gradient
+	 */
+	private static double[] onOutline(double[] sdf, boolean[] inside, int w, int h, int x, int y, double px, double py, double s) {
+		int i = y * w + x;
+		if (inside[i]) return new double[] { px, py };
+		double gx = sdf[y * w + Math.min(w - 1, x + 1)] - sdf[y * w + Math.max(0, x - 1)];
+		double gy = sdf[Math.min(h - 1, y + 1) * w + x] - sdf[Math.max(0, y - 1) * w + x];
+		double len = Math.hypot(gx, gy);
+		if (len == 0) return new double[] { px, py };
+		double step = -sdf[i];             // the distance to the outline, points, inwards along the gradient
+		return new double[] { px + gx / len * step, py + gy / len * step };
+	}
+
 	/** The back bevel's depth behind the back face at a distance in from the outline */
 	private static double backZ(double d, double w, double h, STBevelPresetType p) {
 		return h > 0 && w > 0 ? (d < w ? h * profile(p, d / w) : h) : 0;
@@ -499,11 +527,6 @@ public final class Scene3D {
 			}
 		}
 		return 0xff808080;
-	}
-
-	private static int withAlpha(int argb, double a) {
-		int al = (int) Math.round((argb >>> 24) * Math.max(0, Math.min(1, a)));
-		return (al << 24) | (argb & 0xffffff);
 	}
 
 	/** The light's direction in the camera's space, towards the light: the rig's direction, from in front */

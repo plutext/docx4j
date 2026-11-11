@@ -26,6 +26,9 @@ The sets:
                    frame is known exactly
   cr081-phase5a-r2 phase 5a's second round: the cameras again with 36 pt of depth, since a flat drawing can't tell a
                    view from its mirror and shows no oblique; and the bevels' profiles, seen edge on (lon 90)
+  cr081-phase5a-r3 phase 5a's third round (2026-11-11; Jason: "please do the measures: text on a 3-D shape, and how a
+                   shadow on a 3-D drawing is aligned"): a shape's text under turned cameras, with and without
+                   a:flatTx; and an unblurred shadow on 3-D drawings, at algn tl, ctr and br, scaled 50%
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -167,7 +170,7 @@ class Probe:
     """One page: a picture (pic) or a shape (wps), inline unless anchor is given."""
     def __init__(self, note, sppr='', picture='photo.png', geom='rect', ln='', rot=None, src_rect='', shape=False,
                  fill='<a:solidFill><a:srgbClr val="4472C4"/></a:solidFill>', style='', text='', anchor=None,
-                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene='', raw='', cx=CX, cy=CY):
+                 extent='zero', extent_est=(0, 0, 0, 0), in_line=False, scene='', raw='', cx=CX, cy=CY, body=''):
         self.__dict__.update(locals())
         del self.__dict__['self']
 
@@ -533,6 +536,46 @@ def fam_bevel_profiles():
                   sp3d(bevel('circle', 304800, 304800)))]
     return out
 
+YELLOW = '<a:solidFill><a:srgbClr val="FFE699"/></a:solidFill>'
+
+def fam_text_3d():
+    """A shape's text (AB, bold 22 pt, black) on a light shape under 3-D cameras, with and without a:flatTx"""
+    cases = [('flat (the control)', '', ''),
+             ('orthographicFront, bevel circle 6 pt', scene(cam('orthographicFront')) + sp3d(bevel(w=76200, h=76200)), ''),
+             ('isometricTopUp', scene(cam('isometricTopUp')) + sp3d(), ''),
+             ('isometricTopUp, flatTx', scene(cam('isometricTopUp')) + sp3d(), '<a:flatTx/>'),
+             ('orthographicFront lon 45', scene(cam('orthographicFront', 0, 45, 0)) + sp3d(), ''),
+             ('orthographicFront lon 45, flatTx', scene(cam('orthographicFront', 0, 45, 0)) + sp3d(), '<a:flatTx/>'),
+             ('perspectiveContrastingRightFacing', scene(cam('perspectiveContrastingRightFacing')) + sp3d(), ''),
+             ('obliqueTopLeft, depth 36 pt', scene(cam('obliqueTopLeft')) + sp3d(EX, extrusionH=457200), ''),
+             ('isometricOffAxis1Right, depth 36 pt', scene(cam('isometricOffAxis1Right')) + sp3d(EX, extrusionH=457200), ''),
+             ('orthographicFront lat 30 lon 30 rev 30', scene(cam('orthographicFront', 30, 30, 30)) + sp3d(), '')]
+    return [Probe(f'text, {n}', shape=True, fill=YELLOW, text='AB', scene=sc, body=b, anchor='fixed') for n, sc, b in cases]
+
+def sharp(dist=228600, dir=2700000, algn='tl', sx=100000, sy=100000, blur=0):
+    return effects(outer(srgb('000000', 50000), blurRad=blur, dist=dist, dir=dir, algn=algn, sx=sx, sy=sy, rotWithShape=0))
+
+def fam_shadow_3d():
+    """An unblurred black shadow at 50% (18 pt at 45 degrees) on 3-D drawings; scaled 50% about tl, ctr and br"""
+    iso = scene(cam('isometricTopUp')) + sp3d()
+    cases = [('flat, shadow 18 pt at 45 (the control)', sharp(), ''),
+             ('orthographicFront, bevel circle 6 pt', sharp(), scene(cam('orthographicFront')) + sp3d(bevel(w=76200, h=76200))),
+             ('isometricTopUp', sharp(), iso),
+             ('isometricTopUp, shadow 50% about ctr', sharp(dist=0, algn='ctr', sx=50000, sy=50000), iso),
+             ('isometricTopUp, shadow 50% about tl', sharp(dist=0, algn='tl', sx=50000, sy=50000), iso),
+             ('isometricTopUp, shadow 50% about br', sharp(dist=0, algn='br', sx=50000, sy=50000), iso),
+             ('flat, shadow 50% about br (the control)', sharp(dist=0, algn='br', sx=50000, sy=50000), ''),
+             ('perspectiveContrastingRightFacing', sharp(), scene(cam('perspectiveContrastingRightFacing')) + sp3d()),
+             ('isometricOffAxis1Right, depth 36 pt', sharp(), scene(cam('isometricOffAxis1Right')) + sp3d(EX, extrusionH=457200)),
+             ('obliqueTopLeft, depth 36 pt', sharp(), scene(cam('obliqueTopLeft')) + sp3d(EX, extrusionH=457200)),
+             ('orthographicFront lon 45', sharp(), scene(cam('orthographicFront', 0, 45, 0)) + sp3d()),
+             ('isometricTopUp, shadow blurred 6 pt', sharp(blur=76200), iso),
+             ('isometricTopUp, glow 6 pt', effects(glow(76200, srgb('C00000', 60000))), iso),
+             ('isometricTopUp, reflection', effects(refl(**{**REFL, 'endPos': 90000})), iso)]
+    out = [Probe(f'shadow, {n}', fx, shape=True, fill=YELLOW, scene=sc, anchor='fixed') for n, fx, sc in cases]
+    out.append(Probe('shadow, isometricTopUp, the photo', sharp(), scene=iso, anchor='fixed'))
+    return out
+
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -692,6 +735,10 @@ SETS = {
         ('fxc9-depth', fam_depth, THEME_2023),
         ('fxca-layout', fam_layout, THEME_2023),
     ],
+    'cr081-phase5a-r3': [
+        ('fxe1-text-3d', fam_text_3d, THEME_2023),
+        ('fxe2-shadow-3d', fam_shadow_3d, THEME_2023),
+    ],
     'cr081-phase5a-r2': [
         ('fxd1-cameras-depth-a', fam_cameras_depth(0), THEME_2023),
         ('fxd2-cameras-depth-b', fam_cameras_depth(1), THEME_2023),
@@ -707,7 +754,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 
@@ -734,7 +781,8 @@ def graphic(probe, n, rid):
     if probe.shape:
         txbx = (f'<wps:txbx><w:txbxContent><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="44"/>'
                 f'</w:rPr><w:t>{escape(probe.text)}</w:t></w:r></w:p></w:txbxContent></wps:txbx>') if probe.text else ''
-        body = '<wps:bodyPr rot="0" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" anchor="ctr" anchorCtr="0"><a:noAutofit/></wps:bodyPr>'
+        body = ('<wps:bodyPr rot="0" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" anchor="ctr" anchorCtr="0">'
+                f'<a:noAutofit/>{probe.body}</wps:bodyPr>')
         return (f'<a:graphic><a:graphicData uri="{URI_WPS}"><wps:wsp><wps:cNvSpPr/><wps:spPr>{probe.sp_pr()}</wps:spPr>'
                 f'{probe.style}{txbx}{body}</wps:wsp></a:graphicData></a:graphic>')
     return (f'<a:graphic><a:graphicData uri="{URI_PIC}"><pic:pic><pic:nvPicPr><pic:cNvPr id="{n}" name="{probe.picture}"/>'

@@ -114,6 +114,22 @@ public class PictureEffectsHtmlTest {
 		}
 	}
 
+	/** A 3-D picture (CR-081 phase 5a): one picture with alpha in its place, reaching past the frame (isometricTopUp) */
+	@Test
+	public void a3dPictureIsOnePictureInItsPlace() throws Exception {
+		for (int flags : BOTH) {
+			org.w3c.dom.Document doc = html("<a:scene3d><a:camera prst=\"isometricTopUp\"/><a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d><a:sp3d/>", flags);
+			assertEquals(route(flags), 0, doc.getElementsByTagName("img").getLength());
+			NodeList svgs = doc.getElementsByTagNameNS(SVG_NS, "svg");
+			assertEquals(route(flags), 1, svgs.getLength());
+			NodeList images = ((Element) svgs.item(0)).getElementsByTagNameNS(SVG_NS, "image");
+			assertEquals(route(flags), 1, images.getLength());
+			Element image = (Element) images.item(0);
+			assertTrue(route(flags), image.getAttributeNS(XLINK_NS, "href").startsWith("data:image/png;base64,"));
+			assertTrue(route(flags) + ": x " + image.getAttribute("x"), Double.parseDouble(image.getAttribute("x")) < 0);
+		}
+	}
+
 	/**
 	 * An oval frame with a line (CR-081 phase 2): the picture clipped to the ellipse, the line an svg in the picture's,
 	 * after it; every id the picture's own (its wp:docPr's), none twice

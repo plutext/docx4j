@@ -1,0 +1,56 @@
+set	file	page	case	note	gap_left	gap_right
+fop-cr024-bothsides-r2	fb20-minimum	1	A1	left gap 16pt, 10pt text, distL and distR 9pt	16.00	267.30
+fop-cr024-bothsides-r2	fb20-minimum	2	A2	left gap 17pt, 10pt text, distL and distR 9pt	17.00	266.30
+fop-cr024-bothsides-r2	fb20-minimum	3	A3	left gap 18pt, 10pt text, distL and distR 9pt	18.00	265.30
+fop-cr024-bothsides-r2	fb20-minimum	4	A4	left gap 19pt, 10pt text, distL and distR 9pt	19.00	264.30
+fop-cr024-bothsides-r2	fb20-minimum	5	A5	left gap 20pt, 10pt text, distL and distR 9pt	20.00	263.30
+fop-cr024-bothsides-r2	fb20-minimum	6	A6	left gap 21pt, 10pt text, distL and distR 9pt	21.00	262.30
+fop-cr024-bothsides-r2	fb20-minimum	7	A7	left gap 22pt, 10pt text, distL and distR 9pt	22.00	261.30
+fop-cr024-bothsides-r2	fb20-minimum	8	A8	left gap 23pt, 10pt text, distL and distR 9pt	23.00	260.30
+fop-cr024-bothsides-r2	fb20-minimum	9	A9	left gap 24pt, 10pt text, distL and distR 9pt	24.00	259.30
+fop-cr024-bothsides-r2	fb20-minimum	10	A10	left gap 25pt, 10pt text, distL and distR 9pt	25.00	258.30
+fop-cr024-bothsides-r2	fb20-minimum	11	A11	left gap 26pt, 10pt text, distL and distR 9pt	26.00	257.30
+fop-cr024-bothsides-r2	fb20-minimum	12	A12	left gap 27pt, 10pt text, distL and distR 9pt	27.00	256.30
+fop-cr024-bothsides-r2	fb20-minimum	13	A13	left gap 28pt, 10pt text, distL and distR 9pt	28.00	255.30
+fop-cr024-bothsides-r2	fb20-minimum	14	A14	left gap 29pt, 10pt text, distL and distR 9pt	29.00	254.30
+fop-cr024-bothsides-r2	fb20-minimum	15	B1	left gap 16pt, 20pt text, distL and distR 9pt	16.00	267.30
+fop-cr024-bothsides-r2	fb20-minimum	16	B2	left gap 17pt, 20pt text, distL and distR 9pt	17.00	266.30
+fop-cr024-bothsides-r2	fb20-minimum	17	B3	left gap 18pt, 20pt text, distL and distR 9pt	18.00	265.30
+fop-cr024-bothsides-r2	fb20-minimum	18	B4	left gap 19pt, 20pt text, distL and distR 9pt	19.00	264.30
+fop-cr024-bothsides-r2	fb20-minimum	19	B5	left gap 20pt, 20pt text, distL and distR 9pt	20.00	263.30
+fop-cr024-bothsides-r2	fb20-minimum	20	B6	left gap 21pt, 20pt text, distL and distR 9pt	21.00	262.30
+fop-cr024-bothsides-r2	fb20-minimum	21	B7	left gap 22pt, 20pt text, distL and distR 9pt	22.00	261.30
+fop-cr024-bothsides-r2	fb20-minimum	22	B8	left gap 23pt, 20pt text, distL and distR 9pt	23.00	260.30
+fop-cr024-bothsides-r2	fb20-minimum	23	B9	left gap 24pt, 20pt text, distL and distR 9pt	24.00	259.30
+fop-cr024-bothsides-r2	fb20-minimum	24	B10	left gap 25pt, 20pt text, distL and distR 9pt	25.00	258.30
+fop-cr024-bothsides-r2	fb20-minimum	25	B11	left gap 26pt, 20pt text, distL and distR 9pt	26.00	257.30
+fop-cr024-bothsides-r2	fb20-minimum	26	B12	left gap 27pt, 20pt text, distL and distR 9pt	27.00	256.30
+fop-cr024-bothsides-r2	fb20-minimum	27	B13	left gap 28pt, 20pt text, distL and distR 9pt	28.00	255.30
+fop-cr024-bothsides-r2	fb20-minimum	28	B14	left gap 29pt, 20pt text, distL and distR 9pt	29.00	254.30
+fop-cr024-bothsides-r2	fb20-minimum	29	C1	right gap 16pt, 10pt text, distL and distR 9pt	267.30	16.00
+fop-cr024-bothsides-r2	fb20-minimum	30	C2	right gap 17pt, 10pt text, distL and distR 9pt	266.30	17.00
+fop-cr024-bothsides-r2	fb20-minimum	31	C3	right gap 18pt, 10pt text, distL and distR 9pt	265.30	18.00
+fop-cr024-bothsides-r2	fb20-minimum	32	C4	right gap 19pt, 10pt text, distL and distR 9pt	264.30	19.00
+fop-cr024-bothsides-r2	fb20-minimum	33	C5	right gap 20pt, 10pt text, distL and distR 9pt	263.30	20.00
+fop-cr024-bothsides-r2	fb20-minimum	34	C6	right gap 21pt, 10pt text, distL and distR 9pt	262.30	21.00
+fop-cr024-bothsides-r2	fb20-minimum	35	C7	right gap 22pt, 10pt text, distL and distR 9pt	261.30	22.00
+fop-cr024-bothsides-r2	fb20-minimum	36	C8	right gap 23pt, 10pt text, distL and distR 9pt	260.30	23.00
+fop-cr024-bothsides-r2	fb20-minimum	37	C9	right gap 24pt, 10pt text, distL and distR 9pt	259.30	24.00
+fop-cr024-bothsides-r2	fb20-minimum	38	C10	right gap 25pt, 10pt text, distL and distR 9pt	258.30	25.00
+fop-cr024-bothsides-r2	fb20-minimum	39	C11	right gap 26pt, 10pt text, distL and distR 9pt	257.30	26.00
+fop-cr024-bothsides-r2	fb20-minimum	40	C12	right gap 27pt, 10pt text, distL and distR 9pt	256.30	27.00
+fop-cr024-bothsides-r2	fb20-minimum	41	C13	right gap 28pt, 10pt text, distL and distR 9pt	255.30	28.00
+fop-cr024-bothsides-r2	fb20-minimum	42	C14	right gap 29pt, 10pt text, distL and distR 9pt	254.30	29.00
+fop-cr024-bothsides-r2	fb20-minimum	43	D1	left gap 16pt, 10pt text, distL 0 and distR 9pt	16.00	276.30
+fop-cr024-bothsides-r2	fb20-minimum	44	D2	left gap 18pt, 10pt text, distL 0 and distR 9pt	18.00	274.30
+fop-cr024-bothsides-r2	fb20-minimum	45	D3	left gap 20pt, 10pt text, distL 0 and distR 9pt	20.00	272.30
+fop-cr024-bothsides-r2	fb20-minimum	46	D4	left gap 22pt, 10pt text, distL 0 and distR 9pt	22.00	270.30
+fop-cr024-bothsides-r2	fb20-minimum	47	D5	left gap 24pt, 10pt text, distL 0 and distR 9pt	24.00	268.30
+fop-cr024-bothsides-r2	fb20-minimum	48	D6	left gap 26pt, 10pt text, distL 0 and distR 9pt	26.00	266.30
+fop-cr024-bothsides-r2	fb20-minimum	49	D7	left gap 28pt, 10pt text, distL 0 and distR 9pt	28.00	264.30
+fop-cr024-bothsides-r2	fb30-tables	1	T1	equal gaps, a fixed table 200pt wide	141.65	141.65
+fop-cr024-bothsides-r2	fb30-tables	2	T2	equal gaps, an autofit table about 200pt wide (one cell of unbreakable text)	141.65	141.65
+fop-cr024-bothsides-r2	fb30-tables	3	T3	left gap 100pt, right 183pt, a fixed table 120pt wide	100.00	183.30
+fop-cr024-bothsides-r2	fb30-tables	4	T4	left gap 183pt, right 100pt, a fixed table 120pt wide	183.00	100.30
+fop-cr024-bothsides-r2	fb30-tables	5	T5	left gap 100pt, right 183pt, a fixed table 80pt wide	100.00	183.30
+fop-cr024-bothsides-r2	fb30-tables	6	T6	equal gaps, a table the column's width (100%)	141.65	141.65

@@ -117,9 +117,90 @@ are pixel for pixel alike in the two copies: Word doesn't differ from itself.
     is 0.49 pt (fxc8-05).
   - The oracle is `cr081-word-3d.jsonl.gz`, from `export_3d.py`.
 
-## 4. Not measured yet
+## 4. In the outputs
 
-- **Contour** (fxc9-15, -16): the silhouette grows by the contour's width on the sides that face the viewer.
+`Scene3D` is called from both drawing paths, so a document's 3-D drawing is drawn in the PDF and HTML outputs, by
+the visitor and the XSLT alike.
+- **A shape** (`ShapeRenderer.effects`): a single shape, and each shape of a group or canvas.
+  - Its scene3d and sp3d are its spPr's, else those of the theme effect style its `effectRef` names, phClr the
+    reference's colour.
+  - Its fill, line and picture fills as painted are the 3-D picture's face, and the picture takes their place.
+- **A picture** (`ShapeSvgDrawer.drawPicture`, core's `PictureEffects`):
+  - the picture in its frame, its line and the fill behind it are the face;
+  - the 3-D picture is a REPLACE effect picture, so that the picture, the fill and the line aren't drawn under it;
+  - core counts a 3-D picture as framed, and reads its pixels for the face.
+- **Its effects** (shadow, glow, reflection, soft edge) are cast by the 3-D picture. They are computed over its bounds,
+  which may reach past the frame. Word's one picture holds them; docx4j's are under it.
+- **The face's edge.** It ends exactly at the outline: a signed distance moves each edge cell's outside corners onto
+  it, so that the supersampling alone antialiases the edge.
+  - An edge cell's partial alpha had antialiased it twice: a two-pixel ramp, and corners rounder than Word's.
+  - The bevel's inset is measured from the outline too, half a cell nearer than before.
+
+Checks:
+- **The PDF route.** Round 1's fxc1, fxc3, fxc7 and fxc9 were rendered through docx4j's PDF and read as Word's are.
+  Every 3-D probe but the two contours is within 0.27 pt of Word's silhouette by hull distance.
+- **Gate b425** against b424: 0 movers, events equal, probes unmoved.
+  - One corpus drawing is 3-D: 4994's (real3) picture style, a 1.5 pt top bevel. It was drawn flat before; its
+    silhouette is now within 0.37 pt of Word's.
+- **Tests:**
+  - `Scene3DTest.a3dShapeIsOnePicture`;
+  - `PictureEffectsHtmlTest.a3dPictureIsOnePictureInItsPlace` and `PictureEffectsFoTest.a3dPictureIsOnePictureInItsPlace`
+    (both routes);
+  - chart-render 58, export-fo-tests 951, core-tests 2631.
+
+## 5. Round 3 (`cr081-phase5a-r3`, 2026-11-11): a 3-D shape's text, and its effects
+
+25 probes in 2 files, each twice, Word silent (4.6 to 5.4 s a job; Jason: "please do the measures: text on a 3-D
+shape, and how a shadow on a 3-D drawing is aligned").
+
+**The text** (fxe1: AB, bold 22 pt, on a light shape):
+- **A front camera** (orthographicFront, with a bevel): the text is the PDF's own text, flat, where a flat shape's is
+  (58.4 to 85.8 pt across the frame, 40.7 to 55.3 down).
+- **Any other camera**: the text isn't in the PDF's text layer. It is drawn into the 3-D picture, turned with the face.
+  - isometricTopUp, orthographicFront lon 45, perspectiveContrastingRightFacing and lat 30 lon 30 rev 30: the text's
+    pixels are on the face, centred on the frame.
+  - Under lon 45 it is 18.3 pt across against 27.4 flat, about cos 45.
+  - The obliques too, though an oblique doesn't turn the face (obliqueTopLeft with depth).
+- **`a:flatTx`** (keep text flat, in the bodyPr): the text is the PDF's own text again, flat, at its unturned place,
+  under isometricTopUp and lon 45 alike.
+
+**The effects** (fxe2: an unblurred black shadow at 50%, 18 pt at 45 degrees, on a light shape).
+- **The shadow is the frame's, cast in the drawing's plane, and projected with it.** The frame is moved by dist along
+  dir and scaled about its algn point there, then turned by the camera. `read_shadow_3d.py` and the hypotheses against
+  the visible shadow (alpha about one half):
+
+  | Probe | Object plane, projected | 3-D silhouette, moved on the page | the frame, moved on the page |
+  |---|---|---|---|
+  | isometricTopUp | 0.968 | 0.307 | 0.242 |
+  | isometricTopUp, the photo | 0.968 | 0.307 | 0.242 |
+  | perspectiveContrastingRightFacing | 0.956 | 0.706 | 0.539 |
+  | orthographicFront lon 45 | 0.963 | 0.925 | 0.930 |
+  | orthographicFront, bevel 6 pt | 0.970 | 0.943 | 0.943 |
+  | isometricTopUp, blurred 6 pt | 0.930 | 0.283 | 0.208 |
+
+  (the overlap with Word's shadow, intersection over union).
+  - The shadows scaled 50% about ctr, tl and br stay inside the frame, so they're hidden behind the drawing, as the
+    object-plane reading has it. On the page, about tl or br, they would show beyond the rhombus.
+  - With depth, the shadow is behind the face: obliqueTopLeft's fits better on the back face's plane (0.858) than on the
+    front's (0.817). isometricOffAxis1Right's is all but hidden; not fitted.
+- **The reflection and the glow are the same.**
+  - The reflection, mirrored below the frame in the drawing's plane and projected, overlaps Word's at 0.891; mirrored on
+    the page, at 0.003.
+  - The glow, round the frame in its plane and projected: 0.62, against 0.45 round the silhouette on the page (a rough
+    model of the glow's edge either way).
+- **Word's one picture holds them**, drawn under the drawing.
+
+**What this changes in docx4j:**
+- A 3-D drawing's effects are cast by its 3-D picture on the page (section 4). That is Word's only for a front camera.
+  - Word's are the flat drawing's effects, drawn in its plane under it and projected with it.
+  - `Scene3D` can draw them so, as pictures on the drawing's plane behind its face, z-buffered.
+- A 3-D shape's text is the output's, drawn flat over it.
+  - That is Word's for a front camera and with `a:flatTx`.
+  - For another camera, Word turns the text into the picture. docx4j's text is laid out by the output, not by the
+    renderer, so docx4j can report this where it would show.
+
+## 6. Not measured yet
+
+- **Contour** (fxc9-15, -16): the silhouette grows by the contour's width on the sides that face the viewer. It isn't
+  drawn, and `render.effect.flat_3d` reports it.
 - **The layout** (fxca): the frame against the text, not yet read.
-- **The drawing paths**: `Scene3D` isn't yet called from a shape's or a picture's drawing (ShapeRenderer, ShapeSvgDrawer,
-  PictureEffects), so a 3-D drawing is still drawn flat.

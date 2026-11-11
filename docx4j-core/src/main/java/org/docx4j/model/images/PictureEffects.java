@@ -98,6 +98,25 @@ final class PictureEffects {
 	}
 
 	/**
+	 * Whether the picture is 3-D as Word draws it (CR-081 phase 5a): a bevel, an extrusion or a contour, or a camera off
+	 * the front. Word draws it as one lit picture in its place (phase 0 findings section 4); the drawer draws it so.
+	 */
+	static boolean is3d(Pic pic) {
+		if (pic == null || pic.getSpPr() == null) return false;
+		org.docx4j.dml.CTShape3D shape = pic.getSpPr().getSp3D();
+		if (shape != null && (shape.getBevelT() != null || shape.getBevelB() != null || shape.getExtrusionH() > 0 || shape.getContourW() > 0)) {
+			return true;
+		}
+		org.docx4j.dml.CTScene3D scene = pic.getSpPr().getScene3D();
+		if (scene != null && scene.getCamera() != null) {
+			org.docx4j.dml.CTCamera c = scene.getCamera();
+			if (c.getPrst() != null && c.getPrst() != org.docx4j.dml.STPresetCameraType.ORTHOGRAPHIC_FRONT) return true;
+			if (c.getRot() != null && (c.getRot().getLat() != 0 || c.getRot().getLon() != 0 || c.getRot().getRev() != 0)) return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Whether the picture is more than its bitmap in its box, as Word draws it: effects, an outline that isn't its box
 	 * (a preset other than rect, a custom geometry), or a line (CR-081 phase 2). A fill behind it shows only through a
 	 * transparent bitmap: see {@link #fillBehind(Pic)}.
@@ -106,6 +125,7 @@ final class PictureEffects {
 		if (pic == null || pic.getSpPr() == null) return false;
 		CTShapeProperties sp = pic.getSpPr();
 		if (effects(pic) != null) return true;
+		if (is3d(pic)) return true;
 		if (sp.getCustGeom() != null) return true;
 		if (sp.getPrstGeom() != null && sp.getPrstGeom().getPrst() != null && sp.getPrstGeom().getPrst() != STShapeType.RECT) return true;
 		CTLineProperties ln = sp.getLn();
@@ -145,9 +165,9 @@ final class PictureEffects {
 		}
 		// a fill behind an opaque bitmap doesn't show
 		if (!framed && !hasAlpha(bytes)) return null;
-		// the pixels, where there are effects to draw from them
+		// the pixels, where there are effects to draw from them, or a 3-D picture's face
 		BufferedImage picture = null;
-		if (fx != null) {
+		if (fx != null || is3d(pic)) {
 			picture = read(bytes, w, h, crop);
 			if (picture == null) report("render.effect.picture_unread", part.getPartName() == null ? "" : part.getPartName().getName());
 		}

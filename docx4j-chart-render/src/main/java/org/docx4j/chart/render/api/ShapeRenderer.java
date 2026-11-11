@@ -479,7 +479,8 @@ public final class ShapeRenderer {
 	 */
 	public static final String TEXT_EFFECTS = "render.effect.shape_text";
 
-	/** A 3-D drawing (a bevel, an extrusion, a turned camera) drawn flat, until CR-081 phase 5 (D9) */
+	/** A 3-D drawing (a bevel, an extrusion, a turned camera) drawn flat (D9): its contour isn't drawn yet, or its 3-D
+	 *  picture couldn't be made (CR-081 phase 5a draws the rest, {@link Scene3D}) */
 	public static final String FLAT_3D = "render.effect.flat_3d";
 
 	/** An effect list given as a DAG ({@code a:effectDag}), not drawn (CR-081 §9) */
@@ -497,16 +498,20 @@ public final class ShapeRenderer {
 		}
 	}
 
-	/** The effects a shape draws, and the theme its colours resolve in */
+	/** The effects a shape draws, the theme its colours resolve in, and its 3-D scene and shape where it is 3-D */
 	static final class EffectsOf {
 		final CTEffectList list;
 		final ThemeColors theme;
 		final boolean flat3d;
+		final org.docx4j.dml.CTScene3D scene;
+		final org.docx4j.dml.CTShape3D shape3d;
 
-		EffectsOf(CTEffectList list, ThemeColors theme, boolean flat3d) {
+		EffectsOf(CTEffectList list, ThemeColors theme, org.docx4j.dml.CTScene3D scene, org.docx4j.dml.CTShape3D shape3d) {
 			this.list = list;
 			this.theme = theme;
-			this.flat3d = flat3d;
+			this.scene = scene;
+			this.shape3d = shape3d;
+			this.flat3d = is3d(scene, shape3d);
 		}
 	}
 
@@ -517,26 +522,38 @@ public final class ShapeRenderer {
 	 * are none
 	 */
 	static EffectsOf effectsOf(CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, List<String> problems) {
-		boolean flat3d = sp != null && is3d(sp.getScene3D(), sp.getSp3D());
-		if (sp != null && sp.getEffectLst() != null) return new EffectsOf(sp.getEffectLst(), theme, flat3d);
-		if (sp != null && sp.getEffectDag() != null) {
-			if (problems != null && !problems.contains(EFFECT_DAG)) problems.add(EFFECT_DAG);
-			return flat3d ? new EffectsOf(null, theme, true) : null;
-		}
+		org.docx4j.dml.CTScene3D scene = sp == null ? null : sp.getScene3D();
+		org.docx4j.dml.CTShape3D shape3d = sp == null ? null : sp.getSp3D();
+		// the style's effect style, through the theme: its effects, and its 3-D where the spPr states none
+		org.docx4j.dml.CTEffectStyleItem item = null;
+		ThemeColors itemTheme = theme;
 		if (style != null && style.getEffectRef() != null && theme != null && theme.getFormatScheme() != null
 				&& theme.getFormatScheme().getEffectStyleLst() != null) {
 			long idx = style.getEffectRef().getIdx();
 			List<org.docx4j.dml.CTEffectStyleItem> items = theme.getFormatScheme().getEffectStyleLst().getEffectStyle();
 			if (idx > 0 && idx <= items.size()) {
-				org.docx4j.dml.CTEffectStyleItem item = items.get((int) idx - 1);
-				boolean item3d = flat3d || is3d(item.getScene3D(), item.getSp3D());
-				if (item.getEffectDag() != null && item.getEffectLst() == null && problems != null && !problems.contains(EFFECT_DAG)) {
-					problems.add(EFFECT_DAG);
-				}
-				return new EffectsOf(item.getEffectLst(), theme.withPlaceholder(DrawingMLColors.resolve(style.getEffectRef(), theme)), item3d);
+				item = items.get((int) idx - 1);
+				itemTheme = theme.withPlaceholder(DrawingMLColors.resolve(style.getEffectRef(), theme));
 			}
 		}
-		return flat3d ? new EffectsOf(null, theme, true) : null;
+		if (item != null) {
+			if (scene == null) scene = item.getScene3D();
+			if (shape3d == null) shape3d = item.getSp3D();
+		}
+		boolean three = is3d(scene, shape3d);
+		ThemeColors threeTheme = sp != null && (sp.getScene3D() != null || sp.getSp3D() != null) ? theme : itemTheme;
+		if (sp != null && sp.getEffectLst() != null) return new EffectsOf(sp.getEffectLst(), theme, scene, shape3d);
+		if (sp != null && sp.getEffectDag() != null) {
+			if (problems != null && !problems.contains(EFFECT_DAG)) problems.add(EFFECT_DAG);
+			return three ? new EffectsOf(null, threeTheme, scene, shape3d) : null;
+		}
+		if (item != null) {
+			if (item.getEffectDag() != null && item.getEffectLst() == null && problems != null && !problems.contains(EFFECT_DAG)) {
+				problems.add(EFFECT_DAG);
+			}
+			return new EffectsOf(item.getEffectLst(), itemTheme, scene, shape3d);
+		}
+		return three ? new EffectsOf(null, threeTheme, scene, shape3d) : null;
 	}
 
 	/** Whether a scene and shape are 3-D as Word draws them: a bevel, an extrusion or a contour, or a camera off the front */
@@ -564,7 +581,33 @@ public final class ShapeRenderer {
 			Rectangle2D.Double box, boolean text, Rectangle2D bounds, List<String> problems) {
 		EffectsOf of = effectsOf(sp, style, theme, problems);
 		if (of == null) return bounds;
-		if (of.flat3d && !problems.contains(FLAT_3D)) problems.add(FLAT_3D);
+		// a 3-D shape: its drawing as painted is the face of one picture, which takes its place (CR-081 phase 5a); its
+		// effects are cast by that picture, within its bounds
+		Rectangle2D.Double threeLocal = null;
+		if (of.flat3d && from < drawing.getItems().size()) {
+			List<Object> painted = new ArrayList<Object>(drawing.getItems().subList(from, drawing.getItems().size()));
+			Drawing face = new Drawing(drawing.getWidth(), drawing.getHeight());
+			face.getItems().addAll(painted);
+			final double fx0 = box.x, fy0 = box.y;
+			java.awt.Shape faceOutline = java.awt.geom.AffineTransform.getTranslateInstance(-fx0, -fy0).createTransformedShape(outline(painted));
+			double ppt = Effects.BASE_PIXELS_PER_POINT, cap = maxPixelsPerPoint();
+			if (cap > 0) ppt = Math.min(ppt, cap);
+			Scene3D.Picture three = Scene3D.draw(g -> {
+				g.translate(-fx0, -fy0);
+				face.paint(g);
+				g.translate(fx0, fy0);
+			}, faceOutline, box.width, box.height, of.scene, of.shape3d, of.theme, ppt, problems);
+			if (three != null) {
+				Rectangle2D.Double pl = three.getPlace();
+				Drawing.Picture dp = new Drawing.Picture(three.getImage(), new Rectangle2D.Double(pl.x + fx0, pl.y + fy0, pl.width, pl.height), null);
+				drawing.getItems().subList(from, drawing.getItems().size()).clear();
+				drawing.getItems().add(dp);
+				bounds = union(bounds, dp.getInto());
+				threeLocal = pl;
+			} else if (!problems.contains(FLAT_3D)) {
+				problems.add(FLAT_3D);
+			}
+		}
 		CTEffectList list = of.list;
 		if (list == null || list.getOuterShdw() == null && list.getInnerShdw() == null && (list.getGlow() == null || list.getGlow().getRad() <= 0)
 				&& (list.getSoftEdge() == null || list.getSoftEdge().getRad() <= 0) && list.getReflection() == null && list.getPrstShdw() == null) {
@@ -599,6 +642,11 @@ public final class ShapeRenderer {
 		};
 		Rectangle2D localLine = lineBounds == null ? null
 				: new Rectangle2D.Double(lineBounds.getX() - x, lineBounds.getY() - y, lineBounds.getWidth(), lineBounds.getHeight());
+		if (threeLocal != null) {     // the effects' extent: the 3-D picture, which may reach past the box
+			linePainter = g -> {
+			};
+			localLine = threeLocal;
+		}
 		// a preset shadow: vector fills of the shape's outline, its line stroked with it (phase 4)
 		final Drawing preset = new Drawing(drawing.getWidth(), drawing.getHeight());
 		Rectangle2D presetBounds = null;
@@ -644,6 +692,11 @@ public final class ShapeRenderer {
 		items.subList(from, items.size()).clear();
 		items.addAll(out);
 		return bounds;
+	}
+
+	/** The outline of what a drawing paints: its fills' shapes and its strokes' outlines, one area */
+	public static java.awt.Shape outline(Drawing drawing) {
+		return outline(drawing.getItems());
 	}
 
 	/** The outline of what these items paint: their fills' shapes and their strokes' outlines, one area */
