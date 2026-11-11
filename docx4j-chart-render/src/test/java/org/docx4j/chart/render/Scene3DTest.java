@@ -83,7 +83,7 @@ public class Scene3DTest {
 
 	/** Not drawn as Word draws them yet: the contour (phase 5a findings section 3) */
 	private static boolean expected(String note) {
-		return !note.startsWith("contour");
+		return true;
 	}
 
 	@Test

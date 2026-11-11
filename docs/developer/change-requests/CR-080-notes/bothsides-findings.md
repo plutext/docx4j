@@ -128,3 +128,52 @@ docx4j (b424's jars, r73):
 - T2's autofit table is 199.78 pt wide against Word's 189.92.
 - T5's table goes in the right gap, where Word takes the left.
 - After T3 to T5, the next paragraph's band lines are one piece in one gap (phase A's).
+
+## 5. The third round (`fop-cr024-bothsides-r3`, 2026-11-11)
+
+The rules phase B's design review found unmeasured (fork CR-024 section 12.6), on Jason's order in the fork's session
+("Measure the things Fable identified"). One file, fb40-rules (`build_bothsides3.py`, `probes-bothsides3.tsv`), 14
+cases. Word silent.
+
+The fork's E3 asked for left 36pt and hanging 24pt "(the first line at the margin)". Those put the first line at
+12pt, so E3 is as written and E4 has left 36pt, hanging 36pt.
+
+**E: the first-line indent when the first line's left segment is skipped.**
+- **E1** (left gap 16pt, under the minimum; first line 24pt) and **E2** (gap 40pt, first line 24pt, a first word of
+  30pt that fits the gap but not the gap less the indent): the indent goes to the right segment.
+  - B's first line starts at the right gap plus 24pt: 280.20 = 256.0 + 24 (E1); 304.20 = 280.0 + 24 (E2).
+  - The next line's right segment has no indent (256.18; 280.20).
+- **E3** (left 36pt, hanging 24pt): a hanging first line doesn't carry. The left segment is skipped (12pt in leaves
+  28pt, under the 30pt word), and the first line starts at the right gap's start, 280.20.
+- **E4** (left 36pt, hanging 36pt): the first line at the margin uses the left segment (72.02). Later lines' left
+  segments, 36pt in, leave 4pt, and are skipped.
+
+**F: the 18pt minimum is the raw gap's, before indents.** Each band line sets text in the narrowed gap:
+- F1, left indent 24pt (16pt free): 96.05 to 110.05;
+- F2, 20pt (20pt free): 91.97 to 105.97;
+- F3, first line 25pt (15pt free): 97.01 to 111.01, and the later lines from 72.02;
+- F4, right indent 24pt on the right gap (16pt free): 483.55 to 497.55.
+
+**G: a word wider than both gaps goes below the object.** Each 200pt word starts the first line below the object
+(236.5, the object's foot at 226.97). The band lines between are empty, and the text after the word runs on there.
+- G1: mid-paragraph.
+- G2: as paragraph B's first word.
+- G3: the URL-like token, not broken at its "/".
+
+**H: shading and borders in the band.**
+- **Shading is one fill a line a segment.** Each fill runs about 1.4pt past its segment's text edges: 70.6 to 215.1
+  and 380.3 to 524.9 in the band, 70.6 to 524.9 above it. Nothing is under the object (H1).
+- **A box's left and right borders run down the paragraph's margins**, through the band (x 69.1 and 525.8). Nothing
+  goes round the object.
+- **The top border spans the left segment's width only** (69.6 to 215.1), though the first line, above the band, is
+  the column's width (H2, H3).
+- **A bottom border in the band is split by segment**: H3's paragraph ends in the band, and its bottom border is at
+  212.4, from 69.6 to 215.1 and from 380.3 to 525.8.
+
+docx4j (b424's jars, r73):
+- E1, E2 and E4's first lines are Word's. E3's hanging indent is applied to the right segment (292.0, where Word
+  starts at 280.2).
+- In F, the left gap is never used (phase A's one-piece lines).
+- G is Word's: the word below the object.
+- In H, the band's shading is one fill on the right side (381.6 to 523.3), and the box's sides run round the
+  paragraph's whole block.

@@ -382,9 +382,10 @@ public final class Scene3D {
 			backProfile = b.getPrst();
 		}
 		Color sideColour = sp != null && sp.getExtrusionClr() != null ? Fills.awt(DrawingMLColors.resolve(sp.getExtrusionClr(), theme)) : null;
-		if (sp != null && sp.getContourW() > 0 && problems != null && !problems.contains(ShapeRenderer.FLAT_3D)) {
-			problems.add(ShapeRenderer.FLAT_3D);   // the contour isn't drawn yet (phase 5a findings section 3)
-		}
+		// the contour (phase 5a findings section 8): a rim of half its width round the sides, and the face's outer
+		// half-width in its colour where there is no top bevel
+		double rim = sp == null ? 0 : sp.getContourW() / 12700.0 / 2;
+		Color contourColour = rim > 0 && sp.getContourClr() != null ? Fills.awt(DrawingMLColors.resolve(sp.getContourClr(), theme)) : null;
 		double[] light = light(scene);
 
 		// the face and the outline, sampled at the grid (one cell a pixel at the picture's resolution)
@@ -453,6 +454,7 @@ public final class Scene3D {
 				double gxs = ((zbs - zas) + (zds - zcs)) / (2 * q), gys = ((zcs - zas) + (zds - zbs)) / (2 * q);
 				double[] n = cam.turnVector(-gxs, -gys, 1);
 				int colour = texel(tex, x, y, true);
+				if (rim > 0 && bevelH == 0 && contourColour != null && minDist(dist, inside, a, b, c, dd) < rim) colour = contourColour.getRGB();
 				int shaded = shade(colour, n, light);
 				r.quad(pa[0], pa[1], za, pb[0], pb[1], zb, pd[0], pd[1], zd, pc[0], pc[1], zc, shaded);
 			}
@@ -498,8 +500,15 @@ public final class Scene3D {
 				}
 			}
 		}
+		// the contour's rim: the sides from the top bevel's foot to the back, widened by the rim with rounded ends, its
+		// front no nearer than the face (fxf2: 6 pt edge on spans depth 0 to 6, its bulge half the width at its middle)
+		if (rim > 0) {
+			double zA = Math.min(z0 - bevelH, z0 - rim), zB = zA - depth;
+			int colour = contourColour != null ? contourColour.getRGB() : sideColour != null ? sideColour.getRGB() : 0xff808080;
+			contourRim(r, cam, light, rings(outline, 0.25), cx, cy, zA, zB, rim, colour);
+		}
 		// the effects, in the drawing's plane, behind its back
-		double zUnder = z0 - bevelH - depth - backH - 0.02;
+		double zUnder = z0 - bevelH - depth - backH - Math.max(0, 2 * rim - bevelH) - 0.02;
 		for (Picture e : under) {
 			BufferedImage im = e.getImage();
 			Rectangle2D.Double pl = e.getPlace();
@@ -531,6 +540,87 @@ public final class Scene3D {
 		if (len == 0) return new double[] { px, py };
 		double step = -sdf[i];             // the distance to the outline, points, inwards along the gradient
 		return new double[] { px + gx / len * step, py + gy / len * step };
+	}
+
+	/** The least distance in from the outline at a cell's corners that are inside */
+	private static double minDist(double[] dist, boolean[] inside, int... cells) {
+		double m = Double.MAX_VALUE;
+		for (int c : cells) if (inside[c]) m = Math.min(m, dist[c]);
+		return m == Double.MAX_VALUE ? 0 : m;
+	}
+
+	/**
+	 * The contour's rim: the outline swept, offset outwards along its normal by a profile from its front (on the outline,
+	 * at zA + rim) round a quarter circle to rim out at zA, straight to zB, and round a quarter circle back to the outline
+	 * at zB - rim; its corners rounded (the normal turned between a vertex's two segments).
+	 */
+	private static void contourRim(Raster r, Camera cam, double[] light, List<double[]> segments, double cx, double cy, double zA,
+			double zB, double rim, int colour) {
+		// the profile: (out, z, normal out, normal z), each end the measured shape: Word's 6 and 12 pt contours seen edge
+		// on (fxf2-01, -02), their reach out by their depth from the rim's middle, both in half-widths, agree: 1 at 0, 0.88
+		// at 0.25, 0.77 at 0.45, 0.66 at 0.6, 0.55 at 0.75, 0.44 at 0.87, and a blunt end at 0.9
+		double[] t = { 0, 0.25, 0.45, 0.6, 0.75, 0.87, 0.9, 0.9 }, o = { 1, 0.88, 0.77, 0.66, 0.55, 0.44, 0.44, 0 };
+		List<double[]> prof = new ArrayList<double[]>();
+		for (int k = t.length - 1; k >= 0; k--) prof.add(end(t, o, k, rim, zA, 1));          // the front end, out to its middle
+		for (int k = 0; k < t.length; k++) prof.add(end(t, o, k, rim, zB, -1));              // the back, from its middle
+		// the sweep's stations: (x, y, normal x, normal y), each segment's ends, and at each vertex the normal turned from the
+		// one segment's to the next's
+		List<double[]> stations = new ArrayList<double[]>();
+		double[] prevN = null, first = null;
+		for (int i = 0; i < segments.size(); i++) {
+			double[] seg = segments.get(i);
+			double ex = seg[2] - seg[0], ey = seg[3] - seg[1], len = Math.hypot(ex, ey);
+			if (len == 0) continue;
+			// the outward normal (y down: the ring's left-hand normal, turned by its winding)
+			double nx = -ey / len, ny = ex / len;
+			if (seg[4] < 0) {
+				nx = -nx;
+				ny = -ny;
+			}
+			if (prevN != null) turn(stations, seg[0], seg[1], prevN, new double[] { nx, ny });
+			stations.add(new double[] { seg[0], seg[1], nx, ny });
+			stations.add(new double[] { seg[2], seg[3], nx, ny });
+			prevN = new double[] { nx, ny };
+			if (first == null) first = new double[] { seg[0], seg[1], nx, ny };
+		}
+		if (first != null && prevN != null) turn(stations, first[0], first[1], prevN, new double[] { first[2], first[3] });
+		for (int i = 0; i + 1 < stations.size(); i++) {
+			double[] a = stations.get(i), b = stations.get(i + 1);
+			if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 2 && (a[2] != b[2] || a[3] != b[3])) continue;    // across subpaths
+			for (int k = 0; k + 1 < prof.size(); k++) {
+				double[] p0 = prof.get(k), p1 = prof.get(k + 1);
+				double nzx = (a[2] + b[2]) / 2 * (p0[2] + p1[2]) / 2, nzy = (a[3] + b[3]) / 2 * (p0[2] + p1[2]) / 2, nzz = (p0[3] + p1[3]) / 2;
+				int shaded = shade(colour, cam.turnVector(nzx, nzy, nzz), light);
+				r.quad(a[0] + a[2] * p0[0] - cx, a[1] + a[3] * p0[0] - cy, p0[1], b[0] + b[2] * p0[0] - cx, b[1] + b[3] * p0[0] - cy, p0[1],
+						b[0] + b[2] * p1[0] - cx, b[1] + b[3] * p1[0] - cy, p1[1], a[0] + a[2] * p1[0] - cx, a[1] + a[3] * p1[0] - cy, p1[1], shaded);
+			}
+		}
+	}
+
+	/** A point of a rim's end: its reach out, its depth (from z, towards the face for side 1, the back for -1), its normal */
+	private static double[] end(double[] t, double[] o, int k, double rim, double z, int side) {
+		double dt = k + 1 < t.length ? t[k + 1] - t[k] : t[k] - t[k - 1], d0 = k + 1 < t.length ? o[k + 1] - o[k] : o[k] - o[k - 1];
+		double nz = -d0, nout = dt == 0 ? 0 : dt;
+		double len = Math.hypot(nz, nout);
+		if (len == 0 || dt == 0) {
+			nz = 1;
+			nout = 0;
+			len = 1;
+		}
+		return new double[] { rim * o[k], z + side * rim * t[k], nout / len, side * Math.abs(nz) / len };
+	}
+
+	/** Stations at a vertex, the normal turned from one segment's to the next's, a step a fifteen degrees */
+	private static void turn(List<double[]> stations, double x, double y, double[] from, double[] to) {
+		double a0 = Math.atan2(from[1], from[0]), a1 = Math.atan2(to[1], to[0]);
+		double d = a1 - a0;
+		while (d > Math.PI) d -= 2 * Math.PI;
+		while (d < -Math.PI) d += 2 * Math.PI;
+		int steps = (int) Math.ceil(Math.abs(d) / Math.toRadians(15));
+		for (int k = 1; k < steps; k++) {
+			double a = a0 + d * k / steps;
+			stations.add(new double[] { x, y, Math.cos(a), Math.sin(a) });
+		}
 	}
 
 	/** The back bevel's depth behind the back face at a distance in from the outline */

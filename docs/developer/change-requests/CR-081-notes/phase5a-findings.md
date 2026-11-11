@@ -109,7 +109,7 @@ are pixel for pixel alike in the two copies: Word doesn't differ from itself.
   partial alpha is composited, so that it leaves no seam over the sides behind it.
 - **The shading** is simple: a diffuse light from the light rig's direction, normalised so that a face turned to the
   viewer keeps its colour. `render.effect.3d_shading` reports it (phase 5b).
-- **The contour** isn't drawn yet, and `render.effect.flat_3d` reports it.
+- **The contour**: section 7.
 - **`Scene3DTest`**:
   - every fixed probe of both rounds, 251 (contours aside), is drawn and read as Word's are;
   - each silhouette's hull vertices are measured against the other's boundary;
@@ -218,8 +218,53 @@ shape, and how a shadow on a 3-D drawing is aligned").
   and without a:flatTx, `render.effect.3d_text` is reported (`Scene3DTest.turnedTextIsReported`). docx4j's text is the
   output's, flat.
 
-## 6. Not measured yet
+## 6. The layout (round 1's fxca, read 2026-11-11)
 
-- **Contour** (fxc9-15, -16): the silhouette grows by the contour's width on the sides that face the viewer. It isn't
-  drawn, and `render.effect.flat_3d` reports it.
-- **The layout** (fxca): the frame against the text, not yet read.
+Word lays a 3-D drawing out by its frame, not by its 3-D picture.
+- **Inline in a line of words** (fxca-01 to -03): the text is the same with isometricTopUp's 179 pt wide picture as
+  with the flat 144 pt control. The words after the drawing start at 435.29 in both, the frame's width on from 288.43.
+- **Square wrap** (fxca-04, -05): the wrapped text is the same with and without the 3-D. isometricTopUp's picture
+  overlaps it by about 8 pt on the right and 1.7 pt on the left.
+
+docx4j does the same: its 3-D picture doesn't move its text. b426's render of fxca has the same lines with the 3-D as
+with the flat controls.
+- Its flat controls differ from Word's, for reasons that aren't 3-D's:
+  - an inline shape in a line of words is set off the line where Word sets it (x 288.4, after "Words before"), and
+    the paragraph's words start lower;
+  - the square wrap runs text on one side of the drawing, where Word runs it on both (the FOP fork's CR-024 phase B).
+
+## 7. The contour (rounds 4 and 5, `cr081-phase5a-r4`, `-r5`, 2026-11-11)
+
+Jason: "yes" to the contour round. Round 4: 11 probes, a red contour (contourW, contourClr) on a blue shape. Round 5:
+6 probes, the contour seen edge on (lon 90) and from above (lat 90), so that its section shows, as the bevels' did.
+Word was silent on both.
+
+- **Seen from the front, the contour is a band of its width centred on the outline.** The silhouette grows by half
+  the width, and the face is the contour's colour inside the outline by the other half.
+  - 3 pt: the silhouette is ±73.8 pt on the frame's ±72; the blue face ends at ±70.6.
+  - 6 pt: 68.8 to 75.2.
+  - 12 pt: 65.5 to 78.1.
+- **Seen edge on, it is a rim round the sides, behind the face.**
+  - With no depth and no bevel, a 6 pt contour spans depth 0 to 6 pt and a 12 pt one 0 to 12. The rim reaches half
+    the width out at its middle (57.09 and 59.97 on the frame's 54), and less towards its ends.
+  - With 36 pt of depth it runs the whole extrusion (0 to 42 pt), half the width out between rounded ends.
+  - With a 12 pt top bevel it is at the bevel's foot. The bevel in front of it keeps the face's colour.
+  - Turned, its side that comes forward reaches further (round 4, lon 45: 5.3 pt past the turned frame against
+    1.0 pt).
+- **The rim's section** has its reach out against its depth from its middle, both in half-widths, alike for 6 and
+  12 pt: 1 at 0, 0.88 at 0.25, 0.77 at 0.45, 0.66 at 0.6, 0.55 at 0.75, 0.44 at 0.87, then a blunt end at 0.9.
+  - A quarter circle reaches too far at its ends: 0.87 pt off Word's on the 12 pt contour edge on. A 0.9 ellipse
+    still gave 0.65 pt.
+
+**docx4j** (`Scene3D.contourRim`):
+- the sides, from the top bevel's foot (or half the width behind the face, where there is no bevel) to the back, are
+  swept with that section, outwards along the outline's normal;
+- the corners are rounded, the normal turned between a vertex's two segments;
+- the face's outer half-width is the contour's colour where there is no top bevel;
+- the effects' plane is behind the rim.
+
+All 17 contour probes are now in `Scene3DTest.theSilhouettesAreWords`. With the earlier 253: 270 silhouettes, 256 within
+a pixel, none past 0.60 pt, the worst 0.48 (fxc8-05, not a contour).
+
+## 8. Not measured yet
+

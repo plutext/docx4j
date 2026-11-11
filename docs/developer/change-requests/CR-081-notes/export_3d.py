@@ -1,13 +1,13 @@
 # Copyright 2026, Plutext Pty Ltd.
 # This file is part of docx4j.
 """CR-081 phase 5a: Word's 3-D silhouettes as docx4j-chart-render's test oracle (Scene3DTest). For every fixed probe
-of cr081-phase5a-r1 and -r2 (the layout family aside): the probe's size and XML, and Word's silhouette there, the
+of cr081-phase5a-r1, -r2, -r4 and -r5 (the layout family aside): the probe's size and XML, and Word's silhouette there, the
 convex hull of its mask's 0.5 crossings (points from the frame's centre, y down) reduced to at most 64 vertices (16 cut an acute corner), and
 the crossings' bounds.
 
 One JSON object a line, gzip, no name or time.
 
-usage: export_3d.py <round 1 results dir> <round 2 results dir> [out]
+usage: export_3d.py <round 1 dir> <round 2 dir> <round 4 dir> <round 5 dir> [out]
 (default out: docx4j-chart-render/src/test/resources/effects/cr081-word-3d.jsonl.gz)"""
 import csv, gzip, io, json, os, sys
 import numpy as np
@@ -31,14 +31,16 @@ def silhouette(pdf, page, size):
     return ([[round(x, 2), round(y, 2)] for x, y in hull],
             [round(float(v), 2) for v in (pts[:, 0].min(), pts[:, 1].min(), pts[:, 0].max(), pts[:, 1].max())])
 
-def main(r1, r2, out=OUT):
+RESULTS = ('cr081-phase5a-r1', 'cr081-phase5a-r2', 'cr081-phase5a-r4', 'cr081-phase5a-r5')
+
+def main(r1, r2, r4, r5, out=OUT):
     lines = []
     for p in csv.DictReader(open(os.path.join(HERE, 'probes.tsv')), delimiter='\t'):
-        if p['set'] not in ('cr081-phase5a-r1', 'cr081-phase5a-r2') or p['probe'].startswith('fxca'):
+        if p['set'] not in RESULTS or p['probe'].startswith('fxca'):
             continue
         prefix = p['probe'].split('-')[0]
         size = (72.0, 144.0) if prefix in TALL else (144.0, 108.0)
-        res = r1 if p['set'] == 'cr081-phase5a-r1' else r2
+        res = {'cr081-phase5a-r1': r1, 'cr081-phase5a-r2': r2, 'cr081-phase5a-r4': r4, 'cr081-phase5a-r5': r5}[p['set']]
         pdf = os.path.join(res, f"{p['file']}-a", f"{p['file']}.pdf")
         hull, bounds = silhouette(pdf, int(p['page']), size)
         lines.append({'probe': p['probe'], 'note': p['note'], 'w': size[0], 'h': size[1], 'shape': 'shape' in p['object'],

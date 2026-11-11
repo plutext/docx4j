@@ -491,8 +491,8 @@ public final class ShapeRenderer {
 	 */
 	public static final String TEXT_EFFECTS = "render.effect.shape_text";
 
-	/** A 3-D drawing (a bevel, an extrusion, a turned camera) drawn flat (D9): its contour isn't drawn yet, or its 3-D
-	 *  picture couldn't be made (CR-081 phase 5a draws the rest, {@link Scene3D}) */
+	/** A 3-D drawing (a bevel, an extrusion, a contour, a turned camera) drawn flat (D9): its 3-D picture couldn't be
+	 *  made (too large, nothing painted); CR-081 phase 5a draws it otherwise ({@link Scene3D}) */
 	public static final String FLAT_3D = "render.effect.flat_3d";
 
 	/** An effect list given as a DAG ({@code a:effectDag}), not drawn (CR-081 §9) */

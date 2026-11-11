@@ -29,6 +29,11 @@ The sets:
   cr081-phase5a-r3 phase 5a's third round (2026-11-11; Jason: "please do the measures: text on a 3-D shape, and how a
                    shadow on a 3-D drawing is aligned"): a shape's text under turned cameras, with and without
                    a:flatTx; and an unblurred shadow on 3-D drawings, at algn tl, ctr and br, scaled 50%
+  cr081-phase5a-r4 phase 5a's fourth round (2026-11-11; Jason: "yes" to the contour round): sp3d's contour (contourW,
+                   contourClr) at 3, 6 and 12 pt under the front camera, turned cameras, with depth, with a bevel, and
+                   on the photo
+  cr081-phase5a-r5 the contour seen edge on (lon 90) and from above (lat 90), so that its section shows: 6 and 12 pt,
+                   alone, with depth, with a bevel
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -576,6 +581,36 @@ def fam_shadow_3d():
     out.append(Probe('shadow, isometricTopUp, the photo', sharp(), scene=iso, anchor='fixed'))
     return out
 
+def fam_contour():
+    """A red contour on a blue shape: its width under the front camera, then 6 pt under turned cameras, with depth, with
+    a bevel, and on the photo"""
+    def c(w, inner=''):
+        return sp3d(inner + CO, contourW=round(w * 12700))
+    out = [fixed(f'contour {w} pt, orthographicFront', cam('orthographicFront'), c(w)) for w in (3, 6, 12)]
+    out += [fixed('contour 6 pt, orthographicFront lon 45', cam('orthographicFront', 0, 45, 0), c(6)),
+            fixed('contour 6 pt, orthographicFront lat 45', cam('orthographicFront', 45, 0, 0), c(6)),
+            fixed('contour 6 pt, isometricTopUp', cam('isometricTopUp'), c(6)),
+            fixed('contour 6 pt, isometricOffAxis1Right', cam('isometricOffAxis1Right'), c(6)),
+            fixed('contour 6 pt, depth 36 pt, isometricOffAxis1Right', cam('isometricOffAxis1Right'),
+                  sp3d(EX + CO, extrusionH=457200, contourW=76200)),
+            fixed('contour 6 pt, depth 36 pt, obliqueTopLeft', cam('obliqueTopLeft'), sp3d(EX + CO, extrusionH=457200, contourW=76200)),
+            fixed('contour 6 pt, bevel circle 6 pt, orthographicFront lon 45', cam('orthographicFront', 0, 45, 0),
+                  sp3d(bevel(w=76200, h=76200) + CO, contourW=76200)),
+            fixed('contour 6 pt, isometricTopUp, the photo', cam('isometricTopUp'), c(6), picture='photo.png')]
+    return out
+
+def fam_contour_edge():
+    """The contour's section: seen edge on (lon 90) and from above (lat 90)"""
+    edge, above = cam('orthographicFront', 0, 90, 0), cam('orthographicFront', 90, 0, 0)
+    def c(w, inner='', **a):
+        return sp3d(inner + CO, contourW=round(w * 12700), **a)
+    return [fixed('contour 6 pt, edge on', edge, c(6)),
+            fixed('contour 12 pt, edge on', edge, c(12)),
+            fixed('contour 6 pt, from above', above, c(6)),
+            fixed('contour 6 pt, depth 36 pt, edge on', edge, c(6, EX, extrusionH=457200)),
+            fixed('contour 6 pt, bevel circle 12 pt, edge on', edge, c(6, bevel(w=152400, h=152400))),
+            fixed('contour 12 pt, depth 36 pt, bevel circle 12 pt, edge on', edge, c(12, bevel(w=152400, h=152400) + EX, extrusionH=457200))]
+
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -739,6 +774,12 @@ SETS = {
         ('fxe1-text-3d', fam_text_3d, THEME_2023),
         ('fxe2-shadow-3d', fam_shadow_3d, THEME_2023),
     ],
+    'cr081-phase5a-r5': [
+        ('fxf2-contour-edge', fam_contour_edge, THEME_2023),
+    ],
+    'cr081-phase5a-r4': [
+        ('fxf1-contour', fam_contour, THEME_2023),
+    ],
     'cr081-phase5a-r2': [
         ('fxd1-cameras-depth-a', fam_cameras_depth(0), THEME_2023),
         ('fxd2-cameras-depth-b', fam_cameras_depth(1), THEME_2023),
@@ -754,7 +795,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300, 'cr081-phase5a-r4': 300, 'cr081-phase5a-r5': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 

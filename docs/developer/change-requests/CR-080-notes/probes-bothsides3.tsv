@@ -1,0 +1,15 @@
+set	file	page	case	note	gap_left	gap_right
+fop-cr024-bothsides-r3	fb40-rules	1	E1	left gap 16pt; paragraph B first-line indent 24pt, starting in the band	16.00	267.30
+fop-cr024-bothsides-r3	fb40-rules	2	E2	left gap 40pt; B first-line indent 24pt, its first word (abcdef) 30pt wide	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	3	E3	left gap 40pt; B left indent 36pt, hanging 24pt (first line at 12pt), first word 30pt	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	4	E4	left gap 40pt; B left indent 36pt, hanging 36pt (first line at the margin), first word 30pt	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	5	F1	left gap 40pt; B left indent 24pt (16pt free); a a a	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	6	F2	left gap 40pt; B left indent 20pt (20pt free); a a a	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	7	F3	left gap 40pt; B first-line indent 25pt (15pt free on its first line); a a a	40.00	243.30
+fop-cr024-bothsides-r3	fb40-rules	8	F4	right gap 40pt; B right indent 24pt (16pt free); a a a	243.30	40.00
+fop-cr024-bothsides-r3	fb40-rules	9	G1	equal gaps; a 200pt unbreakable word mid-paragraph, in the band	141.65	141.65
+fop-cr024-bothsides-r3	fb40-rules	10	G2	equal gaps; the 200pt word as paragraph B's first word, B starting in the band	141.65	141.65
+fop-cr024-bothsides-r3	fb40-rules	11	G3	equal gaps; a 200pt URL-like token (breaks at /) mid-paragraph, in the band	141.65	141.65
+fop-cr024-bothsides-r3	fb40-rules	12	H1	equal gaps; the anchor paragraph shaded (D9E2F3)	141.65	141.65
+fop-cr024-bothsides-r3	fb40-rules	13	H2	equal gaps; the anchor paragraph boxed (0.5pt)	141.65	141.65
+fop-cr024-bothsides-r3	fb40-rules	14	H3	equal gaps; the anchor paragraph shaded and boxed, then an unshaded paragraph	141.65	141.65
