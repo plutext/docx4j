@@ -177,3 +177,58 @@ docx4j (b424's jars, r73):
 - G is Word's: the word below the object.
 - In H, the band's shading is one fill on the right side (381.6 to 523.3), and the box's sides run round the
   paragraph's whole block.
+
+## 6. The fourth round (`fop-cr024-bothsides-r4`, 2026-11-11)
+
+What Word does with a paragraph that starts with a tab or an inline picture beside a gap too narrow to use. The fork's
+CR-024 section 13.9 item 7 left it unmeasured: r80 keeps the old restart for a paragraph opening with a tab or an
+inline object. Jason ordered it: "measure what Word does with a paragraph that starts with a tab or an inline picture
+beside a too-narrow gap".
+- One file, fb50-leading (`build_bothsides4.py`, `probes-bothsides4.tsv`), 18 cases on fb10's geometry, Word's
+  default tab stops (36pt).
+- A narrow gap is 16pt, under the 18pt minimum, so its segment isn't used. The right segment then starts at 256.0.
+- Word was silent, 4.5 s.
+
+**Tabs at the start of the first line in a segment are measured from the margin.**
+- The line starts in the segment beside the skipped gap, and its tab goes to the next stop past the segment's start,
+  counted from the margin, not from the segment:
+  - **K1:** default stops, the text at 288.1. The stop at 216pt (x 288), the first past 256.
+  - **K2:** a left stop at 226.8pt, the text at 298.9 (72 + 226.8). This is 2823's label tab: Word's 297.72 there.
+  - **K4:** two tabs, 324.1: the stops at 288, then 324.
+- **A stop under the object is skipped** (K3: a left stop at 120pt, x 192, under the object). The tab goes to the
+  next default stop, 288.1.
+- **A right stop at the column's end** right-aligns there (K5: "page 12" 487.1 to 523.2).
+- **A centre stop whose text can't centre**, too long for it, leaves the text at the segment's start (K6: 256.2).
+- **With the left gap used** (K7, 40pt): the tab and the first word don't fit the left segment, so the line goes to
+  the right segment, its tab to the stop at 288 (288.1). The text is then broken as usual (to 469.9).
+- **With the narrow gap on the right** (K8): the line starts at the margin, its tab to 108.0, as in a full line.
+
+**An inline picture at the start is set as a word would be.**
+- It goes at the start of the first segment it fits:
+  - Q1, 60pt: at 256.0, the text after it at 319.1;
+  - Q2, 260pt (the segment is 267.3): at 256.0, alone on its line, the text below it at 147.4;
+  - Q6, 30pt with the left gap 40pt: in the left gap, at 72.0, the text in the right segment (280.2);
+  - Q7, 60pt with the left gap 40pt: in the right segment, at 280.0, the text after it from 343.1 to 478.1;
+  - Q8, the narrow gap on the right: at the margin, 72.0.
+- **A picture wider than every segment and no wider than the column clears the band, as a long word does.** It goes
+  at the margin below the object (y 227.0, the object's foot 226.97), and the line's text runs on after it:
+  - Q3, 300pt: the text from 375.0;
+  - Q4, 451.3pt: the column's width, the text on the next line;
+  - Q5, 300pt alone.
+- **A tab then a picture** (Q9): the tab to 288, the picture at 288.0, the text after it from 351.0.
+
+**docx4j, on the fork's r80 (HEAD's jars):** 10 of the 18 cases are Word's within 0.4pt (W1, K5, K6, K8, Q1 to Q6,
+Q8). The other 8 are off:
+- **A leading tab is measured from the segment, not the margin.** docx4j writes a tab as a leader of fixed width,
+  from the paragraph's start against the column, and the renderer lays it from the segment's start:
+  - K1 292.0 against Word's 288.1;
+  - K4 328.0 against 324.1;
+  - Q9's picture 292.0 against 288.0;
+  - K2 482.8 against 298.9, the stop's width laid from the segment;
+  - K3 376.0 against 288.1, the skipped stop still taken.
+- **Two first lines aren't broken, and run past the column:**
+  - K7, a tab with the left gap used: 316.0 to 558.4, against Word's 288.1 to 469.9;
+  - Q7, a 60pt picture with the left gap used: 342.8 to 585.2, against Word's 343.1 to 478.1.
+- **Who fixes them.** Both are the renderer's (fop CR-024): a tab's stop beside an object counted from the margin,
+  and the line after a leading tab or object re-broken in its segment. docx4j would need its tab leader computed
+  against the segment's start, which only the renderer knows.

@@ -1,0 +1,19 @@
+set	file	page	case	note	gap_left	gap_right
+fop-cr024-bothsides-r4	fb50-leading	1	W1	left gap 16pt; B starts with a word (the control)	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	2	K1	left gap 16pt; B starts with a tab, default stops	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	3	K2	left gap 16pt; B with a left tab stop at 226.8pt, starts with a tab, then label : value	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	4	K3	left gap 16pt; B with a left tab stop at 120pt (under the object), starts with a tab	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	5	K4	left gap 16pt; B starts with two tabs, default stops	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	6	K5	left gap 16pt; B with a right tab stop at 451.3pt, starts with a tab, then page 12	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	7	K6	left gap 16pt; B with a centre tab stop at 225.65pt, starts with a tab	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	8	K7	left gap 40pt (used); B starts with a tab, default stops	40.00	243.30
+fop-cr024-bothsides-r4	fb50-leading	9	K8	right gap 16pt (the wide gap on the left); B starts with a tab, default stops	267.30	16.00
+fop-cr024-bothsides-r4	fb50-leading	10	Q1	left gap 16pt; B starts with an inline picture 60 x 20pt, then words	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	11	Q2	left gap 16pt; B starts with a picture 260pt wide (fits the right segment)	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	12	Q3	left gap 16pt; B starts with a picture 300pt wide (wider than the segment)	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	13	Q4	left gap 16pt; B starts with a picture 451.3pt wide (the column)	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	14	Q5	left gap 16pt; B is a picture 300pt wide alone	16.00	267.30
+fop-cr024-bothsides-r4	fb50-leading	15	Q6	left gap 40pt (used); B starts with a picture 30pt wide (fits the left gap)	40.00	243.30
+fop-cr024-bothsides-r4	fb50-leading	16	Q7	left gap 40pt (used); B starts with a picture 60pt wide (wider than the left gap)	40.00	243.30
+fop-cr024-bothsides-r4	fb50-leading	17	Q8	right gap 16pt (the wide gap on the left); B starts with a picture 60pt wide	267.30	16.00
+fop-cr024-bothsides-r4	fb50-leading	18	Q9	left gap 16pt; B starts with a tab, then a picture 60pt wide	16.00	267.30
