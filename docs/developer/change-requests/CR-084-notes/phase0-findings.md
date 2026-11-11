@@ -51,7 +51,7 @@ So D3 is settled: docx4j draws the blip, with its `a:` children, and never needs
 |---|---|---|
 | `grayscl` | Rec. 709 luma (0.2126, 0.7152, 0.0722) of the stored values | 4, 1.0 (2.4 to 4.0 in pairs, JPEG) |
 | `lum` | `s (x - 1/2) + 1/2 + b (1 + s) / 2`, per channel, clipped; `s = 1 + c` for c <= 0, `1 / (1 - c)` for c > 0 | 36, 1.7 (median 0.9) |
-| `biLevel` | white where the luma reaches the threshold, else black; at 50% a patch of luma 127.84 is black and one of 130.85 white, so Word compares an integer luma, or `thresh x 256` | 5, exact but the one tie patch |
+| `biLevel` | white where the luma reaches the threshold, else black; at 50% a patch of luma 127.84 is black and one of 130.85 white, so Word compares an integer luma, or `thresh x 256` (phase 1: the luma rounded down against the threshold in whole levels, rounded, which fits 75% too; phase1-findings.md §2) | 5, exact but the one tie patch |
 | `duotone` | `clr1 + (clr2 - clr1) x luma`; the colours as `DrawingMLColors` resolves them (tint and shade in linear light, satMod on the sRGB HSL unclamped: all 15 preset colours within 2) | 6, 3.9 (JPEG) |
 | `alphaModFix` | `alpha x amt` | 6 alpha within 0.8 (0% draws nothing) |
 | `alphaBiLevel` | opaque where alpha reaches the threshold, else transparent | 1, alpha exact |
@@ -59,7 +59,7 @@ So D3 is settled: docx4j draws the blip, with its `a:` children, and never needs
 | `alphaInv` (no colour) | black, with alpha `1 - alpha` | 1, exact |
 | `alphaMod` | alpha times the container's result on the picture itself (with `alphaModFix 50%`: `0.5 alpha^2`) | 1, alpha 0.5 |
 | `alphaRepl` | alpha replaced; a fully transparent pixel's colour comes back black | 1, alpha 0.5 |
-| `clrChange` | the exact colour only (the nearest probed, 4 levels off, unchanged); with `useA="1"` alpha must match too, with `useA="0"` the target's alpha is ignored (red to transparent changes nothing) | 7 |
+| `clrChange` | the exact colour only (the nearest probed, 4 levels off, unchanged; phase 1: the corpus shows a tolerance, about a level on a PNG and at least 16 on a JPEG, phase1-findings.md §4); with `useA="1"` alpha must match too, with `useA="0"` the target's alpha is ignored (red to transparent changes nothing) | 7 |
 | `clrRepl` | every pixel the colour, alpha kept | 1, exact |
 | `fillOverlay` | `mult`: product; `screen`: `1 - (1 - a)(1 - b)` | 2, exact |
 | `tint` | each hue turned `amt` of the way to `hue`, the shorter way (an exactly opposite hue by the sign of the plain difference); lightness and saturation kept | 2, 7 |

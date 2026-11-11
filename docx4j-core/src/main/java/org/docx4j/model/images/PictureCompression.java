@@ -235,19 +235,39 @@ public final class PictureCompression {
 	 * @param widthPt the frame's width, in points; 0 where not known (no resampling then)
 	 * @param heightPt the frame's height, in points
 	 * @param resolution the rule (a picture above its threshold is resampled to its target)
+	 * @return the new bitmap; or null where nothing changes, or where the bitmap cannot be read
+	 */
+	public static Result compress(byte[] bytes, PictureCrop crop, double widthPt, double heightPt, Resolution resolution) {
+		return compress(bytes, crop, PictureRecolour.NONE, widthPt, heightPt, resolution);
+	}
+
+	/**
+	 * The picture cropped, its colours adjusted, and resampled, in that order, as Word does it (CR-084 D8). A picture
+	 * with adjustments is always re-encoded: as PNG where the result has transparency, else in the source's format (a
+	 * JPEG at the JPEG quality, anything else PNG; D7).
+	 *
+	 * @param bytes the stored bitmap
+	 * @param crop what of it is drawn ({@link PictureCrop#NONE} for all of it)
+	 * @param recolour its colour adjustments ({@link PictureRecolour#NONE} for none)
+	 * @param widthPt the frame's width, in points; 0 where not known (no resampling then)
+	 * @param heightPt the frame's height, in points
+	 * @param resolution the rule (a picture above its threshold is resampled to its target)
 	 * @return the new bitmap; or null where nothing changes (no crop, and the bitmap is not
 	 *         enough above the resolution to be worth re-encoding, or re-encoding would not
 	 *         make it smaller), or where the bitmap cannot be read
+	 * @since 17.3.7
 	 */
-	public static Result compress(byte[] bytes, PictureCrop crop, double widthPt, double heightPt, Resolution resolution) {
+	public static Result compress(byte[] bytes, PictureCrop crop, PictureRecolour recolour, double widthPt, double heightPt,
+			Resolution resolution) {
 		int ppi = (resolution == null || resolution.isHighFidelity()) ? 0 : resolution.target;
 		// only the edges which move in are cut from the bitmap; one which moves out is
 		// where the picture sits in its frame (PictureCrop#framePadding), not pixels
 		if (crop != null) crop = crop.positive();
 		boolean cropping = crop != null && !crop.isNone();
+		boolean recolouring = recolour != null && !recolour.isNone();
 		boolean sized = widthPt > 0 && heightPt > 0;
 		boolean reencode = resolution != null && resolution.reencodeJpeg;
-		if (bytes == null || (!cropping && !reencode && (ppi <= 0 || !sized))) return null;
+		if (bytes == null || (!cropping && !recolouring && !reencode && (ppi <= 0 || !sized))) return null;
 
 		BufferedImage image;
 		String format;
@@ -258,7 +278,10 @@ public final class PictureCompression {
 			try {
 				reader.setInput(in);
 				format = reader.getFormatName().toLowerCase(Locale.ROOT);
-				if (format.equals("gif") && reader.getNumImages(true) > 1) return null; // animated
+				if (format.equals("gif") && reader.getNumImages(true) > 1) { // animated
+					if (recolouring) PictureEffects.report(PictureRecolour.UNREAD, "an animated GIF");
+					return null;
+				}
 				image = reader.read(0);
 			} finally {
 				reader.dispose();
@@ -266,11 +289,14 @@ public final class PictureCompression {
 		} catch (Exception | LinkageError e) {
 			// a CMYK or YCCK JPEG, a TIFF variant ImageIO lacks: leave the picture as it is
 			log.info("Picture left as stored (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
+			if (recolouring) PictureEffects.report(PictureRecolour.UNREAD, e.getClass().getSimpleName());
 			return null;
 		}
 		if (image == null) return null;
 
 		if (cropping) image = crop(image, crop);
+		// adjusted after the crop and before the resampling, as Word does (CR-084 D8)
+		if (recolouring) image = recolour.apply(image, sized ? image.getWidth() / widthPt : 0);
 
 		int w = image.getWidth(), h = image.getHeight();
 		int tw = w, th = h;
@@ -284,8 +310,8 @@ public final class PictureCompression {
 		boolean resampling = tw < w || th < h;
 		boolean isJpeg = format.equals("jpeg") || format.equals("jpg");
 		boolean worthResampling = resampling && (double) tw * th / ((double) w * h) <= WORTH_RESAMPLING;
-		boolean reencoding = !cropping && !worthResampling && reencode && isJpeg;
-		if (!cropping && !worthResampling && !reencoding) return null;
+		boolean reencoding = !cropping && !recolouring && !worthResampling && reencode && isJpeg;
+		if (!cropping && !recolouring && !worthResampling && !reencoding) return null;
 		if (worthResampling) image = scale(image, tw, th);
 
 		boolean jpeg = isJpeg && !image.getColorModel().hasAlpha();
@@ -300,7 +326,7 @@ public final class PictureCompression {
 		// resolution alone is about size: never make the picture bigger for it; and a JPEG
 		// re-encoded at its own size is kept only where that saves a tenth, which leaves one
 		// already at (or below) the quality alone
-		if (!cropping && out.length >= bytes.length) return null;
+		if (!cropping && !recolouring && out.length >= bytes.length) return null;
 		if (reencoding && out.length > bytes.length * 0.9) return null;
 		return new Result(out, jpeg, image.getWidth(), image.getHeight());
 	}

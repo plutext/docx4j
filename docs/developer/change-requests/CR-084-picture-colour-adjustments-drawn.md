@@ -2,7 +2,12 @@
 
 Status: ACCEPTED 2026-11-12 (Jason: "CR-084: the seven decisions in section 7 of CR-084-notes/phase0-findings.md as
 recommended; commit phase 0; start phase 1"). Phase 0 DONE: its rulings are in §6 and §8; D1, D4, D6 and D7, which section
-7 doesn't name, are taken as recommended. Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
+7 doesn't name, are taken as recommended. Phase 1 DONE 2026-11-12 (Jason: "start CR-084 phase 1", "commit"):
+`PictureRecolour` in CR-029's step, an adjusted metafile rasterised at 200 dpi, CR-081's effects from the adjusted
+picture. Gate passed: phase 0's 174 probes through docx4j's PDF 0 failing, the fidelity corpora 0 movers (b452 against
+b450), and every PDF without a drawn adjustment unchanged but for date fields (`CR-084-notes/phase1-findings.md`). Two
+findings: `biLevel`'s threshold is rounded (refined, built); `clrChange` has a tolerance in Word, about a level on a PNG
+and at least 16 on a JPEG, still exact in docx4j pending a probe round. Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
 leaves `a:blip`'s colour effects out of CR-081, which is about `a:effectLst`. Not started; D1 to D9 open (§8). Needs
 nothing from CR-080 to CR-083. Read against docx4j 67b54b7fd, Apache POI trunk ae62bb5116, and the specifications in §12.
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
@@ -191,6 +196,17 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
   - **Gate:** phase 0's probes through docx4j's PDF within 2 levels of 255, but `tint` and semi-transparent colours
     within 7 (Word's premultiplied storage), and the `biLevel` tie decided as Word's integer luma; every picture
     without an adjustment unchanged, byte for byte (the fidelity corpora's PDFs, and CR-029's tests).
+  - **Built and gated 2026-11-12** (`CR-084-notes/phase1-findings.md`):
+    - the probes: 174, 0 failing; the departures are `hsl` and `blur` (D2) and VML (phase 3);
+    - `PictureRecolourWordTest`: Word's numbers for 117 probes through `PictureRecolour` itself;
+    - b452 against b450: 0 movers, events equal, the probes' PDFs the same byte for byte;
+    - the corpora's PDFs: only the 16 with a drawn adjustment and 16 date fields changed;
+    - the test suites pass: core-tests 2,642, export-fo 111, export-fo-tests 956.
+  - `biLevel`'s threshold is in whole levels, rounded: 25% is 64, 50% is 128, 75% is 191. It fits all seven `biLevel`
+    probes; phase 0's reading missed two patches at 75%.
+  - `clrChange` is exact, as phase 0 found on PNG. The corpus shows Word with a tolerance (findings §4): about a level
+    on a PNG, at least 16 levels on a JPEG, where five of the corpus's six pictures are. A probe round, for Jason,
+    before it's built.
 - **Phase 2, Word 2010's adjustments.** Phase 0 confirmed the blip is already adjusted (findings §2; D3): a test that
   docx4j draws the blip, with its `a:` children, and never the `a14:imgLayer`.
 - **Phase 3, VML** (D4). `v:imagedata`'s attributes through the same operations.
@@ -234,7 +250,14 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
 - **D9. Gaps reported** with stable codes (`render.picture.recolour_vector`, `render.picture.artistic` and so on),
   through CR-080 D9's two mechanisms. Recommendation: yes. **Decided 2026-11-12**: CR-081 phase 6's
   `render.effect.blip_recolour` stays until phase 1 draws the effects; then only what stays undrawn is reported, under
-  `render.picture.*`.
+  `render.picture.*`. Built in phase 1:
+  - `render.picture.hsl` and `render.picture.blur`;
+  - `render.picture.fill_overlay`: a fill overlay other than a solid fill;
+  - `render.picture.colour`: a colour that can't be resolved;
+  - `render.picture.unread`: a picture Java can't read;
+  - `render.picture.recolour_vector`: a metafile that couldn't be rasterised;
+  - `render.effect.blip_recolour` stays where nothing is drawn: HTML output until phase 4, or an image handler of
+    another kind.
 
 ## 9. Out of scope
 

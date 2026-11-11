@@ -47,6 +47,14 @@ public abstract class AbstractWordXmlPicture {
 	 *  which moves out, is drawn too); false for a handler which does not.  @since 17.3.0 */
 	private boolean cropApplied;
 
+	/** The picture's colour adjustments ({@code a:blip}'s effect children), which the
+	 *  image handler applies in XSL-FO output.  @since 17.3.7 (CR-084) */
+	protected PictureRecolour recolour = PictureRecolour.NONE;
+
+	/** Whether the image handler applies the colour adjustments (XSL-FO output, through
+	 *  an {@link AbstractConversionImageHandler}).  @since 17.3.7 */
+	private boolean recolourApplied;
+
 	/** The picture's part, a bitmap the output names (not a metafile drawn as SVG), for
 	 *  its effects (CR-081); null where there is none.  @since 17.3.7 */
 	protected BinaryPart picturePart;
@@ -66,6 +74,18 @@ public abstract class AbstractWordXmlPicture {
 	 *  @since 17.3.0 */
 	public PictureCrop getCrop() {
 		return crop;
+	}
+
+	/** @return the picture's colour adjustments; {@link PictureRecolour#NONE} for none
+	 *  @since 17.3.7 (CR-084) */
+	public PictureRecolour getRecolour() {
+		return recolour;
+	}
+
+	/** @return whether the image handler applied the colour adjustments to the picture
+	 *  it wrote (XSL-FO output)  @since 17.3.7 */
+	protected boolean isRecolourApplied() {
+		return recolourApplied;
 	}
 
 	/** @return whether this picture is being converted for XSL-FO (PDF) output
@@ -384,6 +404,8 @@ public abstract class AbstractWordXmlPicture {
 			cropApplied = forXslFo && crop != null && !crop.isNone()
 					&& imageHandler instanceof AbstractConversionImageHandler
 					&& ((AbstractConversionImageHandler) imageHandler).cropsPictures();
+			recolourApplied = forXslFo && recolour != null && !recolour.isNone()
+					&& imageHandler instanceof AbstractConversionImageHandler;
 			if (renderMetafile(imageHandler, rel, (BinaryPart)part)) {
 				return; // drawn as SVG, or rasterised through the image handler
 			}
@@ -439,6 +461,25 @@ public abstract class AbstractWordXmlPicture {
 		double h = lengthInPoints(dimensions == null ? 0 : dimensions.height,
 				dimensions == null ? null : dimensions.heightUnit);
 
+		if (forXslFo && recolour != null && !recolour.isNone()
+				&& imageHandler instanceof AbstractConversionImageHandler) {
+			// Word draws a metafile with colour adjustments as a picture at 200 dpi, adjusted, and one
+			// without as vectors (CR-084 phase 0 findings section 4; D5): rasterised here, then cropped
+			// and adjusted by the image handler as any bitmap is
+			byte[] png = rasterise(data, w, h, crop);
+			if (png != null) {
+				BinaryPart raster = pngPart(part, png);
+				String uri = handlePart(imageHandler, this, rel, raster);
+				if (uri != null) {
+					this.metaFile = null;
+					this.picturePart = raster;
+					setSrc(uri);
+					return true;
+				}
+			}
+			PictureEffects.report(PictureRecolour.RECOLOUR_VECTOR, part.getPartName() == null ? "" : part.getPartName().getName());
+			recolourApplied = false;
+		}
 		if (forXslFo || inlines(imageHandler)) {
 			metaFileSvg = MetafileSvgProvider.toSvg(data, w, h,
 					wmlPackage==null ? null : wmlPackage.getFontMapper());
@@ -464,6 +505,44 @@ public abstract class AbstractWordXmlPicture {
 		}
 		setSrc(uri);
 		return true;
+	}
+
+	/** The resolution Word's PDF draws a metafile with colour adjustments at (CR-084 phase 0: 533 px for 192 pt) */
+	static final int METAFILE_RECOLOUR_DPI = 200;
+
+	/**
+	 * The metafile drawn as a PNG at {@link #METAFILE_RECOLOUR_DPI} for the frame it is shown in (w by h points, the
+	 * crop's part of it), so that the crop's part is at that resolution; null where it can't be drawn.
+	 */
+	private byte[] rasterise(byte[] data, double w, double h, PictureCrop crop) {
+		PoiMetafileRenderer renderer = PoiMetafileRenderer.getInstance();
+		if (!(w > 0) || !(h > 0)) {
+			java.awt.geom.Dimension2D size = renderer.getSizeInPoints(data);
+			if (size == null) return null;
+			w = size.getWidth();
+			h = size.getHeight();
+		}
+		PictureCrop c = crop == null ? PictureCrop.NONE : crop.positive();
+		double fw = w / Math.max(0.01, 1 - c.left - c.right), fh = h / Math.max(0.01, 1 - c.top - c.bottom);
+		int pw = (int) Math.floor(fw / 72d * METAFILE_RECOLOUR_DPI + 1e-6), ph = (int) Math.floor(fh / 72d * METAFILE_RECOLOUR_DPI + 1e-6);
+		if (pw < 1 || ph < 1 || (long) pw * ph > 25_000_000L) return null;
+		java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(pw, ph, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = img.createGraphics();
+		try {
+			renderer.draw(data, g, new java.awt.geom.Rectangle2D.Double(0, 0, pw, ph),
+					wmlPackage == null ? null : wmlPackage.getFontMapper());
+		} catch (RuntimeException e) {
+			log.warn("A metafile with colour adjustments couldn't be drawn: " + e);
+			return null;
+		} finally {
+			g.dispose();
+		}
+		try {
+			java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+			return javax.imageio.ImageIO.write(img, "png", out) ? out.toByteArray() : null;
+		} catch (java.io.IOException e) {
+			return null;
+		}
 	}
 
 	/**

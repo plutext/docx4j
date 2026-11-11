@@ -103,10 +103,11 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 
 	/**
 	 * For a picture in XSL-FO (PDF) output, the picture as Word's Compress Pictures would
-	 * leave it (CR-029): the crop applied, and resampled to the document's resolution for
-	 * the size it is shown at ({@link PictureCompression}). Identifies the variant, or
-	 * null where there is nothing to consider (another output, an external picture, no
-	 * crop and no resolution).
+	 * leave it (CR-029): the crop applied, its colour adjustments applied (CR-084), and
+	 * resampled to the document's resolution for the size it is shown at
+	 * ({@link PictureCompression}). Identifies the variant, or null where there is nothing
+	 * to consider (another output, an external picture, no crop, no adjustment and no
+	 * resolution).
 	 *
 	 * @since 17.3.0
 	 */
@@ -117,10 +118,12 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 			return null;
 		}
 		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
+		PictureRecolour recolour = picture.getRecolour();
 		PictureCompression.Resolution resolution = PictureCompression.resolution(picture.getWmlPackage(), pictureResolution);
-		if (crop.isNone() && resolution.isHighFidelity()) return null;
-		return crop.signature() + "@" + resolution + ":" + Math.round(picture.getWidthInPoints() * 100)
-				+ "x" + Math.round(picture.getHeightInPoints() * 100);
+		if (crop.isNone() && recolour.isNone() && resolution.isHighFidelity()) return null;
+		// a picture without adjustments keeps the key (and so the derived part's name) it had before CR-084
+		return crop.signature() + (recolour.isNone() ? "" : "+" + recolour.signature()) + "@" + resolution + ":"
+				+ Math.round(picture.getWidthInPoints() * 100) + "x" + Math.round(picture.getHeightInPoints() * 100);
 	}
 
 	/** The compressed picture stored through this handler as a part of its own (so a
@@ -129,7 +132,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	private String handleCompressed(AbstractWordXmlPicture picture, Relationship relationship,
 			BinaryPart part, String variant) throws Docx4JException {
 		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
-		PictureCompression.Result r = PictureCompression.compress(part.getBytes(), crop,
+		PictureCompression.Result r = PictureCompression.compress(part.getBytes(), crop, picture.getRecolour(),
 				picture.getWidthInPoints(), picture.getHeightInPoints(),
 				PictureCompression.resolution(picture.getWmlPackage(), pictureResolution));
 		if (r == null) return null;
@@ -143,6 +146,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 			derived.setBinaryData(r.bytes);
 			if (log.isDebugEnabled()) {
 				log.debug(relationship.getTarget() + ": " + (crop.isNone() ? "" : crop + ", ")
+						+ (picture.getRecolour().isNone() ? "" : picture.getRecolour() + ", ")
 						+ r.width + "x" + r.height + " " + r.extension + ", " + r.bytes.length + " bytes (was "
 						+ part.getBytes().length + ")");
 			}

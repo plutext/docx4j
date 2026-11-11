@@ -35,7 +35,7 @@ rk10-34	lum bright -30% contrast -30% on colour	calib-colour.png	FlateDecode	0.9
 rk10-35	lum bright 40% contrast 40% on colour	calib-colour.png	FlateDecode	1.0	0.5	0.0	
 rk20-02	grayscl	calib-colour.png	DCTDecode	1.02	0.48	0.0	
 rk20-03	biLevel thresh 25%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
-rk20-04	biLevel thresh 50%	calib-colour.png	FlateDecode	255.0	1.99	0.0	
+rk20-04	biLevel thresh 50%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
 rk20-05	biLevel thresh 75%	calib-colour.png	FlateDecode	0.0	0.0	0.0	
 rk20-06	duotone black to white	calib-colour.png	DCTDecode	1.02	0.48	0.0	
 rk20-07	duotone black to red	calib-colour.png	FlateDecode	1.02	0.16	0.0	
@@ -70,8 +70,8 @@ rk50-04	duotone then lum	calib-colour.png	FlateDecode	2.4	0.42	0.0	61.73
 rk50-05	lum then duotone	calib-colour.png	FlateDecode	1.73	0.23	0.0	62.0
 rk50-06	alphaModFix then grayscl	calib-colour.png	DCTDecode	4.0	2.45	0.5	4.0
 rk50-07	grayscl then alphaModFix	calib-colour.png	DCTDecode	4.0	2.45	0.5	4.0
-rk50-08	biLevel then duotone	calib-colour.png	FlateDecode	255.0	0.66	0.0	255.0
-rk50-09	duotone then biLevel	calib-colour.png	FlateDecode	255.0	40.84	0.0	255.0
+rk50-08	biLevel then duotone	calib-colour.png	FlateDecode	0.0	0.0	0.0	255.0
+rk50-09	duotone then biLevel	calib-colour.png	FlateDecode	255.0	40.84	0.0	0.0
 rk70-01	VML, unadjusted	calib-grey.png	DCTDecode	0.0	0.0	0.0	
 rk70-02	VML gain 0.5	calib-grey.png	DCTDecode	0.25	0.25	0.0	
 rk70-03	VML gain 2	calib-grey.png	FlateDecode	0.5	0.25	0.0	

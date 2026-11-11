@@ -18,9 +18,12 @@ import pdfdraws as pd                                                     # noqa
 
 def _resources(pdf, page_obj):
     d = pd.show(pdf, page_obj).decode('latin-1')
+    # the resources inline (Word), or a dictionary of their own (FOP's, shared by every page)
+    ref = re.search(r'/Resources (\d+) 0 R', d)
+    r = pd.show(pdf, int(ref.group(1))).decode('latin-1') if ref else d
     res = {}
     for kind in ('XObject', 'ExtGState', 'Shading', 'Pattern'):
-        m = re.search(rf'/{kind} <<(.*?)>>', d, re.S)
+        m = re.search(rf'/{kind} <<(.*?)>>', r, re.S)
         res[kind] = {k: int(v) for k, v in re.findall(r'/(\w+) (\d+) 0 R', m.group(1))} if m else {}
     contents = re.search(r'/Contents (?:\[(.*?)\]|(\d+) 0 R)', d, re.S)
     objs = [int(x) for x in re.findall(r'(\d+) 0 R', contents.group(1))] if contents.group(1) else [int(contents.group(2))]

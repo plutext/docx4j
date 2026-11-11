@@ -188,11 +188,13 @@ final class PictureEffects {
 	 *        the FOP fork admits only data: resources in an SVG)
 	 * @param cropped href's bitmap is cut to the crop already (the FO image handler's), so it is drawn whole in the
 	 *        crop's frame; false for the stored bitmap, which the crop cuts here
+	 * @param recolour the colour adjustments href's bitmap has (the FO image handler's, CR-084), which the effects are
+	 *        drawn from too, as Word draws them (a shadow follows the adjusted alpha); {@link PictureRecolour#NONE}
 	 * @param clip how far beyond the frame's top and bottom the effects may reach, in points; null for no cut
 	 * @param ids the prefix of the SVG's ids (unique in an HTML page)
 	 */
 	static Element svg(Document document, WordprocessingMLPackage pkg, Pic pic, double w, double h, BinaryPart part,
-			PictureCrop crop, String href, boolean cropped, double[] clip, String ids) {
+			PictureCrop crop, String href, boolean cropped, PictureRecolour recolour, double[] clip, String ids) {
 		ShapeDrawer drawer = ShapeDrawer.getDrawer();
 		if (drawer == null || pic == null || pic.getSpPr() == null || part == null || !(w > 0) || !(h > 0)) return null;
 		CTEffectList fx = effects(pic);
@@ -204,13 +206,21 @@ final class PictureEffects {
 		} catch (Exception e) {
 			return null;
 		}
+		if (recolour == null) recolour = PictureRecolour.NONE;
 		// a fill behind an opaque bitmap doesn't show
-		if (!framed && !hasAlpha(bytes)) return null;
-		// the pixels, where there are effects to draw from them, or a 3-D picture's face
+		if (!framed && !hasAlpha(bytes) && !recolour.mayAddAlpha()) return null;
+		// the pixels, where there are effects to draw from them, or a 3-D picture's face; adjusted as the picture is
 		BufferedImage picture = null;
 		if (fx != null || is3d(pic)) {
 			picture = read(bytes, w, h, crop);
 			if (picture == null) report("render.effect.picture_unread", part.getPartName() == null ? "" : part.getPartName().getName());
+			else if (!recolour.isNone()) picture = recolour.apply(picture, pixelsPerPoint(picture, w, crop));
+		}
+		if (href == null && !recolour.isNone()) {
+			// the part's own bytes, adjusted (the crop is cut here)
+			BufferedImage whole = picture != null ? picture : read(bytes, w, h, null);
+			if (whole != null && picture == null) whole = recolour.apply(whole, pixelsPerPoint(whole, w, PictureCrop.NONE));
+			href = whole == null ? null : png(whole);
 		}
 		ThemeColors theme = null;
 		try {
@@ -333,6 +343,13 @@ final class PictureEffects {
 			}
 		}
 		return b.length() == 0 ? null : b.toString();
+	}
+
+	/** The picture's pixels a point where it is shown in a frame w points wide, through the crop */
+	private static double pixelsPerPoint(BufferedImage picture, double w, PictureCrop crop) {
+		PictureCrop c = crop == null ? PictureCrop.NONE : crop;
+		double fw = Math.max(0.01, 1 - Math.max(0, c.left) - Math.max(0, c.right));
+		return w > 0 ? picture.getWidth() * fw / w : 0;
 	}
 
 	/** Whether the bitmap's first image has alpha (its header's colour model); false where it can't be told */
@@ -480,7 +497,8 @@ final class PictureEffects {
 		}
 	}
 
-	private static void report(String code, String detail) {
+	/** Logs a code once (CR-080 D9's event line), with the first detail seen */
+	static void report(String code, String detail) {
 		if (REPORTED.add(code)) log.warn(code + (detail.isEmpty() ? "" : ": " + detail) + " (a picture's effects aren't all drawn; further ones not logged)");
 	}
 

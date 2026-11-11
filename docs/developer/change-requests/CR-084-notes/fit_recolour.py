@@ -33,8 +33,10 @@ def grayscl(rgb):
     return out
 
 def bilevel(rgb, t):
+    """a:biLevel: the luma in whole levels rounded down against the threshold in whole levels rounded (phase 1: this
+    fits all seven biLevel probes; the luma against the threshold as a fraction missed the tie at 50%)"""
     out = rgb.copy()
-    out[:, :3] = (luma(rgb) >= t)[:, None].astype(float)
+    out[:, :3] = (np.floor(luma(rgb) * 255 + 1e-6) >= round(t * 255))[:, None].astype(float)
     return out
 
 def duotone(rgb, c1, c2):
@@ -154,7 +156,8 @@ MODELS = [
     (r'^VML gamma ([\d.]+)', lambda m: lambda x: vml(x, gamma=float(m[1]))),
     (r'^VML Washout', lambda m: lambda x: vml(x, gain=19661 / 65536, black=22938 / 65536)),
     (r'^VML grayscale', lambda m: grayscl),
-    (r'^VML bilevel', lambda m: lambda x: bilevel(x, 0.5)),
+    # VML's bilevel compares the luma as a fraction: its tie patch (luma 127.84) is white, DrawingML's black (phase 3)
+    (r'^VML bilevel', lambda m: lambda x: np.concatenate([np.repeat((luma(x) >= 0.5)[:, None], 3, 1).astype(float), x[:, 3:]], 1)),
     (r'^VML chromakey red', lambda m: lambda x: chromakey(x, [1, 0, 0])),
     (r'^Recolor: Washout', lambda m: lambda x: lum(x, 0.7, -0.7)),
 ]

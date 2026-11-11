@@ -276,6 +276,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
     	CTBlip blip = pic.getBlipFill().getBlip();
     	converter.crop = PictureCrop.of(pic.getBlipFill().getSrcRect()); // CR-029
+    	converter.recolour = PictureRecolour.of(blip, wmlPackage); // CR-084
     	
     	String imgRelId = blip.getEmbed();
     	if ((imgRelId == null) || (imgRelId.length() == 0)) {
@@ -429,8 +430,11 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * line weren't drawn.  @since 17.3.7
      */
     Document withEffects(Document d) {
-    	if (forXslFo) {     // what isn't drawn (CR-081 phase 6): colour adjustments, a metafile's too; a metafile's frame
-    		PictureEffects.reportRecolour(getPic());
+    	if (forXslFo) {     // what isn't drawn (CR-081 phase 6): colour adjustments the image handler didn't apply (CR-084
+    		// draws them; what of them isn't drawn as Word draws it is reported); a metafile's frame
+    		// (an adjustment which changes nothing, as <a:lum/>, isn't one)
+    		if (!isRecolourApplied() && !recolour.isNone()) PictureEffects.reportRecolour(getPic());
+    		else recolour.report();
     		if (metaFileSvg != null) PictureEffects.reportMetafile(getPic());
     	}
     	if (!forXslFo || metaFileSvg != null || d == null || d.getDocumentElement() == null || dimensions == null) return d;
@@ -443,8 +447,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		// the picture as the image handler wrote it (resampled, cropped and re-encoded as CR-029 has it), as a data:
     		// URI (the FOP fork admits only those in an SVG); else the part's own bytes, cropped in the SVG
     		String href = PictureEffects.dataUri(getSrc());
+    		// the effects from the adjusted picture: a shadow follows the adjusted alpha (CR-084 phase 0 findings section 4)
     		org.w3c.dom.Element svg = PictureEffects.svg(doc, wmlPackage, pic, w, h, picturePart, crop, href, href != null && isCropApplied(),
-    				effectClip(), "p-");
+    				isRecolourApplied() ? recolour : PictureRecolour.NONE, effectClip(), "p-");
     		if (svg == null) return d;
     		svg.setAttribute("width", length(w) + "pt");
     		svg.setAttribute("height", length(h) + "pt");
@@ -479,7 +484,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	double w = lengthInPoints(dimensions.width, dimensions.widthUnit);
     	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
     	String href = getSrc() == null || getSrc().isEmpty() ? null : getSrc();
-    	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, pic, w, h, picturePart, crop, href, false, effectClip(), htmlIds());
+    	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, pic, w, h, picturePart, crop, href, false,
+    			PictureRecolour.NONE, effectClip(), htmlIds());
     	if (svg == null) return null;
     	svg.setAttribute("width", Long.toString(cssPixels(w, "pt")));
     	svg.setAttribute("height", Long.toString(cssPixels(h, "pt")));
