@@ -21,6 +21,10 @@ package org.docx4j.chart.render;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -60,6 +64,12 @@ public class Scene3DTest {
 	 */
 	private static final double TOLERANCE = 0.36 + 0.24;
 
+	/**
+	 * Phase 5b-1's gate: a probe's mean colour difference from Word's, over the points where both pictures are opaque
+	 * (CR-081 section 6: about 6 / 255, set at the first fit). Word's model is fitted, not documented.
+	 */
+	private static final double SHADING_TOLERANCE = 6;
+
 	private static final List<Map<String, Object>> PROBES = new ArrayList<Map<String, Object>>();
 	private static ThemeColors theme;
 
@@ -84,6 +94,99 @@ public class Scene3DTest {
 	/** Not drawn as Word draws them yet: the contour (phase 5a findings section 3) */
 	private static boolean expected(String note) {
 		return true;
+	}
+
+	/**
+	 * A 3-D drawing's shading against Word's (CR-081 phase 5b-1): every probe of the rounds cr081-phase5b-r1 and -r2
+	 * (cr081-word-3d-light.jsonl.gz, from CR-081-notes/export_3d_light.py): the picture styles' four light rigs under their
+	 * three materials on a deep circle bevel, a rectangle's and an ellipse's; turned rigs, another direction, turned
+	 * cameras, an extrusion, a blue fill, the photo. At every point of a 1.5 pt grid where both pictures are opaque, round
+	 * it, the colours' mean difference is within {@link #SHADING_TOLERANCE}.
+	 */
+	@Test
+	public void theShadingIsWords() throws Exception {
+		List<Map<String, Object>> probes = new ArrayList<Map<String, Object>>();
+		ClassLoader cl = Scene3DTest.class.getClassLoader();
+		try (InputStream in = new GZIPInputStream(cl.getResourceAsStream("effects/cr081-word-3d-light.jsonl.gz"));
+				BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+			for (String line; (line = r.readLine()) != null; ) probes.add(Json.object(Json.parse(line)));
+		}
+		BufferedImage photo = photo();
+		int failed = 0;
+		double worst = 0, sum = 0;
+		StringBuilder report = new StringBuilder();
+		for (Map<String, Object> p : probes) {
+			double w = Json.number(p.get("w")), h = Json.number(p.get("h"));
+			String geom = (String) p.get("geom");
+			boolean shape = Boolean.TRUE.equals(p.get("shape"));
+			CTShapeProperties sp = spPr("<a:prstGeom prst=\"" + geom + "\"><a:avLst/></a:prstGeom>" + p.get("xml"));
+			Shape outline = "ellipse".equals(geom) ? new Ellipse2D.Double(0, 0, w, h) : new Rectangle2D.Double(0, 0, w, h);
+			Color fill = new Color(Integer.parseInt((String) p.get("fill"), 16));
+			Effects.Painter face = g -> {
+				if (shape) {
+					g.setColor(fill);
+					g.fill(outline);
+				} else {
+					g.drawImage(photo, new AffineTransform(w / photo.getWidth(), 0, 0, h / photo.getHeight(), 0, 0), null);
+				}
+			};
+			List<String> problems = new ArrayList<String>();
+			Scene3D.Picture pic = Scene3D.draw(face, outline, w, h, sp.getScene3D(), sp.getSp3D(), theme, Effects.BASE_PIXELS_PER_POINT, problems);
+			assertTrue((String) p.get("probe"), pic != null);
+			assertTrue(p.get("probe") + " " + problems, !problems.contains(Scene3D.SHADING));
+			Map<String, Object> word = Json.object(p.get("word"));
+			double x0 = Json.number(word.get("x0")), y0 = Json.number(word.get("y0")), step = Json.number(word.get("step"));
+			int cols = (int) Math.round(Json.number(word.get("cols"))), rows = (int) Math.round(Json.number(word.get("rows")));
+			String rgb = (String) word.get("rgb");
+			double err = 0;
+			int n = 0, words = 0;
+			for (int j = 0; j < rows; j++) {
+				for (int i = 0; i < cols; i++) {
+					String cell = rgb.substring((j * cols + i) * 6, (j * cols + i) * 6 + 6);
+					if (cell.charAt(0) == '.') continue;
+					words++;
+					int mine = opaque(pic, x0 + i * step, y0 + j * step);
+					if (mine == 0) continue;
+					int c = Integer.parseInt(cell, 16);
+					err += (Math.abs(((c >> 16) & 0xff) - ((mine >> 16) & 0xff)) + Math.abs(((c >> 8) & 0xff) - ((mine >> 8) & 0xff))
+							+ Math.abs((c & 0xff) - (mine & 0xff))) / 3.0;
+					n++;
+				}
+			}
+			double mean = n > 0 ? err / n : 255;
+			sum += mean;
+			worst = Math.max(worst, mean);
+			boolean bad = mean > SHADING_TOLERANCE || n < 0.9 * words;
+			if (bad) failed++;
+			report.append(String.format(Locale.ROOT, "%n  %s %-60s %5.2f / 255 over %d of Word's %d points%s", p.get("probe"), p.get("note"), mean, n, words,
+					bad ? "  PAST" : ""));
+		}
+		System.out.println(String.format(Locale.ROOT, "Scene3DTest shading: %d probes, mean %.2f / 255, worst %.2f, %d past %.1f%s", probes.size(),
+				sum / probes.size(), worst, failed, SHADING_TOLERANCE, report));
+		assertTrue(failed + " of " + probes.size() + " probes past " + SHADING_TOLERANCE + ":" + report, failed == 0);
+	}
+
+	/** docx4j's colour at a point of the frame, where it and its neighbours are opaque; else 0 */
+	private static int opaque(Scene3D.Picture pic, double x, double y) {
+		BufferedImage img = pic.getImage();
+		Rectangle2D.Double place = pic.getPlace();
+		int ix = (int) Math.floor((x - place.x) / place.width * img.getWidth()), iy = (int) Math.floor((y - place.y) / place.height * img.getHeight());
+		if (ix < 1 || iy < 1 || ix + 1 >= img.getWidth() || iy + 1 >= img.getHeight()) return 0;
+		for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) if ((img.getRGB(ix + dx, iy + dy) >>> 24) < 250) return 0;
+		return img.getRGB(ix, iy) | 0xff000000;
+	}
+
+	/** The rounds' synthetic photo (CR-081-notes/build_phase0.py's photo()): a gradient, a green hill, a red disc top left */
+	static BufferedImage photo() {
+		BufferedImage img = new BufferedImage(480, 360, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < 360; y++) for (int x = 0; x < 480; x++) img.setRGB(x, y, new Color(40 + 180 * x / 480, 90 + 100 * y / 360, 200 - 120 * x / 480).getRGB());
+		Graphics2D g = img.createGraphics();
+		g.setColor(new Color(30, 100, 50));
+		g.fillPolygon(new int[] { 0, 140, 300, 480, 480, 0 }, new int[] { 300, 230, 280, 210, 360, 360 }, 6);
+		g.setColor(new Color(210, 30, 30));
+		g.fillOval(30, 30, 81, 81);
+		g.dispose();
+		return img;
 	}
 
 	@Test
@@ -131,8 +234,9 @@ public class Scene3DTest {
 	}
 
 	/**
-	 * A 3-D shape's drawing (CR-081 phase 5a) is one picture in place of its fill and line, its shading reported, its
-	 * shadow cast by that picture; a flat shape's isn't
+	 * A 3-D shape's drawing (CR-081 phase 5a) is one picture in place of its fill and line, its shadow cast by that
+	 * picture; a flat shape's isn't. Its shading is Word's for a fitted rig and material (threePt, warmMatte: phase 5b-1),
+	 * and reported for one not yet fitted (phase 5b-2)
 	 */
 	@Test
 	public void a3dShapeIsOnePicture() throws Exception {
@@ -154,7 +258,11 @@ public class Scene3DTest {
 				1828800, 1371600, null);
 		java.awt.geom.Rectangle2D a = ((org.docx4j.chart.render.api.Drawing.Picture) alone.getDrawing().getItems().get(0)).getInto();
 		assertTrue(p.getInto() + " over " + a, p.getInto().getMaxY() > a.getMaxY() + 1 && p.getInto().getMaxX() > a.getMaxX() + 1);
-		assertTrue(three.getProblems().toString(), three.getProblems().contains(Scene3D.SHADING));
+		assertTrue(three.getProblems().toString(), !three.getProblems().contains(Scene3D.SHADING));
+		assertTrue(problems(fill + scene.replace("threePt", "morning"), false, false).contains(Scene3D.SHADING));
+		assertTrue(problems(fill + scene.replace("<a:sp3d ", "<a:sp3d prstMaterial=\"metal\" "), false, false).contains(Scene3D.SHADING));
+		assertTrue(problems(fill + scene.replace("dir=\"t\"/>", "dir=\"t\"><a:rot lat=\"1200000\" lon=\"0\" rev=\"0\"/></a:lightRig>"), false, false)
+				.contains(Scene3D.SHADING));
 		assertTrue(three.getProblems().toString(), !three.getProblems().contains(org.docx4j.chart.render.api.ShapeRenderer.FLAT_3D));
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn flat = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill), null, theme, 1828800,
 				1371600, null);

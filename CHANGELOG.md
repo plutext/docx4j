@@ -37,7 +37,7 @@ Changes in Version 17.3.7
 - A DrawingML shape's effects are drawn, its own or its style's (`a:effectRef`) through the theme: shadows, glows, soft edges and reflections, in groups and canvases too (CR-081).
 - Preset shadows (`a:prstShdw`) are drawn on pictures and shapes, as Word's vector fills (CR-081).
 - An anchored picture followed by a line break inside a run is drawn; it had been moved out of its paragraph, where FOP dropped it.
-- 3-D drawings are drawn with Word's geometry: its 62 cameras, bevels, extrusion, contour and depth, on pictures and shapes, their shadows, glows and reflections in their plane; the shading is simpler than Word's (CR-081; needs docx4j-chart-render).
+- 3-D drawings are drawn with Word's geometry: its 62 cameras, bevels, extrusion, contour and depth, on pictures and shapes, their shadows, glows and reflections in their plane; shaded as Word shades the picture styles' light rigs and materials (twoPt, threePt, contrasting, soft; warmMatte, matte, plastic), the others approximated and reported (CR-081; needs docx4j-chart-render).
 
 ### HTML output
 - Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).

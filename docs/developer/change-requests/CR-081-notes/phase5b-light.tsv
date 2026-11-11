@@ -1,0 +1,28 @@
+# CR-081 phase 5b-1: Word's light rigs and materials, fitted to cr081-phase5b-r1, -r2 and -r3 (fit_light_model.py, SPEC=phong, 4 lights a rig;
+# its output in phase5b-fit.txt). colour = min(255, fill (ambient + sum diffuse max(0, n.L)) + 255 ks sum specular max(0, R.v)^p),
+# R = 2 (n.L) n - L (where n.L > 0), v towards the viewer; n, L, v in the drawing's own space (x right, y down, z out of its face),
+# L towards the light, for dir t and no rot: the lights turn with the drawing
+kind	name	x	y	z	diffuse	specular
+ambient	twoPt				0.2485	
+light	twoPt	-0.4122	0.5038	0.7591	0.6103	0.1507
+light	twoPt	0.2360	-0.8998	0.3669	0.2894	0.0877
+light	twoPt	-0.4026	0.5680	0.7178	0.2236	0.0926
+light	twoPt	0.1570	-0.3336	0.9296	0.0020	0.0001
+ambient	threePt				0.0290	
+light	threePt	0.2569	0.8469	0.4656	0.4061	0.1436
+light	threePt	-0.2586	-0.6973	0.6685	0.2922	0.2037
+light	threePt	-0.2710	-0.5821	0.7666	0.8084	0.1326
+light	threePt	-0.2706	0.6229	-0.7340	1.0032	0.2085
+ambient	contrasting				1.0002	
+light	contrasting	0.9841	0.0482	-0.1709	0.0015	0.0323
+light	contrasting	0.9992	-0.0117	0.0393	0.0007	0.2553
+light	contrasting	-1.0000	0.0036	0.0053	0.0027	0.2725
+light	contrasting	-0.9060	0.0471	0.4207	0.0017	0.0151
+ambient	soft				0.4287	
+light	soft	0.0347	-0.0918	0.9952	0.3839	0.0075
+light	soft	-0.3997	-0.9150	-0.0555	0.3321	0.0084
+light	soft	0.2447	-0.6879	0.6833	0.1711	0.2199
+light	soft	0.9771	-0.2100	0.0340	0.2694	0.0000
+material	matte				0.0000	1.00
+material	warmMatte				1.0000	8.02
+material	plastic				1.9135	11.47

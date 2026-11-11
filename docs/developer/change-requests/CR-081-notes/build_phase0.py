@@ -34,6 +34,22 @@ The sets:
                    on the photo
   cr081-phase5a-r5 the contour seen edge on (lon 90) and from above (lat 90), so that its section shows: 6 and 12 pt,
                    alone, with depth, with a bevel
+  cr081-phase5b-r1 phase 5b-1's round (2026-11-11; Jason: "yes, do 5b-1, defer 5b-2"): the picture styles' lighting, the
+                   rigs twoPt, threePt, contrasting and soft and the materials warmMatte, matte and plastic, on a grey
+                   rectangle whose deep circle bevel (36 by 18 pt) shows a wide spread of normals; a turned rig, another
+                   direction, turned cameras, extruded sides, a blue fill and the photo
+  cr081-phase5b-r2 the same rigs and materials on a grey ellipse with the same bevel, whose normals face every way (a
+                   rectangle's face only its four sides); the blue fill under threePt and twoPt
+  cr081-phase5b-r3 the lights that a front view doesn't show (behind the drawing, at its sides): the grey ellipse with the
+                   deep bevel and 36 pt of grey extrusion, seen turned (lon 60 and 300, lat 60 and 300) and from behind
+                   (lat 330 lon 150, lat 30 lon 210), each rig under warmMatte, matte and plastic; turned rigs under turned
+                   cameras, as the picture styles have them
+  cr081-phase5b-r4 corpus 4994's picture style (a 2 by 1.5 pt bevel, twoPt turned rev 120, a 7 pt line with no fill),
+                   whose bevel Word draws without the highlight the fit gives: the line, the bevel's size and the rig
+                   apart, on the photo and on a grey shape; and the style's spPr whole
+  cr081-phase5b-r5 how finely Word cuts a bevel's profile, which it lights at the cuts and blends between (a 6 pt circle
+                   in four 22.5 degree pieces, a 2 pt in two): circle bevels from 1.8 to 24 pt wide, the picture styles'
+                   sizes among them, and their hardEdge and relaxedInset, on a grey shape under twoPt rev 120
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -611,6 +627,107 @@ def fam_contour_edge():
             fixed('contour 6 pt, bevel circle 12 pt, edge on', edge, c(6, bevel(w=152400, h=152400))),
             fixed('contour 12 pt, depth 36 pt, bevel circle 12 pt, edge on', edge, c(12, bevel(w=152400, h=152400) + EX, extrusionH=457200))]
 
+GREY = '<a:solidFill><a:srgbClr val="808080"/></a:solidFill>'
+BLUE = '<a:solidFill><a:srgbClr val="4472C4"/></a:solidFill>'
+
+def rig(r, d='t', rev=None):
+    rot = f'<a:rot lat="0" lon="0" rev="{rev * DEG}"/>' if rev else ''
+    return f'<a:lightRig rig="{r}" dir="{d}">{rot}</a:lightRig>' if rot else f'<a:lightRig rig="{r}" dir="{d}"/>'
+
+def fam_light():
+    """The picture styles' rigs and materials on a deep bevel, front on; then a turned rig, another direction, turned
+    cameras, extruded sides, a blue fill, the photo"""
+    deep = bevel('circle', 457200, 228600)
+    front = cam('orthographicFront')
+    def lit(note, light, material='warmMatte', camera=front, fill=GREY, extra='', **kw):
+        a = {'prstMaterial': material} if material != 'warmMatte' else {}
+        return Probe(note, shape='picture' not in kw, fill=fill, anchor='fixed', scene=scene(camera, light) + sp3d(deep + extra, **a), **kw)
+    out = [lit(f'{r}, {m}', rig(r), m) for r in ('twoPt', 'threePt', 'contrasting', 'soft') for m in ('warmMatte', 'matte', 'plastic')]
+    out += [lit('twoPt turned rev 120, warmMatte', rig('twoPt', rev=120)),
+            lit('threePt turned rev 120, warmMatte', rig('threePt', rev=120)),
+            lit('threePt from tl, warmMatte', rig('threePt', 'tl')),
+            lit('threePt, warmMatte, perspectiveRelaxed', rig('threePt'), camera=cam('perspectiveRelaxed')),
+            lit('threePt, warmMatte, perspectiveContrastingLeftFacing', rig('threePt'), camera=cam('perspectiveContrastingLeftFacing')),
+            lit('threePt, warmMatte, depth 36 pt, isometricOffAxis1Right', rig('threePt'), camera=cam('isometricOffAxis1Right'),
+                extra=EX),
+            lit('threePt, warmMatte, blue', rig('threePt'), fill=BLUE),
+            lit('threePt, plastic, blue', rig('threePt'), 'plastic', fill=BLUE),
+            lit('threePt, warmMatte, the photo', rig('threePt'), picture='photo.png')]
+    # the extruded one's depth
+    out[17] = Probe(out[17].note, shape=True, fill=GREY, anchor='fixed',
+                    scene=scene(cam('isometricOffAxis1Right'), rig('threePt')) + sp3d(deep + EX, extrusionH=457200))
+    return out
+
+def fam_light_ellipse():
+    """The picture styles' rigs and materials on a grey ellipse with the deep bevel, front on: every azimuth of normal"""
+    deep = bevel('circle', 457200, 228600)
+    front = cam('orthographicFront')
+    def lit(note, light, material='warmMatte', fill=GREY):
+        a = {'prstMaterial': material} if material != 'warmMatte' else {}
+        return Probe(note, shape=True, geom='ellipse', fill=fill, anchor='fixed', scene=scene(front, light) + sp3d(deep, **a))
+    out = [lit(f'ellipse, {r}, {m}', rig(r), m) for r in ('twoPt', 'threePt', 'contrasting', 'soft') for m in ('warmMatte', 'matte', 'plastic')]
+    out += [lit('ellipse, threePt, warmMatte, blue', rig('threePt'), fill=BLUE), lit('ellipse, threePt, plastic, blue', rig('threePt'), 'plastic', BLUE),
+            lit('ellipse, twoPt, warmMatte, blue', rig('twoPt'), fill=BLUE)]
+    return out
+
+TURNED = ((0, 60), (0, 300), (60, 0), (300, 0), (330, 150), (30, 210))
+
+def fam_light_turned():
+    """The rigs' lights from every side: the deep-bevelled grey ellipse, extruded 36 pt in grey, under turned cameras"""
+    deep = bevel('circle', 457200, 228600)
+    side = '<a:extrusionClr><a:srgbClr val="808080"/></a:extrusionClr>'
+    def lit(note, camera, light, material='warmMatte'):
+        a = {'prstMaterial': material} if material != 'warmMatte' else {}
+        return Probe(note, shape=True, geom='ellipse', fill=GREY, anchor='fixed', scene=scene(camera, light)
+                     + sp3d(deep + side, extrusionH=457200, **a))
+    out = []
+    for r in ('twoPt', 'threePt', 'contrasting', 'soft'):
+        for k, (la, lo) in enumerate(TURNED):
+            out.append(lit(f'{r}, warmMatte, lat {la} lon {lo}', cam('orthographicFront', lat=la, lon=lo), rig(r)))
+            if k in (0, 2, 4):
+                out.append(lit(f'{r}, matte, lat {la} lon {lo}', cam('orthographicFront', lat=la, lon=lo), rig(r), 'matte'))
+            if k in (1, 3) and r in ('twoPt', 'threePt'):
+                out.append(lit(f'{r}, plastic, lat {la} lon {lo}', cam('orthographicFront', lat=la, lon=lo), rig(r), 'plastic'))
+    out.append(lit('threePt turned rev 120, warmMatte, lat 0 lon 60', cam('orthographicFront', lat=0, lon=60), rig('threePt', rev=120)))
+    out.append(lit('twoPt turned rev 120, matte, perspectiveRelaxed lat 316', cam('perspectiveRelaxed', lat=316, lon=0, rev=0),
+                   rig('twoPt', rev=120), 'matte'))
+    return out
+
+def fam_small_bevel():
+    """Corpus 4994's picture style taken apart: its line, its bevel's size, its rig, on the photo and a grey shape"""
+    small, big = bevel('circle', 25400, 19050), bevel('circle', 76200, 57150)
+    two = rig('twoPt', rev=120)
+    front = cam('orthographicFront')
+    noline = '<a:ln w="88900" cap="sq"><a:noFill/><a:miter lim="800000"/></a:ln>'
+    white = '<a:ln w="88900" cap="sq"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill><a:miter lim="800000"/></a:ln>'
+    def ph(note, bv=small, light=two, ln=''):
+        return Probe(note, anchor='fixed', ln=ln, scene=scene(front, light) + sp3d(bv))
+    def sh(note, bv=small, light=two, ln=''):
+        return Probe(note, shape=True, fill=GREY, anchor='fixed', ln=ln, scene=scene(front, light) + sp3d(bv))
+    style = ('<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="FFFFFF"><a:shade val="85000"/></a:srgbClr>'
+             '</a:solidFill>' + noline + '<a:effectLst><a:outerShdw blurRad="55000" dist="18000" dir="5400000" algn="tl" rotWithShape="0">'
+             '<a:srgbClr val="000000"><a:alpha val="40000"/></a:srgbClr></a:outerShdw></a:effectLst>' + scene(front, two)
+             + '<a:sp3d><a:bevelT w="25400" h="19050"/><a:contourClr><a:srgbClr val="FFFFFF"/></a:contourClr></a:sp3d>')
+    return [ph('photo, bevel 2 x 1.5 pt, twoPt rev 120'),
+            ph('photo, bevel 2 x 1.5 pt, twoPt rev 120, a 7 pt line with no fill', ln=noline),
+            ph('photo, bevel 2 x 1.5 pt, twoPt rev 120, a 7 pt white line', ln=white),
+            sh('grey, bevel 2 x 1.5 pt, twoPt rev 120'),
+            sh('grey, bevel 2 x 1.5 pt, twoPt rev 120, a 7 pt line with no fill', ln=noline),
+            ph('photo, bevel 2 x 1.5 pt, threePt', light=rig('threePt')),
+            Probe('photo, corpus 4994\'s spPr whole', anchor='fixed', raw=style),
+            ph('photo, bevel 6 x 4.5 pt, twoPt rev 120', bv=big),
+            ph('photo, bevel 2 x 1.5 pt, twoPt', light=rig('twoPt')),
+            sh('grey, bevel 6 x 4.5 pt, twoPt rev 120', bv=big)]
+
+def fam_bevel_cuts():
+    """Circle bevels of the picture styles' sizes and more, and hardEdge and relaxedInset, under twoPt rev 120"""
+    sizes = [(1.8, 1.0), (2, 1.5), (3, 2.25), (4, 1.3), (5, 4), (6, 3), (7.5, 2.5), (8, 8), (10, 7.5), (12, 9), (16, 12), (24, 18)]
+    def sh(note, p, w, h):
+        return Probe(note, shape=True, fill=GREY, anchor='fixed',
+                     scene=scene(cam('orthographicFront'), rig('twoPt', rev=120)) + sp3d(bevel(p, round(w * 12700), round(h * 12700))))
+    return ([sh(f'circle {w} x {h} pt', 'circle', w, h) for w, h in sizes]
+            + [sh('hardEdge 24 x 12 pt', 'hardEdge', 24, 12), sh('relaxedInset 30 x 9 pt', 'relaxedInset', 30, 9)])
+
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -780,6 +897,21 @@ SETS = {
     'cr081-phase5a-r4': [
         ('fxf1-contour', fam_contour, THEME_2023),
     ],
+    'cr081-phase5b-r2': [
+        ('fxg2-light-ellipse', fam_light_ellipse, THEME_2023),
+    ],
+    'cr081-phase5b-r3': [
+        ('fxg3-light-turned', fam_light_turned, THEME_2023),
+    ],
+    'cr081-phase5b-r4': [
+        ('fxg4-small-bevel', fam_small_bevel, THEME_2023),
+    ],
+    'cr081-phase5b-r5': [
+        ('fxg5-bevel-cuts', fam_bevel_cuts, THEME_2023),
+    ],
+    'cr081-phase5b-r1': [
+        ('fxg1-light', fam_light, THEME_2023),
+    ],
     'cr081-phase5a-r2': [
         ('fxd1-cameras-depth-a', fam_cameras_depth(0), THEME_2023),
         ('fxd2-cameras-depth-b', fam_cameras_depth(1), THEME_2023),
@@ -795,7 +927,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300, 'cr081-phase5a-r4': 300, 'cr081-phase5a-r5': 300}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300, 'cr081-phase5a-r3': 300, 'cr081-phase5a-r4': 300, 'cr081-phase5a-r5': 300, 'cr081-phase5b-r1': 300, 'cr081-phase5b-r2': 300, 'cr081-phase5b-r3': 300, 'cr081-phase5b-r4': 300, 'cr081-phase5b-r5': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 

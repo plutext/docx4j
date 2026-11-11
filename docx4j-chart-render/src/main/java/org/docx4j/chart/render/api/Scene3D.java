@@ -36,15 +36,19 @@ import org.docx4j.dml.CTBevel;
 import org.docx4j.dml.CTCamera;
 import org.docx4j.dml.CTScene3D;
 import org.docx4j.dml.CTShape3D;
+import org.docx4j.dml.CTLightRig;
+import org.docx4j.dml.CTSphereCoords;
 import org.docx4j.dml.STBevelPresetType;
 import org.docx4j.dml.STLightRigDirection;
+import org.docx4j.dml.STLightRigType;
 import org.docx4j.dml.STPresetCameraType;
+import org.docx4j.dml.STPresetMaterialType;
 import org.docx4j.model.color.DrawingMLColors;
 import org.docx4j.model.color.ThemeColors;
 
 /**
  * A 3-D drawing as Word draws it (CR-081 phase 5a): one picture with alpha, in place of the drawing, its geometry
- * Word's and its shading simple.
+ * Word's, and its shading Word's for the light rigs and materials of Word's picture styles (phase 5b-1).
  *
  * <p>The geometry, as Word's PDFs read (CR-081-notes/phase5a-findings.md):</p>
  * <ul>
@@ -58,14 +62,18 @@ import org.docx4j.model.color.ThemeColors;
  * <li>An oblique camera shears depth towards the corner it names; zoom scales about the centre.</li>
  * </ul>
  *
- * <p>The shading isn't Word's (phase 5b): a diffuse light from the light rig's direction, every material matte,
- * normalised so that a face turned to the viewer keeps its colour. Where it would show, {@link #SHADING} is reported.</p>
+ * <p>The shading, as Word's pictures read (CR-081-notes/phase5b-light.tsv): each light rig a few directional lights in
+ * the camera's space, each with a diffuse and a highlight's strength, and an ambient; each material a highlight's
+ * strength and sharpness. The four rigs and three materials of Word's picture styles (twoPt, threePt, contrasting and
+ * soft; warmMatte, matte and plastic) are fitted; the others are drawn with threePt's lights or warmMatte, and
+ * {@link #SHADING} is reported (phase 5b-2).</p>
  *
  * @since 17.3.7 (CR-081 phase 5a)
  */
 public final class Scene3D {
 
-	/** A 3-D drawing drawn with its geometry and a simple shading, not Word's lights and materials (phase 5b) */
+	/** A 3-D drawing whose light rig, its rotation, or material isn't Word's yet: drawn with Word's geometry and the
+	 *  nearest of the fitted lights and materials (threePt, warmMatte), not its own (phase 5b-2) */
 	public static final String SHADING = "render.effect.3d_shading";
 
 	/**
@@ -307,12 +315,14 @@ public final class Scene3D {
 	 * outline, read from Word's pictures of each bevel at 24 by 24 pt seen edge on (phase 5a findings section 2,
 	 * phase5a-bevels.tsv, written by bevel_profiles.py, these lines generated from it). They scale with the bevel's width
 	 * and height (the circle at 12 by 24 and 24 by 12 pt reads within 0.02). What a silhouette shows is the profile's
-	 * envelope: a groove inside it (divot, riblet) doesn't show, and is drawn as its envelope (phase 5b).
+	 * envelope: a groove inside it doesn't show. hardEdge's and relaxedInset's are their true profiles, 65 heights,
+	 * grooves and all, read from Word's shading (phase 5b findings section 6, invert_profiles.py): their faces sit below
+	 * their ridges. The others' grooves (divot, riblet) are drawn as their envelopes (phase 5b-2).
 	 */
 	private static final Map<STBevelPresetType, double[]> PROFILES = new EnumMap<STBevelPresetType, double[]>(STBevelPresetType.class);
 
 	static {
-		PROFILES.put(STBevelPresetType.RELAXED_INSET, new double[] { 0.000, 0.314, 0.433, 0.522, 0.597, 0.656, 0.715, 0.745, 0.790, 0.834, 0.864, 0.879, 0.909, 0.938, 0.953, 0.968, 0.983, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1.000 });
+		PROFILES.put(STBevelPresetType.RELAXED_INSET, new double[] { 0.000, 0.133, 0.237, 0.315, 0.378, 0.432, 0.479, 0.520, 0.558, 0.593, 0.626, 0.655, 0.683, 0.709, 0.735, 0.758, 0.780, 0.800, 0.819, 0.838, 0.855, 0.871, 0.886, 0.900, 0.913, 0.926, 0.938, 0.950, 0.961, 0.971, 0.981, 0.990, 0.998, 0.993, 0.972, 0.951, 0.930, 0.909, 0.888, 0.867, 0.846, 0.826, 0.806, 0.787, 0.769, 0.752, 0.735, 0.719, 0.704, 0.689, 0.676, 0.664, 0.653, 0.644, 0.636, 0.629, 0.623, 0.618, 0.614, 0.610, 0.608, 0.606, 0.604, 0.603, 0.603 });
 		PROFILES.put(STBevelPresetType.CIRCLE, new double[] { 0.000, 0.240, 0.344, 0.418, 0.463, 0.522, 0.582, 0.611, 0.656, 0.686, 0.715, 0.745, 0.775, 0.790, 0.819, 0.834, 0.849, 0.879, 0.894, 0.909, 0.923, 0.923, 0.938, 0.953, 0.953, 0.968, 0.968, 0.983, 0.983, 0.983, 0.983, 0.983, 1.000 });
 		PROFILES.put(STBevelPresetType.SLOPE, new double[] { 0.000, 0.285, 0.433, 0.597, 0.745, 0.849, 0.923, 0.953, 0.983, 0.983, 0.983, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1.000 });
 		PROFILES.put(STBevelPresetType.CROSS, new double[] { 0.000, 0.062, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.091, 0.106, 0.121, 0.181, 0.968, 0.983, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1.000 });
@@ -322,13 +332,21 @@ public final class Scene3D {
 		PROFILES.put(STBevelPresetType.COOL_SLANT, new double[] { 0.000, 0.225, 0.299, 0.374, 0.448, 0.507, 0.597, 0.656, 0.730, 0.790, 0.849, 0.879, 0.923, 0.938, 0.953, 0.968, 0.983, 0.983, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1.000 });
 		PROFILES.put(STBevelPresetType.DIVOT, new double[] { 0.000, 0.240, 0.359, 0.448, 0.522, 0.582, 0.656, 0.701, 0.730, 0.775, 0.805, 0.819, 0.849, 0.864, 0.879, 0.894, 0.909, 0.909, 0.923, 0.923, 0.923, 0.923, 0.923, 0.923, 0.923, 0.923, 0.923, 0.923, 0.968, 0.983, 0.983, 0.983, 1.000 });
 		PROFILES.put(STBevelPresetType.RIBLET, new double[] { 0.000, 0.210, 0.299, 0.359, 0.403, 0.463, 0.522, 0.567, 0.597, 0.641, 0.671, 0.715, 0.745, 0.775, 0.805, 0.834, 0.849, 0.864, 0.879, 0.894, 0.894, 0.909, 0.909, 0.909, 0.909, 0.909, 0.909, 0.909, 0.909, 0.923, 0.983, 0.983, 1.000 });
-		PROFILES.put(STBevelPresetType.HARD_EDGE, new double[] { 0.000, 0.255, 0.403, 0.567, 0.715, 0.864, 0.968, 0.983, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1.000 });
+		PROFILES.put(STBevelPresetType.HARD_EDGE, new double[] { 0.000, 0.111, 0.214, 0.301, 0.383, 0.465, 0.547, 0.629, 0.711, 0.793, 0.875, 0.949, 0.980, 0.990, 0.995, 0.998, 0.999, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 0.998, 0.993, 0.976, 0.947, 0.922, 0.905, 0.890, 0.876, 0.865, 0.856, 0.848, 0.840, 0.834, 0.828, 0.823, 0.818, 0.815, 0.811, 0.808, 0.806, 0.803, 0.802, 0.801, 0.800, 0.800 });
 		PROFILES.put(STBevelPresetType.ART_DECO, new double[] { 0.000, 0.136, 0.181, 0.225, 0.255, 0.270, 0.285, 0.299, 0.314, 0.314, 0.329, 0.433, 0.567, 0.626, 0.686, 0.730, 0.760, 0.805, 0.819, 0.849, 0.879, 0.894, 0.909, 0.923, 0.938, 0.953, 0.968, 0.968, 0.983, 0.983, 0.983, 0.983, 1.000 });
 	}
 
-	/** A bevel's profile at a fraction t of its width in from the outline (0 there, 1 at the face) */
+	/**
+	 * A bevel's profile at a fraction t of its width in from the outline (0 there, 1 at the face). The circle is the
+	 * quarter circle (its table reads as one within its pixels), whose slope its shading needs: the table's steps would
+	 * band it (phase 5b-1)
+	 */
 	static double profile(STBevelPresetType p, double t) {
-		double[] table = PROFILES.get(p == null ? STBevelPresetType.CIRCLE : p);
+		if (p == null || p == STBevelPresetType.CIRCLE) {
+			double u = 1 - Math.max(0, Math.min(1, t));
+			return Math.sqrt(1 - u * u);
+		}
+		double[] table = PROFILES.get(p);
 		if (table == null) table = PROFILES.get(STBevelPresetType.CIRCLE);
 		t = Math.max(0, Math.min(1, t)) * (table.length - 1);
 		int i = Math.min(table.length - 2, (int) Math.floor(t));
@@ -382,11 +400,12 @@ public final class Scene3D {
 			backProfile = b.getPrst();
 		}
 		Color sideColour = sp != null && sp.getExtrusionClr() != null ? Fills.awt(DrawingMLColors.resolve(sp.getExtrusionClr(), theme)) : null;
-		// the contour (phase 5a findings section 8): a rim of half its width round the sides, and the face's outer
+		// the contour (phase 5a findings section 7): a rim of half its width round the sides, and the face's outer
 		// half-width in its colour where there is no top bevel
 		double rim = sp == null ? 0 : sp.getContourW() / 12700.0 / 2;
 		Color contourColour = rim > 0 && sp.getContourClr() != null ? Fills.awt(DrawingMLColors.resolve(sp.getContourClr(), theme)) : null;
-		double[] light = light(scene);
+		Lighting light = lighting(scene, sp, cam);
+		int cuts = bevelH > 0 && bevelW > 0 && (topProfile == null || topProfile == STBevelPresetType.CIRCLE) ? cuts(bevelW, bevelH) : 0;
 
 		// the face and the outline, sampled at the grid (one cell a pixel at the picture's resolution)
 		double s = pixelsPerPoint;
@@ -455,7 +474,11 @@ public final class Scene3D {
 				double[] n = cam.turnVector(-gxs, -gys, 1);
 				int colour = texel(tex, x, y, true);
 				if (rim > 0 && bevelH == 0 && contourColour != null && minDist(dist, inside, a, b, c, dd) < rim) colour = contourColour.getRGB();
-				int shaded = shade(colour, n, light);
+				// a circle top bevel is lit as Word lights it: at its profile's cuts, the colour blended between them
+				// (phase 5b findings section 5)
+				double gl = Math.hypot(gxs, gys), dCell = meanInside(dist, inside, a, b, c, dd);
+				int shaded = cuts > 0 && dCell < bevelW && gl > 1e-9 ? blended(colour, gxs / gl, gys / gl, dCell / bevelW, cuts, bevelW, bevelH, cam, light)
+						: shade(colour, n, light);
 				r.quad(pa[0], pa[1], za, pb[0], pb[1], zb, pd[0], pd[1], zd, pc[0], pc[1], zc, shaded);
 			}
 		}
@@ -472,8 +495,8 @@ public final class Scene3D {
 				double x1 = seg[0] - cx, y1 = seg[1] - cy, x2 = seg[2] - cx, y2 = seg[3] - cy;
 				double ex = x2 - x1, ey = y2 - y1, len = Math.hypot(ex, ey);
 				if (len == 0) continue;
-				// the outward normal (the ring runs with the outline's own winding; flip where it points in)
-				double nx = ey / len, ny = -ex / len;
+				// the outward normal (y down: the ring's left-hand normal, turned by its winding), as the contour's rim's
+				double nx = -ey / len, ny = ex / len;
 				if (seg[4] < 0) {
 					nx = -nx;
 					ny = -ny;
@@ -523,7 +546,7 @@ public final class Scene3D {
 				}
 			}
 		}
-		if (problems != null && !problems.contains(SHADING)) problems.add(SHADING);
+		if (light.approximate && problems != null && !problems.contains(SHADING)) problems.add(SHADING);
 		return r.picture();
 	}
 
@@ -554,7 +577,7 @@ public final class Scene3D {
 	 * at zA + rim) round a quarter circle to rim out at zA, straight to zB, and round a quarter circle back to the outline
 	 * at zB - rim; its corners rounded (the normal turned between a vertex's two segments).
 	 */
-	private static void contourRim(Raster r, Camera cam, double[] light, List<double[]> segments, double cx, double cy, double zA,
+	private static void contourRim(Raster r, Camera cam, Lighting light, List<double[]> segments, double cx, double cy, double zA,
 			double zB, double rim, int colour) {
 		// the profile: (out, z, normal out, normal z), each end the measured shape: Word's 6 and 12 pt contours seen edge
 		// on (fxf2-01, -02), their reach out by their depth from the rim's middle, both in half-widths, agree: 1 at 0, 0.88
@@ -668,36 +691,158 @@ public final class Scene3D {
 		return 0xff808080;
 	}
 
-	/** The light's direction in the camera's space, towards the light: the rig's direction, from in front */
-	static double[] light(CTScene3D scene) {
-		STLightRigDirection dir = scene != null && scene.getLightRig() != null && scene.getLightRig().getDir() != null
-				? scene.getLightRig().getDir() : STLightRigDirection.T;
-		double x = 0, y = 0;
-		switch (dir) {
-		case TL: x = -1; y = -1; break;
-		case T: y = -1; break;
-		case TR: x = 1; y = -1; break;
-		case L: x = -1; break;
-		case R: x = 1; break;
-		case BL: x = -1; y = 1; break;
-		case B: y = 1; break;
-		case BR: x = 1; y = 1; break;
-		default: break;
-		}
-		double z = 1.2, n = Math.sqrt(x * x + y * y + z * z);
-		return new double[] { x / n, y / n, z / n };
+	/**
+	 * Word's light rigs, fitted to its pictures (CR-081 phase 5b-1: phase5b-findings.md, phase5b-light.tsv, by
+	 * fit_light_model.py from cr081-phase5b-r1 to -r3, the four rigs under the three materials on a deep circle bevel,
+	 * front on, turned and from behind; the mean error against Word's 1.64 / 255): the ambient, then each light's
+	 * {x, y, z, diffuse, highlight}, in the drawing's own space (x right, y down, z out of its face; towards the light)
+	 * for dir t and no rot. The lights turn with the drawing: the camera turns round a lit drawing.
+	 */
+	private static final Map<STLightRigType, double[][]> RIGS = new EnumMap<STLightRigType, double[][]>(STLightRigType.class);
+
+	/** Word's materials, fitted with the rigs: {the highlight's strength, its exponent}; matte has none */
+	private static final Map<STPresetMaterialType, double[]> MATERIALS = new EnumMap<STPresetMaterialType, double[]>(STPresetMaterialType.class);
+
+	static {
+		RIGS.put(STLightRigType.TWO_PT, new double[][] { { 0.2485 }, { -0.4122, 0.5038, 0.7591, 0.6103, 0.1507 },
+				{ 0.2360, -0.8998, 0.3669, 0.2894, 0.0877 }, { -0.4026, 0.5680, 0.7178, 0.2236, 0.0926 } });
+		RIGS.put(STLightRigType.THREE_PT, new double[][] { { 0.0290 }, { 0.2569, 0.8469, 0.4656, 0.4061, 0.1436 },
+				{ -0.2586, -0.6973, 0.6685, 0.2922, 0.2037 }, { -0.2710, -0.5821, 0.7666, 0.8084, 0.1326 },
+				{ -0.2706, 0.6229, -0.7340, 1.0032, 0.2085 } });
+		RIGS.put(STLightRigType.CONTRASTING, new double[][] { { 1.0002 }, { 0.9841, 0.0482, -0.1709, 0.0015, 0.0323 },
+				{ 0.9992, -0.0117, 0.0393, 0.0007, 0.2553 }, { -1.0000, 0.0036, 0.0053, 0.0027, 0.2725 },
+				{ -0.9060, 0.0471, 0.4207, 0.0017, 0.0151 } });
+		RIGS.put(STLightRigType.SOFT, new double[][] { { 0.4287 }, { 0.0347, -0.0918, 0.9952, 0.3839, 0.0075 },
+				{ -0.3997, -0.9150, -0.0555, 0.3321, 0.0084 }, { 0.2447, -0.6879, 0.6833, 0.1711, 0.2199 },
+				{ 0.9771, -0.2100, 0.0340, 0.2694, 0 } });
+		MATERIALS.put(STPresetMaterialType.MATTE, new double[] { 0, 1 });
+		MATERIALS.put(STPresetMaterialType.WARM_MATTE, new double[] { 1, 8.02 });
+		MATERIALS.put(STPresetMaterialType.PLASTIC, new double[] { 1.9135, 11.47 });
 	}
 
-	/** The simple shading: diffuse, normalised so that a face turned to the viewer keeps its colour */
-	static int shade(int argb, double[] n, double[] light) {
+	/** A drawing's lights in the camera's space, and its material's highlight */
+	static final class Lighting {
+		final double ambient, highlight, exponent;
+		/** {x, y, z, diffuse, highlight} */
+		final double[][] lights;
+		/** The rig, its rotation or the material isn't one fitted */
+		final boolean approximate;
+
+		Lighting(double ambient, double[][] lights, double highlight, double exponent, boolean approximate) {
+			this.ambient = ambient;
+			this.lights = lights;
+			this.highlight = highlight;
+			this.exponent = exponent;
+			this.approximate = approximate;
+		}
+	}
+
+	/**
+	 * The drawing's lighting: its rig's lights turned about the drawing's z by its direction, from t (tl turns them 45
+	 * degrees anticlockwise on the page, fxg1-15; the other directions by the same rule, not measured), then by its
+	 * rotation's rev, clockwise (fxg1-13, -14: rev 120 degrees); then with the drawing, into the camera's space
+	 * (phase 5b findings section 2); its material's highlight
+	 */
+	static Lighting lighting(CTScene3D scene, CTShape3D sp, Camera cam) {
+		CTLightRig rig = scene != null ? scene.getLightRig() : null;
+		STLightRigType type = rig != null && rig.getRig() != null ? rig.getRig() : STLightRigType.THREE_PT;
+		boolean approximate = !RIGS.containsKey(type);
+		double[][] def = RIGS.containsKey(type) ? RIGS.get(type) : RIGS.get(STLightRigType.THREE_PT);
+		STPresetMaterialType mt = sp != null ? sp.getPrstMaterial() : STPresetMaterialType.WARM_MATTE;
+		double[] mat = MATERIALS.get(mt);
+		if (mat == null) {
+			approximate = true;
+			mat = MATERIALS.get(STPresetMaterialType.WARM_MATTE);
+		}
+		double turn = 0;
+		STLightRigDirection dir = rig != null && rig.getDir() != null ? rig.getDir() : STLightRigDirection.T;
+		switch (dir) {
+		case TL: turn = -45; break;
+		case L: turn = -90; break;
+		case BL: turn = -135; break;
+		case B: turn = 180; break;
+		case BR: turn = 135; break;
+		case R: turn = 90; break;
+		case TR: turn = 45; break;
+		default: break;
+		}
+		CTSphereCoords rot = rig != null ? rig.getRot() : null;
+		if (rot != null) {
+			turn += rot.getRev() / 60000.0;
+			if (rot.getLat() % 21600000 != 0 || rot.getLon() % 21600000 != 0) approximate = true;     // phase 5b-2
+		}
+		double c = Math.cos(Math.toRadians(turn)), sn = Math.sin(Math.toRadians(turn));
+		double[][] lights = new double[def.length - 1][];
+		for (int i = 1; i < def.length; i++) {
+			double[] d = def[i];
+			double[] t = cam.turnVector(d[0] * c - d[1] * sn, d[0] * sn + d[1] * c, d[2]);
+			lights[i - 1] = new double[] { t[0], t[1], t[2], d[3], d[4] };
+		}
+		return new Lighting(def[0][0], lights, mat[0], mat[1], approximate);
+	}
+
+	/**
+	 * How many pieces Word cuts a circle bevel's quarter circle into, of equal angle, to light it at the cuts (phase 5b
+	 * findings section 5, round cr081-phase5b-r5): by its width, 2 up to 2 pt (1.8, 2), 4 from 3 to 7.5 pt, 8 from 8 to
+	 * 24 pt, and more for 36 pt (16 taken). Where between 2 and 3, and between 24 and 36 pt, the count doubles isn't
+	 * measured: 2.5 and 30 are taken.
+	 */
+	static int cuts(double w, double h) {
+		return w < 2.5 ? 2 : w < 8 ? 4 : w < 30 ? 8 : 16;
+	}
+
+	/**
+	 * A circle bevel's colour at a fraction t of its width in from the outline, its slope inwards (ux, uy): lit at
+	 * the cuts either side, of the quarter circle's angle phi (t = 1 - cos phi), and blended by t between them, as
+	 * Word's (Gouraud's) is
+	 */
+	static int blended(int argb, double ux, double uy, double t, int cuts, double w, double h, Camera cam, Lighting light) {
+		double phi = Math.acos(Math.max(-1, Math.min(1, 1 - Math.max(0, Math.min(1, t))))), step = Math.PI / 2 / cuts;
+		int k = Math.min(cuts - 1, (int) Math.floor(phi / step));
+		double p0 = k * step, p1 = (k + 1) * step, t0 = 1 - Math.cos(p0), t1 = 1 - Math.cos(p1);
+		double f = t1 > t0 ? (t - t0) / (t1 - t0) : 0;
+		int c0 = shade(argb, cam.turnVector(-ux * h * Math.cos(p0), -uy * h * Math.cos(p0), w * Math.sin(p0)), light);
+		int c1 = shade(argb, cam.turnVector(-ux * h * Math.cos(p1), -uy * h * Math.cos(p1), w * Math.sin(p1)), light);
+		int out = argb & 0xff000000;
+		for (int sh = 0; sh <= 16; sh += 8) {
+			double v = ((c0 >> sh) & 0xff) * (1 - f) + ((c1 >> sh) & 0xff) * f;
+			out |= clamp(v) << sh;
+		}
+		return out;
+	}
+
+	/** The mean distance in of a cell's corners that are inside */
+	private static double meanInside(double[] dist, boolean[] inside, int a, int b, int c, int d) {
+		double sum = 0;
+		int n = 0;
+		for (int i : new int[] { a, b, c, d }) {
+			if (!inside[i]) continue;
+			sum += dist[i];
+			n++;
+		}
+		return n == 0 ? 0 : sum / n;
+	}
+
+	/**
+	 * Word's shading: the colour times the ambient and each light's diffuse share, then each light's highlight added,
+	 * white (Phong's: its reflection's with the view, (0, 0, 1); Blinn's half vector fits Word's turned views less well,
+	 * 2.51 / 255 against 1.64), clamped
+	 */
+	static int shade(int argb, double[] n, Lighting l) {
 		double len = Math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 		if (len == 0) return argb;
-		double dot = (n[0] * light[0] + n[1] * light[1] + n[2] * light[2]) / len;
-		double front = light[2];
-		double f = 1 + 0.6 * (Math.max(0, dot) - front);
-		f = Math.max(0.25, Math.min(1.35, f));
+		double nx = n[0] / len, ny = n[1] / len, nz = n[2] / len;
+		double diffuse = l.ambient, spec = 0;
+		for (double[] li : l.lights) {
+			double d = nx * li[0] + ny * li[1] + nz * li[2];
+			if (d <= 0) continue;
+			diffuse += li[3] * d;
+			double rv = 2 * d * nz - li[2];
+			if (l.highlight > 0 && li[4] > 0 && rv > 0) spec += li[4] * Math.pow(rv, l.exponent);
+		}
+		double add = 255 * l.highlight * spec;
 		int a = argb >>> 24, rr = (argb >> 16) & 0xff, gg = (argb >> 8) & 0xff, bb = argb & 0xff;
-		return (a << 24) | (clamp(rr * f) << 16) | (clamp(gg * f) << 8) | clamp(bb * f);
+		return (a << 24) | (clamp(rr * diffuse + add) << 16) | (clamp(gg * diffuse + add) << 8) | clamp(bb * diffuse + add);
 	}
 
 	private static int clamp(double v) {

@@ -1,0 +1,106 @@
+start 0 cost 31358.0
+start 1 cost 2487.0
+start 2 cost 2693.2
+start 3 cost 32356.9
+q = [8.019941, 11.474580, 1.383280, 0.498453, 0.708877, 2.256557, 0.781208, 0.388228, 1.195083, -1.314276, 0.537995, 0.296101, 0.770148, 2.187443, 0.472828, 0.304340, 6.660769, 5.152167, 0.044591, -0.011024, 0.170168, 1.086491, 1.276265, 0.637294, 0.378902, 0.838622, -1.925922, 0.540592, 0.451317, 0.697190, -2.006504, 0.899099, 0.364149, 2.394945, 1.980644, 1.001603, -0.456664, 1.000088, 1.742512, 0.048974, 0.038860, 0.179624, 1.531475, -0.011744, -0.027360, 0.505288, 1.565544, -3.145183, -0.052053, 0.521977, -1.136613, -0.051968, 0.040813, -0.122732, 0.654769, 0.098300, -1.209908, 0.619585, 0.086861, 1.626312, -1.982680, 0.576246, -0.091861, 0.818462, -1.229089, 0.413600, 0.468968, 1.536821, -0.211737, 0.519034, 0.005386]
+  matte: ks 0.0000 p 1.00
+  warmMatte: ks 1.0000 p 8.02
+  plastic: ks 1.9135 p 11.47
+  twoPt: ambient 0.2485
+    light (-0.4122, +0.5038, +0.7591) diffuse 0.6103 specular 0.1507
+    light (+0.2360, -0.8998, +0.3669) diffuse 0.2894 specular 0.0877
+    light (-0.4026, +0.5680, +0.7178) diffuse 0.2236 specular 0.0926
+    light (+0.1570, -0.3336, +0.9296) diffuse 0.0020 specular 0.0001
+  threePt: ambient 0.0290
+    light (+0.2569, +0.8469, +0.4656) diffuse 0.4061 specular 0.1436
+    light (-0.2586, -0.6973, +0.6685) diffuse 0.2922 specular 0.2037
+    light (-0.2710, -0.5821, +0.7666) diffuse 0.8084 specular 0.1326
+    light (-0.2706, +0.6229, -0.7340) diffuse 1.0032 specular 0.2085
+  contrasting: ambient 1.0002
+    light (+0.9841, +0.0482, -0.1709) diffuse 0.0015 specular 0.0323
+    light (+0.9992, -0.0117, +0.0393) diffuse 0.0007 specular 0.2553
+    light (-1.0000, +0.0036, +0.0053) diffuse 0.0027 specular 0.2725
+    light (-0.9060, +0.0471, +0.4207) diffuse 0.0017 specular 0.0151
+  soft: ambient 0.4287
+    light (+0.0347, -0.0918, +0.9952) diffuse 0.3839 specular 0.0075
+    light (-0.3997, -0.9150, -0.0555) diffuse 0.3321 specular 0.0084
+    light (+0.2447, -0.6879, +0.6833) diffuse 0.1711 specular 0.2199
+    light (+0.9771, -0.2100, +0.0340) diffuse 0.2694 specular 0.0000
+  fxg2-01 ellipse, twoPt, warmMatte                                   1.16 / 255 over 4747
+  fxg2-02 ellipse, twoPt, matte                                       0.75 / 255 over 4747
+  fxg2-03 ellipse, twoPt, plastic                                     1.68 / 255 over 4747
+  fxg2-04 ellipse, threePt, warmMatte                                 1.51 / 255 over 4747
+  fxg2-05 ellipse, threePt, matte                                     0.99 / 255 over 4747
+  fxg2-06 ellipse, threePt, plastic                                   2.20 / 255 over 4747
+  fxg2-07 ellipse, contrasting, warmMatte                             0.50 / 255 over 4747
+  fxg2-08 ellipse, contrasting, matte                                 0.15 / 255 over 4747
+  fxg2-09 ellipse, contrasting, plastic                               0.64 / 255 over 4747
+  fxg2-10 ellipse, soft, warmMatte                                    2.38 / 255 over 4747
+  fxg2-11 ellipse, soft, matte                                        3.08 / 255 over 4747
+  fxg2-12 ellipse, soft, plastic                                      2.26 / 255 over 4747
+  fxg2-13 ellipse, threePt, warmMatte, blue                           1.65 / 255 over 4747
+  fxg2-14 ellipse, threePt, plastic, blue                             2.39 / 255 over 4747
+  fxg2-15 ellipse, twoPt, warmMatte, blue                             1.37 / 255 over 4747
+  fxg3-01 twoPt, warmMatte, lat 0 lon 60                              1.08 / 255 over 3683
+  fxg3-02 twoPt, matte, lat 0 lon 60                                  0.86 / 255 over 3683
+  fxg3-03 twoPt, warmMatte, lat 0 lon 300                             1.05 / 255 over 3685
+  fxg3-04 twoPt, plastic, lat 0 lon 300                               1.17 / 255 over 3685
+  fxg3-05 twoPt, warmMatte, lat 60 lon 0                              1.03 / 255 over 4274
+  fxg3-06 twoPt, matte, lat 60 lon 0                                  0.64 / 255 over 4274
+  fxg3-07 twoPt, warmMatte, lat 300 lon 0                             1.04 / 255 over 4214
+  fxg3-08 twoPt, plastic, lat 300 lon 0                               1.55 / 255 over 4214
+  fxg3-09 twoPt, warmMatte, lat 330 lon 150                           0.65 / 255 over 5148
+  fxg3-10 twoPt, matte, lat 330 lon 150                               0.38 / 255 over 5148
+  fxg3-11 twoPt, warmMatte, lat 30 lon 210                            0.47 / 255 over 5199
+  fxg3-12 threePt, warmMatte, lat 0 lon 60                            2.10 / 255 over 3683
+  fxg3-13 threePt, matte, lat 0 lon 60                                1.66 / 255 over 3683
+  fxg3-14 threePt, warmMatte, lat 0 lon 300                           1.87 / 255 over 3685
+  fxg3-15 threePt, plastic, lat 0 lon 300                             2.31 / 255 over 3685
+  fxg3-16 threePt, warmMatte, lat 60 lon 0                            2.92 / 255 over 4274
+  fxg3-17 threePt, matte, lat 60 lon 0                                2.02 / 255 over 4274
+  fxg3-18 threePt, warmMatte, lat 300 lon 0                           2.37 / 255 over 4214
+  fxg3-19 threePt, plastic, lat 300 lon 0                             3.12 / 255 over 4214
+  fxg3-20 threePt, warmMatte, lat 330 lon 150                         1.00 / 255 over 5148
+  fxg3-21 threePt, matte, lat 330 lon 150                             0.65 / 255 over 5148
+  fxg3-22 threePt, warmMatte, lat 30 lon 210                          2.61 / 255 over 5199
+  fxg3-23 contrasting, warmMatte, lat 0 lon 60                        2.68 / 255 over 3683
+  fxg3-24 contrasting, matte, lat 0 lon 60                            0.16 / 255 over 3683
+  fxg3-25 contrasting, warmMatte, lat 0 lon 300                       2.22 / 255 over 3685
+  fxg3-26 contrasting, warmMatte, lat 60 lon 0                        0.57 / 255 over 4274
+  fxg3-27 contrasting, matte, lat 60 lon 0                            0.16 / 255 over 4274
+  fxg3-28 contrasting, warmMatte, lat 300 lon 0                       0.55 / 255 over 4214
+  fxg3-29 contrasting, warmMatte, lat 330 lon 150                     0.24 / 255 over 5148
+  fxg3-30 contrasting, matte, lat 330 lon 150                         0.09 / 255 over 5148
+  fxg3-31 contrasting, warmMatte, lat 30 lon 210                      0.35 / 255 over 5199
+  fxg3-32 soft, warmMatte, lat 0 lon 60                               3.57 / 255 over 3683
+  fxg3-33 soft, matte, lat 0 lon 60                                   3.53 / 255 over 3683
+  fxg3-34 soft, warmMatte, lat 0 lon 300                              2.79 / 255 over 3685
+  fxg3-35 soft, warmMatte, lat 60 lon 0                               3.43 / 255 over 4274
+  fxg3-36 soft, matte, lat 60 lon 0                                   3.42 / 255 over 4274
+  fxg3-37 soft, warmMatte, lat 300 lon 0                              2.73 / 255 over 4214
+  fxg3-38 soft, warmMatte, lat 330 lon 150                            2.95 / 255 over 5148
+  fxg3-39 soft, matte, lat 330 lon 150                                2.82 / 255 over 5148
+  fxg3-40 soft, warmMatte, lat 30 lon 210                             3.34 / 255 over 5199
+  fxg3-41 threePt turned rev 120, warmMatte, lat 0 lon 60             2.33 / 255 over 3683
+  fxg3-42 twoPt turned rev 120, matte, perspectiveRelaxed lat 316     0.61 / 255 over 4671
+  fxg1-01 twoPt, warmMatte                                            0.82 / 255 over 6494
+  fxg1-02 twoPt, matte                                                0.59 / 255 over 6494
+  fxg1-03 twoPt, plastic                                              0.99 / 255 over 6494
+  fxg1-04 threePt, warmMatte                                          1.03 / 255 over 6494
+  fxg1-05 threePt, matte                                              0.96 / 255 over 6494
+  fxg1-06 threePt, plastic                                            1.63 / 255 over 6494
+  fxg1-07 contrasting, warmMatte                                      0.52 / 255 over 6494
+  fxg1-08 contrasting, matte                                          0.15 / 255 over 6494
+  fxg1-09 contrasting, plastic                                        0.98 / 255 over 6494
+  fxg1-10 soft, warmMatte                                             2.28 / 255 over 6494
+  fxg1-11 soft, matte                                                 3.02 / 255 over 6494
+  fxg1-12 soft, plastic                                               1.91 / 255 over 6494
+  fxg1-13 twoPt turned rev 120, warmMatte                             1.08 / 255 over 6494
+  fxg1-14 threePt turned rev 120, warmMatte                           1.61 / 255 over 6494
+  fxg1-15 threePt from tl, warmMatte                                  0.88 / 255 over 6494
+  fxg1-16 threePt, warmMatte, perspectiveRelaxed                      2.85 / 255 over 4226
+  fxg1-17 threePt, warmMatte, perspectiveContrastingLeftFacing        1.22 / 255 over 4645
+  fxg1-18 threePt, warmMatte, depth 36 pt, isometricOffAxis1Right     6.98 / 255 over 6991
+  fxg1-19 threePt, warmMatte, blue                                    1.12 / 255 over 6494
+  fxg1-20 threePt, plastic, blue                                      1.69 / 255 over 6494
+  mean 1.64, worst 6.98

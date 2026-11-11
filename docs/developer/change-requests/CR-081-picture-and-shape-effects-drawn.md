@@ -11,7 +11,11 @@ b416 0 movers. Phase 3 DONE 2026-11-11 (Jason: "do phase 3", "commit phase 3"):
 Phase 4 DONE 2026-11-11 (Jason: "do phase 4", "commit phase 4"): `CR-081-notes/phase4-findings.md`; the 20 preset shadows
 as Word's vector fills, 46 within 0.02pt. Phase 5 split 2026-11-11 (Jason: "split phase 5 in two as suggested"):
 5a the 3-D geometry with a simple shading, 5b Word's lights and materials behind a go/no-go after 5a (§6). Phase 5a
-started 2026-11-11 (Jason: "CR-081 phase 5a: start it"). Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+DONE 2026-11-11 (Jason: "CR-081 phase 5a: start it", "connect the renderer to the PDF and HTML outputs", "commit"):
+`CR-081-notes/phase5a-findings.md`; five Word rounds, 270 silhouettes within 0.60pt, gates b425 to b427 0 movers. Phase 5b
+split at its go/no-go (Jason: "yes, do 5b-1, defer 5b-2"): 5b-1, the picture styles' four light rigs and three
+materials, DONE 2026-11-11 (Jason: "commit it and mark it done"): `CR-081-notes/phase5b-findings.md`; five Word rounds,
+100 probes within 6/255 (mean 1.82), gates b428 and b430 0 movers; 5b-2, the rest, deferred. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -307,7 +311,26 @@ under `pic:spPr` (through the portfolio).
     since Word puts each picture on a 1/300 inch grid without resampling it (Jason, 2026-11-11: "0.60pt is ok";
     phase 5a findings section 2). The shading's mean error against Word's pictures is reported, not gated. Corpora
     unmoved.
-- **Phase 5b, Word's lights and materials** (registry CR-081.5b):
+- **Phase 5b, Word's lights and materials.** Split at its go/no-go (2026-11-11; Jason: "yes, do 5b-1, defer 5b-2"). Word's
+  17 3-D picture styles use four light rigs (twoPt 7, threePt 7, contrasting 2, soft 1, all from t) and three
+  materials (warmMatte 13, matte 3, plastic 1); one corpus document has a 3-D drawing (4994: twoPt, turned).
+  - **5b-1, the picture styles' lighting** (registry CR-081.5b; about 3 to 4 days with its Word round): those four rigs
+    and three materials, a turned rig among them, fitted from Word's pictures of shapes whose bevels show a wide spread
+    of normals. 5a's geometry gives each of Word's pixels its normal, so the fit is a regression on known inputs.
+    **Gate:** the shading's mean colour error against Word's pictures, about 6/255, set at the first fit.
+    **DONE 2026-11-11** (`phase5b-findings.md`; rounds cr081-phase5b-r1 to -r5):
+    - each rig is an ambient and four directional lights, which turn with the drawing (a back light among threePt's);
+    - the highlight is Phong's;
+    - a circle bevel is lit at the cuts of its quarter circle (2 to 16 pieces by its width) and blended, as Word's
+      Gouraud shading is;
+    - hardEdge's and relaxedInset's true profiles, grooves and all, are read from the shading;
+    - the gate is 6/255 a probe, met by all 100 (mean 1.82).
+  - **5b-2, the rest** (registry CR-081.5c; deferred, about 1 to 1.5 weeks): the other 23 rigs, coloured ones among
+    them, and their directions; the other 12 materials, wireframe, clear and translucentPowder, dkEdge and softEdge
+    among them, which aren't plain surfaces; the other presets' grooves (divot, riblet) and cuts. Until then
+    `render.effect.3d_shading` reports them.
+  - What follows is the phase as first written:
+- **Phase 5b as first written** (registry CR-081.5b, now 5b-1 and 5b-2):
   - The 27 `ST_LightRigType` rigs and their directions, and the 15 `ST_PresetMaterialType` materials (metal,
     the legacy materials, wireframe, translucent powder and clear among them), fitted from Word's pictures:
     - phase 0's (`fxa0` to `fxa3`: 22 rigs and directions, 15 materials);
