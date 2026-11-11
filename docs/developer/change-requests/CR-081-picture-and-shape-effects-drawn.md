@@ -10,7 +10,8 @@ b416 0 movers. Phase 3 DONE 2026-11-11 (Jason: "do phase 3", "commit phase 3"):
 `CR-081-notes/phase3-findings.md`; shapes' effects, `effectRef` resolved, 14 pictures at 0.44, gate b418 0 movers.
 Phase 4 DONE 2026-11-11 (Jason: "do phase 4", "commit phase 4"): `CR-081-notes/phase4-findings.md`; the 20 preset shadows
 as Word's vector fills, 46 within 0.02pt. Phase 5 split 2026-11-11 (Jason: "split phase 5 in two as suggested"):
-5a the 3-D geometry with a simple shading, 5b Word's lights and materials behind a go/no-go after 5a (§6). Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+5a the 3-D geometry with a simple shading, 5b Word's lights and materials behind a go/no-go after 5a (§6). Phase 5a
+started 2026-11-11 (Jason: "CR-081 phase 5a: start it"). Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -302,8 +303,10 @@ under `pic:spPr` (through the portfolio).
   - A Word round first. Phase 0 probed 6 of the 62 cameras and estimated a 3-D drawing's frame from the layout (within
     0.24pt). The round covers the rest of the cameras and measures the frame.
   - A 3-D drawing is then drawn with its geometry, and reported until 5b (D9): its shading isn't Word's.
-  - **Gate:** the silhouette and placement within §7's tolerance (placement within 0.36pt, the silhouette's alpha
-    within 2/255). The shading's mean error against Word's pictures is reported, not gated. Corpora unmoved.
+  - **Gate:** the silhouette within 0.60pt of Word's: a pixel at 200 dpi (0.36pt, §7) plus Word's own placement,
+    since Word puts each picture on a 1/300 inch grid without resampling it (Jason, 2026-11-11: "0.60pt is ok";
+    phase 5a findings section 2). The shading's mean error against Word's pictures is reported, not gated. Corpora
+    unmoved.
 - **Phase 5b, Word's lights and materials** (registry CR-081.5b):
   - The 27 `ST_LightRigType` rigs and their directions, and the 15 `ST_PresetMaterialType` materials (metal,
     the legacy materials, wireframe, translucent powder and clear among them), fitted from Word's pictures:

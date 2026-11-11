@@ -1,0 +1,63 @@
+preset	choice	lat	lon	rev	fov	ox	oy	rms_pt	next_rms_pt
+legacyObliqueTopLeft	oblique	0.000	0.000	0.000	0.000	-0.3602	-0.3613	0.056	nan
+legacyObliqueTop	oblique	0.000	0.000	0.000	0.000	0.0003	-0.5012	0.012	nan
+legacyObliqueTopRight	oblique	0.000	0.000	0.000	0.000	0.3603	-0.3612	0.038	nan
+legacyObliqueLeft	oblique	0.000	0.000	0.000	0.000	-0.5003	-0.0012	0.012	nan
+legacyObliqueFront	oblique	0.000	0.000	0.000	0.000	0.0003	-0.0012	0.012	nan
+legacyObliqueRight	oblique	0.000	0.000	0.000	0.000	0.5003	-0.0012	0.012	nan
+legacyObliqueBottomLeft	oblique	0.000	0.000	0.000	0.000	-0.3604	0.3595	0.043	nan
+legacyObliqueBottom	oblique	0.000	0.000	0.000	0.000	-0.0003	0.4995	0.024	nan
+legacyObliqueBottomRight	oblique	0.000	0.000	0.000	0.000	0.3605	0.3594	0.060	nan
+legacyPerspectiveTopLeft	perspective + shear	0.000	0.000	0.000	179.769	-0.1982	-0.1835	0.116	nan
+legacyPerspectiveTop	perspective + shear	0.000	0.000	0.000	179.769	0.0030	-0.1836	0.098	nan
+legacyPerspectiveTopRight	perspective + shear	0.000	0.000	0.000	179.769	0.1982	-0.1835	0.116	nan
+legacyPerspectiveLeft	perspective + shear	0.000	0.000	0.000	179.769	-0.1983	-0.0014	0.095	nan
+legacyPerspectiveFront	perspective + shear	0.000	0.000	0.000	179.769	-0.0308	-0.0509	0.045	nan
+legacyPerspectiveRight	perspective + shear	0.000	0.000	0.000	179.769	0.1983	-0.0014	0.095	nan
+legacyPerspectiveBottomLeft	perspective + shear	0.000	0.000	0.000	179.769	-0.1982	0.1818	0.126	nan
+legacyPerspectiveBottom	perspective + shear	0.000	0.000	0.000	179.769	0.0031	0.1819	0.110	nan
+legacyPerspectiveBottomRight	perspective + shear	0.000	0.000	0.000	179.769	0.1982	0.1818	0.126	nan
+orthographicFront	lat -0.00 lon -0.00 rev +0.00	-0.000	-0.000	0.000	0.000	0.0000	0.0000	0.027	0.027
+isometricTopUp	lat -35.40 lon -45.25 rev +60.14	-35.402	-45.253	60.138	0.000	0.0000	0.0000	0.104	11.274
+isometricTopDown	lat -35.43 lon +45.25 rev -60.14	-35.426	45.254	-60.140	0.000	0.0000	0.0000	0.101	11.278
+isometricBottomUp	lat +35.40 lon +45.25 rev +60.14	35.402	45.253	60.138	0.000	0.0000	0.0000	0.122	11.274
+isometricBottomDown	lat +35.43 lon -45.25 rev -60.14	35.426	-45.254	-60.140	0.000	0.0000	0.0000	0.116	11.278
+isometricLeftUp	lat -34.98 lon +44.73 rev +0.04	-34.985	44.732	0.044	0.000	0.0000	0.0000	0.087	23.142
+isometricLeftDown	lat +34.99 lon +44.73 rev -0.04	34.991	44.732	-0.044	0.000	0.0000	0.0000	0.083	23.153
+isometricRightUp	lat +34.98 lon -44.73 rev +0.04	34.985	-44.732	0.044	0.000	0.0000	0.0000	0.084	23.136
+isometricRightDown	lat -34.99 lon -44.73 rev -0.04	-34.991	-44.732	-0.044	0.000	0.0000	0.0000	0.084	23.150
+isometricOffAxis1Left	lat +17.99 lon +63.88 rev -0.01	17.991	63.881	-0.010	0.000	0.0000	0.0000	0.097	14.439
+isometricOffAxis1Right	lat +17.93 lon -25.87 rev +0.03	17.925	-25.870	0.034	0.000	0.0000	0.0000	0.153	10.998
+isometricOffAxis1Top	lat -58.68 lon -53.28 rev +57.50	-58.683	-53.278	57.503	0.000	0.0000	0.0000	0.112	6.024
+isometricOffAxis2Left	lat +17.93 lon +25.87 rev -0.03	17.931	25.869	-0.034	0.000	0.0000	0.0000	0.133	10.985
+isometricOffAxis2Right	lat +17.99 lon -63.88 rev +0.01	17.993	-63.881	0.010	0.000	0.0000	0.0000	0.107	14.439
+isometricOffAxis2Top	lat -58.68 lon +53.29 rev -57.51	-58.681	53.287	-57.513	0.000	0.0000	0.0000	0.115	6.023
+isometricOffAxis3Left	lat -17.99 lon +63.88 rev +0.01	-17.993	63.881	0.010	0.000	0.0000	0.0000	0.125	14.430
+isometricOffAxis3Right	lat -17.93 lon -25.87 rev -0.03	-17.931	-25.869	-0.034	0.000	0.0000	0.0000	0.130	10.970
+isometricOffAxis3Bottom	lat +58.68 lon -53.29 rev -57.51	58.681	-53.287	-57.513	0.000	0.0000	0.0000	0.130	6.023
+isometricOffAxis4Left	lat -17.93 lon +25.87 rev +0.03	-17.925	25.870	0.034	0.000	0.0000	0.0000	0.124	10.954
+isometricOffAxis4Right	lat -17.99 lon -63.88 rev -0.01	-17.991	-63.881	-0.010	0.000	0.0000	0.0000	0.108	14.432
+isometricOffAxis4Bottom	lat +58.68 lon +53.28 rev +57.50	58.683	53.278	57.503	0.000	0.0000	0.0000	0.130	6.024
+obliqueTopLeft	oblique	0.000	0.000	0.000	0.000	-0.2136	-0.2145	0.013	nan
+obliqueTop	oblique	0.000	0.000	0.000	0.000	0.0003	-0.3012	0.012	nan
+obliqueTopRight	oblique	0.000	0.000	0.000	0.000	0.2138	-0.2144	0.018	nan
+obliqueLeft	oblique	0.000	0.000	0.000	0.000	-0.3003	-0.0012	0.012	nan
+obliqueRight	oblique	0.000	0.000	0.000	0.000	0.3003	-0.0012	0.012	nan
+obliqueBottomLeft	oblique	0.000	0.000	0.000	0.000	-0.2135	0.2130	0.027	nan
+obliqueBottom	oblique	0.000	0.000	0.000	0.000	-0.0003	0.2995	0.024	nan
+obliqueBottomRight	oblique	0.000	0.000	0.000	0.000	0.2139	0.2127	0.150	nan
+perspectiveFront	lat -0.00 lon +0.00 rev -0.00	-0.000	0.000	-0.000	179.769	0.0000	0.0000	0.073	0.073
+perspectiveLeft	lat +0.02 lon +19.80 rev +0.00	0.021	19.799	0.004	44.518	0.0000	0.0000	0.034	0.035
+perspectiveRight	lat +0.02 lon -19.80 rev -0.00	0.022	-19.799	-0.004	44.518	0.0000	0.0000	0.034	0.035
+perspectiveAbove	lat -19.82 lon +0.03 rev -0.01	-19.825	0.025	-0.005	43.653	0.0000	0.0000	0.042	0.044
+perspectiveBelow	lat +19.83 lon +0.03 rev +0.01	19.827	0.025	0.005	44.785	0.0000	0.0000	0.081	0.082
+perspectiveAboveLeftFacing	lat +39.55 lon +14.21 rev -18.87	39.553	14.211	-18.873	43.399	0.0000	0.0000	0.107	19.607
+perspectiveAboveRightFacing	lat +39.25 lon -14.36 rev +18.86	39.251	-14.362	18.864	45.346	0.0000	0.0000	0.129	19.607
+perspectiveContrastingLeftFacing	lat +10.40 lon +43.91 rev -3.56	10.400	43.914	-3.555	45.403	0.0000	0.0000	0.075	9.743
+perspectiveContrastingRightFacing	lat +10.40 lon -43.91 rev +3.56	10.398	-43.914	3.555	45.338	0.0000	0.0000	0.094	9.741
+perspectiveHeroicLeftFacing	lat -10.84 lon +14.04 rev +2.66	-10.844	14.042	2.663	44.621	0.0000	0.0000	0.073	6.722
+perspectiveHeroicRightFacing	lat -10.85 lon -14.04 rev -2.67	-10.849	-14.037	-2.666	43.635	0.0000	0.0000	0.061	6.726
+perspectiveHeroicExtremeLeftFacing	lat +8.10 lon +34.42 rev -2.92	8.101	34.425	-2.918	79.950	0.0000	0.0000	0.063	7.374
+perspectiveHeroicExtremeRightFacing	lat +8.10 lon -34.43 rev +2.92	8.097	-34.428	2.919	79.842	0.0000	0.0000	0.079	7.372
+perspectiveRelaxed	lat -50.34 lon +0.00 rev -0.00	-50.345	0.003	-0.002	44.592	0.0000	0.0000	0.098	0.098
+perspectiveRelaxedModerately	lat -35.08 lon +0.01 rev -0.01	-35.080	0.015	-0.007	44.871	0.0000	0.0000	0.096	0.096

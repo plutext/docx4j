@@ -19,6 +19,13 @@ The sets:
                    photo, the photo as a JPEG and both line arts, each with the effect extent Word gave the style
   cr081-phase4-r1  after phase 4 (2026-11-11; Jason: "build and stage the round"): the preset shadows at other dists
                    and dirs, in other colours, on other outlines, with other effects, and on other sizes
+  cr081-phase5a-r1 phase 5a's round (2026-11-11; Jason: "CR-081 phase 5a: start it"): the 3-D geometry. All 62
+                   cameras on two shapes (144 by 108 pt, 72 by 144 pt) and some on the photo; rot, fov and zoom; depth,
+                   contour, z and bevels under turned cameras; and the frame in the layout. Each drawing but the layout
+                   family's is anchored at a fixed place on the page (216 pt, 216 pt), in front of the text, so that its
+                   frame is known exactly
+  cr081-phase5a-r2 phase 5a's second round: the cameras again with 36 pt of depth, since a flat drawing can't tell a
+                   view from its mirror and shows no oblique; and the bevels' profiles, seen edge on (lon 90)
 The hostile probes (D10) are unit tests.
 
 The pictures are synthetic: photo.png, a gradient with a red disc at its top left, so that a flip shows; photo.jpeg,
@@ -421,6 +428,111 @@ def fam_3d_depth():
             Probe('picture, depth 76200', scene=scene(cam) + sp3d(ex, extrusionH=76200))]
     return out
 
+# Phase 5a's round: the 3-D geometry
+
+FIXED = (2743200, 2743200)          # the fixed anchor's place on the page: 216 pt, 216 pt from its top left
+ALL_CAMERAS = ['legacyObliqueTopLeft', 'legacyObliqueTop', 'legacyObliqueTopRight', 'legacyObliqueLeft',
+               'legacyObliqueFront', 'legacyObliqueRight', 'legacyObliqueBottomLeft', 'legacyObliqueBottom',
+               'legacyObliqueBottomRight', 'legacyPerspectiveTopLeft', 'legacyPerspectiveTop', 'legacyPerspectiveTopRight',
+               'legacyPerspectiveLeft', 'legacyPerspectiveFront', 'legacyPerspectiveRight', 'legacyPerspectiveBottomLeft',
+               'legacyPerspectiveBottom', 'legacyPerspectiveBottomRight', 'orthographicFront', 'isometricTopUp',
+               'isometricTopDown', 'isometricBottomUp', 'isometricBottomDown', 'isometricLeftUp', 'isometricLeftDown',
+               'isometricRightUp', 'isometricRightDown', 'isometricOffAxis1Left', 'isometricOffAxis1Right',
+               'isometricOffAxis1Top', 'isometricOffAxis2Left', 'isometricOffAxis2Right', 'isometricOffAxis2Top',
+               'isometricOffAxis3Left', 'isometricOffAxis3Right', 'isometricOffAxis3Bottom', 'isometricOffAxis4Left',
+               'isometricOffAxis4Right', 'isometricOffAxis4Bottom', 'obliqueTopLeft', 'obliqueTop', 'obliqueTopRight',
+               'obliqueLeft', 'obliqueRight', 'obliqueBottomLeft', 'obliqueBottom', 'obliqueBottomRight',
+               'perspectiveFront', 'perspectiveLeft', 'perspectiveRight', 'perspectiveAbove', 'perspectiveBelow',
+               'perspectiveAboveLeftFacing', 'perspectiveAboveRightFacing', 'perspectiveContrastingLeftFacing',
+               'perspectiveContrastingRightFacing', 'perspectiveHeroicLeftFacing', 'perspectiveHeroicRightFacing',
+               'perspectiveHeroicExtremeLeftFacing', 'perspectiveHeroicExtremeRightFacing', 'perspectiveRelaxed',
+               'perspectiveRelaxedModerately']          # ST_PresetCameraType's 62, in the schema's order
+DEG = 60000
+TALL = (914400, 1828800)            # the second size: 72 by 144 pt
+
+def cam(prst, lat=None, lon=None, rev=None, **a):
+    rot = f'<a:rot lat="{(lat or 0) * DEG}" lon="{(lon or 0) * DEG}" rev="{(rev or 0) * DEG}"/>' if (lat, lon, rev) != (None, None, None) else ''
+    return f'<a:camera prst="{prst}"{_attrs(a)}>{rot}</a:camera>' if rot else f'<a:camera prst="{prst}"{_attrs(a)}/>'
+
+def fixed(note, camera, sp='', size=(CX, CY), **kw):
+    """A shape (or with picture=, a picture) at the fixed place, its scene that camera and its sp3d that."""
+    shape = 'picture' not in kw
+    return Probe(note, shape=shape, scene=scene(camera) + (sp or sp3d()), anchor='fixed', cx=size[0], cy=size[1], **kw)
+
+def fam_cameras(part, size):
+    """A third of the cameras (part 0, 1, 2) on a shape of that size."""
+    cams = ALL_CAMERAS[part * 21:(part + 1) * 21]
+    return lambda: [fixed(f'camera {c}', cam(c), size=size) for c in cams]
+
+def fam_cameras_picture():
+    cams = ['orthographicFront', 'perspectiveFront', 'isometricTopUp', 'obliqueTopLeft', 'perspectiveContrastingRightFacing',
+            'legacyPerspectiveTopLeft', 'legacyObliqueTopLeft', 'perspectiveHeroicExtremeLeftFacing']
+    return [fixed(f'camera {c}, the photo', cam(c), picture='photo.png') for c in cams]
+
+ROTS = [(30, 0, 0), (0, 30, 0), (0, 0, 30), (30, 30, 0), (0, 30, 30), (30, 0, 30), (30, 30, 30), (0, 60, 0), (330, 0, 0),
+        (0, 330, 0), (0, 0, 90), (45, 45, 0)]
+
+def fam_rot():
+    out = [fixed(f'orthographicFront, rot lat {a} lon {b} rev {c}', cam('orthographicFront', a, b, c)) for a, b, c in ROTS]
+    out += [fixed(f'perspectiveFront, rot lat {a} lon {b} rev {c}', cam('perspectiveFront', a, b, c))
+            for a, b, c in ((30, 0, 0), (0, 30, 0), (0, 0, 30), (30, 30, 30))]
+    out += [fixed(f'perspectiveFront fov {f}, rot lon 30', cam('perspectiveFront', 0, 30, 0, fov=f * DEG)) for f in (30, 90)]
+    out += [fixed(f'orthographicFront zoom {z // 1000}%', cam('orthographicFront', zoom=z)) for z in (50000, 200000)]
+    out += [fixed('isometricTopUp, rot 0 0 0', cam('isometricTopUp', 0, 0, 0)),
+            fixed('perspectiveRelaxedModerately, rot lon 30', cam('perspectiveRelaxedModerately', 0, 30, 0))]
+    return out
+
+EX = '<a:extrusionClr><a:srgbClr val="1F3864"/></a:extrusionClr>'
+CO = '<a:contourClr><a:srgbClr val="C00000"/></a:contourClr>'
+
+def fam_depth():
+    d36 = 457200
+    cams = [('orthographicFront', cam('orthographicFront')), ('obliqueTopLeft', cam('obliqueTopLeft')),
+            ('obliqueBottomRight', cam('obliqueBottomRight')), ('isometricTopUp', cam('isometricTopUp')),
+            ('isometricOffAxis1Right', cam('isometricOffAxis1Right')), ('perspectiveFront', cam('perspectiveFront')),
+            ('perspectiveRelaxedModerately', cam('perspectiveRelaxedModerately')),
+            ('perspectiveAboveLeftFacing', cam('perspectiveAboveLeftFacing')),
+            ('legacyObliqueTopLeft', cam('legacyObliqueTopLeft')), ('legacyPerspectiveTopLeft', cam('legacyPerspectiveTopLeft')),
+            ('orthographicFront lon 30', cam('orthographicFront', 0, 30, 0)), ('orthographicFront lat 30', cam('orthographicFront', 30, 0, 0))]
+    out = [fixed(f'depth 36 pt, {n}', c, sp3d(EX, extrusionH=d36)) for n, c in cams]
+    out += [fixed(f'depth 72 pt, {n}', cam(n), sp3d(EX, extrusionH=2 * d36)) for n in ('isometricOffAxis1Right', 'obliqueTopLeft')]
+    out += [fixed(f'contour 6 pt, {n}', cam(n), sp3d(CO, contourW=76200)) for n in ('orthographicFront', 'isometricOffAxis1Right')]
+    out += [fixed(f'z 36 pt, {n}', cam(n), sp3d(z=d36)) for n in ('perspectiveFront', 'isometricOffAxis1Right')]
+    out += [fixed('z -36 pt, perspectiveFront', cam('perspectiveFront'), sp3d(z=-d36)),
+            fixed('bevel 12 pt circle, orthographicFront lon 45', cam('orthographicFront', 0, 45, 0), sp3d(bevel(w=152400, h=152400))),
+            fixed('top and bottom bevels 12 pt, depth 36 pt, isometricOffAxis1Right', cam('isometricOffAxis1Right'),
+                  sp3d(bevel(w=152400, h=152400) + bevel('angle', 152400, 152400, top=False) + EX, extrusionH=d36))]
+    return out
+
+def fam_layout():
+    """The frame in the layout: a 3-D drawing whose picture is wider (isometricTopUp) or taller
+    (perspectiveContrastingRightFacing) than its frame, in a line of words and wrapped; and the flat controls."""
+    wide, tall = scene(cam('isometricTopUp')) + sp3d(), scene(cam('perspectiveContrastingRightFacing')) + sp3d()
+    return [Probe('in a line of words, flat (the control)', shape=True, in_line=True),
+            Probe('in a line of words, isometricTopUp', shape=True, in_line=True, scene=wide),
+            Probe('in a line of words, perspectiveContrastingRightFacing', shape=True, in_line=True, scene=tall),
+            Probe('square wrap, flat (the control)', shape=True, anchor='square'),
+            Probe('square wrap, isometricTopUp', shape=True, anchor='square', scene=wide),
+            Probe('top and bottom wrap, perspectiveContrastingRightFacing', shape=True, anchor='topAndBottom', scene=tall)]
+
+def fam_cameras_depth(part):
+    """A third of the cameras on the 144 by 108 pt shape, extruded 36 pt."""
+    cams = ALL_CAMERAS[part * 21:(part + 1) * 21]
+    return lambda: [fixed(f'camera {c}, depth 36 pt', cam(c), sp3d(EX, extrusionH=457200)) for c in cams]
+
+def fam_bevel_profiles():
+    """Each bevel at 24 by 24 pt seen edge on (orthographicFront, lon 90): the silhouette's top and bottom trace its
+    profile. Then the circle at other widths and heights, and a bottom bevel behind 36 pt of depth."""
+    edge = cam('orthographicFront', 0, 90, 0)
+    out = [fixed(f'bevel {b} 24 by 24 pt, edge on', edge, sp3d(bevel(b, 304800, 304800))) for b in BEVELS]
+    out += [fixed(f'bevel circle {w // 12700} by {h // 12700} pt, edge on', edge, sp3d(bevel('circle', w, h)))
+            for w, h in ((152400, 304800), (304800, 152400))]
+    out += [fixed('bevel angle 24 by 24 pt at the bottom, depth 36 pt, edge on', edge,
+                  sp3d(bevel('angle', 304800, 304800, top=False) + EX, extrusionH=457200)),
+            fixed('bevel circle 24 by 24 pt, edge on from above (lat 90)', cam('orthographicFront', 90, 0, 0),
+                  sp3d(bevel('circle', 304800, 304800)))]
+    return out
+
 def fam_preset_shapes():
     return [shp(f'prstShdw shdw{i} on a shape', prstshdw(f'shdw{i}', dist=76200, dir=2700000)) for i in range(1, 21)]
 
@@ -567,6 +679,25 @@ SETS = {
         ('fxp4-preset-combo', generous(fam_preset_combo), THEME_2023),
         ('fxp5-preset-size', generous(fam_preset_size), THEME_2023),
     ],
+    # Phase 5a (2026-11-11; Jason: "CR-081 phase 5a: start it"): the 3-D geometry.
+    'cr081-phase5a-r1': [
+        ('fxc1-cameras-a', fam_cameras(0, (CX, CY)), THEME_2023),
+        ('fxc2-cameras-b', fam_cameras(1, (CX, CY)), THEME_2023),
+        ('fxc3-cameras-c', fam_cameras(2, (CX, CY)), THEME_2023),
+        ('fxc4-cameras-tall-a', fam_cameras(0, TALL), THEME_2023),
+        ('fxc5-cameras-tall-b', fam_cameras(1, TALL), THEME_2023),
+        ('fxc6-cameras-tall-c', fam_cameras(2, TALL), THEME_2023),
+        ('fxc7-cameras-photo', fam_cameras_picture, THEME_2023),
+        ('fxc8-rot', fam_rot, THEME_2023),
+        ('fxc9-depth', fam_depth, THEME_2023),
+        ('fxca-layout', fam_layout, THEME_2023),
+    ],
+    'cr081-phase5a-r2': [
+        ('fxd1-cameras-depth-a', fam_cameras_depth(0), THEME_2023),
+        ('fxd2-cameras-depth-b', fam_cameras_depth(1), THEME_2023),
+        ('fxd3-cameras-depth-c', fam_cameras_depth(2), THEME_2023),
+        ('fxd4-bevel-profiles', fam_bevel_profiles, THEME_2023),
+    ],
     'cr081-phase0-styles': [
         ('fs10-photo', fam_styles('photo.png'), THEME_2023),
         ('fs11-photo-jpeg', fam_styles('photo.jpeg'), THEME_2023),
@@ -576,7 +707,7 @@ SETS = {
 }
 AS_IS = {'cr081-phase0-styles': [HAND]}
 TIMEOUT = {'cr081-phase0': 180, 'cr081-phase0-3d': 300, 'cr081-phase0-r2': 180, 'cr081-phase0-r3': 180,
-           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180}
+           'cr081-phase0-styles': 300, 'cr081-phase4-r1': 180, 'cr081-phase5a-r1': 300, 'cr081-phase5a-r2': 300}
 
 # ---------------------------------------------------------------------------------------------------------- the XML
 
@@ -615,7 +746,13 @@ def drawing(probe, n, rid):
     docpr = f'<wp:docPr id="{n}" name="{kind} {n}"/>'
     frame = '' if probe.shape else '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>'
     g = graphic(probe, n, rid)
-    if probe.anchor:
+    if probe.anchor == 'fixed':      # at FIXED on the page, in front of the text: its frame known exactly
+        d = (f'<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="{251658240 + n}" '
+             'behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'
+             f'<wp:positionH relativeFrom="page"><wp:posOffset>{FIXED[0]}</wp:posOffset></wp:positionH>'
+             f'<wp:positionV relativeFrom="page"><wp:posOffset>{FIXED[1]}</wp:posOffset></wp:positionV>'
+             f'<wp:extent cx="{probe.cx}" cy="{probe.cy}"/>{effect_extent(probe)}<wp:wrapNone/>{docpr}{frame}{g}</wp:anchor>')
+    elif probe.anchor:
         wrap = '<wp:wrapSquare wrapText="bothSides"/>' if probe.anchor == 'square' else '<wp:wrapTopAndBottom/>'
         d = (f'<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="{251658240 + n}" '
              'behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'
@@ -631,6 +768,8 @@ def drawing(probe, n, rid):
     return f'<w:r>{d}</w:r>'
 
 def body_of(probe, n, rid):
+    if probe.anchor == 'fixed':
+        return f'<w:p>{drawing(probe, n, rid)}</w:p>'
     if probe.anchor:
         return f'<w:p>{drawing(probe, n, rid)}{run(WRAP_WORDS)}</w:p><w:p>{run(WRAP_WORDS)}</w:p>'
     if probe.in_line:
