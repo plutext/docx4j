@@ -85,7 +85,48 @@ final class PictureEffects {
 
 	private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();
 
+	/**
+	 * A picture's colour adjustments ({@code a:blip}'s children: recolour, brightness and contrast, transparency, a
+	 * transparent colour) aren't drawn: the picture is drawn as it is stored (CR-084; CR-081 D9)
+	 */
+	static final String BLIP_RECOLOUR = "render.effect.blip_recolour";
+
 	private PictureEffects() {}
+
+	/**
+	 * The first of the picture's colour adjustments, as its element's local name ({@code grayscl}, {@code alphaModFix},
+	 * {@code lum}, ...), or null where it has none; reported as {@link #BLIP_RECOLOUR}, since they aren't drawn
+	 */
+	static String recoloured(Pic pic) {
+		if (pic == null || pic.getBlipFill() == null || pic.getBlipFill().getBlip() == null) return null;
+		java.util.List<Object> adjustments = pic.getBlipFill().getBlip().getAlphaBiLevelOrAlphaCeilingOrAlphaFloor();
+		if (adjustments.isEmpty()) return null;
+		Class<?> first = adjustments.get(0).getClass();
+		// its element's name, from CTBlip's mapping of the choice
+		for (java.lang.reflect.Field fd : org.docx4j.dml.CTBlip.class.getDeclaredFields()) {
+			jakarta.xml.bind.annotation.XmlElements els = fd.getAnnotation(jakarta.xml.bind.annotation.XmlElements.class);
+			if (els == null) continue;
+			for (jakarta.xml.bind.annotation.XmlElement el : els.value()) if (el.type() == first) return el.name();
+		}
+		return first.getSimpleName();
+	}
+
+	/** Reports the picture's colour adjustments, which aren't drawn (once, as the other codes are) */
+	static void reportRecolour(Pic pic) {
+		String first = recoloured(pic);
+		if (first != null) report(BLIP_RECOLOUR, "a:" + first);
+	}
+
+	/**
+	 * A metafile picture's (WMF, EMF) frame, line, effects and 3-D aren't drawn: it is drawn as SVG, which has no pixels
+	 * to blur or light (CR-081 phase 1 findings section 4; phase 6)
+	 */
+	static final String METAFILE = "render.effect.metafile";
+
+	/** Reports a metafile picture's frame and effects, which aren't drawn */
+	static void reportMetafile(Pic pic) {
+		if (framed(pic)) report(METAFILE, "");
+	}
 
 	/** The picture's effect list, where it has an effect Word draws; else null */
 	static CTEffectList effects(Pic pic) {

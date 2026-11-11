@@ -429,6 +429,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * line weren't drawn.  @since 17.3.7
      */
     Document withEffects(Document d) {
+    	if (forXslFo) {     // what isn't drawn (CR-081 phase 6): colour adjustments, a metafile's too; a metafile's frame
+    		PictureEffects.reportRecolour(getPic());
+    		if (metaFileSvg != null) PictureEffects.reportMetafile(getPic());
+    	}
     	if (!forXslFo || metaFileSvg != null || d == null || d.getDocumentElement() == null || dimensions == null) return d;
     	Pic pic = getPic();
     	if (!PictureEffects.framed(pic) && !PictureEffects.fillBehind(pic)) return d;
@@ -465,6 +469,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     @Override
     protected org.w3c.dom.Element createHtmlEffectsElement(Document document) {
+    	if (!forXslFo) {
+    		PictureEffects.reportRecolour(getPic());
+    		if (metaFileSvg != null) PictureEffects.reportMetafile(getPic());
+    	}
     	if (forXslFo || metaFileSvg != null || dimensions == null) return null;
     	Pic pic = getPic();
     	if (!PictureEffects.framed(pic) && !PictureEffects.fillBehind(pic)) return null;

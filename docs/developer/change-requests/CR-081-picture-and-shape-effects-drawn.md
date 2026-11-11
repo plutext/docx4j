@@ -17,7 +17,9 @@ split at its go/no-go (Jason: "yes, do 5b-1, defer 5b-2"): 5b-1, the picture sty
 materials, DONE 2026-11-11 (Jason: "commit it and mark it done"): `CR-081-notes/phase5b-findings.md`; five Word rounds,
 100 probes within 6/255 (mean 1.82), gates b428 and b430 0 movers; 5b-2, the rest, started 2026-11-11 (Jason: "start
 phase 5b-2"), DONE 2026-11-11 (Jason: "commit both and mark 5b-2 done"): `CR-081-notes/phase5b2-findings.md`; one
-Word round, 357 probes (mean 2.07/255), gate b439 0 movers. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
+Word round, 357 probes (mean 2.07/255), gate b439 0 movers. Phase 6 DONE 2026-11-11 (Jason: "do CR-081 phases 6 and
+7", "commit CR-081 phases 6 and 7"): the gap report (`CR-081-notes/phase6-gap-report.md`), two codes added. Phase 7:
+the CHANGELOG committed; the Getting Started guide's changes tracked, awaiting Jason's review. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
 - phase 5 draws 3-D (bevels, depth, lighting), which 3-D WordArt (CR-083) and 3-D SmartArt styles (CR-082) need,
@@ -358,7 +360,29 @@ under `pic:spPr` (through the portfolio).
     Corpora unmoved.
 - **Phase 6, the gap report** (D9): every effect in the probes and a load-survey sample rendered; what isn't drawn as
   Word draws it is listed with its reason (`a:blip` colour effects until D7's follow-up, for example).
+  **DONE 2026-11-11** (Jason: "do CR-081 phases 6 and 7", "commit CR-081 phases 6 and 7"; `phase6-gap-report.md`):
+  - every probe (17 sets, 77 files, 1,356 probes) rendered through the PDF route on the current code; no drawing
+    failed; the codes logged are legacyWireframe's `3d_shading`, `3d_text` for a 3-D shape's turned text, and
+    `shape_text` for a shape's text's effects, each where expected;
+  - the four fidelity corpora: 20 distinct documents with effects, every effect CR-081 draws drawn; the commonest gap
+    is colour adjustments (13 documents);
+  - two gaps were silent and now report: `render.effect.blip_recolour` (D9's example: a picture's colour adjustments,
+    CR-084's, in both outputs, a metafile's too) and `render.effect.metafile` (a WMF or EMF picture's frame and
+    effects, which phase 1 left to this phase); `PictureRecolourTest`;
+  - the load-survey sample isn't in it: the portfolio's 240-document sample is gone, and its counts are queued
+    (portfolio `scripts/corpus/OWED-QUERIES.md`, "CR-081 (effects)" and "CR-084") for when the catalogue is home.
 - **Phase 7, CHANGELOG, Getting Started.**
+  **Built 2026-11-11; the CHANGELOG committed with phase 6, the guide awaiting Jason's review:**
+  - **CHANGELOG** (17.3.7): each phase has its line; phase 6 adds the gap codes'.
+  - **Getting Started**: the canonical `docs/Docx4j_GettingStarted.docx` carries two more tracked changes (author
+    Claude Opus 5.5), over CR-080 phase 6's, for Jason's review in Word:
+    - a new "Effects and 3-D" paragraph in the PDF section, after "Shapes" (whose "not yet drawn" no longer lists
+      effects);
+    - in the HTML section, effects, frames and 3-D drawn as in the PDF;
+    - in the bundles, docx4j-chart-render draws effects and 3-D too.
+
+    Rejecting them all still gives back the guide's text exactly. Left out of the commit until the review; the md, html
+    and pdf are derived at the release. Tool: `~/claude-scratch-archive/docx4j/getting-started-17.3.7/track5.py`.
 
 ## 7. Risks
 

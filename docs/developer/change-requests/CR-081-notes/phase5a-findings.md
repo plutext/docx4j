@@ -268,3 +268,4 @@ a pixel, none past 0.60 pt, the worst 0.48 (fxc8-05, not a contour).
 
 ## 8. Not measured yet
 
+Gathered with the other phases' open items in phase 6's gap report (`phase6-gap-report.md`, sections 3 and 4).
