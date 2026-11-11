@@ -62,7 +62,8 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		ShapeRenderer.Drawn drawn;
 		if (graphic instanceof CTWordprocessingShape) {
 			CTWordprocessingShape wsp = (CTWordprocessingShape) graphic;
-			drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, p, org.docx4j.model.shapes.ShapeText.hasText(wsp));
+			drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, p, org.docx4j.model.shapes.ShapeText.hasText(wsp),
+					wsp.getBodyPr() != null && wsp.getBodyPr().getFlatTx() != null);
 		} else if (graphic instanceof CTWordprocessingGroup) {
 			drawn = ShapeRenderer.drawGroup((CTWordprocessingGroup) graphic, theme, cx, cy, p);
 		} else if (graphic instanceof CTWordprocessingCanvas) {
@@ -86,28 +87,10 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 		CTEffectList fx = sp == null ? null : sp.getEffectLst();
 		AffineTransform at = picture == null || picture.getWidth() <= 0 || picture.getHeight() <= 0 ? null
 				: frame(picture.getWidth(), picture.getHeight(), w, h, crop);
-		// a 3-D picture (17 of Word's 28 picture styles): the picture in its frame, its line and the fill behind it, are
-		// the face of one picture, which takes its place, its effects cast by it (CR-081 phase 5a)
-		Scene3D.Picture three = null;
-		if (sp != null && ShapeRenderer.is3d(sp.getScene3D(), sp.getSp3D())) {
-			if (at != null) {
-				final AffineTransform fat = at;
-				Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
-				Effects.Painter face = g -> {
-					if (frame.getBehind() != null) frame.getBehind().paint(g);
-					paintPicture(g, frame, picture, fat, box);
-					if (frame.getLine() != null) frame.getLine().paint(g);
-				};
-				Area outline = new Area(frame.getOutline() != null ? frame.getOutline() : box);
-				if (frame.getLine() != null) outline.add(new Area(ShapeRenderer.outline(frame.getLine())));
-				double ppt = maxPixelsPerPoint > 0 ? Math.min(Effects.BASE_PIXELS_PER_POINT, maxPixelsPerPoint) : Effects.BASE_PIXELS_PER_POINT;
-				three = Scene3D.draw(face, outline, w, h, sp.getScene3D(), sp.getSp3D(), theme, ppt, problems);
-			}
-			if (three == null && problems != null && !problems.contains(ShapeRenderer.FLAT_3D)) problems.add(ShapeRenderer.FLAT_3D);
-		}
+		boolean is3d = sp != null && ShapeRenderer.is3d(sp.getScene3D(), sp.getSp3D());
 		// a transparent picture's preset shadow is its strokes', a picture (fxp3-02, -07); an opaque one's the frame's
 		// vector fills (phase 4)
-		boolean rasterPreset = three == null && fx != null && fx.getPrstShdw() != null && at != null && transparent(picture);
+		boolean rasterPreset = fx != null && fx.getPrstShdw() != null && at != null && transparent(picture);
 		Effects.Painter presetPainter = null;
 		Rectangle2D presetBounds = null;
 		final List<Effects.Picture> presetPictures = new ArrayList<Effects.Picture>();
@@ -119,7 +102,7 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 				if (frame.getLine() != null) frame.getLine().paint(g);
 			};
 			presetPictures.addAll(Effects.presetShadowPictures(fx.getPrstShdw(), theme, whole, drawn, drawn, maxPixelsPerPoint));
-		} else if (frame.getShadow() != null && three == null) {
+		} else if (frame.getShadow() != null) {
 			presetPainter = g -> frame.getShadow().paint(g);
 			presetBounds = frame.getShadowBounds();
 		}
@@ -133,19 +116,13 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 			};
 			for (Effects.Picture p : presetPictures) presetBounds = presetBounds == null ? p.getPlace() : presetBounds.createUnion(p.getPlace());
 		}
+		// the effects, cast by the picture in its frame (a 3-D picture's too: Word casts the flat drawing's, in its plane)
 		List<Effects.Picture> all = new ArrayList<Effects.Picture>();
 		if (fx != null && at != null) {
 			Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
 			Effects.Painter line = frame.getLine() == null ? null : g -> frame.getLine().paint(g);
-			Effects.Painter body = g -> paintPicture(g, frame, picture, at, box);
-			Rectangle2D lineBounds = frame.getLineBounds();
-			if (three != null) {      // cast by the 3-D picture, within its bounds, which may reach past the frame
-				body = three.painter();
-				line = g -> {
-				};
-				lineBounds = three.getPlace();
-			}
-			Effects.Result r = Effects.draw(fx, theme, w, h, body, line, lineBounds, presetPainter, presetBounds, maxPixelsPerPoint);
+			Effects.Result r = Effects.draw(fx, theme, w, h, g -> paintPicture(g, frame, picture, at, box), line, frame.getLineBounds(),
+					presetPainter, presetBounds, maxPixelsPerPoint);
 			if (problems != null) {
 				for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
 			}
@@ -153,6 +130,69 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 			for (Effects.Picture p : r.getPictures()) if ("reflection".equals(p.getEffect())) all.add(p);
 			all.addAll(presetPictures);
 			for (Effects.Picture p : r.getPictures()) if (!"reflection".equals(p.getEffect())) all.add(p);
+		}
+		// a 3-D picture (17 of Word's 28 picture styles, CR-081 phase 5a): the picture in its frame, its fill behind, its
+		// soft edge or inner shadow, and its line are the face of one picture, which takes its place; its reflection,
+		// preset shadow, outer shadow and glow are drawn in its plane under it and turned with it, as Word's are (phase 5a
+		// findings section 5)
+		Scene3D.Picture three = null;
+		if (is3d) {
+			if (at != null) {
+				final AffineTransform fat = at;
+				final Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
+				final List<Effects.Picture> replace = new ArrayList<Effects.Picture>(), over = new ArrayList<Effects.Picture>();
+				List<Scene3D.Picture> planes = new ArrayList<Scene3D.Picture>();
+				for (Effects.Picture p : all) {
+					if (p.getLayer() == Effects.Layer.REPLACE) replace.add(p);
+					else if (p.getLayer() == Effects.Layer.OVER) over.add(p);
+					else if (p.getLayer() == Effects.Layer.UNDER) planes.add(Scene3D.Picture.of(p.getImage(), p.getPlace()));
+				}
+				double ppt = maxPixelsPerPoint > 0 ? Math.min(Effects.BASE_PIXELS_PER_POINT, maxPixelsPerPoint) : Effects.BASE_PIXELS_PER_POINT;
+				if (!rasterPreset && frame.getShadow() != null && frame.getShadowBounds() != null) {
+					// the vector preset shadow, after the reflection, as a picture in the plane
+					Scene3D.Picture ps = ShapeRenderer.raster(frame.getShadow(), frame.getShadowBounds(), 0, 0, ppt);
+					if (ps != null) planes.add(fx != null && fx.getReflection() != null && !planes.isEmpty() ? 1 : 0, ps);
+				}
+				Effects.Painter face = g -> {
+					if (frame.getBehind() != null && replace.isEmpty()) frame.getBehind().paint(g);
+					if (!replace.isEmpty()) {
+						for (Effects.Picture p : replace) p.painter().paint(g);
+					} else {
+						paintPicture(g, frame, picture, fat, box);
+					}
+					for (Effects.Picture p : over) p.painter().paint(g);
+					if (frame.getLine() != null && replace.isEmpty()) frame.getLine().paint(g);
+				};
+				Area outline = new Area(frame.getOutline() != null ? frame.getOutline() : box);
+				if (frame.getLine() != null) outline.add(new Area(ShapeRenderer.outline(frame.getLine())));
+				three = Scene3D.draw(face, outline, w, h, sp.getScene3D(), sp.getSp3D(), theme, ppt, problems, planes);
+			}
+			if (three == null && problems != null && !problems.contains(ShapeRenderer.FLAT_3D)) problems.add(ShapeRenderer.FLAT_3D);
+		}
+		if (three != null) {
+			final Scene3D.Picture picture3d = three;
+			out.add(new EffectPicture() {
+				@Override
+				public BufferedImage getImage() {
+					return picture3d.getImage();
+				}
+
+				@Override
+				public Rectangle2D getPlace() {
+					return picture3d.getPlace();
+				}
+
+				@Override
+				public EffectLayer getLayer() {
+					return EffectLayer.REPLACE;
+				}
+
+				@Override
+				public String getEffect() {
+					return "scene3d";
+				}
+			});
+		} else {
 			for (final Effects.Picture p : all) {
 				final EffectLayer layer = p.getLayer() == Effects.Layer.UNDER ? EffectLayer.UNDER
 						: p.getLayer() == Effects.Layer.OVER ? EffectLayer.OVER : EffectLayer.REPLACE;
@@ -179,33 +219,9 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 				});
 			}
 		}
-		if (three != null) {
-			final Scene3D.Picture picture3d = three;
-			out.add(new EffectPicture() {
-				@Override
-				public BufferedImage getImage() {
-					return picture3d.getImage();
-				}
-
-				@Override
-				public Rectangle2D getPlace() {
-					return picture3d.getPlace();
-				}
-
-				@Override
-				public EffectLayer getLayer() {
-					return EffectLayer.REPLACE;
-				}
-
-				@Override
-				public String getEffect() {
-					return "scene3d";
-				}
-			});
-		}
 		final Document behind = frame.getBehind() == null ? null : SvgWriter.toSvg(frame.getBehind(), frame.getBehindBounds());
 		final Document lineSvg = frame.getLine() == null ? null : SvgWriter.toSvg(frame.getLine(), frame.getLineBounds());
-		final Document shadow = frame.getShadow() == null || rasterPreset ? null : SvgWriter.toSvg(frame.getShadow(), frame.getShadowBounds());
+		final Document shadow = frame.getShadow() == null || rasterPreset || three != null ? null : SvgWriter.toSvg(frame.getShadow(), frame.getShadowBounds());
 		final Shape clip = frame.isBox() ? null : frame.getOutline();
 		return new PictureDrawing() {
 			@Override

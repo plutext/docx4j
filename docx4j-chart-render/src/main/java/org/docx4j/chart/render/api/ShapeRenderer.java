@@ -230,6 +230,18 @@ public final class ShapeRenderer {
 	 * @since 17.3.7 (CR-081 phase 3)
 	 */
 	public static Drawn draw(CTShapeProperties spPr, CTShapeStyle style, ThemeColors theme, long cx, long cy, Pictures pictures, boolean text) {
+		return draw(spPr, style, theme, cx, cy, pictures, text, false);
+	}
+
+	/**
+	 * The shape drawn at its size, with its effects; for a 3-D shape (CR-081 phase 5a), with whether its text is kept flat.
+	 *
+	 * @param flatText its bodyPr has a:flatTx: Word keeps its text flat, where it would turn it with a turned camera
+	 *        ({@link Scene3D#TEXT_3D})
+	 * @since 17.3.7 (CR-081 phase 5a)
+	 */
+	public static Drawn draw(CTShapeProperties spPr, CTShapeStyle style, ThemeColors theme, long cx, long cy, Pictures pictures, boolean text,
+			boolean flatText) {
 		ShapeOutlines outlines = ShapeGeometry.outlines(spPr, cx, cy);
 		List<String> problems = new ArrayList<String>();
 		if (outlines.getProblem() != null) problems.add(outlines.getProblem());
@@ -237,7 +249,7 @@ public final class ShapeRenderer {
 		Drawing drawing = new Drawing(w, h);
 		Rectangle2D bounds = paintShape(drawing, spPr, style, theme, outlines, w, h, turn(spPr == null ? null : spPr.getXfrm(), w, h), pictures,
 				null, problems);
-		bounds = effects(drawing, 0, spPr, style, theme, null, new Rectangle2D.Double(0, 0, w, h), text, bounds, problems);
+		bounds = effects(drawing, 0, spPr, style, theme, null, new Rectangle2D.Double(0, 0, w, h), text, flatText, bounds, problems);
 		return new Drawn(drawing, bounds == null ? new Rectangle2D.Double(0, 0, w, h) : rect(bounds), outlines, problems);
 	}
 
@@ -579,45 +591,31 @@ public final class ShapeRenderer {
 	 */
 	static Rectangle2D effects(Drawing drawing, int from, CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, Fill groupFill,
 			Rectangle2D.Double box, boolean text, Rectangle2D bounds, List<String> problems) {
+		return effects(drawing, from, sp, style, theme, groupFill, box, text, false, bounds, problems);
+	}
+
+	/**
+	 * As {@link #effects(Drawing, int, CTShapeProperties, CTShapeStyle, ThemeColors, Fill, Rectangle2D.Double, boolean,
+	 * Rectangle2D, List)}, and for a 3-D shape (CR-081 phase 5a): its drawing, its effects composited on it, is the face
+	 * of one picture ({@link Scene3D}) which takes its place, its shadow, glow and reflection the flat drawing's, drawn in
+	 * its plane and projected with it (phase 5a findings section 5).
+	 *
+	 * @param flatText the shape's bodyPr has a:flatTx: its text stays flat, as Word keeps it
+	 */
+	static Rectangle2D effects(Drawing drawing, int from, CTShapeProperties sp, CTShapeStyle style, ThemeColors theme, Fill groupFill,
+			Rectangle2D.Double box, boolean text, boolean flatText, Rectangle2D bounds, List<String> problems) {
 		EffectsOf of = effectsOf(sp, style, theme, problems);
 		if (of == null) return bounds;
-		// a 3-D shape: its drawing as painted is the face of one picture, which takes its place (CR-081 phase 5a); its
-		// effects are cast by that picture, within its bounds
-		Rectangle2D.Double threeLocal = null;
-		if (of.flat3d && from < drawing.getItems().size()) {
-			List<Object> painted = new ArrayList<Object>(drawing.getItems().subList(from, drawing.getItems().size()));
-			Drawing face = new Drawing(drawing.getWidth(), drawing.getHeight());
-			face.getItems().addAll(painted);
-			final double fx0 = box.x, fy0 = box.y;
-			java.awt.Shape faceOutline = java.awt.geom.AffineTransform.getTranslateInstance(-fx0, -fy0).createTransformedShape(outline(painted));
-			double ppt = Effects.BASE_PIXELS_PER_POINT, cap = maxPixelsPerPoint();
-			if (cap > 0) ppt = Math.min(ppt, cap);
-			Scene3D.Picture three = Scene3D.draw(g -> {
-				g.translate(-fx0, -fy0);
-				face.paint(g);
-				g.translate(fx0, fy0);
-			}, faceOutline, box.width, box.height, of.scene, of.shape3d, of.theme, ppt, problems);
-			if (three != null) {
-				Rectangle2D.Double pl = three.getPlace();
-				Drawing.Picture dp = new Drawing.Picture(three.getImage(), new Rectangle2D.Double(pl.x + fx0, pl.y + fy0, pl.width, pl.height), null);
-				drawing.getItems().subList(from, drawing.getItems().size()).clear();
-				drawing.getItems().add(dp);
-				bounds = union(bounds, dp.getInto());
-				threeLocal = pl;
-			} else if (!problems.contains(FLAT_3D)) {
-				problems.add(FLAT_3D);
-			}
-		}
 		CTEffectList list = of.list;
-		if (list == null || list.getOuterShdw() == null && list.getInnerShdw() == null && (list.getGlow() == null || list.getGlow().getRad() <= 0)
-				&& (list.getSoftEdge() == null || list.getSoftEdge().getRad() <= 0) && list.getReflection() == null && list.getPrstShdw() == null) {
-			return bounds;
-		}
-		if (text && !problems.contains(TEXT_EFFECTS)) {
+		boolean any = list != null && (list.getOuterShdw() != null || list.getInnerShdw() != null || list.getGlow() != null && list.getGlow().getRad() > 0
+				|| list.getSoftEdge() != null && list.getSoftEdge().getRad() > 0 || list.getReflection() != null || list.getPrstShdw() != null);
+		if (!any && !of.flat3d) return bounds;
+		if (any && text && !problems.contains(TEXT_EFFECTS)) {
 			Fill f = fill(sp, style, theme, groupFill);
 			boolean covered = opaque(f);
 			if (list.getReflection() != null || !covered && (list.getOuterShdw() != null || list.getGlow() != null)) problems.add(TEXT_EFFECTS);
 		}
+		if (of.flat3d && text && !flatText && Scene3D.turnsText(of.scene) && !problems.contains(Scene3D.TEXT_3D)) problems.add(Scene3D.TEXT_3D);
 		List<Object> items = drawing.getItems();
 		if (from >= items.size()) return bounds; // nothing painted, nothing cast (fxr80-10: Word's is its text's)
 		// the shape's items: its fills (and picture fills) the body, its lines and arrowheads over them
@@ -642,15 +640,10 @@ public final class ShapeRenderer {
 		};
 		Rectangle2D localLine = lineBounds == null ? null
 				: new Rectangle2D.Double(lineBounds.getX() - x, lineBounds.getY() - y, lineBounds.getWidth(), lineBounds.getHeight());
-		if (threeLocal != null) {     // the effects' extent: the 3-D picture, which may reach past the box
-			linePainter = g -> {
-			};
-			localLine = threeLocal;
-		}
 		// a preset shadow: vector fills of the shape's outline, its line stroked with it (phase 4)
 		final Drawing preset = new Drawing(drawing.getWidth(), drawing.getHeight());
 		Rectangle2D presetBounds = null;
-		if (list.getPrstShdw() != null) {
+		if (any && list.getPrstShdw() != null) {
 			Rectangle2D drawn = lineBounds == null ? box : box.createUnion(lineBounds);
 			for (Effects.Fill f : Effects.presetShadow(list.getPrstShdw(), of.theme, outline(mine), drawn)) {
 				preset.add(new Drawing.Area(f.getShape(), f.getColour(), null, 0, "shape.shadow"));
@@ -664,14 +657,23 @@ public final class ShapeRenderer {
 		};
 		Rectangle2D localPreset = presetBounds == null ? null
 				: new Rectangle2D.Double(presetBounds.getX() - x, presetBounds.getY() - y, presetBounds.getWidth(), presetBounds.getHeight());
-		Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, presetPainter, localPreset,
-				maxPixelsPerPoint());
-		for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
+		List<Effects.Picture> pictures = new ArrayList<Effects.Picture>();
+		if (any) {
+			Effects.Result r = Effects.draw(list, of.theme, box.width, box.height, bodyPainter, linePainter, localLine, presetPainter, localPreset,
+					maxPixelsPerPoint());
+			for (String code : r.getProblems()) if (!problems.contains(code)) problems.add(code);
+			pictures.addAll(r.getPictures());
+		}
+		if (of.flat3d) {
+			Rectangle2D three = threeD(drawing, from, mine, body, line, preset, localPreset, pictures, box, of, problems);
+			if (three != null) return union(bounds, three);
+			if (!problems.contains(FLAT_3D)) problems.add(FLAT_3D);
+		}
 		if (presetBounds != null) bounds = union(bounds, presetBounds);
-		if (r.isEmpty() && preset.getItems().isEmpty()) return bounds;
+		if (pictures.isEmpty() && preset.getItems().isEmpty()) return bounds;
 		List<Object> reflected = new ArrayList<Object>(), under = new ArrayList<Object>(), over = new ArrayList<Object>(),
 				replace = new ArrayList<Object>();
-		for (Effects.Picture p : r.getPictures()) {
+		for (Effects.Picture p : pictures) {
 			Rectangle2D.Double pl = p.getPlace();
 			Drawing.Picture dp = new Drawing.Picture(p.getImage(), new Rectangle2D.Double(pl.x + x, pl.y + y, pl.width, pl.height), null);
 			(p.getLayer() == Effects.Layer.UNDER ? "reflection".equals(p.getEffect()) ? reflected : under
@@ -692,6 +694,77 @@ public final class ShapeRenderer {
 		items.subList(from, items.size()).clear();
 		items.addAll(out);
 		return bounds;
+	}
+
+	/**
+	 * A 3-D shape's drawing (CR-081 phase 5a): the face is its body (or its soft edge's picture in its place), its inner
+	 * shadow over it, then its line; its reflection, preset shadow, outer shadow and glow are drawn in its plane under
+	 * it, as Word draws them (phase 5a findings section 5); all in one picture, which replaces the shape's items. The
+	 * picture's bounds in the drawing, or null where it couldn't be made.
+	 */
+	private static Rectangle2D threeD(Drawing drawing, int from, List<Object> mine, Drawing body, Drawing line, Drawing preset,
+			Rectangle2D localPreset, List<Effects.Picture> pictures, Rectangle2D.Double box, EffectsOf of, List<String> problems) {
+		final double x = box.x, y = box.y;
+		final List<Effects.Picture> replace = new ArrayList<Effects.Picture>(), over = new ArrayList<Effects.Picture>();
+		List<Scene3D.Picture> reflection = new ArrayList<Scene3D.Picture>(), under = new ArrayList<Scene3D.Picture>();
+		for (Effects.Picture p : pictures) {
+			if (p.getLayer() == Effects.Layer.REPLACE) replace.add(p);
+			else if (p.getLayer() == Effects.Layer.OVER) over.add(p);
+			else ("reflection".equals(p.getEffect()) ? reflection : under).add(Scene3D.Picture.of(p.getImage(), p.getPlace()));
+		}
+		double ppt = Effects.BASE_PIXELS_PER_POINT, cap = maxPixelsPerPoint();
+		if (cap > 0) ppt = Math.min(ppt, cap);
+		// Word's order under the drawing: the reflection, the preset shadow, then the outer shadow and glow
+		List<Scene3D.Picture> planes = new ArrayList<Scene3D.Picture>(reflection);
+		if (!preset.getItems().isEmpty() && localPreset != null) {
+			Scene3D.Picture p = raster(preset, localPreset, x, y, ppt);
+			if (p != null) planes.add(p);
+		}
+		planes.addAll(under);
+		Effects.Painter face = g -> {
+			if (!replace.isEmpty()) {
+				for (Effects.Picture p : replace) paintPicture(g, p);
+			} else {
+				g.translate(-x, -y);
+				body.paint(g);
+				g.translate(x, y);
+			}
+			for (Effects.Picture p : over) paintPicture(g, p);
+			if (replace.isEmpty()) {
+				g.translate(-x, -y);
+				line.paint(g);
+				g.translate(x, y);
+			}
+		};
+		java.awt.Shape faceOutline = java.awt.geom.AffineTransform.getTranslateInstance(-x, -y).createTransformedShape(outline(mine));
+		Scene3D.Picture three = Scene3D.draw(face, faceOutline, box.width, box.height, of.scene, of.shape3d, of.theme, ppt, problems, planes);
+		if (three == null) return null;
+		Rectangle2D.Double pl = three.getPlace();
+		Drawing.Picture dp = new Drawing.Picture(three.getImage(), new Rectangle2D.Double(pl.x + x, pl.y + y, pl.width, pl.height), null);
+		drawing.getItems().subList(from, drawing.getItems().size()).clear();
+		drawing.getItems().add(dp);
+		return dp.getInto();
+	}
+
+	/** An effect picture painted where it goes, in the box's frame */
+	private static void paintPicture(java.awt.Graphics2D g, Effects.Picture p) {
+		Rectangle2D.Double pl = p.getPlace();
+		g.drawImage(p.getImage(), new java.awt.geom.AffineTransform(pl.width / p.getImage().getWidth(), 0, 0, pl.height / p.getImage().getHeight(),
+				pl.x, pl.y), null);
+	}
+
+	/** A drawing's vector items as a picture of the given bounds (the box's frame), for drawing in a 3-D drawing's plane */
+	public static Scene3D.Picture raster(Drawing d, Rectangle2D local, double x, double y, double ppt) {
+		int w = (int) Math.ceil(local.getWidth() * ppt) + 2, h = (int) Math.ceil(local.getHeight() * ppt) + 2;
+		if (w <= 0 || h <= 0 || (long) w * h > 40_000_000L) return null;
+		java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = img.createGraphics();
+		g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+		g.scale(ppt, ppt);
+		g.translate(-(local.getX() - 1 / ppt) - x, -(local.getY() - 1 / ppt) - y);
+		d.paint(g);
+		g.dispose();
+		return Scene3D.Picture.of(img, new Rectangle2D.Double(local.getX() - 1 / ppt, local.getY() - 1 / ppt, w / ppt, h / ppt));
 	}
 
 	/** The outline of what a drawing paints: its fills' shapes and its strokes' outlines, one area */

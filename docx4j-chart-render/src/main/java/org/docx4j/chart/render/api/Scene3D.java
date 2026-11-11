@@ -68,6 +68,20 @@ public final class Scene3D {
 	/** A 3-D drawing drawn with its geometry and a simple shading, not Word's lights and materials (phase 5b) */
 	public static final String SHADING = "render.effect.3d_shading";
 
+	/**
+	 * A 3-D shape's text drawn flat: under a camera other than orthographicFront, without a:flatTx, Word turns the
+	 * text into its 3-D picture with the face (phase 5a findings section 5); docx4j's text is the output's
+	 */
+	public static final String TEXT_3D = "render.effect.3d_text";
+
+	/** Whether Word turns a 3-D shape's text with it under this scene: any camera but orthographicFront unturned */
+	public static boolean turnsText(CTScene3D scene) {
+		CTCamera c = scene == null ? null : scene.getCamera();
+		if (c == null) return false;
+		if (c.getPrst() != null && c.getPrst() != STPresetCameraType.ORTHOGRAPHIC_FRONT) return true;
+		return c.getRot() != null && (c.getRot().getLat() != 0 || c.getRot().getLon() != 0 || c.getRot().getRev() != 0);
+	}
+
 	/** The perspective constant: D tan(fov / 2), points (phase 5a findings section 1) */
 	static final double C = 452.85;
 	/** The perspective's overall scale */
@@ -84,6 +98,11 @@ public final class Scene3D {
 		Picture(BufferedImage image, Rectangle2D.Double place) {
 			this.image = image;
 			this.place = place;
+		}
+
+		/** A picture placed in the drawing's frame: an effect picture to be drawn in the drawing's plane */
+		public static Picture of(BufferedImage image, Rectangle2D place) {
+			return new Picture(image, new Rectangle2D.Double(place.getX(), place.getY(), place.getWidth(), place.getHeight()));
 		}
 
 		public BufferedImage getImage() {
@@ -332,6 +351,20 @@ public final class Scene3D {
 	 */
 	public static Picture draw(Effects.Painter face, Shape outline, double w, double h, CTScene3D scene, CTShape3D sp, ThemeColors theme,
 			double pixelsPerPoint, List<String> problems) {
+		return draw(face, outline, w, h, scene, sp, theme, pixelsPerPoint, problems, Collections.<Picture>emptyList());
+	}
+
+	/**
+	 * The drawing in 3-D, with its effects under it in its plane: Word casts a 3-D drawing's shadow, glow and reflection
+	 * as the flat drawing's, in the drawing's plane, and projects them with it (phase 5a findings section 5). Each is
+	 * drawn as a picture on that plane behind the drawing (behind its back, where it has depth), z-buffered, so that the
+	 * drawing hides what is behind it; all in the one picture.
+	 *
+	 * @param under the flat drawing's effect pictures, in Word's order (the reflection, the preset shadow, the outer
+	 *        shadow, the glow), each placed in the drawing's frame
+	 */
+	public static Picture draw(Effects.Painter face, Shape outline, double w, double h, CTScene3D scene, CTShape3D sp, ThemeColors theme,
+			double pixelsPerPoint, List<String> problems, List<Picture> under) {
 		Camera cam = new Camera(scene == null ? null : scene.getCamera());
 		double bevelW = 0, bevelH = 0, backW = 0, backH = 0;
 		STBevelPresetType topProfile = null, backProfile = null;
@@ -462,6 +495,22 @@ public final class Scene3D {
 							zc = zBack - backZ(dist[c], backW, backH, backProfile), zd = zBack - backZ(dist[dd], backW, backH, backProfile);
 					double gxs = ((zb - za) + (zd - zc)) / (2 * q), gys = ((zc - za) + (zd - zb)) / (2 * q);
 					r.quad(px, py, za, px + q, py, zb, px + q, py + q, zd, px, py + q, zc, shade(back, cam.turnVector(gxs, gys, -1), light));
+				}
+			}
+		}
+		// the effects, in the drawing's plane, behind its back
+		double zUnder = z0 - bevelH - depth - backH - 0.02;
+		for (Picture e : under) {
+			BufferedImage im = e.getImage();
+			Rectangle2D.Double pl = e.getPlace();
+			int iw = im.getWidth(), ih = im.getHeight();
+			double ex = pl.width / iw, ey = pl.height / ih;
+			for (int y = 0; y < ih; y++) {
+				for (int x = 0; x < iw; x++) {
+					int c = im.getRGB(x, y);
+					if ((c >>> 24) == 0) continue;
+					double px = pl.x + x * ex - cx, py = pl.y + y * ey - cy;
+					r.quad(px, py, zUnder, px + ex, py, zUnder, px + ex, py + ey, zUnder, px, py + ey, zUnder, c);
 				}
 			}
 		}

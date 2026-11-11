@@ -122,7 +122,7 @@ public final class Effects {
 		}
 
 		/** It, painted where it goes */
-		Painter painter() {
+		public Painter painter() {
 			return g -> g.drawImage(image, new AffineTransform(place.width / image.getWidth(), 0, 0, place.height / image.getHeight(), place.x,
 					place.y), null);
 		}

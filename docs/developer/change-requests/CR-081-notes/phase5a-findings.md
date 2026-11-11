@@ -190,14 +190,33 @@ shape, and how a shadow on a 3-D drawing is aligned").
     model of the glow's edge either way).
 - **Word's one picture holds them**, drawn under the drawing.
 
-**What this changes in docx4j:**
-- A 3-D drawing's effects are cast by its 3-D picture on the page (section 4). That is Word's only for a front camera.
-  - Word's are the flat drawing's effects, drawn in its plane under it and projected with it.
-  - `Scene3D` can draw them so, as pictures on the drawing's plane behind its face, z-buffered.
-- A 3-D shape's text is the output's, drawn flat over it.
-  - That is Word's for a front camera and with `a:flatTx`.
-  - For another camera, Word turns the text into the picture. docx4j's text is laid out by the output, not by the
-    renderer, so docx4j can report this where it would show.
+**What docx4j does now** (Jason: "yes and yes"):
+- **A 3-D drawing's effects are the flat drawing's, drawn in its plane.** `Effects.draw` casts them from the flat
+  drawing in its frame, as for a flat one. Then:
+  - a soft edge (in the face's place) and an inner shadow (over it) are composited into the face;
+  - the reflection, the preset shadow, the outer shadow and the glow, in Word's order, are drawn by `Scene3D` as
+    pictures on the drawing's plane, behind its back where it has depth, and z-buffered, so that the drawing hides
+    what is behind it;
+  - all of it is in the one picture, as Word's is.
+  - Through docx4j's PDF, against Word's of fxe2:
+
+    | Probe | The drawing | The effect |
+    |---|---|---|
+    | isometricTopUp (and the photo) | 0.991 | 0.930 |
+    | perspectiveContrastingRightFacing | 0.991 | 0.941 |
+    | lon 45 | 0.993 | 0.925 |
+    | obliqueTopLeft with depth | 1.000 | 0.993 |
+    | the blurred shadow | 0.991 | 0.931 |
+    | the reflection | 0.991 | 0.969 |
+    | the glow | 0.990 | 0.822 |
+
+    The shadows hidden behind the drawing are hidden in both.
+  - `Scene3DTest.theEffectsAreInTheDrawingsPlane` compares the renderer's with Word's pictures
+    (`cr081-word-3d-effects.jsonl.gz`, from `export_3d_effects.py`) on a grid a third of a pixel apart. At a pixel's
+    pitch, a sliver a pixel wide turns on the grid's phase (0.99 or 0.76).
+- **A 3-D shape's text is reported where Word would turn it.** Under a camera other than orthographicFront, with text
+  and without a:flatTx, `render.effect.3d_text` is reported (`Scene3DTest.turnedTextIsReported`). docx4j's text is the
+  output's, flat.
 
 ## 6. Not measured yet
 

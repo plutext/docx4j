@@ -78,7 +78,8 @@ final class FOShapes {
 		try {
 			ThemeColors theme = ThemeColors.of(context.getWmlPackage());
 			final Part host = context.getCurrentPart();
-			ShapeRenderer.Drawn drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, relId -> picture(host, relId), hasText(wsp));
+			ShapeRenderer.Drawn drawn = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, cx, cy, relId -> picture(host, relId), hasText(wsp),
+					wsp.getBodyPr() != null && wsp.getBodyPr().getFlatTx() != null);
 			for (String code : drawn.getProblems()) {
 				log.warn(code + ": a DrawingML shape" + (drawn.getOutlines().getDetail() == null ? "" : ", " + drawn.getOutlines().getDetail())
 						+ " (CR-080 D9)");

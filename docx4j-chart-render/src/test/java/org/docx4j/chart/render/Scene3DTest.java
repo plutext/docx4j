@@ -145,15 +145,115 @@ public class Scene3DTest {
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn three = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill + shadow + scene), null,
 				theme, 1828800, 1371600, null);
 		List<Object> items = three.getDrawing().getItems();
-		assertTrue(String.valueOf(items), items.size() == 2);    // its shadow, then it
-		assertTrue(items.get(1) instanceof org.docx4j.chart.render.api.Drawing.Picture);
-		org.docx4j.chart.render.api.Drawing.Picture p = (org.docx4j.chart.render.api.Drawing.Picture) items.get(1);
+		assertTrue(String.valueOf(items), items.size() == 1);    // it, its shadow in it (Word's one picture)
+		assertTrue(items.get(0) instanceof org.docx4j.chart.render.api.Drawing.Picture);
+		org.docx4j.chart.render.api.Drawing.Picture p = (org.docx4j.chart.render.api.Drawing.Picture) items.get(0);
 		assertTrue("wider than its frame: " + p.getInto(), p.getInto().getWidth() > 150);
+		// the shadow, in the drawing's plane and turned with it, makes the picture reach further than the drawing alone
+		org.docx4j.chart.render.api.ShapeRenderer.Drawn alone = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill + scene), null, theme,
+				1828800, 1371600, null);
+		java.awt.geom.Rectangle2D a = ((org.docx4j.chart.render.api.Drawing.Picture) alone.getDrawing().getItems().get(0)).getInto();
+		assertTrue(p.getInto() + " over " + a, p.getInto().getMaxY() > a.getMaxY() + 1 && p.getInto().getMaxX() > a.getMaxX() + 1);
 		assertTrue(three.getProblems().toString(), three.getProblems().contains(Scene3D.SHADING));
 		assertTrue(three.getProblems().toString(), !three.getProblems().contains(org.docx4j.chart.render.api.ShapeRenderer.FLAT_3D));
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn flat = org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(fill), null, theme, 1828800,
 				1371600, null);
 		assertTrue(flat.getDrawing().getItems().get(0) instanceof org.docx4j.chart.render.api.Drawing.Area);
+	}
+
+	/**
+	 * A 3-D drawing's effects are the flat drawing's, in its plane, turned with it (CR-081 phase 5a findings section 5):
+	 * every shape of round 3's fxe2 that Word draws as one 3-D picture (cr081-word-3d-effects.jsonl.gz, from
+	 * export_3d_effects.py), drawn by {@link org.docx4j.chart.render.api.ShapeRenderer} and compared with Word's
+	 * picture on a common grid: the drawing (alpha over 0.75) and the effect (a shadow's alpha about one half; a glow's
+	 * or a reflection's over 0.05, off the drawing), by their overlap. Where Word's effect is hidden behind the drawing
+	 * (a shadow scaled within the frame; one behind an extrusion), docx4j's is too.
+	 */
+	@Test
+	public void theEffectsAreInTheDrawingsPlane() throws Exception {
+		ClassLoader cl = Scene3DTest.class.getClassLoader();
+		List<Map<String, Object>> probes = new ArrayList<Map<String, Object>>();
+		try (InputStream in = new GZIPInputStream(cl.getResourceAsStream("effects/cr081-word-3d-effects.jsonl.gz"));
+				BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+			for (String line; (line = r.readLine()) != null; ) probes.add(Json.object(Json.parse(line)));
+		}
+		assertTrue(probes.size() >= 10);
+		StringBuilder report = new StringBuilder();
+		boolean ok = true;
+		for (Map<String, Object> p : probes) {
+			String note = (String) p.get("note");
+			CTShapeProperties sp = spPr("<a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm><a:prstGeom prst=\"rect\">"
+					+ "<a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val=\"FFE699\"/></a:solidFill>" + p.get("xml"));
+			org.docx4j.chart.render.api.ShapeRenderer.Drawn d = org.docx4j.chart.render.api.ShapeRenderer.draw(sp, null, theme, 1828800, 1371600, null);
+			org.docx4j.chart.render.api.Drawing.Picture mine = null;
+			for (Object o : d.getDrawing().getItems()) if (o instanceof org.docx4j.chart.render.api.Drawing.Picture) mine = (org.docx4j.chart.render.api.Drawing.Picture) o;
+			assertTrue(note, mine != null && d.getDrawing().getItems().size() == 1);
+			Map<String, Object> word = Json.object(p.get("word"));
+			BufferedImage wa = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(java.util.Base64.getDecoder().decode((String) word.get("alpha"))));
+			List<Object> pl = Json.list(word.get("place"));
+			Rectangle2D.Double wp = new Rectangle2D.Double(Json.number(pl.get(0)), Json.number(pl.get(1)), Json.number(pl.get(2)), Json.number(pl.get(3)));
+			Rectangle2D grid = wp.createUnion(mine.getInto());
+			boolean wide = note.contains("glow") || note.contains("reflection");
+			int[] drawing = new int[4], effect = new int[4];        // both, either, Word's, docx4j's
+			// a third of a pixel apart: at a pixel's pitch, a sliver a pixel wide turns on the grid's phase (0.99 or 0.76)
+			for (double y = grid.getMinY(); y < grid.getMaxY(); y += 0.12) {
+				for (double x = grid.getMinX(); x < grid.getMaxX(); x += 0.12) {
+					double m = alpha(mine.getImage(), mine.getInto(), x, y, true), w = alpha(wa, wp, x, y, false);
+					count(drawing, m > 0.75, w > 0.75);
+					boolean me = wide ? m > 0.05 && m <= 0.75 : m > 0.3 && m < 0.7, we = wide ? w > 0.05 && w <= 0.75 : w > 0.3 && w < 0.7;
+					count(effect, me, we);
+				}
+			}
+			double dIou = drawing[0] / (double) Math.max(1, drawing[1]), eIou = effect[0] / (double) Math.max(1, effect[1]);
+			boolean hidden = effect[2] < 18000;                    // Word's effect behind the drawing: a few edge pixels
+			double need = note.contains("glow") ? 0.78 : 0.88;
+			boolean pass = dIou >= 0.97 && (hidden ? effect[1] < 36000 : eIou >= need);
+			ok &= pass;
+			report.append(String.format(Locale.ROOT, "%n  %s %s: drawing %.3f, effect %.3f (Word %d samples, docx4j %d)%s%s", p.get("probe"), note, dIou, eIou,
+					effect[2], effect[3],
+					hidden ? " (hidden, " + effect[1] + " samples either)" : "", pass ? "" : "  FAILS"));
+		}
+		System.out.println("Scene3DTest effects:" + report);
+		assertTrue(report.toString(), ok);
+	}
+
+	/**
+	 * A 3-D shape's text (CR-081 phase 5a findings section 5): Word turns it into the 3-D picture under any camera but
+	 * orthographicFront unless its bodyPr has a:flatTx; docx4j's is the output's, flat, so that is reported
+	 */
+	@Test
+	public void turnedTextIsReported() throws Exception {
+		String fill = "<a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"1828800\" cy=\"1371600\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/>"
+				+ "</a:prstGeom><a:solidFill><a:srgbClr val=\"FFE699\"/></a:solidFill>";
+		String iso = "<a:scene3d><a:camera prst=\"isometricTopUp\"/><a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d><a:sp3d/>";
+		String front = "<a:scene3d><a:camera prst=\"orthographicFront\"/><a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d>"
+				+ "<a:sp3d><a:bevelT w=\"76200\" h=\"76200\"/></a:sp3d>";
+		String turned = "<a:scene3d><a:camera prst=\"orthographicFront\"><a:rot lat=\"0\" lon=\"2700000\" rev=\"0\"/></a:camera>"
+				+ "<a:lightRig rig=\"threePt\" dir=\"t\"/></a:scene3d><a:sp3d/>";
+		assertTrue(problems(fill + iso, true, false).contains(Scene3D.TEXT_3D));
+		assertTrue(problems(fill + turned, true, false).contains(Scene3D.TEXT_3D));
+		assertTrue(!problems(fill + iso, true, true).contains(Scene3D.TEXT_3D));     // a:flatTx
+		assertTrue(!problems(fill + front, true, false).contains(Scene3D.TEXT_3D));  // a front camera
+		assertTrue(!problems(fill + iso, false, false).contains(Scene3D.TEXT_3D));   // no text
+	}
+
+	private static List<String> problems(String sp, boolean text, boolean flat) throws Exception {
+		return org.docx4j.chart.render.api.ShapeRenderer.draw(spPr(sp), null, theme, 1828800, 1371600, null, text, flat).getProblems();
+	}
+
+	private static void count(int[] c, boolean a, boolean b) {
+		if (a && b) c[0]++;
+		if (a || b) c[1]++;
+		if (b) c[2]++;
+		if (a) c[3]++;
+	}
+
+	/** A picture's alpha at a point of the frame, 0 outside it (argb: docx4j's; else a greyscale alpha, Word's) */
+	private static double alpha(BufferedImage img, Rectangle2D place, double x, double y, boolean argb) {
+		int ix = (int) Math.floor((x - place.getX()) / place.getWidth() * img.getWidth());
+		int iy = (int) Math.floor((y - place.getY()) / place.getHeight() * img.getHeight());
+		if (ix < 0 || iy < 0 || ix >= img.getWidth() || iy >= img.getHeight()) return 0;
+		return argb ? (img.getRGB(ix, iy) >>> 24) / 255.0 : (img.getRaster().getSample(ix, iy, 0) & 0xff) / 255.0;
 	}
 
 	/** The picture's 0.5 alpha crossings, each row's and column's first and last, points from the frame's centre */
