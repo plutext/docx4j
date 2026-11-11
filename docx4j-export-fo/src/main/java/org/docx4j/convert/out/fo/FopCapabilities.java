@@ -225,7 +225,15 @@ public final class FopCapabilities {
 		/** {@code docx4j:tab-past-cell} on fo:root: a tab reaching a custom left stop past its cell's edge
 		 *  is honoured, as Word does below mode 15 (fork CR-038; probe tab-trailing-narrow-cell).
 		 *  {@link WordLayoutFixups}.  @since 17.3.6 */
-		TAB_PAST_CELL("tab-past-cell");
+		TAB_PAST_CELL("tab-past-cell"),
+		/** Lines in segments either side of an obstacle wrapped square on both sides (fork CR-024 phase B, r74;
+		 *  Enterprise CR-001 &#xa7;6.6 items 10 and 63): the band's free segments, each at least 18pt on the
+		 *  raw gap, Word mode's lines running in them (a word fitting none below the object, a first-line
+		 *  indent to the first segment used, a line break to the next segment, tabs from the column), a
+		 *  paragraph's fill and borders per segment.  With it docx4j writes a picture anchored in its
+		 *  paragraph and wrapped square on both sides as such an obstacle, not a side float
+		 *  ({@link WordLayoutFixups}).  @since 17.3.7 */
+		LINE_SEGMENTS("line-segments");
 
 		private final String key;
 

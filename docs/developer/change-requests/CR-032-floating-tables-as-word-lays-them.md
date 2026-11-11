@@ -1,6 +1,6 @@
 # CR-032: floating tables laid out as Word lays them - the band at its offset, the wide table's band, the paragraphs behind it
 
-Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5's docx4j side DONE 2026-10-15 (page- and margin-anchored pictures, text boxes and tables wrapped on the fork's obstacles, §4.5; gated on the fork's r31 to r35, last pair b244/b245: 13 movers, no line lost; frames added the same day on Word's rule read from probe frame-page-bands, §4.5.2, gate b268 on r43: the probe +32 lines, nothing lost), active only on a renderer with the capability obstacles-in-the-line: fop/CR-024 phase A merged to 2.11-docx4j.7 on 2026-10-15 (f98834c2c), unreleased; phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
+Status: IN PROGRESS - phase 4 DONE 2026-10-15 (openers in the flow, §4.4; probes read; gate b232: 1616 +19 lines, nothing else moved); phase 5's docx4j side DONE 2026-10-15 (page- and margin-anchored pictures, text boxes and tables wrapped on the fork's obstacles, §4.5; gated on the fork's r31 to r35, last pair b244/b245: 13 movers, no line lost; frames added the same day on Word's rule read from probe frame-page-bands, §4.5.2, gate b268 on r43: the probe +32 lines, nothing lost; paragraph-anchored pictures with text on both sides added 2026-11-11 on the fork's line segments, §4.5.4, gates b440/b441 on r78: 3 movers, all toward Word), active only on a renderer with the capability obstacles-in-the-line: fop/CR-024 phase A merged to 2.11-docx4j.7 on 2026-10-15 (f98834c2c), unreleased; phases 1 and 2 SHIPPED in docx4j 17.3.2 (Maven Central, 2026-10-09), on 2.11-docx4j.6 (the export-fo bump
 409392c9a); phase 2 DONE 2026-10-08 (docx4j side in three commits gated on the fork's float-offset:
 fox:float-offset on a floating table's float, each float of an anchor at its own offset, a text box's band,
 anchored-picture and framePr floats; fop/CR-023 merged to 2.11-docx4j.6 at 3339fc1cf, unreleased, so the
@@ -623,6 +623,45 @@ b273 on r46 with the gate-b268 jars against b271 (r45; the probes against b272, 
 probe -2, 0 movers against b271): the four corpora 0 movers, events equal; table-floating-page-border-above 0.9876
 to 1.0000 (+2) and -2 0.9556 to 1.0000 (+6), nothing else; all 18 cases at Word's lines and rules within 0.25pt.
 The letter: the 42pt offset gone, its rule at 307.7pt (Word 308.3pt), the body within 0.8pt.
+
+#### 4.5.4 Paragraph-anchored pictures with text on both sides, on the fork's line segments (2026-11-11)
+
+Jason, 2026-11-11: "docx4j should write paragraph-anchored pictures with text on both sides as obstacles for the
+fork's new layout". The fork's CR-024 phase B (capability `line-segments`, the 35th, merged to 2.12-docx4j.2) lays a
+line in segments either side of an obstacle, as Word does. Word's rules for it were read on docx4j-cc's probes
+fb10 to fb40 (docx4j `CR-080-notes/bothsides-findings.md`; Enterprise CR-001 §6.6 item 10).
+
+**As built.** On a renderer with `line-segments` (`FopCapabilities.LINE_SEGMENTS`, with `obstacles-in-the-line`),
+`WordLayoutFixups.anchorImage` writes a picture as an obstacle, not a side float, when it:
+- is anchored in its paragraph (`wp:anchor`),
+- has `wp:wrapSquare` (a new hint, `docx4j-anchor-wrap`, from `WordXmlPictureE20`; not tight or through),
+- wraps text on both sides (`bothSides`, or no wrapText),
+- and stands in the body's flow, not in a list item.
+
+The picture goes in a positioned container at its paragraph, with `fox:wrap="square"`, `fox:wrap-sides="both"` and
+its distances, as §4.5's page-anchored objects are. Elsewhere it stays a side float.
+- **wrapTight is left out.** As obstacles, 8371's seven behind-text wrapTight pictures lost 516 lines (b432's first
+  run).
+- **A list item's picture stays a float.** The fork's item 69: where no legal break precedes the item, the body
+  would start a line below its label.
+
+**Probes** (in segments, line by line against Word): fb10 342/372 (as floats 105/418), fb20 976/976 (574/980), fb30
+91/91 (61/99), fb40 247/296 (92/313).
+
+**Gates.** b431/b432 on r74 found five renderer faults; the fork fixed them in r75 to r78:
+- an obstacle in a list item crashed;
+- an obstacle crossing the page's foot let the lines beside it run past the foot;
+- a later paragraph's obstacle was drawn displaced;
+- a band was lost where a side float came first on the page;
+- blank lines beside a band reported overflow.
+
+The record is gates b433 to b441 (Enterprise register). On r78:
+- **Control b440** against b431: 5075 +1 toward Word, every event count equal.
+- **Candidate b441** against b440: chart-box-floating +11 (to 1.0000), image-anchored +7 (0.9545), 2823 +2. No line
+  is lost; 719's and 11256's linebig events fall.
+
+Open, in the fork: a long word that starts the first line beside a band isn't sent below it (CR-024 §13.9 item 7;
+fb40's G2).
 
 ## 5. Gates and acceptance
 

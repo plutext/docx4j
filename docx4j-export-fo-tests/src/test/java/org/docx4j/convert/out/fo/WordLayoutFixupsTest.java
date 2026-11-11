@@ -1691,11 +1691,67 @@ public class WordLayoutFixupsTest {
 
 	// ------------------------------------------------- CR-032 phase 5: fop/CR-024's obstacles
 
-	/** On the obstacles renderer, the fixups' output; the switch restored after. */
+	/** On the obstacles renderer (without the line segments), the fixups' output; the switches restored after. */
 	private static String withObstacles(boolean on, String fo) {
+		return withObstacles(on, false, fo);
+	}
+
+	/** On the obstacles renderer, with or without fork CR-024 phase B's line segments. */
+	private static String withObstacles(boolean on, boolean segments, String fo) {
 		WordLayoutFixups.obstaclesForTest = on;
+		WordLayoutFixups.lineSegmentsForTest = segments;
 		try {
 			return WordLayoutFixups.apply(fo, 15);
+		} finally {
+			WordLayoutFixups.obstaclesForTest = null;
+			WordLayoutFixups.lineSegmentsForTest = null;
+		}
+	}
+
+	/**
+	 * A picture anchored in its paragraph and wrapped square on both sides, on the fork's line segments (CR-024
+	 * phase B): an obstacle where Word puts it, at its offset from the paragraph, which the band's lines wrap round
+	 * on both sides (Word's text on both sides of an object: CR-080-notes/bothsides-findings.md), its rectangle grown
+	 * by its distances; not a side float.  @since 17.3.7
+	 */
+	@Test
+	public void aParagraphAnchoredPictureWithTextOnBothSidesIsAnObstacleOnLineSegments() {
+		String out = withObstacles(true, true, flow(anchored("square", "169", "p:12", SQUARE + " docx4j-anchor-sides=\"both\"")));
+		assertTrue(out, out.contains("absolute-position=\"absolute\""));
+		assertTrue(out, out.contains("top=\"12pt\""));
+		assertTrue(out, out.contains("left=\"169pt\""));
+		assertTrue(out, out.contains("fox:wrap=\"square\""));
+		assertTrue(out, out.contains("fox:wrap-sides=\"both\""));
+		assertTrue("before after start end", out.contains("fox:wrap-distances=\"0pt 0pt 9pt 9pt\""));
+		assertFalse(out, out.contains("<fo:float"));
+		assertFalse("hints stripped", out.contains("docx4j-anchor"));
+		// no wrapText (bothSides, the schema's default) is the same
+		assertTrue(withObstacles(true, true, flow(anchored("square", "169", "p:12", SQUARE))).contains("fox:wrap-sides=\"both\""));
+	}
+
+	private static final String SQUARE = " docx4j-anchor-wrap=\"square\"";
+
+	/** Without the line segments, or wrapped on one side only, it floats as before.  @since 17.3.7 */
+	@Test
+	public void aParagraphAnchoredPictureFloatsWithoutLineSegments() {
+		String without = withObstacles(true, false, flow(anchored("square", "169", "p:12", SQUARE + " docx4j-anchor-sides=\"both\"")));
+		assertTrue(without, without.contains("<fo:float"));
+		assertFalse(without, without.contains("fox:wrap"));
+		String oneSide = withObstacles(true, true, flow(anchored("square", "169", "p:12", SQUARE + " docx4j-anchor-sides=\"left\"")));
+		assertTrue(oneSide, oneSide.contains("<fo:float"));
+		assertFalse(oneSide, oneSide.contains("fox:wrap"));
+		// wrapTight and wrapThrough go round a polygon, not measured on both sides
+		String tight = withObstacles(true, true, flow(anchored("square", "169", "p:12", " docx4j-anchor-wrap=\"tight\" docx4j-anchor-sides=\"both\"")));
+		assertTrue(tight, tight.contains("<fo:float"));
+		// nor in a list item, which the fork's renderer can't yet lay out round one
+		String listed = withObstacles(true, true, flow("<fo:list-block><fo:list-item><fo:list-item-label><fo:block>1.</fo:block></fo:list-item-label>"
+				+ "<fo:list-item-body>" + anchored("square", "169", "p:12", SQUARE + " docx4j-anchor-sides=\"both\"")
+				+ "</fo:list-item-body></fo:list-item></fo:list-block>"));
+		assertFalse(listed, listed.contains("fox:wrap"));
+		// the obstacles turned off (docx4j.convert.out.fo.wrapPageAnchored=false) turn the segments off too
+		WordLayoutFixups.obstaclesForTest = false;
+		try {
+			assertFalse(WordLayoutFixups.lineSegments());
 		} finally {
 			WordLayoutFixups.obstaclesForTest = null;
 		}

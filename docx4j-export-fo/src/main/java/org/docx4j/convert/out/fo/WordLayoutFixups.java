@@ -967,6 +967,9 @@ public final class WordLayoutFixups {
 	public static final String HINT_ANCHOR_CELL = "docx4j-anchor-cell";
 	/** A square, tight or through wrap's side (WordXmlPictureE20.HINT_ANCHOR_SIDES).  @since 17.3.3 */
 	public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
+	/** Which wrap text may run beside: "square", "tight" or "through" (WordXmlPictureE20.HINT_ANCHOR_WRAP).
+	 *  @since 17.3.7 */
+	public static final String HINT_ANCHOR_WRAP = "docx4j-anchor-wrap";
 	/** An anchor its cell lays out and wraps the cell's text round: how far below its foot the
 	 *  cell's text reaches (WordXmlPictureE20.HINT_ANCHOR_CELL_FOOT; {@link #growRowToContain}).
 	 *  @since 17.3.3 */
@@ -978,7 +981,7 @@ public final class WordLayoutFixups {
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES,
-			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF, HINT_ANCHOR_EFFECT };
+			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF, HINT_ANCHOR_EFFECT, HINT_ANCHOR_WRAP };
 
 	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
 	static Boolean obstaclesForTest;
@@ -998,6 +1001,19 @@ public final class WordLayoutFixups {
 		if (obstaclesForTest != null) return obstaclesForTest;
 		return FopCapabilities.has(FopCapabilities.Capability.OBSTACLES_IN_THE_LINE)
 				&& org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.fo.wrapPageAnchored", true);
+	}
+
+	/** Tests only: whether the renderer has the fork's line segments, null to ask it.  @since 17.3.7 */
+	static Boolean lineSegmentsForTest;
+
+	/**
+	 * Whether a picture anchored in its paragraph and wrapped square on both sides is written as an obstacle
+	 * (fork CR-024 phase B, {@link FopCapabilities.Capability#LINE_SEGMENTS}), where the fork's obstacles are
+	 * written at all ({@link #obstaclesInTheLine()}).  @since 17.3.7
+	 */
+	static boolean lineSegments() {
+		if (lineSegmentsForTest != null) return lineSegmentsForTest;
+		return FopCapabilities.has(FopCapabilities.Capability.LINE_SEGMENTS) && obstaclesInTheLine();
 	}
 
 	/**
@@ -1022,6 +1038,14 @@ public final class WordLayoutFixups {
 		}
 		container.setAttributeNS(org.docx4j.fonts.RunFontSelector.FOX_NS, "fox:wrap-distances",
 				pt(Math.max(0, before)) + " " + pt(Math.max(0, after)) + " " + pt(Math.max(0, start)) + " " + pt(Math.max(0, end)));
+	}
+
+	/** Whether the element is in a list item's label or body.  @since 17.3.7 */
+	private static boolean inListItem(Element el) {
+		for (Node n = el.getParentNode(); n instanceof Element; n = n.getParentNode()) {
+			if (isFo((Element) n, "list-item")) return true;
+		}
+		return false;
 	}
 
 	/** Whether the element is in the body's flow: not in a header or footer, a table cell, a
@@ -1945,6 +1969,23 @@ public final class WordLayoutFixups {
 		}
 
 		Element wrapper;
+		/* A picture anchored in its paragraph and wrapped square on both sides has text on both sides of it
+		 * in Word: each line in the band runs in the segments left and right of it, each at least 18pt on the
+		 * raw gap (docx4j CR-080-notes/bothsides-findings.md, fop/CR-024 section 12).  A side float leaves one
+		 * side empty; on the fork's line segments the picture is an obstacle positioned where Word puts it
+		 * instead, which the lines wrap round on both sides, as CR-032 phase 5's page-anchored ones are.
+		 * wrapSquare only: Word wraps tight and through round the picture's polygon, which isn't measured on
+		 * both sides (corpus 8371's seven pictures, wrapTight behind the text in mode 14, as obstacles took it
+		 * from 68 pages to 81).  Not in a list item, where the fork's renderer can't yet lay one out (corpus
+		 * 11741: LMiter's NoSuchElementException).  @since 17.3.7 */
+		if ("square".equals(kind) && lineSegments() && inBodyFlow(para) && !inListItem(para)
+				&& "square".equals(g.getAttribute(HINT_ANCHOR_WRAP))
+				&& ("both".equals(g.getAttribute(HINT_ANCHOR_SIDES)) || g.getAttribute(HINT_ANCHOR_SIDES).length() == 0)) {
+			wrapper = positioned(doc, holder, x, off, w, h, false, ml);
+			wrapAround(firstElementChild(wrapper), "square", "both", distT, distB, distL, distR);
+			insertAnchorWrapper(para, wrapper);
+			return;
+		}
 		if ("square".equals(kind)) {
 			boolean right = x + w / 2 > col / 2;
 			wrapper = doc.createElementNS(FO_NS, "fo:float");

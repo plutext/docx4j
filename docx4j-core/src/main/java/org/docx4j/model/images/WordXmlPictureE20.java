@@ -657,6 +657,10 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     /** A square, tight or through wrap's side: "both", "left", "right" or "largest" (the
      *  wrapText of wp:wrapSquare and its kin).  @since 17.3.3 */
     public static final String HINT_ANCHOR_SIDES = "docx4j-anchor-sides";
+    /** Which of the three wraps text may run beside: "square", "tight" or "through" (the anchor's
+     *  wp:wrapSquare, wp:wrapTight or wp:wrapThrough; HINT_ANCHOR says "square" for all three).
+     *  @since 17.3.7 */
+    public static final String HINT_ANCHOR_WRAP = "docx4j-anchor-wrap";
     /** On an object Word lays out in a table cell and wraps the cell's text round (square,
      *  tight or through): how far below the object's foot the cell's text reaches, in pt -
      *  its distB in mode 15, 0 below.  Word grows the row to that.  @since 17.3.3 */
@@ -800,6 +804,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    	if (wrapText!=null) {
 	    		g.setAttribute(HINT_ANCHOR_SIDES, wrapText==org.docx4j.dml.wordprocessingDrawing.STWrapText.BOTH_SIDES
 	    				? "both" : wrapText.value());
+	    	}
+	    	if ("square".equals(kind)) {
+	    		g.setAttribute(HINT_ANCHOR_WRAP, anchor.getWrapSquare()!=null ? "square" : anchor.getWrapTight()!=null ? "tight" : "through");
 	    	}
 	    	g.setAttribute(HINT_ANCHOR_COL, fmt(colW));
 	    	g.setAttribute(HINT_ANCHOR_ML, fmt(mL));
