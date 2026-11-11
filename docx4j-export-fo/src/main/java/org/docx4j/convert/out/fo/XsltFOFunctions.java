@@ -3886,6 +3886,24 @@ public class XsltFOFunctions {
 	/** {@link #HINT_TAB} value marking the leader of a centre {@code w:ptab}. @since 17.2.0 */
 	public static final String TAB_PTAB_CENTER = "ptab-center";
 
+	/** {@link #HINT_TAB} value marking a leading tab's fixed leader, which the renderer measures again only beside
+	 *  an obstacle ({@link #fixedTabBesideObstacle()}).  @since 17.3.7 */
+	public static final String TAB_FIXED = WordLayoutFixups.TAB_FIXED;
+
+	/** Tests only: whether the renderer measures a leading tab's fixed leader again beside an obstacle, null to
+	 *  ask it.  @since 17.3.7 */
+	static Boolean fixedTabBesideObstacleForTest;
+
+	/**
+	 * Whether a leading tab's fixed leader is marked {@link #TAB_FIXED}: the renderer has the fork's
+	 * {@link FopCapabilities.Capability#FIXED_TAB_BESIDE_OBSTACLE}.  A renderer without it takes any mark for a
+	 * tab it lays out itself, so the mark waits for the hook.  @since 17.3.7
+	 */
+	static boolean fixedTabBesideObstacle() {
+		if (fixedTabBesideObstacleForTest != null) return fixedTabBesideObstacleForTest;
+		return FopCapabilities.has(FopCapabilities.Capability.FIXED_TAB_BESIDE_OBSTACLE);
+	}
+
 	/**
 	 * The FO for a right {@code w:ptab}, for both pathways.
 	 *
@@ -4106,6 +4124,13 @@ public class XsltFOFunctions {
 			if (leadingLength.length()>0) {
 				leader.setAttribute("leader-pattern", "space");
 				leader.setAttribute("leader-length", leadingLength);
+				/* Its length assumes the line starts at the paragraph's start.  Beside an obstacle the
+				 * line can start in a segment past it, and Word then measures the tab from the margin,
+				 * the stops under the object skipped (round fop-cr024-bothsides-r4: K1 288.1 where the
+				 * length gave 292.0; K2's stop at 226.8pt 298.9, not 482.8).  The mark lets the renderer
+				 * measure it again there, from the block's stops, which it then gets (containsTabLeader);
+				 * on every other line the length stands.  @since 17.3.7 */
+				if (fixedTabBesideObstacle()) leader.setAttribute(HINT_TAB, TAB_FIXED);
 			} else {
 				leader.setAttribute("leader-length", "0pt");
 				leader.setAttribute("leader-pattern", tabLeaderPattern(effectivePPr));

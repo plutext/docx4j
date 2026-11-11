@@ -233,7 +233,14 @@ public final class FopCapabilities {
 		 *  paragraph's fill and borders per segment.  With it docx4j writes a picture anchored in its
 		 *  paragraph and wrapped square on both sides as such an obstacle, not a side float
 		 *  ({@link WordLayoutFixups}).  @since 17.3.7 */
-		LINE_SEGMENTS("line-segments");
+		LINE_SEGMENTS("line-segments"),
+		/** {@code docx4j:tab="fixed"} on a leading tab's fixed leader (fork CR-024 section 13.9; Enterprise CR-001
+		 *  &#xa7;6.6 item 10): its length as written, except on a line beside an obstacle, where Word measures the
+		 *  tab from the margin and skips the stops under the object (round fop-cr024-bothsides-r4, docx4j
+		 *  CR-080-notes/bothsides-findings.md &#xa7;6), and the renderer does so from the block's stops.  With it
+		 *  docx4j marks such a leader ({@link XsltFOFunctions}); without it the leader is written as before, since
+		 *  a renderer without the hook takes any mark for a tab it lays out itself.  @since 17.3.7 */
+		FIXED_TAB_BESIDE_OBSTACLE("fixed-tab-beside-obstacle");
 
 		private final String key;
 

@@ -661,7 +661,28 @@ The record is gates b433 to b441 (Enterprise register). On r78:
   is lost; 719's and 11256's linebig events fall.
 
 Open, in the fork: a long word that starts the first line beside a band isn't sent below it (CR-024 §13.9 item 7;
-fb40's G2).
+fb40's G2). Closed the same day: the fork's r80, gates b444/b445, fb40's G2 at Word's.
+
+**A paragraph that starts with a tab or an inline picture beside a narrow gap** (2026-11-11; Jason: "measure what
+Word does with a paragraph that starts with a tab or an inline picture beside a too-narrow gap", "build docx4j's half
+of the leading-tab fix", "commit it").
+- **Word** (round fop-cr024-bothsides-r4, `CR-080-notes/bothsides-findings.md` §6):
+  - a leading tab, its line starting in a segment, goes to the next stop counted from the margin, the stops under the
+    object skipped;
+  - a leading picture is set as a word.
+- **docx4j's half.** docx4j writes a leading tab to a left or default stop as a leader of fixed length, from the
+  paragraph's start, and that length is wrong when the line starts past the object.
+  - On the fork's 36th capability, `fixed-tab-beside-obstacle`, `XsltFOFunctions.tabToFO` marks that leader
+    `docx4j:tab="fixed"`, keeping its length, and its block gets the tab stops.
+  - The renderer measures it from the margin only on a line beside an obstacle; elsewhere the length stands.
+  - Without the capability nothing is marked: a renderer without it takes any mark for a tab it lays out.
+  - `WordLayoutFixups.tabsAfterCheckBoxes` keeps a tab after a check box a laid-out tab.
+  - Test: `LeadingTabMarkTest`.
+- **The fork's half** is r81 (fop CR-024 §13.10), merged to 2.12-docx4j.2 at 66905a8d2.
+- **Gates:**
+  - b446 (on r80, without the capability) against b445: 0 movers, nothing marked;
+  - b447 and b448 on r81 against b444 and b446: 0 movers, with 2,703 leading tabs marked in the corpora;
+  - fb50: all 18 cases within 0.3pt of Word's.
 
 ## 5. Gates and acceptance
 

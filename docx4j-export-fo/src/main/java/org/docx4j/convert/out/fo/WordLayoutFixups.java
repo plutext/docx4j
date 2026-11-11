@@ -516,6 +516,9 @@ public final class WordLayoutFixups {
 	/** on an fo:leader standing in for a w:tab (XsltFOFunctions.tabToFO): the line
 	 *  manager gives it its width.  @since 17.0.5 */
 	public static final String HINT_TAB = "docx4j-tab";
+	/** {@link #HINT_TAB}'s value on a leading tab's fixed leader, whose length stands but beside an
+	 *  obstacle (FopCapabilities.Capability.FIXED_TAB_BESIDE_OBSTACLE).  @since 17.3.7 */
+	public static final String TAB_FIXED = "fixed";
 	/** on the paragraph block of a paragraph holding a tab: its custom tab stops,
 	 *  "pos:align:leader;..." in twips from the left margin.  @since 17.0.5 */
 	public static final String HINT_TABS = "docx4j-tabs";
@@ -4011,7 +4014,9 @@ public final class WordLayoutFixups {
 		for (Element object : elements(doc, "instream-foreign-object")) {
 			if (!isCheckBox(object)) continue;
 			Element leader = leaderAfter(object);
-			if (leader != null && !leader.hasAttribute(HINT_TAB) && leader.hasAttribute("leader-length")) {
+			// a fixed leader, marked TAB_FIXED or not: laid out from the box's end as before
+			if (leader != null && (!leader.hasAttribute(HINT_TAB) || TAB_FIXED.equals(leader.getAttribute(HINT_TAB)))
+					&& leader.hasAttribute("leader-length")) {
 				leader.setAttribute("leader-length", "0pt");
 				leader.setAttribute("leader-alignment", "reference-area");
 				leader.setAttribute(HINT_TAB, "1");
