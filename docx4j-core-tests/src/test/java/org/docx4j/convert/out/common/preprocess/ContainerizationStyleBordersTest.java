@@ -85,6 +85,37 @@ public class ContainerizationStyleBordersTest {
 		assertEquals("space before", 1, boxes(box, box + "<w:spacing w:before=\"240\"/>"));
 	}
 
+	/** Borders with no side and a shading that draws nothing are none: no box, no container (an ONLYOFFICE document's
+	 *  empty w:pBdr in its document defaults and every style put each run of paragraphs in one).  One side drawn is a
+	 *  box; and sides all none keep their container (corpus document 1654 depends on it).  @since 17.3.7 */
+	@Test
+	public void bordersAndShadingThatDrawNothingMakeNoContainer() throws Exception {
+		assertEquals("empty pBdr", 2, boxes("<w:pBdr/>", "<w:pBdr/>"));
+		assertEquals("every side none or nil: still a container", 1, boxes("<w:pBdr><w:top w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+				+ "<w:bottom w:val=\"nil\"/></w:pBdr>", "<w:pBdr><w:top w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+				+ "<w:bottom w:val=\"nil\"/></w:pBdr>"));
+		assertEquals("automatic shading", 2, boxes("<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"auto\"/>",
+				"<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"auto\"/>"));
+		String bottom = "<w:pBdr><w:top w:val=\"none\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"1\" w:color=\"auto\"/></w:pBdr>";
+		assertEquals("one side drawn", 1, boxes(bottom, bottom));
+		String grey = "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"D9D9D9\"/>";
+		assertEquals("a fill", 1, boxes(grey, grey));
+
+		// the document defaults' empty w:pBdr, under every paragraph
+		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
+		org.docx4j.wml.Styles styles = pkg.getMainDocumentPart().getStyleDefinitionsPart().getJaxbElement();
+		styles.getDocDefaults().getPPrDefault().getPPr().setPBdr(new org.docx4j.wml.PPrBase.PBdr());
+		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(
+				"<w:document " + W + "><w:body>"
+				+ "<w:p><w:pPr><w:pStyle w:val=\"Heading1\"/></w:pPr><w:r><w:t>heading</w:t></w:r></w:p>"
+				+ "<w:p><w:r><w:t>body</w:t></w:r></w:p><w:p><w:r><w:t>body</w:t></w:r></w:p>"
+				+ "</w:body></w:document>"));
+		Containerization.process(pkg);
+		java.util.List<Object> body = pkg.getMainDocumentPart().getJaxbElement().getBody().getContent();
+		assertEquals(3, body.size());
+		for (Object o : body) assertTrue(XmlUtils.unwrap(o) instanceof org.docx4j.wml.P);
+	}
+
 	private static int boxes(String firstPPr, String secondPPr) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		pkg.getMainDocumentPart().setJaxbElement((Document)XmlUtils.unmarshalString(

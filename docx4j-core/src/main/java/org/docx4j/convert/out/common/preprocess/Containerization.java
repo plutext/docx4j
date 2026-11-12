@@ -247,8 +247,20 @@ public class Containerization {
 				currentShading = null;
 				PPr pPr = effectivePPr(paragraph, resolver);
 				if (pPr != null) {
-					currentBorders = pPr.getPBdr();
-					currentShading = pPr.getShd();
+					/* Borders with no side at all, and a shading that draws nothing, are none: no
+					 * box to draw, so no container.  ONLYOFFICE writes an empty w:pBdr in the
+					 * document defaults and in every style; each paragraph's effective w:pBdr was
+					 * then a PBdr with no side, and every run of paragraphs between two indent
+					 * changes went into one container, which took the first paragraph's bold, colour
+					 * and size for all of them (a contract template: clauses 11 to 15, both signature
+					 * blocks and Schedule 2 bold dark blue under a Heading; the writers no longer
+					 * pass those on either).  A w:pBdr whose sides are all none draws nothing too,
+					 * but keeps its container: corpus document 1654's table style has one, and its
+					 * vertically centred cells under w:hideMark come out as Word's only with the
+					 * container round their trailing empty paragraph (measured 2026-11-12: without
+					 * it, 8 lines 10.6pt off Word's).  @since 17.3.7 */
+					currentBorders = noSides(pPr.getPBdr()) ? null : pPr.getPBdr();
+					currentShading = drawsShading(pPr.getShd(), theme) ? pPr.getShd() : null;
 				}
 
 				/* Word boxes adjacent paragraphs together only where their borders are the same in every
@@ -510,6 +522,18 @@ public class Containerization {
 
 	private static java.math.BigInteger twips(java.math.BigInteger v) {
 		return v == null ? java.math.BigInteger.ZERO : v;
+	}
+
+	/** Whether the borders have no side at all (ONLYOFFICE's empty w:pBdr).  @since 17.3.7 */
+	static boolean noSides(PBdr pBdr) {
+		return pBdr != null && pBdr.getTop() == null && pBdr.getBottom() == null && pBdr.getLeft() == null
+				&& pBdr.getRight() == null && pBdr.getBetween() == null && pBdr.getBar() == null;
+	}
+
+	/** Whether the shading draws a fill, as the writers draw it (its fill or theme fill; automatic is none, and the
+	 *  pattern isn't drawn).  @since 17.3.7 */
+	static boolean drawsShading(CTShd shd, ThemeColors theme) {
+		return shd != null && WordColors.fill(shd, theme) != null;
 	}
 
 	private static boolean bordersChanged(PBdr currentBorders, PBdr lastBorders ) {

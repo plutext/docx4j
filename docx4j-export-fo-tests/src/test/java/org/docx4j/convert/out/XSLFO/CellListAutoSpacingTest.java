@@ -116,4 +116,24 @@ public class CellListAutoSpacingTest extends AbstractXSLFOTest {
 			assertEquals("space-after of the plain paragraph", 0.0, pt(block.getAttribute("space-after")), 0.01);
 		}
 	}
+
+	/**
+	 * A paragraph after the list a cell opens with isn't at the cell's top: it keeps its 14pt of auto spacing before
+	 * (corpus document 1654: Word's lines there are where 14pt puts them; docx4j, taking the cell's first child block
+	 * for its first paragraph, dropped it).  @since 17.3.7
+	 */
+	@Test
+	public void aParagraphAfterTheCellsListKeepsItsAutoSpacingBefore() throws Exception {
+		for (int flags : new int[] { Docx4J.FLAG_NONE, Docx4J.FLAG_EXPORT_PREFER_XSL }) {
+			org.w3c.dom.Document doc = fo(cell("<w:p><w:pPr>" + NUM + "</w:pPr><w:r><w:t>item</w:t></w:r></w:p>", plain("after the list")), flags);
+			Element second = (Element) doc.getElementsByTagNameNS(FO, "table-cell").item(1);
+			Element after = null;
+			NodeList blocks = second.getElementsByTagNameNS(FO, "block");
+			for (int i = 0; i < blocks.getLength(); i++) {
+				if (blocks.item(i).getTextContent().contains("after the list")) after = (Element) blocks.item(i);
+			}
+			assertTrue("found", after != null);
+			assertEquals("space-before of the paragraph after the list" + flags, 14.0, pt(after.getAttribute("space-before")), 0.01);
+		}
+	}
 }

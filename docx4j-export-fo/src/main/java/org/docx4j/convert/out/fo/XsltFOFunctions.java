@@ -113,6 +113,7 @@ public class XsltFOFunctions {
         		 true);
 
 		applySdtContainerMargins(docfrag, tag);
+		dropContainerInheritedText(docfrag);
 		resetContainerIndents(docfrag, tag);
 		dropContainerKeeps(docfrag);
 		borderAgainstHangingIndent(docfrag);
@@ -135,6 +136,7 @@ public class XsltFOFunctions {
 		DocumentFragment docfrag = createBlock(context, pPrDirect, pStyleVal, childResults, true);
 
 		applySdtContainerMargins(docfrag, tag);
+		dropContainerInheritedText(docfrag);
 		resetContainerIndents(docfrag, tag);
 		dropContainerKeeps(docfrag);
 		borderAgainstHangingIndent(docfrag);
@@ -226,6 +228,31 @@ public class XsltFOFunctions {
 			if (name.startsWith("keep-together") || name.startsWith("keep-with-next")) keeps.add(name);
 		}
 		for (String name : keeps) block.removeAttribute(name);
+	}
+
+	/**
+	 * Inherited properties of a container's first paragraph which the container itself has no use for (it holds blocks,
+	 * not text) and which its other paragraphs would take: the text's colour, weight, style, variant, decoration,
+	 * transform and letter spacing, and the alignment.  A paragraph block sets these only where
+	 * they aren't the defaults (in the corpora's FOs, 98.5% of paragraph blocks have no font-weight and 91% no color), so
+	 * under a container built from a bold, coloured heading every paragraph after it was bold and coloured: an
+	 * ONLYOFFICE contract's clauses, signature blocks and schedule in a Heading's bold dark blue.  The container now
+	 * leaves them to the paragraphs, which take them as they would outside it.  Its size, font family and line height
+	 * stay: every paragraph block sets its own.  So does its text-indent: {@link #borderAgainstHangingIndent} places a
+	 * left border by the first paragraph's hanging indent as the container states it (probe border-hanging), and a
+	 * shading container's is zeroed ({@link #resetContainerIndents}).
+	 *
+	 * @since 17.3.7
+	 */
+	private static void dropContainerInheritedText(DocumentFragment docfrag) {
+		if (docfrag == null) return;
+		Node foBlock = docfrag.getFirstChild();
+		if (!(foBlock instanceof Element)) return;
+		Element block = (Element) foBlock;
+		for (String name : new String[] { "color", "font-weight", "font-style", "font-variant", "text-decoration",
+				"text-transform", "letter-spacing", "text-align", "text-align-last" }) {
+			block.removeAttribute(name);
+		}
 	}
 
 	/** Whether an FO length attribute is absent, empty or a zero of any unit. */

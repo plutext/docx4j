@@ -7535,8 +7535,17 @@ public final class WordLayoutFixups {
 			}
 			List<Element> blocks = childBlocks(cell);
 			if (blocks.isEmpty()) continue;
-						Element first = blocks.get(0);
-			if (first.getAttribute(HINT_AUTOSPACING).indexOf('b') >= 0) {
+			/* The edges are the cell's first and last children: a paragraph after a list or a
+			 * table that opens the cell isn't at its top, nor one before a list that closes it
+			 * at its foot.  Taking the first child *block* for the first paragraph took the
+			 * paragraph after a cell's list: measured on corpus document 1654, whose cells open
+			 * with a numbered list and go on with a paragraph of auto spacing, Word keeps that
+			 * paragraph's 14pt and docx4j dropped it (its 40 lines 9.7 to 14pt high), hidden
+			 * until 17.3.7 behind a container its no-op borders made.  @since 17.3.7 */
+			Element first = blocks.get(0) == firstElementChild(cell) ? blocks.get(0) : null;
+			if (first == null) {
+				// the cell opens with a list or a table: its first paragraph isn't a child block
+			} else if (first.getAttribute(HINT_AUTOSPACING).indexOf('b') >= 0) {
 				/* ... except at the start of a *cell*, where Word's automatic spacing is
 				 * zero for the first paragraph but the cell's reference area then eats
 				 * the space Word does apply, so the retained conditionality below is what
@@ -7545,8 +7554,10 @@ public final class WordLayoutFixups {
 			} else if (hasSpace(first, "space-before")) {
 				first.setAttribute("space-before.conditionality", "retain");
 			}
-			Element last = blocks.get(blocks.size() - 1);
-			if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0
+			Element last = blocks.get(blocks.size() - 1) == lastChild ? blocks.get(blocks.size() - 1) : null;
+			if (last == null) {
+				// the cell closes with a list (kept above) or a table: not a child block's foot
+			} else if (last.getAttribute(HINT_AUTOSPACING).indexOf('a') >= 0
 					&& !"1".equals(last.getAttribute(HINT_LIST))) {
 				last.setAttribute("space-after", "0pt");
 			} else if (hasSpace(last, "space-after")) {
