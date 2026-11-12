@@ -35,6 +35,8 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	protected static Logger log = LoggerFactory.getLogger(AbstractConversionImageHandler.class);
 	protected String uuid = UUID.randomUUID().toString();
 	protected Map<String, String> handledImagesMap = new TreeMap<String, String>();
+	/** The keys in handledImagesMap of variants written with their colour adjustments applied (CR-084) */
+	private final java.util.Set<String> recolouredVariants = new java.util.HashSet<String>();
 	protected String imageDirPath = null;  // TODO FIXME should not be here; move to FileConversionImageHandler
 	protected boolean includeUUID = true;
 	
@@ -56,10 +58,18 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 		String variant = compressedVariant(picture, relationship, part);
 		if (variant != null) {
 			String variantKey = key + "#" + variant;
-			if (handledImagesMap.containsKey(variantKey)) return handledImagesMap.get(variantKey);
+			if (handledImagesMap.containsKey(variantKey)) {
+				if (recolouredVariants.contains(variantKey)) picture.setRecolourApplied(true);
+				return handledImagesMap.get(variantKey);
+			}
 			uri = handleCompressed(picture, relationship, part, variant);
 			if (uri != null) {
 				handledImagesMap.put(variantKey, uri);
+				// the picture written is the adjusted one: what tells the picture its adjustments are drawn
+				if (!picture.getRecolour().isNone()) {
+					recolouredVariants.add(variantKey);
+					picture.setRecolourApplied(true);
+				}
 				return uri;
 			}
 			// nothing to change: the picture as stored, shared with every other use of it
@@ -71,7 +81,10 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 			uri = doHandleImage(picture, relationship, part);
 			handledImagesMap.put(key, uri);
 		}
-		if (variant != null) handledImagesMap.put(key + "#" + variant, uri);
+		if (variant != null) {
+			handledImagesMap.put(key + "#" + variant, uri);
+			recolouredVariants.remove(key + "#" + variant);
+		}
 		return uri;
 	}
 
@@ -124,7 +137,8 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 		PictureRecolour recolour = picture.getRecolour();
 		PictureCompression.Resolution resolution = PictureCompression.resolution(picture.getWmlPackage(), pictureResolution);
 		if (crop.isNone() && recolour.isNone() && resolution.isHighFidelity()) return null;
-		// a picture without adjustments keeps the key (and so the derived part's name) it had before CR-084
+		// a picture without adjustments keeps the key it had before CR-084 (its derived part's name gained the source's
+		// extension in 17.3.7: derivedName)
 		return crop.signature() + (recolour.isNone() ? "" : "+" + recolour.signature()) + "@" + resolution + ":"
 				+ Math.round(picture.getWidthInPoints() * 100) + "x" + Math.round(picture.getHeightInPoints() * 100);
 	}
@@ -153,8 +167,9 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 						+ part.getBytes().length + ")");
 			}
 			return doHandleImage(picture, relationship, derived);
-		} catch (org.docx4j.openpackaging.exceptions.InvalidFormatException e) {
-			log.warn("Couldn't store the compressed picture: " + e.getMessage());
+		} catch (Docx4JException e) {
+			// the name, or writing it: the picture as stored is drawn instead (handleImage)
+			log.warn("Couldn't store the compressed picture (" + e.getMessage() + "); drawn as stored");
 			return null;
 		}
 	}

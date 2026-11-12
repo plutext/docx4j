@@ -210,5 +210,88 @@ public class PictureRecolourTest {
 		assertTrue(png, png.startsWith("/word/media/logo-png-") && png.endsWith(".png"));
 		assertTrue(AbstractConversionImageHandler.derivedName(null, "v", "jpg").startsWith("/word/media/picture-"));
 	}
-}
 
+	/** A wide blur is computed on a reduced copy (a review of CR-084: a radius at the schema's maximum took minutes);
+	 *  within 6 levels of the exact Gaussian, a fifth of a level on average */
+	@Test
+	public void aWideBlurIsComputedReducedNearTheExact() {
+		int w = 120, h = 90;
+		int[] src = new int[w * h];
+		for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) {
+			boolean in = x > 30 && x < 80 && y > 20 && y < 60;
+			src[y * w + x] = in ? 0xFFC00000 : (x > 100 ? 0x800000FF : 0xFFFFFFFF);
+		}
+		for (double sigma : new double[] { 12, 20, 30, 60 }) {
+			int[] exact = src.clone(), reduced = src.clone();
+			PictureRecolour.Blur.blur(exact, w, h, sigma, 1e9);
+			PictureRecolour.Blur.blur(reduced, w, h, sigma, PictureRecolour.Blur.MAX_SIGMA);
+			int worst = 0;
+			long sum = 0;
+			for (int i = 0; i < exact.length; i++) for (int sh = 0; sh < 32; sh += 8) {
+				int d = Math.abs(((exact[i] >>> sh) & 0xFF) - ((reduced[i] >>> sh) & 0xFF));
+				worst = Math.max(worst, d);
+				sum += d;
+			}
+			// the worst at a corner, where the edge is extended from a block rather than a pixel
+			assertTrue("sigma " + sigma + ": " + worst + " levels", worst <= 6);
+			assertTrue("sigma " + sigma + ": mean " + sum / (4.0 * exact.length), sum / (4.0 * exact.length) < 0.25);
+		}
+		// at or below MAX_SIGMA, exactly as before
+		int[] a = src.clone(), b = src.clone();
+		PictureRecolour.Blur.blur(a, w, h, 6, 1e9);
+		PictureRecolour.Blur.blur(b, w, h, 6, PictureRecolour.Blur.MAX_SIGMA);
+		assertTrue(java.util.Arrays.equals(a, b));
+	}
+
+	@Test(timeout = 30000)
+	public void aBlurAtTheSchemasMaximumIsQuick() throws Exception {
+		BufferedImage im = new BufferedImage(1500, 1500, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < 1500; y++) for (int x = 750; x < 1500; x++) im.setRGB(x, y, 0xFFFFFF);
+		BufferedImage out = recolour("<a:blur rad=\"27273042316900\"/>").apply(im, 1);
+		assertEquals(1500, out.getWidth());
+		// blurred over the whole picture: mid-grey at its middle
+		assertTrue(Math.abs((out.getRGB(750, 750) & 0xFF) - 128) < 40);
+	}
+
+	/** A bitmap claiming more pixels than the bound is read subsampled, its crop and adjustments as before */
+	@Test
+	public void compressReadsALargeBitmapSubsampled() throws Exception {
+		BufferedImage im = new BufferedImage(400, 300, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < 300; y++) for (int x = 0; x < 400; x++) im.setRGB(x, y, x < 200 ? 0xFF0000 : 0x0000FF);
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		ImageIO.write(im, "png", bytes);
+		PictureCompression.Result r = PictureCompression.compress(bytes.toByteArray(), new PictureCrop(0, 0, 0.5, 0),
+				recolour("<a:grayscl/>"), 300, 225, PictureCompression.Resolution.HIGH_FIDELITY, 10000);
+		assertNotNull(r);
+		// 120,000 px at most 10,000: read at a quarter, 100 by 75, then the left half
+		assertEquals(50, r.width);
+		assertEquals(75, r.height);
+		BufferedImage out = ImageIO.read(new ByteArrayInputStream(r.bytes));
+		assertEquals(0x363636, out.getRGB(25, 37) & 0xFFFFFF);
+		// within the bound, read whole
+		r = PictureCompression.compress(bytes.toByteArray(), PictureCrop.NONE, recolour("<a:grayscl/>"), 300, 225,
+				PictureCompression.Resolution.HIGH_FIDELITY, 120000);
+		assertEquals(400, r.width);
+	}
+
+	/** VML's chromakey: six or three hex digits, a name, rgb(); a colour it can't read is reported, not dropped */
+	@Test
+	public void aVmlChromakeysColour() {
+		assertEquals("FFFFFF", PictureRecolour.vmlColour("#FFF"));
+		assertEquals("AABBCC", PictureRecolour.vmlColour("abc"));
+		assertEquals("FF0080", PictureRecolour.vmlColour("rgb(255, 0, 128)"));
+		assertEquals("FFFFFF", PictureRecolour.vmlColour("white"));
+		assertEquals("FFFFFF", PictureRecolour.vmlColour("#FFFFFF [9]"));
+		assertNull(PictureRecolour.vmlColour("rgb(300,0,0)"));
+		assertNull(PictureRecolour.vmlColour("fill darken(50)"));
+		org.docx4j.vml.CTImageData d = new org.docx4j.vml.CTImageData();
+		d.setChromakey("#FFF");
+		assertTrue(PictureRecolour.ofVml(d).signature(), PictureRecolour.ofVml(d).signature().contains("FFFFFF"));
+		d.setChromakey("fill darken(50)");
+		PictureRecolour unread = PictureRecolour.ofVml(d);
+		assertTrue(unread.isNone());
+		assertFalse(unread == PictureRecolour.NONE); // it carries the departure, reported
+		d.setChromakey("none");
+		assertSame(PictureRecolour.NONE, PictureRecolour.ofVml(d));
+	}
+}

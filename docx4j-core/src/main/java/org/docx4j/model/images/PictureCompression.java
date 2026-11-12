@@ -28,6 +28,7 @@ import java.util.Locale;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
@@ -259,6 +260,23 @@ public final class PictureCompression {
 	 */
 	public static Result compress(byte[] bytes, PictureCrop crop, PictureRecolour recolour, double widthPt, double heightPt,
 			Resolution resolution) {
+		try {
+			return compress(bytes, crop, recolour, widthPt, heightPt, resolution, PictureEffects.MAX_READ_PIXELS);
+		} catch (OutOfMemoryError e) {
+			// a picture too large for the heap to crop, adjust or resample: drawn as stored, and the conversion goes on
+			log.warn("Picture left as stored: not enough memory to crop, adjust or resample it");
+			if (recolour != null && !recolour.isNone()) PictureEffects.report(PictureRecolour.UNREAD, "OutOfMemoryError");
+			return null;
+		}
+	}
+
+	/**
+	 * As {@link #compress(byte[], PictureCrop, PictureRecolour, double, double, Resolution)}, the bitmap read at no
+	 * more than maxPixels (one claiming more is read subsampled by a whole step, as {@link PictureEffects#read} reads
+	 * one; the crop is a fraction of it, so is unchanged).
+	 */
+	static Result compress(byte[] bytes, PictureCrop crop, PictureRecolour recolour, double widthPt, double heightPt,
+			Resolution resolution, long maxPixels) {
 		int ppi = (resolution == null || resolution.isHighFidelity()) ? 0 : resolution.target;
 		// only the edges which move in are cut from the bitmap; one which moves out is
 		// where the picture sits in its frame (PictureCrop#framePadding), not pixels
@@ -282,7 +300,15 @@ public final class PictureCompression {
 					if (recolouring) PictureEffects.report(PictureRecolour.UNREAD, "an animated GIF");
 					return null;
 				}
-				image = reader.read(0);
+				int pw = reader.getWidth(0), ph = reader.getHeight(0);
+				int step = (pw <= 0 || ph <= 0) ? 1 : Math.max(1, (int) Math.sqrt((double) pw * ph / maxPixels));
+				while ((long) (pw / step) * (ph / step) > maxPixels) step++;
+				ImageReadParam param = reader.getDefaultReadParam();
+				if (step > 1) {
+					log.info("Picture of " + pw + " by " + ph + " px read at 1/" + step + " of that");
+					param.setSourceSubsampling(step, step, 0, 0);
+				}
+				image = reader.read(0, param);
 			} finally {
 				reader.dispose();
 			}

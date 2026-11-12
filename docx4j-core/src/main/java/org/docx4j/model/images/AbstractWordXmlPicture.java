@@ -51,8 +51,8 @@ public abstract class AbstractWordXmlPicture {
 	 *  attributes), which the image handler applies in XSL-FO and HTML output.  @since 17.3.7 (CR-084) */
 	protected PictureRecolour recolour = PictureRecolour.NONE;
 
-	/** Whether the image handler applies the colour adjustments (through an
-	 *  {@link AbstractConversionImageHandler}).  @since 17.3.7 */
+	/** Whether the image handler wrote the picture with its colour adjustments applied (an
+	 *  {@link AbstractConversionImageHandler} says so when it has).  @since 17.3.7 */
 	private boolean recolourApplied;
 
 	/** The picture's part, a bitmap the output names (not a metafile drawn as SVG), for
@@ -83,9 +83,15 @@ public abstract class AbstractWordXmlPicture {
 	}
 
 	/** @return whether the image handler applied the colour adjustments to the picture
-	 *  it wrote (XSL-FO output)  @since 17.3.7 */
+	 *  it wrote (XSL-FO and HTML output)  @since 17.3.7 */
 	protected boolean isRecolourApplied() {
 		return recolourApplied;
+	}
+
+	/** Set by {@link AbstractConversionImageHandler} when the picture it wrote is the adjusted one: not by the
+	 *  handler's kind alone, since an external picture, or one that can't be read, is written as stored */
+	void setRecolourApplied(boolean applied) {
+		this.recolourApplied = applied;
 	}
 
 	/** @return whether this picture is being converted for XSL-FO (PDF) output
@@ -404,9 +410,8 @@ public abstract class AbstractWordXmlPicture {
 			cropApplied = forXslFo && crop != null && !crop.isNone()
 					&& imageHandler instanceof AbstractConversionImageHandler
 					&& ((AbstractConversionImageHandler) imageHandler).cropsPictures();
-			// in PDF and HTML output alike (CR-084 phase 4)
-			recolourApplied = recolour != null && !recolour.isNone()
-					&& imageHandler instanceof AbstractConversionImageHandler;
+			// in PDF and HTML output alike (CR-084 phase 4); set by the image handler once it has applied them
+			recolourApplied = false;
 			if (renderMetafile(imageHandler, rel, (BinaryPart)part)) {
 				return; // drawn as SVG, or rasterised through the image handler
 			}

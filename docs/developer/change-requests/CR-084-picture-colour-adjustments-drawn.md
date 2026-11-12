@@ -276,6 +276,15 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
       picture's bytes in HTML (its two new assertions fail on b461's jars);
     - b463 against b462: 0 movers, the corpora's PDFs and the probes' the same (but the clocks);
     - core-tests 2,645, export-fo 111, export-fo-tests 963.
+- **A review of phases 1 to 4** (Fable, 2026-11-12; Jason: "fix all 6"). Six findings, all fixed
+  (`CR-084-notes/phase1-findings.md` section 7):
+  - a wide blur bounded;
+  - an adjusted picture's pixels bounded, and running out of memory leaves it as stored;
+  - adjustments taken as drawn only once the handler has drawn them (a linked picture's are reported);
+  - the derived names' change named;
+  - VML's short hex and `rgb()` colours;
+  - a derived picture that can't be written leaves the stored one.
+  - Gate: b464 against b463 0 movers, the probes' PDFs and HTML the same.
 - **Phase 5, CHANGELOG, Getting Started, the register.**
 
 ## 7. Risks

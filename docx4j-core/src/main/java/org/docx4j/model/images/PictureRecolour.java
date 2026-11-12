@@ -105,7 +105,8 @@ public final class PictureRecolour {
 	static final String FILL_OVERLAY = "render.picture.fill_overlay";
 	/** An effect's colour that couldn't be resolved (a scheme colour without a theme): the effect isn't drawn */
 	static final String COLOUR = "render.picture.colour";
-	/** A picture with adjustments that couldn't be read (a CMYK JPEG, an animated GIF): drawn as stored */
+	/** A picture with adjustments that couldn't be read (a CMYK JPEG, an animated GIF), or held in memory: drawn as
+	 *  stored */
 	static final String UNREAD = "render.picture.unread";
 	/** A vector picture (a metafile) with adjustments that couldn't be rasterised: drawn as stored */
 	static final String RECOLOUR_VECTOR = "render.picture.recolour_vector";
@@ -208,12 +209,15 @@ public final class PictureRecolour {
 	public static PictureRecolour ofVml(org.docx4j.vml.CTImageData imageData) {
 		if (imageData == null) return NONE;
 		List<Op> ops = new ArrayList<Op>();
+		List<String[]> departures = new ArrayList<String[]>();
 		String key = imageData.getChromakey();
-		if (key != null && !key.trim().isEmpty()) {
-			String hex = org.docx4j.model.color.WordColors.normalise(key.trim().split("\\s+")[0]);
+		if (key != null && !key.trim().isEmpty() && !key.trim().equalsIgnoreCase("none")) {
+			String hex = vmlColour(key);
 			if (hex != null) {
 				ResolvedColor c = ResolvedColor.ofHex(hex);
 				ops.add(new ClrChange(c, c.withAlpha(0), true));
+			} else {
+				departures.add(new String[] { COLOUR, "v:imagedata chromakey '" + key.trim() + "'" });
 			}
 		}
 		double gain = vmlNumber(imageData.getGain(), 1), black = vmlNumber(imageData.getBlacklevel(), 0),
@@ -221,7 +225,32 @@ public final class PictureRecolour {
 		if (gain != 1 || black != 0 || (gamma != 1 && gamma > 0)) ops.add(new VmlLevels(gain, black, gamma));
 		if (isTrue(imageData.getGrayscale())) ops.add(new Grayscale());
 		if (isTrue(imageData.getBilevel())) ops.add(new VmlBiLevel());
-		return ops.isEmpty() ? NONE : new PictureRecolour(ops, Collections.<String[]>emptyList());
+		return ops.isEmpty() && departures.isEmpty() ? NONE : new PictureRecolour(ops, departures);
+	}
+
+	/**
+	 * A VML colour as six hex digits: what {@link org.docx4j.model.color.WordColors#normalise} reads (six hex digits,
+	 * with or without '#', or a name), three hex digits ("#FFF"), or "rgb(r, g, b)" in 0 to 255; its first word only
+	 * (VML may follow a colour with an index, "#FFFFFF [9]"). Null for any other (a scheme's "fill darken(50)").
+	 */
+	static String vmlColour(String s) {
+		if (s == null) return null;
+		String v = s.trim();
+		java.util.regex.Matcher m = java.util.regex.Pattern
+				.compile("(?i)rgb\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)").matcher(v);
+		if (m.lookingAt()) {
+			int r = Integer.parseInt(m.group(1)), g = Integer.parseInt(m.group(2)), b = Integer.parseInt(m.group(3));
+			if (r > 255 || g > 255 || b > 255) return null;
+			return String.format("%02X%02X%02X", r, g, b);
+		}
+		v = v.split("\\s+")[0];
+		if (v.matches("#?[0-9A-Fa-f]{3}")) {
+			String d = v.startsWith("#") ? v.substring(1) : v;
+			StringBuilder b = new StringBuilder();
+			for (char c : d.toCharArray()) b.append(c).append(c);
+			return b.toString().toUpperCase(Locale.ROOT);
+		}
+		return org.docx4j.model.color.WordColors.normalise(v);
 	}
 
 	private static boolean isTrue(org.docx4j.vml.STTrueFalse v) {
@@ -855,30 +884,71 @@ public final class PictureRecolour {
 		void apply(int[] px, int w, int h, double pixelsPerPoint) {
 			double sigma = rad / 12700d / 3 * pixelsPerPoint;
 			if (!(sigma >= 0.3)) return;
-			sigma = Math.min(sigma, Math.max(w, h));
-			int n = w * h;
-			float[][] ch = new float[4][n];
-			for (int i = 0; i < n; i++) {
-				int v = px[i];
-				float a = (v >>> 24) / 255f;
-				ch[3][i] = a;
-				ch[0][i] = ((v >> 16) & 0xFF) / 255f * a;
-				ch[1][i] = ((v >> 8) & 0xFF) / 255f * a;
-				ch[2][i] = (v & 0xFF) / 255f * a;
-			}
-			float[] k = kernel(sigma);
-			for (float[] c : ch) {
-				gaussian(c, w, h, k, true);
-				gaussian(c, w, h, k, false);
-			}
-			for (int i = 0; i < n; i++) {
-				float a = ch[3][i];
-				int al = level(a);
-				if (al == 0) {
-					px[i] = 0;
-					continue;
+			blur(px, w, h, Math.min(sigma, Math.max(w, h)), MAX_SIGMA);
+		}
+
+		/**
+		 * The widest blur (its sigma, in pixels) computed at the picture's own size. A wider one is computed on a copy
+		 * reduced by a whole factor to bring its sigma to this or below, then enlarged back bilinearly: a blur that wide
+		 * keeps no detail as fine as the reduction, and its cost no longer grows with the radius (a radius at the
+		 * schema's maximum on a 6-megapixel photo took minutes). Within 6 levels of the exact blur, at a corner (the
+		 * edge extended from a block rather than a pixel); a fifth of a level on average.
+		 */
+		static final double MAX_SIGMA = 8;
+
+		/** The blur of sigma pixels, computed at a reduction that brings it to maxSigma or below */
+		static void blur(int[] px, int w, int h, double sigma, double maxSigma) {
+			int f = (int) Math.min(Math.max(w, h), Math.max(1, Math.ceil(sigma / maxSigma)));
+			int sw = (w + f - 1) / f, sh = (h + f - 1) / f, sn = sw * sh;
+			// premultiplied, each f by f block averaged (the last row and column of blocks may be smaller)
+			float[][] ch = new float[4][sn];
+			int[] count = f == 1 ? null : new int[sn];
+			for (int y = 0; y < h; y++) {
+				int row = (y / f) * sw;
+				for (int x = 0; x < w; x++) {
+					int s = row + x / f;
+					int v = px[y * w + x];
+					float a = (v >>> 24) / 255f;
+					ch[3][s] += a;
+					ch[0][s] += ((v >> 16) & 0xFF) / 255f * a;
+					ch[1][s] += ((v >> 8) & 0xFF) / 255f * a;
+					ch[2][s] += (v & 0xFF) / 255f * a;
+					if (count != null) count[s]++;
 				}
-				px[i] = al << 24 | level(ch[0][i] / a) << 16 | level(ch[1][i] / a) << 8 | level(ch[2][i] / a);
+			}
+			if (count != null) {
+				for (float[] c : ch) for (int s = 0; s < sn; s++) c[s] /= count[s];
+			}
+			float[] k = kernel(sigma / f);
+			for (float[] c : ch) {
+				gaussian(c, sw, sh, k, true);
+				gaussian(c, sw, sh, k, false);
+			}
+			float[] p = new float[4];
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					if (f == 1) {
+						int s = y * w + x;
+						for (int j = 0; j < 4; j++) p[j] = ch[j][s];
+					} else {
+						// the reduced picture's pixel centres at (i + 1/2) f: bilinear between them, the edges extended
+						float u = Math.min(sw - 1, Math.max(0, (x + 0.5f) / f - 0.5f));
+						float v = Math.min(sh - 1, Math.max(0, (y + 0.5f) / f - 0.5f));
+						int x0 = (int) u, y0 = (int) v;
+						int x1 = Math.min(sw - 1, x0 + 1), y1 = Math.min(sh - 1, y0 + 1);
+						float fx = u - x0, fy = v - y0;
+						for (int j = 0; j < 4; j++) {
+							float[] c = ch[j];
+							float top = c[y0 * sw + x0] * (1 - fx) + c[y0 * sw + x1] * fx;
+							float bottom = c[y1 * sw + x0] * (1 - fx) + c[y1 * sw + x1] * fx;
+							p[j] = top * (1 - fy) + bottom * fy;
+						}
+					}
+					float a = p[3];
+					int al = level(a);
+					px[y * w + x] = al == 0 ? 0
+							: al << 24 | level(p[0] / a) << 16 | level(p[1] / a) << 8 | level(p[2] / a);
+				}
 			}
 		}
 

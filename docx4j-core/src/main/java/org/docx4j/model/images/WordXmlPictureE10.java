@@ -215,6 +215,12 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
         if (imgRelId!=null && !imgRelId.equals("")) {
         	log.debug("Handling " + imgRelId);
         	converter.handleImageRel(imageHandler, imgRelId, sourcePart);
+        	// what of the adjustments isn't drawn (CR-084): all of them where the image handler didn't apply them
+        	if (!converter.isRecolourApplied() && !converter.recolour.isNone()) {
+        		PictureEffects.report(PictureEffects.BLIP_RECOLOUR, "v:imagedata");
+        	} else {
+        		converter.recolour.report();
+        	}
         } else {
         	log.error("No relId?!");
         }

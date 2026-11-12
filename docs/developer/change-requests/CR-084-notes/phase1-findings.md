@@ -171,3 +171,48 @@ pictures named alike but for their extension, cropped alike, since 17.3.0.
   - 4102's is 0.565, as Word's (b459 0.531).
 - **Suites:** core-tests 2,645, export-fo 111, export-fo-tests 960.
 
+
+## 7. A review of phases 1 to 4, and its fixes
+
+Jason, 2026-11-12: a Fable review of CR-084's code (d8d14b9b9 to 820339041, `model/images`), read-only, aimed at what
+the gates don't reach: large or hostile input, the derived names, failure paths, and HTML written to files. The
+arithmetic was left out, being Word's measured numbers. Six findings, each read in the code before fixing; Jason: "fix
+all 6".
+
+1. **A blur could take minutes.** `Blur` capped its sigma only at the picture's size, so its kernel grew with the
+   radius: a radius at the schema's maximum on a 6-megapixel photo is about 10^11 operations. Word draws a blurred
+   picture not at all.
+   - Fixed: a blur wider than 8 px (`Blur.MAX_SIGMA`) is computed on a copy reduced by a whole factor, then enlarged
+     back bilinearly. At most 6 levels from the exact blur, at a corner (the edge extended from a block rather than a
+     pixel), a fifth of a level on average. Up to 8 px it is as before, exactly.
+2. **No bound on an adjusted picture's pixels.** `PictureCompression.compress` read the whole bitmap, and copied it
+   again to adjust it, and an `OutOfMemoryError` ended the conversion. This was CR-029's for a crop; CR-084 had widened
+   it to every adjusted picture, and to HTML.
+   - Fixed: a bitmap of more than 64 megapixels (`PictureEffects.MAX_READ_PIXELS`, as the effects read one) is read
+     subsampled by a whole step; the crop is a fraction of it, so is unchanged. An `OutOfMemoryError` leaves the
+     picture as stored, reported as `render.picture.unread`.
+3. **A linked picture's adjustments were neither drawn nor reported.** The picture took its adjustments as drawn from
+   the image handler's kind, before anything was drawn. A linked picture (not loaded), or one that couldn't be read,
+   was written as stored, and `render.effect.blip_recolour` wasn't reported. Its effects were drawn from adjusted pixels
+   behind the unadjusted picture.
+   - Fixed: `AbstractConversionImageHandler` tells the picture when the picture it wrote is the adjusted one
+     (`setRecolourApplied`), including on a second use from its map. A VML picture now reports in the same way:
+     `render.effect.blip_recolour` (`v:imagedata`) where they aren't drawn, else what of them isn't drawn as Word does.
+4. **Phase 1b renamed every derived picture.** Not only the adjusted ones: every cropped or resampled picture written
+   to an image folder (`image1-<hash>.png` became `image1-png-<hash>.png`). A comment said the name was kept.
+   - Fixed: the comment. The CHANGELOG's line for the collision now names the rename.
+5. **A VML chromakey in short hex or `rgb()` was dropped, unreported.**
+   - Fixed: `PictureRecolour.vmlColour` reads three hex digits and `rgb(r, g, b)` besides what `WordColors.normalise`
+     reads. Any other colour (a scheme's `fill darken(50)`) is reported as `render.picture.colour`.
+6. **A derived picture that couldn't be written lost the picture.** `handleCompressed` let the handler's exception out,
+   and nothing was drawn.
+   - Fixed: the picture as stored is drawn instead (CR-029's crops as well).
+
+**The gate.**
+- **Tests:** `RecolourAppliedTest` (new: written, from the map, linked, unreadable, the write failing), and
+  `PictureRecolourTest`'s wide blur against the exact, a blur at the schema's maximum (30 s timeout), the subsampled
+  read, and VML's colours. core-tests 2,653, export-fo 111, export-fo-tests 963 pass.
+- **b464 against b463:** 0 movers, events equal. The corpora's PDFs are the same but for two time fields (5361,
+  11875), and the probes' 324 the same.
+- **Phase 0's probes:** through docx4j's PDF, 174, 0 failing, all ten PDFs the same as b462's; through its HTML, 119,
+  0 failing, all ten the same as b463's jars.

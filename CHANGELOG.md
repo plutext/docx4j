@@ -44,7 +44,7 @@ Changes in Version 17.3.7
 
 - The paragraphs in a bordered or shaded group no longer take the first one's bold, colour or alignment, and an empty `w:pBdr` (ONLYOFFICE writes one in every style) makes no group: a contract's clauses had come out in a heading's bold blue.
 - In a table cell, a paragraph after the list or table the cell opens with keeps its auto spacing before; it had been taken for the cell's first.
-- Two pictures named alike but for their extension (`logo.png`, `logo.gif`), cropped alike, are drawn as themselves; one had been drawn for both.
+- Two pictures named alike but for their extension (`logo.png`, `logo.gif`), cropped alike, are drawn as themselves; one had been drawn for both. A cropped or adjusted picture written to an image folder is now named with its source's extension (`image1-png-<hash>.png`, was `image1-<hash>.png`).
 
 ### HTML output
 - Shapes, groups and canvases are drawn (inline SVG) with their text over them; the XSLT route had dropped a shape's text (CR-080).
