@@ -7,12 +7,17 @@ patch compared with Word's. The tolerance is the gate's (CR-084 section 6): 2 le
 semi-transparent pixel's colour, before or after (Word's premultiplied storage); 5 where Word's picture is a JPEG (its
 re-encoding). A colour is compared where Word's alpha is at least a quarter. Departures decided in phase 0 are listed,
 not failed: hsl (the standard's, where Word draws black), blur (Word draws nothing), clrChange on a semi-transparent
-pixel (Word's premultiplied storage misses some). The VML probes (rk70) are phase 3's: listed, not failed.
+pixel (Word's premultiplied storage misses some). The VML probes (rk70) are gated since phase 3.
 
 Also: the pictures docx4j drew on each page (filter, size, soft mask), for the photo and EMF probes, which have no
 patches.
 
-usage: gate_recolour.py <docx4j results dir: <job>/<job>.pdf> [out.json]"""
+HTML output (phase 4): with --html, the results dir holds <job>.html (docx4j's HTML, pictures as data: URIs); each
+probe page's picture is its document's next <img>, its patches sampled from the decoded picture as a whole (no crop:
+the cropped probes are left out, HTML not cropping a picture's bitmap).
+
+usage: gate_recolour.py <docx4j results dir: <job>/<job>.pdf> [out.json]
+       gate_recolour.py --html <dir of <job>.html>"""
 import csv, importlib.util, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -54,7 +59,7 @@ def main(results, out=None):
                 fails += verdict == 'FAIL'
                 rows.append((k, note, verdict + ' no picture read', drawn, ''))
                 continue
-            departure = note.startswith('hsl') or job.startswith('rk70')
+            departure = note.startswith('hsl')
             worst, bad = 0, []
             for i, (s, a, b) in enumerate(zip(w['source'], wp[0]['patches'], our[0]['patches'])):
                 if not a or not b:
@@ -81,5 +86,51 @@ def main(results, out=None):
         with open(out, 'w', encoding='utf-8') as f:
             json.dump(ours, f, separators=(',', ':'))
 
+def html(results):
+    import base64, io, re
+    from PIL import Image
+    word = json.load(open(os.path.join(HERE, 'phase0-word.json'), encoding='utf-8'))
+    probes = list(csv.DictReader(open(os.path.join(HERE, 'probes.tsv'), encoding='utf-8'), delimiter='\t'))
+    fails = n = 0
+    for job in sorted({p['file'] for p in probes if p['page'] != '-'}):
+        f = os.path.join(results, job + '.html')
+        if not os.path.isfile(f):
+            continue
+        imgs = re.findall(r'<img[^>]*?src="data:image/[a-z]+;base64,([^"]+)"', open(f, encoding='utf-8').read())
+        pp = [p for p in probes if p['file'] == job]
+        if len(imgs) != len(pp):
+            print(job, 'pictures', len(imgs), 'probes', len(pp), '(not one a page; skipped)')
+            continue
+        for p, data in zip(pp, imgs):
+            w = word.get(p['probe'])
+            wp = [q for q in (w or {}).get('pictures', []) if q.get('patches')]
+            if not w or not w['source'] or not wp or rr.crop_of(p['summary']):
+                continue
+            im = Image.open(io.BytesIO(base64.b64decode(data))).convert('RGBA')
+            ours = [list(im.getpixel((min(im.width - 1, int((k % 16 + 0.5) / 16 * im.width)),
+                                      min(im.height - 1, int((k // 16 + 0.5) / 16 * im.height))))) for k in range(256)]
+            note = p['note']
+            bad, worst = [], 0
+            for i, (s_, a, b) in enumerate(zip(w['source'], wp[0]['patches'], ours)):
+                if not a:
+                    continue
+                if abs(a[3] - b[3]) > 2:
+                    bad.append(i)
+                if a[3] < 64 or ('clrChange' in note and 0 < s_[3] < 255):
+                    continue
+                d = max(abs(a[j] - b[j]) for j in range(3))
+                worst = max(worst, d)
+                if d > tolerance(note, p['summary'], wp[0]['filter'], s_[3], a[3]):
+                    bad.append(i)
+            n += 1
+            verdict = 'ok' if not bad else ('DEPARTURE' if note.startswith('hsl') or note.startswith('blur') else 'FAIL')
+            fails += verdict == 'FAIL'
+            if verdict != 'ok':
+                print(f"{p['probe']} {note[:50]:50s} {verdict} worst {worst}, {len(bad)} patches off")
+    print(f'html: {n} probes compared, {fails} failing')
+
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    if sys.argv[1] == '--html':
+        html(sys.argv[2])
+    else:
+        main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)

@@ -9,7 +9,8 @@ Writes, into docx4j-core-tests/src/test/resources/images/recolour/:
                     re-encoding adds a level or two), the a:blip's children as written, and Word's 256 patch colours
                     (RRGGBBAA; '-' where a patch isn't in the picture, as outside a crop)
 
-The VML probes (rk70) are phase 3's; the photo's (rk60, rk82) have no patches.
+The VML probes (rk70) are written with their v:imagedata attributes after "vml:" (phase 3); the photo's (rk60, rk82)
+have no patches.
   clrchange-word.tsv  phase 1b's clrChange tolerance round (tolerance-word.json): each probe's format, a:blip children,
                     the source's patches as decoded and Word's
 
@@ -32,8 +33,7 @@ def main():
         for name, fam in files:
             prefix = name.split('-')[0]
             for i, p in enumerate(fam()):
-                if p.vml is None:
-                    blips[f'{prefix}-{i + 1:02d}'] = p
+                blips[f'{prefix}-{i + 1:02d}'] = p
     os.makedirs(OUT, exist_ok=True)
     sources = {}
     rows = []
@@ -43,7 +43,9 @@ def main():
         if p is None or not pics or not v['source']:
             continue
         sources[v['picture']] = v['source']
-        rows.append([k, v['note'], v['picture'], pics[0]['filter'], p.blip, ' '.join(hexc(c) for c in pics[0]['patches'])])
+        # a VML probe's v:imagedata attributes, marked "vml:" (phase 3); a DrawingML probe's a:blip children
+        what = 'vml:' + p.vml if p.vml is not None else p.blip
+        rows.append([k, v['note'], v['picture'], pics[0]['filter'], what, ' '.join(hexc(c) for c in pics[0]['patches'])])
     with open(os.path.join(OUT, 'sources.tsv'), 'w', encoding='utf-8', newline='') as f:
         f.write('# CR-084 phase 0: the calibration pictures\' patch colours (RRGGBBAA), from build_recolour.py; '
                 'written by CR-084-notes/build_test_table.py\n')

@@ -47,12 +47,12 @@ public abstract class AbstractWordXmlPicture {
 	 *  which moves out, is drawn too); false for a handler which does not.  @since 17.3.0 */
 	private boolean cropApplied;
 
-	/** The picture's colour adjustments ({@code a:blip}'s effect children), which the
-	 *  image handler applies in XSL-FO output.  @since 17.3.7 (CR-084) */
+	/** The picture's colour adjustments ({@code a:blip}'s effect children, or {@code v:imagedata}'s
+	 *  attributes), which the image handler applies in XSL-FO and HTML output.  @since 17.3.7 (CR-084) */
 	protected PictureRecolour recolour = PictureRecolour.NONE;
 
-	/** Whether the image handler applies the colour adjustments (XSL-FO output, through
-	 *  an {@link AbstractConversionImageHandler}).  @since 17.3.7 */
+	/** Whether the image handler applies the colour adjustments (through an
+	 *  {@link AbstractConversionImageHandler}).  @since 17.3.7 */
 	private boolean recolourApplied;
 
 	/** The picture's part, a bitmap the output names (not a metafile drawn as SVG), for
@@ -404,7 +404,8 @@ public abstract class AbstractWordXmlPicture {
 			cropApplied = forXslFo && crop != null && !crop.isNone()
 					&& imageHandler instanceof AbstractConversionImageHandler
 					&& ((AbstractConversionImageHandler) imageHandler).cropsPictures();
-			recolourApplied = forXslFo && recolour != null && !recolour.isNone()
+			// in PDF and HTML output alike (CR-084 phase 4)
+			recolourApplied = recolour != null && !recolour.isNone()
 					&& imageHandler instanceof AbstractConversionImageHandler;
 			if (renderMetafile(imageHandler, rel, (BinaryPart)part)) {
 				return; // drawn as SVG, or rasterised through the image handler
@@ -461,11 +462,11 @@ public abstract class AbstractWordXmlPicture {
 		double h = lengthInPoints(dimensions == null ? 0 : dimensions.height,
 				dimensions == null ? null : dimensions.heightUnit);
 
-		if (forXslFo && recolour != null && !recolour.isNone()
+		if (recolour != null && !recolour.isNone()
 				&& imageHandler instanceof AbstractConversionImageHandler) {
 			// Word draws a metafile with colour adjustments as a picture at 200 dpi, adjusted, and one
 			// without as vectors (CR-084 phase 0 findings section 4; D5): rasterised here, then cropped
-			// and adjusted by the image handler as any bitmap is
+			// and adjusted by the image handler as any bitmap is; in HTML output too (phase 4)
 			byte[] png = rasterise(data, w, h, crop);
 			if (png != null) {
 				BinaryPart raster = pngPart(part, png);

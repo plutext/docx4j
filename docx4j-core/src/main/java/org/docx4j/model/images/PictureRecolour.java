@@ -193,6 +193,56 @@ public final class PictureRecolour {
 		return new PictureRecolour(ops, departures);
 	}
 
+	/**
+	 * The colour adjustments of a VML picture ({@code v:imagedata}), as Word draws them (CR-084 phase 0 findings section
+	 * 5, phase 3): {@code chromakey} the colour made transparent (with {@code clrChange}'s tolerance for the picture's
+	 * format); then {@code gamma}, {@code gain} and {@code blacklevel} together, each channel
+	 * {@code gain (x^(1/gamma) - 1/2) + 1/2 + blacklevel (1 + gain)} (DrawingML's {@code lum} with
+	 * {@code blacklevel = bright / 2}; Word 2003's Washout, gain 0.3 and blacklevel 0.35, is the current Washout);
+	 * then {@code grayscale} (Rec. 709 luma) and {@code bilevel} (white where the luma, as a fraction, reaches a half:
+	 * VML's tie goes to white, DrawingML's to black). Each value is a number, a fixed-point number of 65536ths ("16384f")
+	 * or a percentage. The order of the four kinds is taken, not measured (phase 0 probed each alone).
+	 *
+	 * @since 17.3.7
+	 */
+	public static PictureRecolour ofVml(org.docx4j.vml.CTImageData imageData) {
+		if (imageData == null) return NONE;
+		List<Op> ops = new ArrayList<Op>();
+		String key = imageData.getChromakey();
+		if (key != null && !key.trim().isEmpty()) {
+			String hex = org.docx4j.model.color.WordColors.normalise(key.trim().split("\\s+")[0]);
+			if (hex != null) {
+				ResolvedColor c = ResolvedColor.ofHex(hex);
+				ops.add(new ClrChange(c, c.withAlpha(0), true));
+			}
+		}
+		double gain = vmlNumber(imageData.getGain(), 1), black = vmlNumber(imageData.getBlacklevel(), 0),
+				gamma = vmlNumber(imageData.getGamma(), 1);
+		if (gain != 1 || black != 0 || (gamma != 1 && gamma > 0)) ops.add(new VmlLevels(gain, black, gamma));
+		if (isTrue(imageData.getGrayscale())) ops.add(new Grayscale());
+		if (isTrue(imageData.getBilevel())) ops.add(new VmlBiLevel());
+		return ops.isEmpty() ? NONE : new PictureRecolour(ops, Collections.<String[]>emptyList());
+	}
+
+	private static boolean isTrue(org.docx4j.vml.STTrueFalse v) {
+		return v == org.docx4j.vml.STTrueFalse.T || v == org.docx4j.vml.STTrueFalse.TRUE;
+	}
+
+	/** A VML number: plain, a fixed-point number of 65536ths ("16384f"), or a percentage; the default where absent or
+	 *  unreadable */
+	static double vmlNumber(String s, double dflt) {
+		if (s == null || s.trim().isEmpty()) return dflt;
+		String v = s.trim();
+		try {
+			if (v.endsWith("f")) return Double.parseDouble(v.substring(0, v.length() - 1)) / 65536d;
+			if (v.endsWith("%")) return Double.parseDouble(v.substring(0, v.length() - 1)) / 100d;
+			return Double.parseDouble(v);
+		} catch (NumberFormatException e) {
+			log.warn("Unreadable v:imagedata value '" + s + "'; " + dflt + " taken");
+			return dflt;
+		}
+	}
+
 	private static List<Op> read(List<Object> effects, ThemeColors theme, List<String[]> departures) {
 		List<Op> ops = new ArrayList<Op>();
 		for (Object o : effects) {
@@ -472,6 +522,39 @@ public final class PictureRecolour {
 		void pixel(double[] p) {
 			double y = Math.floor(luma(p) * 255 + 1e-6);
 			p[0] = p[1] = p[2] = y >= thresh ? 1 : 0;
+		}
+	}
+
+	/** VML's gamma, gain and blacklevel: {@code gain (x^(1/gamma) - 1/2) + 1/2 + blacklevel (1 + gain)}, clipped (phase 0:
+	 *  within half a level of Word on the grey ramp) */
+	static final class VmlLevels extends Op {
+		final double gain, black, gamma;
+
+		VmlLevels(double gain, double black, double gamma) {
+			super("vml" + gain + "," + black + "," + gamma, false);
+			this.gain = gain;
+			this.black = black;
+			this.gamma = gamma > 0 ? gamma : 1;
+		}
+
+		@Override
+		void pixel(double[] p) {
+			for (int i = 0; i < 3; i++) {
+				double x = gamma == 1 ? p[i] : Math.pow(p[i], 1 / gamma);
+				p[i] = clamp(gain * (x - 0.5) + 0.5 + black * (1 + gain));
+			}
+		}
+	}
+
+	/** VML's bilevel: white where the luma, as a fraction, reaches a half (a luma of 127.84 levels is white) */
+	static final class VmlBiLevel extends Op {
+		VmlBiLevel() {
+			super("vmlBilevel", false);
+		}
+
+		@Override
+		void pixel(double[] p) {
+			p[0] = p[1] = p[2] = luma(p) >= 0.5 ? 1 : 0;
 		}
 	}
 

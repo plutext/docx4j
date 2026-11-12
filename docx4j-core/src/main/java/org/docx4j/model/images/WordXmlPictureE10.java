@@ -209,6 +209,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	
     	converter.crop = PictureCrop.ofVml(converter.imageData.getCropleft(), converter.imageData.getCroptop(),
     			converter.imageData.getCropright(), converter.imageData.getCropbottom()); // CR-029
+    	converter.recolour = PictureRecolour.ofVml(converter.imageData); // CR-084 phase 3
 
     	String imgRelId = converter.imageData.getId();
         if (imgRelId!=null && !imgRelId.equals("")) {

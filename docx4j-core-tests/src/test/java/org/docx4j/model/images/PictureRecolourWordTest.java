@@ -38,7 +38,8 @@ import org.docx4j.model.color.ThemeColors;
 import org.junit.Test;
 
 /**
- * {@link PictureRecolour} against Word: CR-084 phase 0's probes (117 of them, on four calibration pictures of 256
+ * {@link PictureRecolour} against Word: CR-084 phase 0's probes (129 of them, the 12 VML ones since phase 3, on four
+ * calibration pictures of 256
  * patches each), the colours Word's PDF drew for each patch (read by {@code CR-084-notes/read_recolour.py}; the table
  * {@code images/recolour/word-patches.tsv}, written by {@code CR-084-notes/build_test_table.py}).
  *
@@ -61,6 +62,14 @@ public class PictureRecolourWordTest {
 				+ "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"914400\" cy=\"914400\"/></a:xfrm>"
 				+ "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>";
 		return ((Pic) XmlUtils.unwrap(XmlUtils.unmarshalString(xml))).getBlipFill().getBlip();
+	}
+
+	/** A v:imagedata with these attributes */
+	static org.docx4j.vml.CTImageData imageData(String attributes) throws Exception {
+		String xml = "<v:imagedata xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" r:id=\"rId1\" o:title=\"\" "
+				+ attributes + "/>";
+		return (org.docx4j.vml.CTImageData) XmlUtils.unwrap(XmlUtils.unmarshalString(xml));
 	}
 
 	private static List<String[]> table(String name) throws Exception {
@@ -118,7 +127,9 @@ public class PictureRecolourWordTest {
 			boolean clrChange = blipXml.contains("<a:clrChange");
 			long[] src = sources.get(r[2]);
 			long[] word = argb(r[5]);
-			PictureRecolour rc = PictureRecolour.of(blip(blipXml), theme);
+			// a VML probe's v:imagedata attributes (phase 3), else a DrawingML probe's a:blip children
+			PictureRecolour rc = blipXml.startsWith("vml:") ? PictureRecolour.ofVml(imageData(blipXml.substring(4)))
+					: PictureRecolour.of(blip(blipXml), theme);
 			BufferedImage out = rc.apply(picture(src), 0);
 			double worst = 0, worstAlpha = 0;
 			probes++;

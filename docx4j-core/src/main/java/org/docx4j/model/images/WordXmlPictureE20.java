@@ -475,7 +475,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     @Override
     protected org.w3c.dom.Element createHtmlEffectsElement(Document document) {
     	if (!forXslFo) {
-    		PictureEffects.reportRecolour(getPic());
+    		// as in the PDF: the adjustments the image handler didn't apply are reported (CR-084 phase 4)
+    		if (!isRecolourApplied() && !recolour.isNone()) PictureEffects.reportRecolour(getPic());
+    		else recolour.report();
     		if (metaFileSvg != null) PictureEffects.reportMetafile(getPic());
     	}
     	if (forXslFo || metaFileSvg != null || dimensions == null) return null;
@@ -485,7 +487,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	double h = lengthInPoints(dimensions.height, dimensions.heightUnit);
     	String href = getSrc() == null || getSrc().isEmpty() ? null : getSrc();
     	org.w3c.dom.Element svg = PictureEffects.svg(document, wmlPackage, pic, w, h, picturePart, crop, href, false,
-    			PictureRecolour.NONE, effectClip(), htmlIds());
+    			isRecolourApplied() ? recolour : PictureRecolour.NONE, effectClip(), htmlIds());
     	if (svg == null) return null;
     	svg.setAttribute("width", Long.toString(cssPixels(w, "pt")));
     	svg.setAttribute("height", Long.toString(cssPixels(h, "pt")));

@@ -105,17 +105,20 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 * For a picture in XSL-FO (PDF) output, the picture as Word's Compress Pictures would
 	 * leave it (CR-029): the crop applied, its colour adjustments applied (CR-084), and
 	 * resampled to the document's resolution for the size it is shown at
-	 * ({@link PictureCompression}). Identifies the variant, or null where there is nothing
-	 * to consider (another output, an external picture, no crop, no adjustment and no
-	 * resolution).
+	 * ({@link PictureCompression}); in HTML output, its colour adjustments alone (CR-084
+	 * phase 4). Identifies the variant, or null where there is nothing to consider (an
+	 * external picture; no crop, no adjustment and no resolution).
 	 *
 	 * @since 17.3.0
 	 */
 	protected String compressedVariant(AbstractWordXmlPicture picture, Relationship relationship, BinaryPart part)
 			throws Docx4JException {
-		if (picture == null || !picture.isForXslFo() || part == null
-				|| !isInternalImage(picture, relationship, part)) {
+		if (picture == null || part == null || !isInternalImage(picture, relationship, part)) {
 			return null;
+		}
+		if (!picture.isForXslFo()) {
+			// HTML: the colour adjustments alone (CR-084 phase 4, D6); the crop and the resolution are the PDF's
+			return picture.getRecolour().isNone() ? null : "html+" + picture.getRecolour().signature();
 		}
 		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
 		PictureRecolour recolour = picture.getRecolour();
@@ -131,10 +134,12 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 	 *  nothing changes.  @since 17.3.0 */
 	private String handleCompressed(AbstractWordXmlPicture picture, Relationship relationship,
 			BinaryPart part, String variant) throws Docx4JException {
-		PictureCrop crop = cropping() ? picture.getCrop() : PictureCrop.NONE;
+		boolean fo = picture.isForXslFo();
+		PictureCrop crop = fo && cropping() ? picture.getCrop() : PictureCrop.NONE;
 		PictureCompression.Result r = PictureCompression.compress(part.getBytes(), crop, picture.getRecolour(),
 				picture.getWidthInPoints(), picture.getHeightInPoints(),
-				PictureCompression.resolution(picture.getWmlPackage(), pictureResolution));
+				fo ? PictureCompression.resolution(picture.getWmlPackage(), pictureResolution)
+						: PictureCompression.Resolution.HIGH_FIDELITY);
 		if (r == null) return null;
 		try {
 			String name = derivedName(part.getPartName() == null ? null : part.getPartName().getName(), variant, r.extension);

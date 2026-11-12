@@ -7,10 +7,12 @@ recommended; commit phase 0; start phase 1"). Phase 0 DONE: its rulings are in �
 picture. Gate passed: phase 0's 174 probes through docx4j's PDF 0 failing, the fidelity corpora 0 movers (b452 against
 b450), and every PDF without a drawn adjustment unchanged but for date fields (`CR-084-notes/phase1-findings.md`). Two
 findings: `biLevel`'s threshold is rounded (refined, built); `clrChange` has a tolerance in Word, about a level on a PNG
-and at least 16 on a JPEG, measured and built in phase 1b (DONE 2026-11-12: the largest channel within 16 levels on a JPEG, 1 on a PNG, 0 on a
-GIF or with `useA="0"`; 13145 and 4102 now as Word's). Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
-leaves `a:blip`'s colour effects out of CR-081, which is about `a:effectLst`. Not started; D1 to D9 open (§8). Needs
-nothing from CR-080 to CR-083. Read against docx4j 67b54b7fd, Apache POI trunk ae62bb5116, and the specifications in §12.
+and at least 16 on a JPEG, measured and built in phase 1b (DONE 2026-11-12: the largest channel within 16 levels on
+a JPEG, 1 on a PNG, 0 on a GIF or with `useA="0"`; 13145 and 4102 now as Word's). Phases 2 (the a14 test), 3 (VML)
+and 4 (HTML) DONE 2026-11-12 (§6); phase 5 to come.
+Proposed 2026-11-10, on Jason's request ("CR-081 D7 make a CR for this"): CR-081's D7 leaves `a:blip`'s colour effects
+out of CR-081, which is about `a:effectLst`. Needs nothing from CR-080 to CR-083. Read against docx4j 67b54b7fd, Apache
+POI trunk ae62bb5116, and the specifications in §12.
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
 
 Phase 0 started 2026-11-12 (Jason: "now let's do CR-084 phase 0"), by CR-081's route (word-bridge; `CR-084-notes/`):
@@ -234,8 +236,46 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
     - 13145's and 4102's pictures transparent as Word's (0.890, 0.565).
 - **Phase 2, Word 2010's adjustments.** Phase 0 confirmed the blip is already adjusted (findings §2; D3): a test that
   docx4j draws the blip, with its `a:` children, and never the `a14:imgLayer`.
+  - **DONE 2026-11-12** (Jason, via the portfolio: "please do each phase 2, 3, 4 in order, as far as possible without
+    asking for my input"). `PictureImgLayerTest` (docx4j-export-fo-tests) uses a red blip with a blue `a14:imgLayer`
+    and checks:
+    - both PDF routes draw red, and the layer not at all, as does the HTML;
+    - an `a:grayscl` beside the extension greys the blip.
+  - No code change was needed: docx4j reads the blip's `r:embed` and never the extension.
+  - Jason's hand-made presets document (rk80) through docx4j's PDF, against Word's: on the a14 pages, the pictures are
+    Word's pixel for pixel. That covers saturation 0% and 300%, colour tone, soften, sharpen, the four brightness and
+    contrast pages, and Pencil Sketch.
+    - Blur and Remove Background differ by Word's JPEG encoding of them alone. Remove Background's alpha is Word's
+      exactly.
+    - Set Transparent Color over a Soften (an `a:clrChange` on an a14 blip) is Word's exactly, alpha and colour.
 - **Phase 3, VML** (D4). `v:imagedata`'s attributes through the same operations.
+  - **DONE 2026-11-12.** `PictureRecolour.ofVml`, set by `WordXmlPictureE10`, takes phase 0's functions (findings §5):
+    - `chromakey`: the colour made transparent, with `clrChange`'s tolerance for the format;
+    - `gamma`, `gain` and `blacklevel` together: `gain (x^(1/gamma) - 1/2) + 1/2 + blacklevel (1 + gain)`;
+    - `grayscale`: Rec. 709;
+    - `bilevel`: the luma as a fraction against a half (VML's tie goes to white, DrawingML's to black).
+  - The order of the four kinds is taken, not measured: phase 0 probed each alone.
+  - Gate:
+    - phase 0's 12 VML probes through docx4j's PDF, each within a level of Word's (most exact), and all 174 probes 0
+      failing; `PictureRecolourWordTest` takes the 12 as well (`word-patches.tsv`, 129 probes);
+    - b462 against b461: 0 movers, events equal, the probes byte for byte;
+    - the corpora's VML pictures: 8785's Word 2003 Washout is Word's exactly (p99 0), and 12363's grayscale grey as
+      Word's (its picture is 1 px wider than Word's, as before).
 - **Phase 4, HTML** (D6). The same adjusted picture, as a data URI or a stored file.
+  - **DONE 2026-11-12.** HTML output goes through the image handler's variant step, as the PDF's does
+    (`AbstractConversionImageHandler.compressedVariant`). It gets the adjustments only: no crop, no resampling, which
+    stay the PDF's (CR-029). So a picture without adjustments reaches the HTML byte for byte, as before.
+    - An adjusted metafile is rasterised at 200 dpi there too.
+    - The effects (CR-081) are drawn from the adjusted pixels.
+    - `render.effect.blip_recolour` is now reported only where an image handler of another kind leaves the
+      adjustments undrawn.
+  - Gate:
+    - phase 0's probes through docx4j's HTML (`gate_recolour.py --html`): 119 compared, 0 failing, the `hsl`
+      departures as decided;
+    - `PictureImgLayerTest` checks a DrawingML and a VML picture's adjustments in both outputs, and an unadjusted
+      picture's bytes in HTML (its two new assertions fail on b461's jars);
+    - b463 against b462: 0 movers, the corpora's PDFs and the probes' the same (but the clocks);
+    - core-tests 2,645, export-fo 111, export-fo-tests 963.
 - **Phase 5, CHANGELOG, Getting Started, the register.**
 
 ## 7. Risks
@@ -281,8 +321,8 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
   - `render.picture.colour`: a colour that can't be resolved;
   - `render.picture.unread`: a picture Java can't read;
   - `render.picture.recolour_vector`: a metafile that couldn't be rasterised;
-  - `render.effect.blip_recolour` stays where nothing is drawn: HTML output until phase 4, or an image handler of
-    another kind.
+  - `render.effect.blip_recolour` stays where nothing is drawn: an image handler of another kind (in HTML output too,
+    since phase 4).
 
 ## 9. Out of scope
 
