@@ -9,7 +9,8 @@ with docx4j's moved by the difference of the two boxes' top left corners (the pl
 page where neither draws paths compares the text instead: each visible character's origin (mutool stext), matched
 in order.
 
-usage: gate_wordart.py <Word's results dir> <docx4j's PDF dir> [files...]   (writes gate-<label>.tsv to the PDF dir)
+usage: gate_wordart.py [--probes <tsv>] <Word's results dir> <docx4j's PDF dir> [files...]   (writes gate-<label>.tsv
+       to the PDF dir; the probes probes.tsv beside this script, or another round's, as probes-followpath.tsv)
        e.g. gate_wordart.py ~/scratch/p0/results ~/scratch/out1 wa15-warps-fixed-1"""
 import csv, functools, os, sys
 import numpy as np
@@ -57,8 +58,8 @@ def compare(word, d4j):
         r['text_mean'] = round(float(np.mean(e)), 3)
     return r
 
-def main(results, pdfs, files=None):
-    probes = list(csv.DictReader(open(os.path.join(HERE, 'probes.tsv'), encoding='utf-8'), delimiter='\t'))
+def main(results, pdfs, files=None, probes_tsv=os.path.join(HERE, 'probes.tsv')):
+    probes = list(csv.DictReader(open(probes_tsv, encoding='utf-8'), delimiter='\t'))
     rows = []
     for p in probes:
         job = p['file']
@@ -89,4 +90,8 @@ def main(results, pdfs, files=None):
           'within 1.0 pt')
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3:] or None)
+    args = sys.argv[1:]
+    tsv = os.path.join(HERE, 'probes.tsv')
+    if args and args[0] == '--probes':
+        tsv, args = args[1], args[2:]
+    main(args[0], args[1], args[2:] or None, tsv)

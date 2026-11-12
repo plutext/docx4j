@@ -195,6 +195,28 @@ final class TextWarp {
 		void map(double x, double y, double[] out);
 	}
 
+	/**
+	 * The whole ellipse an arc is part of (Follow Path: phase 1-2 findings section 4), centre (cx, cy) and semi-axes a
+	 * and b, starting opposite the arc's middle and running the arc's way, so that the arc's middle is halfway along it.
+	 * The three Follow Path presets' arcs are symmetric about an axis of their ellipse, so their middle is snapped to
+	 * the nearest axis.
+	 */
+	static Measured ellipse(double cx, double cy, double a, double b, Measured arc) {
+		double[] mid = arc.at(0.5);
+		double tm = Math.atan2((mid[1] - cy) / b, (mid[0] - cx) / a);
+		tm = Math.round(tm / (Math.PI / 2)) * (Math.PI / 2);
+		double[] e1 = arc.at(Math.min(1, 0.5 + 1e-3)), e0 = arc.at(Math.max(0, 0.5 - 1e-3));
+		boolean clockwise = (e1[0] - e0[0]) * -a * Math.sin(tm) + (e1[1] - e0[1]) * b * Math.cos(tm) >= 0;
+		int n = (int) Math.max(256, Math.ceil(2 * Math.PI * Math.max(a, b) / 0.25));
+		double[] x = new double[n + 1], y = new double[n + 1];
+		for (int i = 0; i <= n; i++) {
+			double t = tm + Math.PI + (clockwise ? 1 : -1) * 2 * Math.PI * i / n;
+			x[i] = cx + a * Math.cos(t);
+			y[i] = cy + b * Math.sin(t);
+		}
+		return new Measured(x, y);
+	}
+
 	/** The two-path mapping of section 20.1.9.19: from the rectangle to between the top and the bottom path */
 	static Mapping envelope(final Rectangle2D rect, final Measured top, final Measured bottom) {
 		final double x0 = rect.getX(), y0 = rect.getY(), w = Math.max(1e-9, rect.getWidth()), h = Math.max(1e-9, rect.getHeight());

@@ -38,8 +38,8 @@ import java.util.Map;
  * ({@code textDeflateInflate} with three lines: the first two in its top band), and with fewer the last bands stay
  * empty, as Word's PDFs show.</li>
  * <li><b>One path</b> (Follow Path: {@code textArchUp}, {@code textArchDown}, {@code textCircle}): each glyph whole,
- * turned to the path, its baseline on the path drawn in toward the text rectangle's centre, the text scaled
- * ({@link #followPath}).</li>
+ * turned to the path, its baseline just inside the path drawn in toward the text rectangle's centre by the text's ink,
+ * the text scaled with it ({@link #followPath}).</li>
  * </ul>
  *
  * @since 17.3.7
@@ -63,7 +63,7 @@ final class WordArtWarps {
 		}
 		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
 		if (n == 1) {
-			followPath(lines, paths.get(0), rect, drawn, placed, "textCircle".equals(name));
+			followPath(lines, paths.get(0), rect, drawn, placed, true, "textCircle".equals(name));
 			return placed;
 		}
 		// more than two: bands, or (textButton) a path for each line
@@ -79,7 +79,7 @@ final class WordArtWarps {
 		for (int b = 0; b < slots; b++) {
 			List<WordArtRenderer.Line> mine = byBand.get(b);
 			if (mine.isEmpty()) continue;
-			if (single) followPath(mine, paths.get(b), rect, drawn, placed, false);
+			if (single) followPath(mine, paths.get(b), rect, drawn, placed, false, false);
 			else envelope(mine, paths.get(2 * b), paths.get(2 * b + 1), drawn, block, tallest);
 		}
 		// lines with no band (none drawn): Word draws them nowhere
@@ -147,70 +147,114 @@ final class WordArtWarps {
 	}
 
 	/**
-	 * Follow Path, as fitted to phase 0's probes (findings section 4; CR-083 phase 2's record): the text laid out at its
-	 * full size along the path, which runs {@link #PATH_ABOVE_BASELINE} of the line's size above the baseline (the
-	 * glyphs' tops being on the path's left, the outside of an arch), each glyph whole, its middle where its advances,
-	 * measured along the curve {@link #ADVANCE_ABOVE_BASELINE} above the baseline, put it, turned to the baseline there;
-	 * a later line further in by the line heights before it; the lines centred on the path's middle by arc length (or
-	 * set by their alignment); and then all of it, glyphs and places, scaled about the text rectangle's centre by
-	 * {@link #scale}. Word's glyphs and their invisible text are drawn so: within 1 to 2.5 pt of Word's on phase 0's
-	 * probes, where a baseline on the path alone was 7 to 9 pt off.
+	 * Follow Path, as Word draws it (the Follow Path round, cr083-followpath and cr083-followpath2: 435 probes; phase 1-2
+	 * findings section 4):
+	 * <ul>
+	 * <li>the path is scaled about the text rectangle's centre by k = D / (D + 2T), D the rectangle's larger side and T
+	 * the lines' ink heights added up, unscaled ({@link #pathScale}); the glyphs by k too, or less where the text is
+	 * longer than the curve it may take: an arch's half of its ellipse, or on an arc adjusted short its sweep on a circle
+	 * of the scaled half-width; a circle's whole ellipse (Word's cap on a circle adjusted short is not known: it took
+	 * less);</li>
+	 * <li>the text follows the whole ellipse the arc is part of, centred on the arc's middle, so that an adjusted arc
+	 * places it as the default does ({@code textArchUp} at 180, 210 and 240 degrees alike); left-aligned text starts at
+	 * the arc's start, right-aligned ends at its end;</li>
+	 * <li>each glyph's middle is at its advance along the path itself (arc length), its baseline
+	 * {@link #PATH_ABOVE_BASELINE} of its scaled size inside the path along the normal there, the glyph turned to the
+	 * path;</li>
+	 * <li>further lines stand away from the innermost line (the last, or for {@code textArchDown} the first: the one on
+	 * the side of the arc's centre), their inks touching, moved as a whole along the normal at the text's middle.</li>
+	 * </ul>
+	 * Word measured some probes' advances as if along a curve about 0.06 em outside the path (their spacing about 2%
+	 * closer, and the text a little back along it: 141 of the 320 one-line probes), which no property of the box, text or
+	 * preset that the round varied tells apart; this follows the others.
+	 *
+	 * @param ellipse whether the path is an arc of the ellipse in the text rectangle (the three Follow Path presets), whose
+	 *        whole ellipse the text may follow; otherwise (textButton's paths) the path alone
+	 * @param circle whether the text may take the whole ellipse (textCircle), not half
 	 */
 	private static void followPath(List<WordArtRenderer.Line> lines, TextWarp.Measured path, Rectangle2D.Double rect,
-			Map<WordArtRenderer.Glyph, Shape> drawn, Map<WordArtRenderer.Glyph, double[]> placed, boolean circle) {
+			Map<WordArtRenderer.Glyph, Shape> drawn, Map<WordArtRenderer.Glyph, double[]> placed, boolean ellipse, boolean circle) {
 		List<WordArtRenderer.Line> real = new ArrayList<WordArtRenderer.Line>();
-		double widest = 0;
+		List<double[]> inks = new ArrayList<double[]>();
+		double widest = 0, inkSum = 0;
 		for (WordArtRenderer.Line l : lines) {
 			if (!hasInk(l)) continue;
-			real.add(l);
-			double lead = 0;
+			// the line's ink, top and bottom from its baseline (y down), unscaled
+			double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY;
 			for (WordArtRenderer.Glyph g : l.glyphs) {
-				if (!g.space && !g.lineBreak) {
-					lead = g.x;
-					break;
-				}
+				if (g.space || g.lineBreak || g.outline == null) continue;
+				Rectangle2D r = tight(g.outline);
+				if (r == null) continue;
+				top = Math.min(top, r.getMinY());
+				bottom = Math.max(bottom, r.getMaxY());
 			}
-			widest = Math.max(widest, l.width() - lead);
+			if (top > bottom) continue;
+			real.add(l);
+			inks.add(new double[] { top, bottom });
+			inkSum += bottom - top;
+			widest = Math.max(widest, l.width() - lead(l));
 		}
 		if (real.isEmpty() || path.length <= 0 || widest <= 0) return;
-		double length = circle ? path.length / 2 : path.length;
-		double[] sk = scales(length, rect.height, widest, real.size());
-		double s = sk[0], k = sk[1];
 		double cx = rect.getCenterX(), cy = rect.getCenterY();
-		// the path drawn in toward the centre by the one-line scale, the glyphs scaled by the text's
-		AffineTransform in = new AffineTransform();
-		in.translate(cx, cy);
-		in.scale(k, k);
-		in.translate(-cx, -cy);
-		TextWarp.Measured scaled = new TextWarp.Measured(in.createTransformedShape(path.shape()));
-		// a later line further in by LINE_STEP of its scaled size, the first further out by OUT_PER_LINE of that a line
-		double first = 0;
-		for (WordArtRenderer.Glyph g : real.get(0).glyphs) if (g.font != null) first = Math.max(first, g.font.getSize2D());
-		double down = -OUT_PER_LINE * (real.size() - 1) * LINE_STEP * first * s;
-		for (WordArtRenderer.Line l : real) {
-			double size = 0;
-			for (WordArtRenderer.Glyph g : l.glyphs) if (g.font != null) size = Math.max(size, g.font.getSize2D());
-			TextWarp.Measured base = scaled.offset(-(PATH_ABOVE_BASELINE * size * s + down));
-			TextWarp.Measured along = base.offset(ADVANCE_ABOVE_BASELINE * size * s);
-			// the line from its first glyph to its last: Word sets Follow Path text without its leading and trailing spaces
-			double lead = 0;
-			for (WordArtRenderer.Glyph g : l.glyphs) {
-				if (!g.space && !g.lineBreak) {
-					lead = g.x;
-					break;
-				}
+		double k = pathScale(rect.width, rect.height, inkSum);
+		TextWarp.Measured curve;
+		double arc = k * path.length, room;
+		if (ellipse && rect.width > 0 && rect.height > 0) {
+			curve = TextWarp.ellipse(cx, cy, k * rect.width / 2, k * rect.height / 2, path);
+			if (circle) room = curve.length;
+			else {
+				// an arch: half its ellipse, or less on an arc adjusted short: its sweep (seen from the centre) on a circle of
+				// the scaled half-width (a 60 degree arch: 129 pt where Word took 125.4, and 49.6 where it took 50.4)
+				double[] p0 = path.at(0), pm = path.at(0.5);
+				double half = Math.abs(Math.IEEEremainder(Math.atan2(pm[1] - cy, pm[0] - cx) - Math.atan2(p0[1] - cy, p0[0] - cx), 2 * Math.PI));
+				room = Math.min(curve.length / 2, 2 * half * k * rect.width / 2);
 			}
-			double w = (l.width() - lead) * s;
-			String align = l.para == null ? "left" : l.para.getAlign();
-			double start = "center".equals(align) || "both".equals(align) || "distribute".equals(align) ? (along.length - w) / 2
-					: "right".equals(align) ? along.length - w : 0;
+		} else {
+			AffineTransform in = new AffineTransform();
+			in.translate(cx, cy);
+			in.scale(k, k);
+			in.translate(-cx, -cy);
+			curve = new TextWarp.Measured(in.createTransformedShape(path.shape()));
+			arc = room = curve.length;
+		}
+		double s = Math.min(k, room / widest);
+		double length = curve.length, middle = length / 2;
+		// the innermost line: the last, unless the arc's centre is on the glyphs' upper side there (textArchDown)
+		double am = curve.angle(0.5);
+		double[] pm = curve.at(0.5);
+		boolean lastInner = (cx - pm[0]) * -Math.sin(am) + (cy - pm[1]) * Math.cos(am) > 0;
+		int n = real.size();
+		double[] size = new double[n], off = new double[n];
+		for (int i = 0; i < n; i++) {
+			for (WordArtRenderer.Glyph g : real.get(i).glyphs) if (g.font != null) size[i] = Math.max(size[i], g.font.getSize2D());
+		}
+		// each line's baseline from the path, toward the glyphs' feet: the innermost's own, the others' inks touching
+		if (lastInner) {
+			off[n - 1] = PATH_ABOVE_BASELINE * size[n - 1] * s;
+			for (int i = n - 2; i >= 0; i--) off[i] = off[i + 1] - (-inks.get(i + 1)[0] + inks.get(i)[1]) * s;
+		} else {
+			off[0] = PATH_ABOVE_BASELINE * size[0] * s;
+			for (int i = 1; i < n; i++) off[i] = off[i - 1] + (inks.get(i - 1)[1] - inks.get(i)[0]) * s;
+		}
+		// the normal at the text's middle (the widest line's, by the first line's alignment), along which lines stand apart
+		String align0 = alignment(real.get(0));
+		double tm = "center".equals(align0) ? middle : "right".equals(align0) ? middle + arc / 2 - widest * s / 2
+				: middle - arc / 2 + widest * s / 2;
+		double an = curve.angle(tm / length);
+		double nx = -Math.sin(an), ny = Math.cos(an);
+		for (int i = 0; i < n; i++) {
+			WordArtRenderer.Line l = real.get(i);
+			double lead = lead(l), w = (l.width() - lead) * s;
+			String align = alignment(l);
+			double start = "center".equals(align) ? middle - w / 2 : "right".equals(align) ? middle + arc / 2 - w : middle - arc / 2;
+			double own = PATH_ABOVE_BASELINE * size[i] * s, apart = off[i] - own;
 			for (WordArtRenderer.Glyph g : l.glyphs) {
 				if (g.lineBreak) continue;
-				double u = (start + (g.x - lead + g.advance / 2) * s) / along.length;
-				double[] p = base.at(u);
-				double a = base.angle(u);
+				double u = (start + (g.x - lead + g.advance / 2) * s) / length;
+				double[] p = curve.at(u);
+				double a = curve.angle(u);
 				AffineTransform t = new AffineTransform();
-				t.translate(p[0], p[1]);
+				t.translate(p[0] - Math.sin(a) * own + nx * apart, p[1] + Math.cos(a) * own + ny * apart);
 				t.rotate(a);
 				t.scale(s, s);
 				t.translate(-g.advance / 2, 0);
@@ -219,60 +263,33 @@ final class WordArtWarps {
 				t.transform(new double[] { 0, 0 }, 0, o, 0, 1);
 				placed.put(g, new double[] { s, o[0], o[1], a });
 			}
-			down += LINE_STEP * size * s;
 		}
 	}
 
-	/** Follow Path's lines are this much of their scaled size apart, across the path (fitted: two and three lines, 0.665) */
-	static final double LINE_STEP = 0.665;
-
-	/** With more lines, the first is further out by this much of a line's step for each further line (fitted: 0.36) */
-	static final double OUT_PER_LINE = 0.36;
-
-	/** How far above the baseline the path runs, a fraction of the line's size (fitted: 0.15) */
-	static final double PATH_ABOVE_BASELINE = 0.15;
-
-	/** How far above the baseline the glyphs' advances are measured along, a fraction of the line's size (fitted: 0.2) */
-	static final double ADVANCE_ABOVE_BASELINE = 0.2;
-
-	/**
-	 * The text's scale on its path and how far the path is drawn in toward the text rectangle's centre, {s, k}, fitted to
-	 * phase 0 (findings section 4) and Jason's own WordArt document, by the path's length over the text's width q
-	 * (textCircle: half its length) and the rectangle's height over the text's width:
-	 * <ul>
-	 * <li>k: 0.727 to q = 1.234, then up through 0.745 at 1.65 and 0.8506 at 2.57 ({@link #pathScale}); and in a box
-	 * flatter than its text (Word's own form, its height over the text's width h below 0.343) 0.727 + 0.577 (0.343 - h)
-	 * where that is more (a long line: h 0.116, Word's 0.858; "WordArt", h 0.343, 0.727);</li>
-	 * <li>s: k, but no more than 0.709 q, or that flat term (an arch adjusted to a shorter arc: k 0.73, s 0.394, as Word);
-	 * each further line 0.823 of it.</li>
-	 * </ul>
-	 * The flat term rests on two of Word's lines, and the text's height counts in Word too ("wave", no ascender, 0.793;
-	 * "Warpy", descenders, 0.695; the rule 0.80 and 0.77): a round of probes of text lengths and heights would settle both.
-	 */
-	static double[] scales(double length, double height, double width, int lines) {
-		double q = length / width, h = height / width;
-		double flat = h < 0.343 ? 0.727 + 0.577 * (0.343 - h) : 0;
-		double k = Math.min(1, Math.max(pathScale(q), flat));
-		double s = Math.min(k, Math.max(0.709 * q, flat)) * Math.pow(0.823, lines - 1);
-		return new double[] { Math.max(0.05, Math.min(1, s)), k };
+	/** Where a line's first glyph that isn't a space starts: Word sets Follow Path text without its leading spaces */
+	private static double lead(WordArtRenderer.Line l) {
+		for (WordArtRenderer.Glyph g : l.glyphs) if (!g.space && !g.lineBreak) return g.x;
+		return 0;
 	}
 
-	/** The text's scale alone (see {@link #scales}) */
-	static double scale(double length, double height, double width, int lines) {
-		return scales(length, height, width, lines)[0];
+	/** A line's alignment along the path: center (justified ones too), right or left */
+	private static String alignment(WordArtRenderer.Line l) {
+		String a = l.para == null ? "left" : l.para.getAlign();
+		return "center".equals(a) || "both".equals(a) || "distribute".equals(a) ? "center" : "right".equals(a) ? "right" : "left";
 	}
 
+	/** How far the line's baseline is inside the path, a fraction of its scaled size (fitted on Aptos: 0.14 to 0.15; Calibri 0.158) */
+	static final double PATH_ABOVE_BASELINE = 0.145;
+
 	/**
-	 * How far the path is drawn in toward the text rectangle's centre, by the path's length over the text's width q:
-	 * the text's own scale but for the cap a short arc puts on that (an adjusted arch: the path in by 0.73, the glyphs
-	 * by 0.394)
+	 * Follow Path's scale, of the path about the text rectangle's centre and of the glyphs (unless the text is too long
+	 * for its curve): D / (D + 2T), D the rectangle's larger side and T the lines' ink heights added up, unscaled. Word's
+	 * on the Follow Path round to within 0.002 on 410 of 435 probes, and on phase 0's twelve: as if the path, grown by
+	 * the text's ink on each side, were scaled to fit the rectangle's larger side.
 	 */
-	static double pathScale(double q) {
-		double s;
-		if (q <= 1.234) s = 0.727;
-		else if (q <= 1.65) s = 0.727 + (q - 1.234) * (0.745 - 0.727) / (1.65 - 1.234);
-		else s = 0.745 + (q - 1.65) * (0.8506 - 0.745) / (2.57 - 1.65);
-		return Math.min(1, s);
+	static double pathScale(double width, double height, double ink) {
+		double d = Math.max(width, height);
+		return d <= 0 ? 1 : d / (d + 2 * Math.max(0, ink));
 	}
 
 	/** The tight bounds of a shape's outline (Java 11's Path2D bounds hold the control points) */

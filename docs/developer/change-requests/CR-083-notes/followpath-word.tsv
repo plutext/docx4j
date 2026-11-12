@@ -1,0 +1,436 @@
+probe	file	page	warp	adj	box	ins	wrap	autofit	lines	sizes	faces	ink_pt	word_box	word_scale	k
+fp10-01	fp10-length	1	textArchUp		288x144	0/0/0/0	none	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,195.30,396.00	0.7503	0.7501
+fp10-02	fp10-length	2	textArchUp		288x144	0/0/0/0	none	noAutofit	Word	36	Aptos	23.98	144.00,252.00,227.05,396.00	0.7500	0.7499
+fp10-03	fp10-length	3	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp10-04	fp10-length	4	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,330.55,396.00	0.7953	0.7953
+fp10-05	fp10-length	5	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,362.25,396.00	0.8200	0.8197
+fp10-06	fp10-length	6	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,407.35,396.00	0.8460	0.8458
+fp10-07	fp10-length	7	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,465.75,396.00	0.8700	0.8702
+fp10-08	fp10-length	8	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,542.60,396.00	0.8927	0.8926
+fp10-09	fp10-length	9	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,595.50,396.00	0.8480	0.9039
+fp10-10	fp10-length	10	textArchDown		288x144	0/0/0/0	none	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,195.30,396.00	0.7507	0.7501
+fp10-11	fp10-length	11	textArchDown		288x144	0/0/0/0	none	noAutofit	Word	36	Aptos	23.98	144.00,252.00,227.05,396.00	0.7500	0.7499
+fp10-12	fp10-length	12	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp10-13	fp10-length	13	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,330.55,396.00	0.7953	0.7953
+fp10-14	fp10-length	14	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,362.25,396.00	0.8200	0.8197
+fp10-15	fp10-length	15	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,407.35,396.00	0.8460	0.8458
+fp10-16	fp10-length	16	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,465.75,396.00	0.8700	0.8702
+fp10-17	fp10-length	17	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,542.60,396.00	0.8927	0.8926
+fp10-18	fp10-length	18	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,595.50,396.00	0.8480	0.9039
+fp10-19	fp10-length	19	textCircle		288x144	0/0/0/0	none	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,195.30,396.00	0.7503	0.7501
+fp10-20	fp10-length	20	textCircle		288x144	0/0/0/0	none	noAutofit	Word	36	Aptos	23.98	144.00,252.00,227.05,396.00	0.7500	0.7499
+fp10-21	fp10-length	21	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp10-22	fp10-length	22	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,330.55,396.00	0.7953	0.7953
+fp10-23	fp10-length	23	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,362.25,396.00	0.8193	0.8197
+fp10-24	fp10-length	24	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,407.35,396.00	0.8460	0.8458
+fp10-25	fp10-length	25	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,465.75,396.00	0.8700	0.8702
+fp10-26	fp10-length	26	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,542.60,396.00	0.8927	0.8926
+fp10-27	fp10-length	27	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,595.50,396.00	0.9040	0.9039
+fp11-01	fp11-ink-length	1	textArchUp		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8020	0.8021
+fp11-02	fp11-ink-length	2	textArchUp		288x144	0/0/0/0	none	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,311.15,396.00	0.8247	0.8247
+fp11-03	fp11-ink-length	3	textArchUp		288x144	0/0/0/0	none	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,398.25,396.00	0.8777	0.8775
+fp11-04	fp11-ink-length	4	textArchUp		288x144	0/0/0/0	none	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,485.40,396.00	0.9057	0.9058
+fp11-05	fp11-ink-length	5	textArchUp		288x144	0/0/0/0	none	noAutofit	wave wave wave wave wave	36	Aptos	17.74	144.00,252.00,572.50,396.00	0.9233	0.9235
+fp11-06	fp11-ink-length	6	textArchUp		288x144	0/0/0/0	none	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,242.15,396.00	0.7060	0.7058
+fp11-07	fp11-ink-length	7	textArchUp		288x144	0/0/0/0	none	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,347.35,396.00	0.7727	0.7722
+fp11-08	fp11-ink-length	8	textArchUp		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,452.60,396.00	0.8373	0.8373
+fp11-09	fp11-ink-length	9	textArchUp		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,557.80,396.00	0.8733	0.8735
+fp11-10	fp11-ink-length	10	textArchUp		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,595.50,396.00	0.8493	0.8828
+fp11-11	fp11-ink-length	11	textArchDown		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8023	0.8021
+fp11-12	fp11-ink-length	12	textArchDown		288x144	0/0/0/0	none	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,311.15,396.00	0.8247	0.8247
+fp11-13	fp11-ink-length	13	textArchDown		288x144	0/0/0/0	none	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,398.25,396.00	0.8773	0.8775
+fp11-14	fp11-ink-length	14	textArchDown		288x144	0/0/0/0	none	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,485.40,396.00	0.9060	0.9058
+fp11-15	fp11-ink-length	15	textArchDown		288x144	0/0/0/0	none	noAutofit	wave wave wave wave wave	36	Aptos	17.74	144.00,252.00,572.50,396.00	0.9233	0.9235
+fp11-16	fp11-ink-length	16	textArchDown		288x144	0/0/0/0	none	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,242.15,396.00	0.7060	0.7058
+fp11-17	fp11-ink-length	17	textArchDown		288x144	0/0/0/0	none	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,347.35,396.00	0.7720	0.7722
+fp11-18	fp11-ink-length	18	textArchDown		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,452.60,396.00	0.8373	0.8373
+fp11-19	fp11-ink-length	19	textArchDown		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,557.80,396.00	0.8733	0.8735
+fp11-20	fp11-ink-length	20	textArchDown		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,595.50,396.00	0.8493	0.8828
+fp11-21	fp11-ink-length	21	textCircle		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8027	0.8021
+fp11-22	fp11-ink-length	22	textCircle		288x144	0/0/0/0	none	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,311.15,396.00	0.8247	0.8247
+fp11-23	fp11-ink-length	23	textCircle		288x144	0/0/0/0	none	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,398.25,396.00	0.8773	0.8775
+fp11-24	fp11-ink-length	24	textCircle		288x144	0/0/0/0	none	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,485.40,396.00	0.9060	0.9058
+fp11-25	fp11-ink-length	25	textCircle		288x144	0/0/0/0	none	noAutofit	wave wave wave wave wave	36	Aptos	17.74	144.00,252.00,572.50,396.00	0.9233	0.9235
+fp11-26	fp11-ink-length	26	textCircle		288x144	0/0/0/0	none	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,242.15,396.00	0.7060	0.7058
+fp11-27	fp11-ink-length	27	textCircle		288x144	0/0/0/0	none	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,347.35,396.00	0.7720	0.7722
+fp11-28	fp11-ink-length	28	textCircle		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,452.60,396.00	0.8373	0.8373
+fp11-29	fp11-ink-length	29	textCircle		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,557.80,396.00	0.8733	0.8735
+fp11-30	fp11-ink-length	30	textCircle		288x144	0/0/0/0	none	noAutofit	Warpy Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,595.50,396.00	0.8827	0.8828
+fp12-01	fp12-ink	1	textArchUp		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8020	0.8021
+fp12-02	fp12-ink	2	textArchUp		288x144	0/0/0/0	none	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,236.75,396.00	0.7523	0.7523
+fp12-03	fp12-ink	3	textArchUp		288x144	0/0/0/0	none	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,222.40,396.00	0.7520	0.7519
+fp12-04	fp12-ink	4	textArchUp		288x144	0/0/0/0	none	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,228.85,396.00	0.7500	0.7499
+fp12-05	fp12-ink	5	textArchUp		288x144	0/0/0/0	none	noAutofit	-----	36	Aptos	2.60	144.00,252.00,205.50,396.00	0.9653	0.9651
+fp12-06	fp12-ink	6	textArchUp		288x144	0/0/0/0	none	noAutofit	_____	36	Aptos	1.67	144.00,252.00,227.00,396.00	0.9773	0.9773
+fp12-07	fp12-ink	7	textArchUp		288x144	0/0/0/0	none	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,209.95,396.00	0.8653	0.8654
+fp12-08	fp12-ink	8	textArchDown		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8023	0.8021
+fp12-09	fp12-ink	9	textArchDown		288x144	0/0/0/0	none	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,236.75,396.00	0.7527	0.7523
+fp12-10	fp12-ink	10	textArchDown		288x144	0/0/0/0	none	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,222.40,396.00	0.7520	0.7519
+fp12-11	fp12-ink	11	textArchDown		288x144	0/0/0/0	none	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,228.85,396.00	0.7503	0.7499
+fp12-12	fp12-ink	12	textArchDown		288x144	0/0/0/0	none	noAutofit	-----	36	Aptos	2.60	144.00,252.00,205.50,396.00	0.9653	0.9651
+fp12-13	fp12-ink	13	textArchDown		288x144	0/0/0/0	none	noAutofit	_____	36	Aptos	1.67	144.00,252.00,227.00,396.00	0.9773	0.9773
+fp12-14	fp12-ink	14	textArchDown		288x144	0/0/0/0	none	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,209.95,396.00	0.8653	0.8654
+fp12-15	fp12-ink	15	textCircle		288x144	0/0/0/0	none	noAutofit	wave	36	Aptos	17.74	144.00,252.00,224.05,396.00	0.8027	0.8021
+fp12-16	fp12-ink	16	textCircle		288x144	0/0/0/0	none	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,236.75,396.00	0.7527	0.7523
+fp12-17	fp12-ink	17	textCircle		288x144	0/0/0/0	none	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,222.40,396.00	0.7523	0.7519
+fp12-18	fp12-ink	18	textCircle		288x144	0/0/0/0	none	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,228.85,396.00	0.7500	0.7499
+fp12-19	fp12-ink	19	textCircle		288x144	0/0/0/0	none	noAutofit	-----	36	Aptos	2.60	144.00,252.00,205.50,396.00	0.9653	0.9651
+fp12-20	fp12-ink	20	textCircle		288x144	0/0/0/0	none	noAutofit	_____	36	Aptos	1.67	144.00,252.00,227.00,396.00	0.9773	0.9773
+fp12-21	fp12-ink	21	textCircle		288x144	0/0/0/0	none	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,209.95,396.00	0.8660	0.8654
+fp20-01	fp20-box	1	textArchUp		144x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-02	fp20-box	2	textArchUp		216x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-03	fp20-box	3	textArchUp		288x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-04	fp20-box	4	textArchUp		432x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-05	fp20-box	5	textArchUp		144x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-06	fp20-box	6	textArchUp		216x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-07	fp20-box	7	textArchUp		288x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-08	fp20-box	8	textArchUp		432x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-09	fp20-box	9	textArchUp		144x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-10	fp20-box	10	textArchUp		216x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-11	fp20-box	11	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-12	fp20-box	12	textArchUp		432x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-13	fp20-box	13	textArchUp		144x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-14	fp20-box	14	textArchUp		216x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-15	fp20-box	15	textArchUp		288x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-16	fp20-box	16	textArchUp		432x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-17	fp20-box	17	textArchUp		144x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-18	fp20-box	18	textArchUp		216x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-19	fp20-box	19	textArchUp		288x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-20	fp20-box	20	textArchUp		432x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-21	fp20-box	21	textArchDown		144x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-22	fp20-box	22	textArchDown		216x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-23	fp20-box	23	textArchDown		288x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-24	fp20-box	24	textArchDown		432x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-25	fp20-box	25	textArchDown		144x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-26	fp20-box	26	textArchDown		216x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-27	fp20-box	27	textArchDown		288x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-28	fp20-box	28	textArchDown		432x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7273	0.7273
+fp20-29	fp20-box	29	textArchDown		144x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-30	fp20-box	30	textArchDown		216x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-31	fp20-box	31	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-32	fp20-box	32	textArchDown		432x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-33	fp20-box	33	textArchDown		144x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-34	fp20-box	34	textArchDown		216x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-35	fp20-box	35	textArchDown		288x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-36	fp20-box	36	textArchDown		432x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-37	fp20-box	37	textArchDown		144x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-38	fp20-box	38	textArchDown		216x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-39	fp20-box	39	textArchDown		288x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-40	fp20-box	40	textArchDown		432x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-41	fp20-box	41	textCircle		144x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-42	fp20-box	42	textCircle		216x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-43	fp20-box	43	textCircle		288x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-44	fp20-box	44	textCircle		432x36	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,288.00	0.7273	0.7273
+fp20-45	fp20-box	45	textCircle		144x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7280	0.7273
+fp20-46	fp20-box	46	textCircle		216x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7280	0.7273
+fp20-47	fp20-box	47	textCircle		288x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7280	0.7273
+fp20-48	fp20-box	48	textCircle		432x72	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,324.00	0.7280	0.7273
+fp20-49	fp20-box	49	textCircle		144x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-50	fp20-box	50	textCircle		216x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-51	fp20-box	51	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-52	fp20-box	52	textCircle		432x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+fp20-53	fp20-box	53	textCircle		144x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-54	fp20-box	54	textCircle		216x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-55	fp20-box	55	textCircle		288x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-56	fp20-box	56	textCircle		432x216	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,468.00	0.8180	0.8182
+fp20-57	fp20-box	57	textCircle		144x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-58	fp20-box	58	textCircle		216x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-59	fp20-box	59	textCircle		288x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+fp20-60	fp20-box	60	textCircle		432x288	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,540.00	0.8573	0.8572
+wp10-01	wp10-length	1	textArchUp		432x144	0/0/0/0	square	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,576.00,396.00	0.9007	0.9002
+wp10-02	wp10-length	2	textArchUp		432x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-03	wp10-length	3	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-04	wp10-length	4	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-05	wp10-length	5	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-06	wp10-length	6	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-07	wp10-length	7	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-08	wp10-length	8	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-09	wp10-length	9	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-10	wp10-length	10	textArchDown		432x144	0/0/0/0	square	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,576.00,396.00	0.9003	0.9002
+wp10-11	wp10-length	11	textArchDown		432x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9003	0.9000
+wp10-12	wp10-length	12	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-13	wp10-length	13	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-14	wp10-length	14	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-15	wp10-length	15	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-16	wp10-length	16	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-17	wp10-length	17	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-18	wp10-length	18	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-19	wp10-length	19	textCircle		432x144	0/0/0/0	square	noAutofit	Wo	36	Aptos	23.94	144.00,252.00,576.00,396.00	0.9000	0.9002
+wp10-20	wp10-length	20	textCircle		432x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-21	wp10-length	21	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-22	wp10-length	22	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-23	wp10-length	23	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-24	wp10-length	24	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-25	wp10-length	25	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Wo	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-26	wp10-length	26	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt WordArt Word	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp10-27	wp10-length	27	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp11-01	wp11-ink-length	1	textArchUp		432x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-02	wp11-ink-length	2	textArchUp		432x144	0/0/0/0	square	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-03	wp11-ink-length	3	textArchUp		432x144	0/0/0/0	square	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-04	wp11-ink-length	4	textArchUp		432x144	0/0/0/0	square	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-05	wp11-ink-length	5	textArchUp		432x144	0/0/0/0	square	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-06	wp11-ink-length	6	textArchUp		432x144	0/0/0/0	square	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-07	wp11-ink-length	7	textArchUp		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-08	wp11-ink-length	8	textArchUp		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-09	wp11-ink-length	9	textArchDown		432x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-10	wp11-ink-length	10	textArchDown		432x144	0/0/0/0	square	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-11	wp11-ink-length	11	textArchDown		432x144	0/0/0/0	square	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-12	wp11-ink-length	12	textArchDown		432x144	0/0/0/0	square	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-13	wp11-ink-length	13	textArchDown		432x144	0/0/0/0	square	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-14	wp11-ink-length	14	textArchDown		432x144	0/0/0/0	square	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-15	wp11-ink-length	15	textArchDown		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-16	wp11-ink-length	16	textArchDown		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-17	wp11-ink-length	17	textCircle		432x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9243	0.9241
+wp11-18	wp11-ink-length	18	textCircle		432x144	0/0/0/0	square	noAutofit	wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-19	wp11-ink-length	19	textCircle		432x144	0/0/0/0	square	noAutofit	wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-20	wp11-ink-length	20	textCircle		432x144	0/0/0/0	square	noAutofit	wave wave wave wave	36	Aptos	17.74	144.00,252.00,576.00,396.00	0.9240	0.9241
+wp11-21	wp11-ink-length	21	textCircle		432x144	0/0/0/0	square	noAutofit	Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8787	0.8782
+wp11-22	wp11-ink-length	22	textCircle		432x144	0/0/0/0	square	noAutofit	Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-23	wp11-ink-length	23	textCircle		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp11-24	wp11-ink-length	24	textCircle		432x144	0/0/0/0	square	noAutofit	Warpy Warpy Warpy Warpy	36	Aptos	29.95	144.00,252.00,576.00,396.00	0.8780	0.8782
+wp12-01	wp12-ink	1	textArchUp		288x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,432.00,396.00	0.8907	0.8903
+wp12-02	wp12-ink	2	textArchUp		288x144	0/0/0/0	square	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,432.00,396.00	0.8590	0.8588
+wp12-03	wp12-ink	3	textArchUp		288x144	0/0/0/0	square	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,432.00,396.00	0.8587	0.8585
+wp12-04	wp12-ink	4	textArchUp		288x144	0/0/0/0	square	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp12-05	wp12-ink	5	textArchUp		288x144	0/0/0/0	square	noAutofit	-----	36	Aptos	2.60	144.00,252.00,432.00,396.00	0.9820	0.9822
+wp12-06	wp12-ink	6	textArchUp		288x144	0/0/0/0	square	noAutofit	_____	36	Aptos	1.67	144.00,252.00,432.00,396.00	0.9887	0.9885
+wp12-07	wp12-ink	7	textArchUp		288x144	0/0/0/0	square	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,432.00,396.00	0.9280	0.9279
+wp12-08	wp12-ink	8	textArchDown		288x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,432.00,396.00	0.8903	0.8903
+wp12-09	wp12-ink	9	textArchDown		288x144	0/0/0/0	square	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,432.00,396.00	0.8590	0.8588
+wp12-10	wp12-ink	10	textArchDown		288x144	0/0/0/0	square	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,432.00,396.00	0.8587	0.8585
+wp12-11	wp12-ink	11	textArchDown		288x144	0/0/0/0	square	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8577	0.8572
+wp12-12	wp12-ink	12	textArchDown		288x144	0/0/0/0	square	noAutofit	-----	36	Aptos	2.60	144.00,252.00,432.00,396.00	0.9827	0.9822
+wp12-13	wp12-ink	13	textArchDown		288x144	0/0/0/0	square	noAutofit	_____	36	Aptos	1.67	144.00,252.00,432.00,396.00	0.9887	0.9885
+wp12-14	wp12-ink	14	textArchDown		288x144	0/0/0/0	square	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,432.00,396.00	0.9280	0.9279
+wp12-15	wp12-ink	15	textCircle		288x144	0/0/0/0	square	noAutofit	wave	36	Aptos	17.74	144.00,252.00,432.00,396.00	0.8900	0.8903
+wp12-16	wp12-ink	16	textCircle		288x144	0/0/0/0	square	noAutofit	WAVE	36	Aptos	23.66	144.00,252.00,432.00,396.00	0.8587	0.8588
+wp12-17	wp12-ink	17	textCircle		288x144	0/0/0/0	square	noAutofit	wavy	36	Aptos	23.71	144.00,252.00,432.00,396.00	0.8587	0.8585
+wp12-18	wp12-ink	18	textCircle		288x144	0/0/0/0	square	noAutofit	Wave	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp12-19	wp12-ink	19	textCircle		288x144	0/0/0/0	square	noAutofit	-----	36	Aptos	2.60	144.00,252.00,432.00,396.00	0.9827	0.9822
+wp12-20	wp12-ink	20	textCircle		288x144	0/0/0/0	square	noAutofit	_____	36	Aptos	1.67	144.00,252.00,432.00,396.00	0.9887	0.9885
+wp12-21	wp12-ink	21	textCircle		288x144	0/0/0/0	square	noAutofit	°°°°°	36	Aptos	11.18	144.00,252.00,432.00,396.00	0.9280	0.9279
+wp20-01	wp20-box	1	textArchUp		144x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,288.00	0.7500	0.7499
+wp20-02	wp20-box	2	textArchUp		216x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,288.00	0.8180	0.8182
+wp20-03	wp20-box	3	textArchUp		288x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,288.00	0.8573	0.8572
+wp20-04	wp20-box	4	textArchUp		432x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,288.00	0.9007	0.9000
+wp20-05	wp20-box	5	textArchUp		144x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,324.00	0.7500	0.7499
+wp20-06	wp20-box	6	textArchUp		216x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,324.00	0.8180	0.8182
+wp20-07	wp20-box	7	textArchUp		288x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,324.00	0.8567	0.8572
+wp20-08	wp20-box	8	textArchUp		432x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,324.00	0.9000	0.9000
+wp20-09	wp20-box	9	textArchUp		144x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,396.00	0.7500	0.7499
+wp20-10	wp20-box	10	textArchUp		216x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,396.00	0.8180	0.8182
+wp20-11	wp20-box	11	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp20-12	wp20-box	12	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp20-13	wp20-box	13	textArchUp		144x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,468.00	0.8187	0.8182
+wp20-14	wp20-box	14	textArchUp		216x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,468.00	0.8180	0.8182
+wp20-15	wp20-box	15	textArchUp		288x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,468.00	0.8573	0.8572
+wp20-16	wp20-box	16	textArchUp		432x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,468.00	0.9000	0.9000
+wp20-17	wp20-box	17	textArchUp		144x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,540.00	0.8573	0.8572
+wp20-18	wp20-box	18	textArchUp		216x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,540.00	0.8573	0.8572
+wp20-19	wp20-box	19	textArchUp		288x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,540.00	0.8573	0.8572
+wp20-20	wp20-box	20	textArchUp		432x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,540.00	0.9000	0.9000
+wp20-21	wp20-box	21	textArchDown		144x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,288.00	0.7500	0.7499
+wp20-22	wp20-box	22	textArchDown		216x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,288.00	0.8187	0.8182
+wp20-23	wp20-box	23	textArchDown		288x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,288.00	0.8573	0.8572
+wp20-24	wp20-box	24	textArchDown		432x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,288.00	0.9000	0.9000
+wp20-25	wp20-box	25	textArchDown		144x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,324.00	0.7500	0.7499
+wp20-26	wp20-box	26	textArchDown		216x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,324.00	0.8180	0.8182
+wp20-27	wp20-box	27	textArchDown		288x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,324.00	0.8567	0.8572
+wp20-28	wp20-box	28	textArchDown		432x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,324.00	0.9000	0.9000
+wp20-29	wp20-box	29	textArchDown		144x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,396.00	0.7500	0.7499
+wp20-30	wp20-box	30	textArchDown		216x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,396.00	0.8180	0.8182
+wp20-31	wp20-box	31	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp20-32	wp20-box	32	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp20-33	wp20-box	33	textArchDown		144x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,468.00	0.8180	0.8182
+wp20-34	wp20-box	34	textArchDown		216x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,468.00	0.8180	0.8182
+wp20-35	wp20-box	35	textArchDown		288x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,468.00	0.8573	0.8572
+wp20-36	wp20-box	36	textArchDown		432x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,468.00	0.9000	0.9000
+wp20-37	wp20-box	37	textArchDown		144x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,540.00	0.8573	0.8572
+wp20-38	wp20-box	38	textArchDown		216x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,540.00	0.8573	0.8572
+wp20-39	wp20-box	39	textArchDown		288x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,540.00	0.8567	0.8572
+wp20-40	wp20-box	40	textArchDown		432x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,540.00	0.9000	0.9000
+wp20-41	wp20-box	41	textCircle		144x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,288.00	0.7500	0.7499
+wp20-42	wp20-box	42	textCircle		216x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,288.00	0.8187	0.8182
+wp20-43	wp20-box	43	textCircle		288x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,288.00	0.8573	0.8572
+wp20-44	wp20-box	44	textCircle		432x36	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,288.00	0.9000	0.9000
+wp20-45	wp20-box	45	textCircle		144x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,324.00	0.7507	0.7499
+wp20-46	wp20-box	46	textCircle		216x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,324.00	0.8180	0.8182
+wp20-47	wp20-box	47	textCircle		288x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,324.00	0.8573	0.8572
+wp20-48	wp20-box	48	textCircle		432x72	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,324.00	0.9000	0.9000
+wp20-49	wp20-box	49	textCircle		144x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,396.00	0.7500	0.7499
+wp20-50	wp20-box	50	textCircle		216x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,396.00	0.8180	0.8182
+wp20-51	wp20-box	51	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp20-52	wp20-box	52	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp20-53	wp20-box	53	textCircle		144x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,468.00	0.8180	0.8182
+wp20-54	wp20-box	54	textCircle		216x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,468.00	0.8180	0.8182
+wp20-55	wp20-box	55	textCircle		288x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,468.00	0.8573	0.8572
+wp20-56	wp20-box	56	textCircle		432x216	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,468.00	0.9000	0.9000
+wp20-57	wp20-box	57	textCircle		144x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,288.00,540.00	0.8573	0.8572
+wp20-58	wp20-box	58	textCircle		216x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,360.00,540.00	0.8573	0.8572
+wp20-59	wp20-box	59	textCircle		288x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,540.00	0.8573	0.8572
+wp20-60	wp20-box	60	textCircle		432x288	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,540.00	0.9000	0.9000
+wp30-01	wp30-adj	1	textArchUp	90	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-02	wp30-adj	2	textArchUp	120	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-03	wp30-adj	3	textArchUp	150	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-04	wp30-adj	4	textArchUp	180	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-05	wp30-adj	5	textArchUp	210	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-06	wp30-adj	6	textArchUp	240	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-07	wp30-adj	7	textArchUp	0	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-08	wp30-adj	8	textArchUp	90	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp30-09	wp30-adj	9	textArchUp	120	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-10	wp30-adj	10	textArchUp	150	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-11	wp30-adj	11	textArchUp	180	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp30-12	wp30-adj	12	textArchUp	210	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-13	wp30-adj	13	textArchUp	240	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.4767	0.8572
+wp30-14	wp30-adj	14	textArchUp	0	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp30-15	wp30-adj	15	textArchDown	270	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-16	wp30-adj	16	textArchDown	300	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-17	wp30-adj	17	textArchDown	330	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-18	wp30-adj	18	textArchDown	0	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-19	wp30-adj	19	textArchDown	30	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-20	wp30-adj	20	textArchDown	60	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-21	wp30-adj	21	textArchDown	180	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-22	wp30-adj	22	textArchDown	270	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-23	wp30-adj	23	textArchDown	300	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-24	wp30-adj	24	textArchDown	330	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-25	wp30-adj	25	textArchDown	0	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp30-26	wp30-adj	26	textArchDown	30	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-27	wp30-adj	27	textArchDown	60	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.4767	0.8572
+wp30-28	wp30-adj	28	textArchDown	180	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-29	wp30-adj	29	textCircle	0	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-30	wp30-adj	30	textCircle	30	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-31	wp30-adj	31	textCircle	60	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8567	0.8572
+wp30-32	wp30-adj	32	textCircle	90	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-33	wp30-adj	33	textCircle	120	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-34	wp30-adj	34	textCircle	150	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.5693	0.8572
+wp30-35	wp30-adj	35	textCircle	180	288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-36	wp30-adj	36	textCircle	0	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-37	wp30-adj	37	textCircle	30	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8567	0.8572
+wp30-38	wp30-adj	38	textCircle	60	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-39	wp30-adj	39	textCircle	90	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp30-40	wp30-adj	40	textCircle	120	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.6633	0.8572
+wp30-41	wp30-adj	41	textCircle	150	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.2753	0.8572
+wp30-42	wp30-adj	42	textCircle	180	288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp40-01	wp40-size	1	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	9	Aptos	5.99	144.00,252.00,576.00,396.00	0.9867	0.9730
+wp40-02	wp40-size	2	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	12	Aptos	7.99	144.00,252.00,576.00,396.00	0.9640	0.9643
+wp40-03	wp40-size	3	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	18	Aptos	11.99	144.00,252.00,576.00,396.00	0.9480	0.9474
+wp40-04	wp40-size	4	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	24	Aptos	15.98	144.00,252.00,576.00,396.00	0.9310	0.9311
+wp40-05	wp40-size	5	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp40-06	wp40-size	6	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	48	Aptos	31.97	144.00,252.00,576.00,396.00	0.8710	0.8710
+wp40-07	wp40-size	7	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	72	Aptos	47.95	144.00,252.00,576.00,396.00	0.8183	0.8182
+wp40-08	wp40-size	8	textArchUp		432x144	0/0/0/0	square	noAutofit	WordArt	96	Aptos	63.94	144.00,252.00,576.00,396.00	0.7718	0.7715
+wp40-09	wp40-size	9	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	9	Aptos	5.99	144.00,252.00,576.00,396.00	0.9867	0.9730
+wp40-10	wp40-size	10	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	12	Aptos	7.99	144.00,252.00,576.00,396.00	0.9640	0.9643
+wp40-11	wp40-size	11	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	18	Aptos	11.99	144.00,252.00,576.00,396.00	0.9480	0.9474
+wp40-12	wp40-size	12	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	24	Aptos	15.98	144.00,252.00,576.00,396.00	0.9310	0.9311
+wp40-13	wp40-size	13	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp40-14	wp40-size	14	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	48	Aptos	31.97	144.00,252.00,576.00,396.00	0.8710	0.8710
+wp40-15	wp40-size	15	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	72	Aptos	47.95	144.00,252.00,576.00,396.00	0.8183	0.8182
+wp40-16	wp40-size	16	textArchDown		432x144	0/0/0/0	square	noAutofit	WordArt	96	Aptos	63.94	144.00,252.00,576.00,396.00	0.7718	0.7715
+wp40-17	wp40-size	17	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	9	Aptos	5.99	144.00,252.00,576.00,396.00	0.9840	0.9730
+wp40-18	wp40-size	18	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	12	Aptos	7.99	144.00,252.00,576.00,396.00	0.9640	0.9643
+wp40-19	wp40-size	19	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	18	Aptos	11.99	144.00,252.00,576.00,396.00	0.9467	0.9474
+wp40-20	wp40-size	20	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	24	Aptos	15.98	144.00,252.00,576.00,396.00	0.9310	0.9311
+wp40-21	wp40-size	21	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,576.00,396.00	0.9000	0.9000
+wp40-22	wp40-size	22	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	48	Aptos	31.97	144.00,252.00,576.00,396.00	0.8710	0.8710
+wp40-23	wp40-size	23	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	72	Aptos	47.95	144.00,252.00,576.00,396.00	0.8183	0.8182
+wp40-24	wp40-size	24	textCircle		432x144	0/0/0/0	square	noAutofit	WordArt	96	Aptos	63.94	144.00,252.00,576.00,396.00	0.7718	0.7715
+wp50-01	wp50-lines	1	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp50-02	wp50-lines	2	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt	36 | 36 | 36	Aptos	71.93	144.00,252.00,432.00,396.00	0.6667 | 0.6667 | 0.6667	0.6667
+wp50-03	wp50-lines	3	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt | WordArt	36 | 36 | 36 | 36	Aptos	95.91	144.00,252.00,432.00,396.00	0.6000 | 0.6000 | 0.6000 | 0.6000	0.6000
+wp50-04	wp50-lines	4	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7503	0.7502
+wp50-05	wp50-lines	5	textArchUp		288x144	0/0/0/0	square	noAutofit	Wo | WordArt	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7502
+wp50-06	wp50-lines	6	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7503	0.7502
+wp50-07	wp50-lines	7	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	24 | 48	Aptos	47.95	144.00,252.00,432.00,396.00	0.7110 | 0.7115	0.7500
+wp50-08	wp50-lines	8	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	48 | 24	Aptos	47.95	144.00,252.00,432.00,396.00	0.7290 | 0.7290	0.7500
+wp50-09	wp50-lines	9	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt |  | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp50-10	wp50-lines	10	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp50-11	wp50-lines	11	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt	36 | 36 | 36	Aptos	71.93	144.00,252.00,432.00,396.00	0.6667 | 0.6667 | 0.6667	0.6667
+wp50-12	wp50-lines	12	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt | WordArt	36 | 36 | 36 | 36	Aptos	95.91	144.00,252.00,432.00,396.00	0.6000 | 0.6000 | 0.6000 | 0.6000	0.6000
+wp50-13	wp50-lines	13	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7502
+wp50-14	wp50-lines	14	textArchDown		288x144	0/0/0/0	square	noAutofit	Wo | WordArt	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7503 | 0.7500	0.7502
+wp50-15	wp50-lines	15	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7502
+wp50-16	wp50-lines	16	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	24 | 48	Aptos	47.95	144.00,252.00,432.00,396.00	0.7110 | 0.7115	0.7500
+wp50-17	wp50-lines	17	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	48 | 24	Aptos	47.95	144.00,252.00,432.00,396.00	0.7290 | 0.7290	0.7500
+wp50-18	wp50-lines	18	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt |  | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp50-19	wp50-lines	19	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp50-20	wp50-lines	20	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt	36 | 36 | 36	Aptos	71.93	144.00,252.00,432.00,396.00	0.6667 | 0.6667 | 0.6667	0.6667
+wp50-21	wp50-lines	21	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt | WordArt	36 | 36 | 36 | 36	Aptos	95.91	144.00,252.00,432.00,396.00	0.6000 | 0.6000 | 0.6000 | 0.6000	0.6000
+wp50-22	wp50-lines	22	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7507	0.7502
+wp50-23	wp50-lines	23	textCircle		288x144	0/0/0/0	square	noAutofit	Wo | WordArt	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7502
+wp50-24	wp50-lines	24	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt WordArt | Wo	36 | 36	Aptos	47.92	144.00,252.00,432.00,396.00	0.7500 | 0.7507	0.7502
+wp50-25	wp50-lines	25	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	24 | 48	Aptos	47.95	144.00,252.00,432.00,396.00	0.7110 | 0.7120	0.7500
+wp50-26	wp50-lines	26	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	48 | 24	Aptos	47.95	144.00,252.00,432.00,396.00	0.7290 | 0.7290	0.7500
+wp50-27	wp50-lines	27	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt |  | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.7500 | 0.7500	0.7500
+wp60-01	wp60-form	1	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Wo	36	Aptos	23.94	144.00,252.00,209.70,303.35	0.5160	0.5160
+wp60-02	wp60-form	2	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Word	36	Aptos	23.98	144.00,252.00,241.45,303.35	0.6337	0.6332
+wp60-03	wp60-form	3	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	36	Aptos	23.98	144.00,252.00,286.55,303.35	0.7273	0.7273
+wp60-04	wp60-form	4	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt Word	36	Aptos	23.98	144.00,252.00,376.65,303.35	0.8193	0.8197
+wp60-05	wp60-form	5	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,421.75,303.35	0.8460	0.8458
+wp60-06	wp60-form	6	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Hello World - follow path	36	Aptos	29.95	144.00,252.00,539.95,303.35	0.8640	0.8642
+wp60-07	wp60-form	7	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,557.00,303.35	0.8927	0.8926
+wp60-08	wp60-form	8	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	18	Aptos	11.99	144.00,252.00,222.60,281.35	0.7280	0.7273
+wp60-09	wp60-form	9	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	72	Aptos	47.95	144.00,252.00,414.45,347.30	0.7273	0.7273
+wp60-10	wp60-form	10	textArchUp		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt | Two lines	36 | 36	Aptos	48.04	144.00,252.00,301.45,347.30	0.5980 | 0.5980	0.5978
+wp60-11	wp60-form	11	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Wo	36	Aptos	23.94	144.00,252.00,209.70,303.35	0.5160	0.5160
+wp60-12	wp60-form	12	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Word	36	Aptos	23.98	144.00,252.00,241.45,303.35	0.6340	0.6332
+wp60-13	wp60-form	13	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	36	Aptos	23.98	144.00,252.00,286.55,303.35	0.7273	0.7273
+wp60-14	wp60-form	14	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt Word	36	Aptos	23.98	144.00,252.00,376.65,303.35	0.8200	0.8197
+wp60-15	wp60-form	15	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,421.75,303.35	0.8460	0.8458
+wp60-16	wp60-form	16	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Hello World - follow path	36	Aptos	29.95	144.00,252.00,539.95,303.35	0.8640	0.8642
+wp60-17	wp60-form	17	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,557.00,303.35	0.8927	0.8926
+wp60-18	wp60-form	18	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	18	Aptos	11.99	144.00,252.00,222.60,281.35	0.7280	0.7273
+wp60-19	wp60-form	19	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	72	Aptos	47.95	144.00,252.00,414.45,347.30	0.7273	0.7273
+wp60-20	wp60-form	20	textArchDown		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt | Two lines	36 | 36	Aptos	48.04	144.00,252.00,301.45,347.30	0.5980 | 0.5980	0.5978
+wp60-21	wp60-form	21	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Wo	36	Aptos	23.94	144.00,252.00,209.70,303.35	0.5167	0.5160
+wp60-22	wp60-form	22	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Word	36	Aptos	23.98	144.00,252.00,241.45,303.35	0.6340	0.6332
+wp60-23	wp60-form	23	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	36	Aptos	23.98	144.00,252.00,286.55,303.35	0.7280	0.7273
+wp60-24	wp60-form	24	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt Word	36	Aptos	23.98	144.00,252.00,376.65,303.35	0.8200	0.8197
+wp60-25	wp60-form	25	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,421.75,303.35	0.8460	0.8458
+wp60-26	wp60-form	26	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	Hello World - follow path	36	Aptos	29.95	144.00,252.00,539.95,303.35	0.8640	0.8642
+wp60-27	wp60-form	27	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt WordArt WordArt	36	Aptos	23.98	144.00,252.00,557.00,303.35	0.8927	0.8926
+wp60-28	wp60-form	28	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	18	Aptos	11.99	144.00,252.00,222.60,281.35	0.7267	0.7273
+wp60-29	wp60-form	29	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt	72	Aptos	47.95	144.00,252.00,414.45,347.30	0.7273	0.7273
+wp60-30	wp60-form	30	textCircle		144x144	7.2/3.6/7.2/3.6	none	spAutoFit	WordArt | Two lines	36 | 36	Aptos	48.04	144.00,252.00,301.45,347.30	0.5980 | 0.5973	0.5978
+wp70-01	wp70-other	1	textArchUp		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp70-02	wp70-other	2	textArchUp		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-03	wp70-other	3	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-04	wp70-other	4	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-05	wp70-other	5	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.96	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-06	wp70-other	6	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Narrow	23.92	144.00,252.00,432.00,396.00	0.8573	0.8574
+wp70-07	wp70-other	7	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Display	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-08	wp70-other	8	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Georgia Pro	27.76	144.00,252.00,432.00,396.00	0.8533	0.8383
+wp70-09	wp70-other	9	textArchUp		288x144	7.2/3.6/7.2/3.6	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8507	0.8508
+wp70-10	wp70-other	10	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-11	wp70-other	11	textArchUp		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-12	wp70-other	12	textArchUp		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+wp70-13	wp70-other	13	textArchDown		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-14	wp70-other	14	textArchDown		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-15	wp70-other	15	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-16	wp70-other	16	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-17	wp70-other	17	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.96	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-18	wp70-other	18	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Narrow	23.92	144.00,252.00,432.00,396.00	0.8573	0.8574
+wp70-19	wp70-other	19	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Display	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-20	wp70-other	20	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Georgia Pro	27.76	144.00,252.00,432.00,396.00	0.8533	0.8383
+wp70-21	wp70-other	21	textArchDown		288x144	7.2/3.6/7.2/3.6	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8507	0.8508
+wp70-22	wp70-other	22	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-23	wp70-other	23	textArchDown		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-24	wp70-other	24	textArchDown		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+wp70-25	wp70-other	25	textCircle		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-26	wp70-other	26	textCircle		288x144	0/0/0/0	square	noAutofit	Word	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-27	wp70-other	27	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-28	wp70-other	28	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-29	wp70-other	29	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.96	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-30	wp70-other	30	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Narrow	23.92	144.00,252.00,432.00,396.00	0.8580	0.8574
+wp70-31	wp70-other	31	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos Display	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-32	wp70-other	32	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Georgia Pro	27.76	144.00,252.00,432.00,396.00	0.8533	0.8383
+wp70-33	wp70-other	33	textCircle		288x144	7.2/3.6/7.2/3.6	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8507	0.8508
+wp70-34	wp70-other	34	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-35	wp70-other	35	textCircle		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp70-36	wp70-other	36	textCircle		288x144	0/0/0/0	none	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,272.15,396.00	0.7500	0.7499
+wp80-01	wp80-button	1	textButton		288x144	0/0/0/0	square	noAutofit	WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8573	0.8572
+wp80-02	wp80-button	2	textButton		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.8573 | 0.8573	0.7500
+wp80-03	wp80-button	3	textButton		288x144	0/0/0/0	square	noAutofit	WordArt | WordArt | WordArt	36 | 36 | 36	Aptos	71.93	144.00,252.00,432.00,396.00	0.8573 | 0.8573 | 0.8573	0.6667
+wp80-04	wp80-button	4	textButton		288x144	0/0/0/0	square	noAutofit	WordArt WordArt	36	Aptos	23.98	144.00,252.00,432.00,396.00	0.8570	0.8572
+wp80-05	wp80-button	5	textButton		288x144	0/0/0/0	square	noAutofit	WordArt WordArt | WordArt WordArt	36 | 36	Aptos	47.95	144.00,252.00,432.00,396.00	0.8570 | 0.8573	0.7500
+wp80-06	wp80-button	6	textButton		288x144	0/0/0/0	square	noAutofit	WordArt WordArt | WordArt WordArt | WordArt WordArt	36 | 36 | 36	Aptos	71.93	144.00,252.00,432.00,396.00	0.8570 | 0.8573 | 0.8570	0.6667

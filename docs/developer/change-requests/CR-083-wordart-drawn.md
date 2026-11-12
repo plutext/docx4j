@@ -6,9 +6,12 @@ drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status). Ph
 Phases 1 and 2 built 2026-11-12 (`CR-083-notes/phase1-2-findings.md`): WordArt laid out, sized, warped and
 painted as D2 has it, in PDF (both routes) and HTML. One addition to §5.1 for Jason: Word's own WordArt form
 (`textNoShape` with `wrap="none"`) is drawn too. Boxes within 0.05 pt of Word's; the two-path warps as phase 0's model
-(median 0.28 pt) and textDeflateInflate's and textDeflateInflateDeflate's bands within 0.83 pt; Follow Path fitted
-(median 2.7 pt); the 11 presets phase 0 left unexplained, textButtonPour's further lines and textButton are still off.
-Fidelity gates b465 and b466: 0 movers. Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
+(median 0.28 pt) and textDeflateInflate's and textDeflateInflateDeflate's bands within 0.83 pt; the 11 presets phase 0
+left unexplained and textButtonPour's further lines are still off. Fidelity gates b465 and b466: 0 movers (36e922c7b).
+Follow Path remade 2026-11-13 from a round of 435 probes (Jason: "commit then do the Follow Path probes"; findings §4):
+Word scales the path and the text by D / (D + 2T), the text rectangle's larger side over itself plus twice the lines'
+ink, and spaces the glyphs by arc length along the scaled path; glyph places median 1.11 pt (7.07 with the first fit);
+textButton within 0.8 pt; gate b467: 0 movers. Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
 for a WordArt's shadow and glow. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
@@ -305,6 +308,13 @@ catalogue (through the portfolio).
     Follow Path fitted (a scale and a path drawn in, by the path's length and the box's flatness over the text's width;
     lines 0.665 of the scaled size apart), median 2.7 pt. Open: the 11 presets, textButtonPour's further lines and
     textButton, Follow Path for the text's height and long lines (a round of probes would settle it).
+  - Follow Path remade 2026-11-13 from the Follow Path round (cr083-followpath and cr083-followpath2, 435 probes;
+    findings §4, `build_followpath.py`, `read_followpath.py`, `check_followpath.py`): the scale D / (D + 2T) (408 probes
+    within 0.003), the text along the whole ellipse centred on the arc's middle, each glyph's middle at its arc length
+    along the scaled path and its baseline 0.145 of its size inside, further lines apart by their inks; capped on an arc
+    adjusted short. Glyph places median 1.11 pt (7.07), outlines 1.25 pt (7.73); phase 0's Follow Path pages 1.36
+    (2.85); textButton within 0.8 pt. Open: 141 probes Word measures about 0.06 em outside the path (no trigger found),
+    a circle adjusted short, lines of unequal sizes.
 - **Phase 3, effects on WordArt** (needs CR-081.1): shadow, glow and reflection on the glyphs.
 - **Phase 4, VML WordArt** (D6).
   - First, round 2 (findings §11): Word's own shapetypes for types 137 to 175, and a VML probe of each.

@@ -294,15 +294,19 @@ public class WordArtRendererTest {
 		assertTrue(bands.get(1).isEmpty() && bands.get(2).isEmpty());
 	}
 
-	/** Follow Path's scale (phase 0's table, Jason's document): Word's own form 0.727; a long line in it 0.858; a wide box
-	 *  more; an arch adjusted short much less */
+	/**
+	 * Follow Path's scale, D / (D + 2T), against Word's sizes in the Follow Path round (Aptos 36 pt; the text rectangle,
+	 * the ink unscaled): "WordArt" (ink 23.98 pt) in Word's own form, in a square box and in a wide one; "wave" (17.74);
+	 * two lines (their inks added); "_____" (1.66), hardly scaled
+	 */
 	@Test
 	public void followPathScales() {
-		assertEquals(0.727, WordArtWarps.scale(143.1, 43.9, 127.92, 1), 0.002);
-		assertEquals(0.858, WordArtWarps.scale(390, 44.1, 380, 1), 0.01);
-		assertEquals(0.8506, WordArtWarps.scale(2.57 * 127.92, 136.6, 127.92, 1), 0.002);
-		assertEquals(0.394, WordArtWarps.scale(71.1, 136.6, 127.92, 1), 0.01);
-		assertEquals(0.727 * 0.823, WordArtWarps.scale(143.1, 43.9, 127.92, 2), 0.002);
+		assertEquals(26.18 / 36, WordArtWarps.pathScale(127.9, 35.8, 23.98), 0.002);
+		assertEquals(27.00 / 36, WordArtWarps.pathScale(127.9, 143.8, 23.98), 0.002);
+		assertEquals(30.86 / 36, WordArtWarps.pathScale(287.8, 143.8, 23.98), 0.002);
+		assertEquals(28.87 / 36, WordArtWarps.pathScale(79.8, 143.8, 17.74), 0.002);
+		assertEquals(27.00 / 36, WordArtWarps.pathScale(287.8, 143.8, 2 * 23.98), 0.002);
+		assertEquals(35.18 / 36, WordArtWarps.pathScale(82.8, 143.8, 1.66), 0.002);
 	}
 
 	/** A Follow Path WordArt: each glyph's invisible text where the glyph is, turned */
