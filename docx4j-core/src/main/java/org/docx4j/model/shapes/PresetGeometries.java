@@ -45,7 +45,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * The DrawingML preset shape definitions ({@code presetShapeDefinitions.xml}, from ECMA-376 Part 1), by preset name.
- * {@link ShapeGeometry} evaluates them (CR-080).
+ * {@link ShapeGeometry} evaluates them (CR-080), and the text warps ({@link #getTextWarps()}, CR-083).
  */
 public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D> {
 	
@@ -56,17 +56,32 @@ public class PresetGeometries  extends LinkedHashMap<String, CTCustomGeometry2D>
 	
     /** Read once, on first use, by whichever thread comes first (CR-080 phase 1). */
     private static final class Holder {
-        static final PresetGeometries INSTANCE = new PresetGeometries();
+        static final PresetGeometries INSTANCE = new PresetGeometries("org/docx4j/model/shapes/presetShapeDefinitions.xml");
+    }
+
+    /** The text warps, read once, on first use (CR-083 phase 2). */
+    private static final class WarpHolder {
+        static final PresetGeometries INSTANCE = new PresetGeometries("org/docx4j/model/shapes/presetTextWarpDefinitions.xml");
+    }
+
+    /**
+     * The 40 text warp presets ({@code a:prstTxWarp}, {@code presetTextWarpDefinitions.xml}, from ECMA-376 Part 1),
+     * by name, {@code textNoShape} included (it has no paths).
+     *
+     * @since 17.3.7 (CR-083)
+     */
+    public static PresetGeometries getTextWarps(){
+        return WarpHolder.INSTANCE;
     }
     
     public static PresetGeometries getInstance(){
         return Holder.INSTANCE;
     }
     
-    private PresetGeometries(){
+    private PresetGeometries(String resource){
         try {
             InputStream is =
-                    ResourceUtils.getResource("org/docx4j/model/shapes/presetShapeDefinitions.xml");
+                    ResourceUtils.getResource(resource);
             read(is);
         } catch (Exception e){
             throw new RuntimeException(e);

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.docx4j.dml.CTCustomGeometry2D;
+import org.docx4j.dml.CTGeomGuide;
 import org.docx4j.dml.CTPresetGeometry2D;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.STShapeType;
@@ -109,6 +110,67 @@ public final class ShapeGeometry {
 			return box(cx, cy, ShapeOutlines.BAD_GEOMETRY, "a custGeom: " + e.getMessage());
 		}
 		return evaluate(read, NO_ADJUSTMENTS, cx, cy, "a custGeom");
+	}
+
+	/** Each text warp read once: a {@link GeometryReader.Read}, or the problem as a String (CR-083). */
+	private static final Map<String, Object> WARPS = new ConcurrentHashMap<String, Object>();
+
+	/**
+	 * The text warps whose {@code ss} Word reads as the height, not min(w, h) as the shipped definitions have it (CR-083
+	 * phase 0, findings section 3: textDeflateBottom in a tall box from 3.90 to 0.38 pt, textDeflate from 1.59 to 0.16).
+	 */
+	static final java.util.Set<String> SS_IS_HEIGHT = Collections.unmodifiableSet(new java.util.HashSet<String>(
+			java.util.Arrays.asList("textDeflate", "textDeflateBottom")));
+
+	/**
+	 * A text warp ({@code a:prstTxWarp}, CR-083 phase 2) evaluated on the text rectangle, w by h points, with its
+	 * adjustments: its paths in points from the rectangle's top left, y down, in the definition's order (for a
+	 * two-path warp, the top path then the bottom). Word evaluates a warp on the text rectangle (the box less its
+	 * insets), not the box, and reads {@code ss} as the height in {@link #SS_IS_HEIGHT}. {@code textNoShape} has no paths.
+	 * A warp that can't be evaluated is the rectangle, with {@link ShapeOutlines#getProblem()} saying why.
+	 *
+	 * @since 17.3.7
+	 */
+	public static ShapeOutlines textWarp(org.docx4j.dml.CTPresetTextShape prstTxWarp, double w, double h) {
+		long cx = Math.round(w * EMU_PER_POINT), cy = Math.round(h * EMU_PER_POINT);
+		org.docx4j.dml.STTextShapeType type = prstTxWarp == null ? null : prstTxWarp.getPrst();
+		if (type == null) return box(cx, cy, ShapeOutlines.UNKNOWN_PRESET, "a prstTxWarp with no prst");
+		Object warp = warp(type.value());
+		if (warp instanceof String) return box(cx, cy, ShapeOutlines.UNKNOWN_PRESET, (String) warp);
+		final Map<String, GuideIf> adjustments;
+		try {
+			adjustments = GeometryReader.adjustments(prstTxWarp.getAvLst());
+		} catch (GeometryReader.OverLimit e) {
+			return box(cx, cy, ShapeOutlines.OVER_LIMIT, type.value() + "'s adjustments: " + e.getMessage());
+		} catch (RuntimeException e) {
+			return box(cx, cy, ShapeOutlines.BAD_GEOMETRY, type.value() + "'s adjustments: " + e.getMessage());
+		}
+		return evaluate((GeometryReader.Read) warp, adjustments.isEmpty() ? NO_ADJUSTMENTS : adjustments::get, cx, cy, type.value());
+	}
+
+	private static Object warp(String name) {
+		Object found = WARPS.get(name);
+		if (found != null) return found;
+		CTCustomGeometry2D definition = PresetGeometries.getTextWarps().get(name);
+		if (definition == null) {
+			found = "no definition of the text warp " + name;
+		} else {
+			try {
+				if (SS_IS_HEIGHT.contains(name)) {
+					definition = org.docx4j.XmlUtils.deepCopy(definition);
+					if (definition.getGdLst() != null) {
+						for (CTGeomGuide gd : definition.getGdLst().getGd()) {
+							if (gd.getFmla() != null) gd.setFmla(gd.getFmla().replaceAll("\\bss\\b", "h"));
+						}
+					}
+				}
+				found = GeometryReader.read(definition);
+			} catch (RuntimeException e) {
+				found = "the text warp " + name + "'s definition: " + e.getMessage();
+			}
+		}
+		WARPS.put(name, found);
+		return found;
 	}
 
 	private static Object preset(String name) {

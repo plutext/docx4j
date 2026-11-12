@@ -56,6 +56,45 @@ import org.w3c.dom.Document;
  */
 public final class ShapeSvgDrawer implements ShapeDrawer {
 
+	/** A text box drawn as WordArt (CR-083), for docx4j-core's HTML output */
+	@Override
+	public WordArtDrawing drawWordArt(org.docx4j.model.shapes.WordArtText art, org.docx4j.openpackaging.parts.Part host, ThemeColors theme,
+			long cx, long cy, Function<String, BufferedImage> pictures) {
+		final org.docx4j.chart.render.api.WordArtRenderer.Drawn d = org.docx4j.chart.render.api.WordArtRenderer.draw(art,
+				org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, pictures == null ? null : pictures::apply);
+		return new WordArtDrawing() {
+			@Override
+			public Document toSvg() {
+				return d.toSvg();
+			}
+
+			@Override
+			public Rectangle2D getBounds() {
+				return d.getBounds();
+			}
+
+			@Override
+			public double getWidth() {
+				return d.getWidth();
+			}
+
+			@Override
+			public double getHeight() {
+				return d.getHeight();
+			}
+
+			@Override
+			public List<String> getProblems() {
+				return d.getProblems();
+			}
+
+			@Override
+			public String getText() {
+				return d.getText();
+			}
+		};
+	}
+
 	@Override
 	public Drawing draw(Object graphic, ThemeColors theme, long cx, long cy, Function<String, BufferedImage> pictures) {
 		ShapeRenderer.Pictures p = pictures == null ? relId -> null : pictures::apply;

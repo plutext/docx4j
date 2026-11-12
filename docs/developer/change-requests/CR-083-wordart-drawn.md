@@ -1,8 +1,14 @@
 # CR-083: WordArt drawn - text warps (`a:prstTxWarp`), text outlines, fills, shadows and glows, and VML WordArt
 
-Status: PROPOSED 2026-11-09. Drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status). Phase 0
-run and read 2026-11-12 (073bce285); D1 to D11 decided the same day (§8): D2, D3, D5, D6 and D10 from its findings,
-the rest as recommended. Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
+Status: ACCEPTED 2026-11-12 (Jason: "do CR-083 phases 1 and 2", after D1 to D11 were decided). Proposed 2026-11-09,
+drafted on Jason's request (the four CRs of 2026-11-09; see CR-080's Status). Phase 0 run and read 2026-11-12
+(073bce285); D1 to D11 decided the same day (§8): D2, D3, D5, D6 and D10 from its findings, the rest as recommended.
+Phases 1 and 2 built 2026-11-12 (`CR-083-notes/phase1-2-findings.md`): WordArt laid out, sized, warped and
+painted as D2 has it, in PDF (both routes) and HTML. One addition to §5.1 for Jason: Word's own WordArt form
+(`textNoShape` with `wrap="none"`) is drawn too. Boxes within 0.05 pt of Word's; the two-path warps as phase 0's model
+(median 0.28 pt) and textDeflateInflate's and textDeflateInflateDeflate's bands within 0.83 pt; Follow Path fitted
+(median 2.7 pt); the 11 presets phase 0 left unexplained, textButtonPour's further lines and textButton are still off.
+Fidelity gates b465 and b466: 0 movers. Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
 for a WordArt's shadow and glow. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
@@ -226,8 +232,11 @@ catalogue (through the portfolio).
 ## 5. Approach
 
 1. **Which text boxes**: a `wps:wsp` whose `bodyPr` has a `prstTxWarp` other than `textNoShape`, or whose runs carry
-   a `w14:textOutline`, a non-solid `w14:textFill` or a solid one with transparency (D2, D3), is drawn as WordArt. Any
-   other text box stays FO text.
+   a `w14:textOutline`, a non-solid `w14:textFill` or a solid one with transparency (D2, D3), is drawn as WordArt.
+   Added in phase 1 (for Jason; phase 1-2 findings §2): Word's own WordArt form, `prstTxWarp prst="textNoShape"` with
+   `wrap="none"`, whose box Word sizes to its text where FO wrapped it in the stale 144 pt stored; `textNoShape` alone
+   isn't the mark (the corpora have 26 such text boxes, all `wrap="square"`). Any other text box stays FO text, and so
+   does a WordArt holding a table or a picture (`render.wordart.content`).
 2. **Layout**: the box's paragraphs are laid out as lines of glyphs with `java.awt.Font` loaded from the font file
    docx4j's `PhysicalFonts` maps the run's font to, the same file FOP embeds (D4). Each run has its own font, size and
    effects. This is a line layout of a few lines, not a paragraph layout engine: alignment, the paragraph's
@@ -275,6 +284,9 @@ catalogue (through the portfolio).
     XSLT) and in HTML: the same SVG inline, as charts are (`HTMLExporterVisitorGenerator.createChartBox`,
     `ChartBox.createHtml`; `docx2xhtml-core.xslt`).
   - **Gate:** probes within tolerance; corpora unmoved except their WordArt boxes (colour, not layout).
+  - Built 2026-11-12 (`CR-083-notes/phase1-2-findings.md`), with phase 2: the box as Word draws it (within 0.05 pt on
+    phase 0's probes), Word's kerning of WordArt (measured on the way: whatever `w:kern` says), real text within
+    0.06 pt of Word's, invisible text found by search (mode 3), the effects of phases 3 and 6 reported.
 - **Phase 2, the warps.**
   - The 33 envelopes, by §20.1.9.19 as phase 0 found Word reads it (D5; findings §3): the text rectangle, the ink of the
     whole block of lines, arc length along each path, the straight joining line, the outline warped densely; and
@@ -286,6 +298,13 @@ catalogue (through the portfolio).
     its spacing along the path fitted to phase 0's probes (findings §4).
   - The 4 multi-path presets: a band for each line, as Word gives them (findings §5), measured as the envelopes are.
   - **Gate:** each preset's probes within tolerance (glyph-outline points against Word's, after alignment).
+  - Built 2026-11-12 with phase 1 (`CR-083-notes/phase1-2-findings.md`, `gate_wordart.py`): the envelopes as phase
+    0's model (180 of 239 probes within 0.5 pt, median 0.28; the misses the 11 presets still unexplained); Word's band
+    rule read from its PDFs (line i in band i, extra lines in the first; a band's lines across the whole block's ink and
+    down a range as tall as the tallest band's), textDeflateInflate's and textDeflateInflateDeflate's within 0.83 pt;
+    Follow Path fitted (a scale and a path drawn in, by the path's length and the box's flatness over the text's width;
+    lines 0.665 of the scaled size apart), median 2.7 pt. Open: the 11 presets, textButtonPour's further lines and
+    textButton, Follow Path for the text's height and long lines (a round of probes would settle it).
 - **Phase 3, effects on WordArt** (needs CR-081.1): shadow, glow and reflection on the glyphs.
 - **Phase 4, VML WordArt** (D6).
   - First, round 2 (findings §11): Word's own shapetypes for types 137 to 175, and a VML probe of each.

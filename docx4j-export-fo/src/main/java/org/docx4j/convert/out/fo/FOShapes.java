@@ -91,6 +91,61 @@ final class FOShapes {
 		}
 	}
 
+	/**
+	 * The text box drawn as WordArt (CR-083 phases 1 and 2), at the box Word draws; null where it isn't WordArt or can't
+	 * be drawn, and it stays text. Its gaps are logged, a code each (D9).
+	 */
+	static org.docx4j.chart.render.api.WordArtRenderer.Drawn wordArt(AbstractWmlConversionContext context, CTWordprocessingShape wsp,
+			long cx, long cy) {
+		if (wsp == null || context == null || context.getWmlPackage() == null) return null;
+		try {
+			org.docx4j.model.shapes.WordArtText art = org.docx4j.model.shapes.WordArtText.of(wsp, context.getWmlPackage());
+			if (art == null) return null;
+			ThemeColors theme = ThemeColors.of(context.getWmlPackage());
+			final Part host = context.getCurrentPart();
+			org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.draw(art,
+					org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, relId -> picture(host, relId));
+			for (String code : drawn.getProblems()) log.warn(code + ": WordArt (CR-083 D9)");
+			return drawn;
+		} catch (RuntimeException e) {
+			log.warn("render.wordart.content: WordArt couldn't be drawn, left as text: " + e, e);
+			return null;
+		}
+	}
+
+	/**
+	 * The WordArt drawn as the container's first child, as {@link #addDrawing} adds a shape's, its text as the
+	 * picture's alternative text for a tagged PDF (the SVG's own text, real or invisible, isn't tagged).
+	 */
+	static void addWordArt(Document doc, Element container, org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn) {
+		Rectangle2D.Double b = drawn.getBounds();
+		Element abs = doc.createElementNS(XSL_FO, "fo:block-container");
+		abs.setAttribute("absolute-position", "absolute");
+		abs.setAttribute("top", pt(b.y));
+		abs.setAttribute("left", pt(b.x));
+		abs.setAttribute("width", pt(b.width));
+		abs.setAttribute("height", pt(b.height));
+		abs.setAttribute("overflow", "visible");
+		abs.setAttribute("start-indent", "0pt");
+		abs.setAttribute("end-indent", "0pt");
+		Element block = doc.createElementNS(XSL_FO, "fo:block");
+		block.setAttribute("font-size", "0pt");
+		block.setAttribute("line-height", "0pt");
+		block.setAttribute("start-indent", "0pt");
+		block.setAttribute("end-indent", "0pt");
+		Element ifo = doc.createElementNS(XSL_FO, "fo:instream-foreign-object");
+		ifo.setAttribute("content-width", pt(b.width));
+		ifo.setAttribute("content-height", pt(b.height));
+		ifo.setAttribute("scaling", "non-uniform");
+		if (drawn.getText() != null && !drawn.getText().isEmpty()) {
+			ifo.setAttributeNS("http://xmlgraphics.apache.org/fop/extensions", "fox:alt-text", drawn.getText());
+		}
+		ifo.appendChild(doc.importNode(drawn.toSvg().getDocumentElement(), true));
+		block.appendChild(ifo);
+		abs.appendChild(block);
+		container.insertBefore(abs, container.getFirstChild());
+	}
+
 	/** A picture fill's picture, by its relationship from the part being converted; null where it isn't one ImageIO reads */
 	private static BufferedImage picture(Part host, String relId) {
 		try {

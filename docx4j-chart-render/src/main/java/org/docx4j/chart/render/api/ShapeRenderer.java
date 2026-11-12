@@ -1432,6 +1432,22 @@ public final class ShapeRenderer {
 		return l;
 	}
 
+	/**
+	 * A glyph outline stroked with a line (CR-083: a run's {@code w14:textOutline} as DrawingML's {@code a:ln}), as a
+	 * shape's line is: its width, cap, join, dash, compound bands and fill. The area painted; null where it paints
+	 * nothing.
+	 *
+	 * @since 17.3.7
+	 */
+	static Rectangle2D strokeText(Drawing d, Shape outline, CTLineProperties ln, ThemeColors theme) {
+		CTShapeProperties holder = new CTShapeProperties();
+		holder.setLn(ln);
+		Line line = line(holder, null, theme, null);
+		if (line == null) return null;
+		Path2D.Double p = outline instanceof Path2D.Double ? (Path2D.Double) outline : new Path2D.Double(outline);
+		return line.paint(d, p, new AffineTransform(), false, false);
+	}
+
 	// ------------------------------------------------------------------ compound and inside lines
 
 	/**

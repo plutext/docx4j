@@ -119,6 +119,12 @@ public final class HtmlShapes {
 		double w = Math.max(LEAST_EXTENT_PT, extent.getCx() / 12700d);
 		double h = Math.max(LEAST_EXTENT_PT, extent.getCy() / 12700d);
 
+		// a text box drawn as WordArt: its box Word's, its text drawn (CR-083)
+		if (graphic instanceof CTWordprocessingShape) {
+			Box art = wordArt(context, (CTWordprocessingShape) graphic, extent.getCx(), extent.getCy(), document, anchorOrInline);
+			if (art != null) return art;
+		}
+
 		ShapeDrawer.Drawing drawn = draw(context, graphic, extent.getCx(), extent.getCy());
 		boolean paints = drawn != null && !drawn.isEmpty();
 
@@ -173,6 +179,51 @@ public final class HtmlShapes {
 			texts.add(t);
 		}
 		return new Box(box, shapes, texts);
+	}
+
+	/**
+	 * A text box drawn as WordArt (CR-083 phase 1): a box of the size Word draws ({@code wrap="none"}: as wide as its
+	 * text; {@code a:spAutoFit}: as tall), holding the SVG the PDF has, its text in it real or invisible as Word's PDF has
+	 * it; no text container, the text being in the drawing. Null where it isn't WordArt or can't be drawn: then it is a
+	 * text box as any other.
+	 */
+	private static Box wordArt(AbstractWmlConversionContext context, CTWordprocessingShape wsp, long cx, long cy, Document document,
+			Object anchorOrInline) {
+		ShapeDrawer drawer = ShapeDrawer.getDrawer();
+		if (drawer == null || context == null || context.getWmlPackage() == null) return null;
+		try {
+			org.docx4j.model.shapes.WordArtText art = org.docx4j.model.shapes.WordArtText.of(wsp, context.getWmlPackage());
+			if (art == null) return null;
+			ThemeColors theme = ThemeColors.of(context.getWmlPackage());
+			final Part host = context.getCurrentPart();
+			ShapeDrawer.WordArtDrawing d = drawer.drawWordArt(art, host, theme, cx, cy, relId -> picture(host, relId));
+			if (d == null) return null;
+			for (String code : d.getProblems()) log.warn(code + ": WordArt in HTML (CR-083 D9)");
+			double w = Math.max(LEAST_EXTENT_PT, d.getWidth()), h = Math.max(LEAST_EXTENT_PT, d.getHeight());
+			Element box = document.createElement("span");
+			box.setAttribute("class", BOX_CLASS);
+			box.setAttribute("style", "display:inline-block;position:relative;vertical-align:bottom;width:" + pt(w) + ";height:" + pt(h));
+			box.setAttribute("role", "img");
+			box.setAttribute("aria-label", d.getText() == null || d.getText().isEmpty() ? label(anchorOrInline) : d.getText());
+			Element svg = (Element) document.importNode(d.toSvg().getDocumentElement(), true);
+			svg.setAttribute("width", pt(w));
+			svg.setAttribute("height", pt(h));
+			svg.setAttribute("viewBox", "0 0 " + num(w) + " " + num(h));
+			svg.setAttribute("preserveAspectRatio", "none");
+			svg.setAttribute("overflow", "visible");
+			svg.setAttribute("style", "position:absolute;left:0;top:0;overflow:visible");
+			svg.setAttribute("aria-hidden", "true");
+			SvgIds.prefix(svg, idPrefix(context, anchorOrInline));
+			box.appendChild(svg);
+			List<CTWordprocessingShape> shapes = new ArrayList<CTWordprocessingShape>();
+			shapes.add(wsp);
+			List<Element> texts = new ArrayList<Element>();
+			texts.add(null);
+			return new Box(box, shapes, texts);
+		} catch (RuntimeException e) {
+			log.warn("render.wordart.content: WordArt couldn't be drawn in HTML, left as text: " + e, e);
+			return null;
+		}
 	}
 
 	/**

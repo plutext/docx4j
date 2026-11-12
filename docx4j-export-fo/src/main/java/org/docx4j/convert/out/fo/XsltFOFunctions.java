@@ -468,6 +468,11 @@ public class XsltFOFunctions {
 		org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape wsp
 				= shape(anchorOrInline);
 		if (wsp==null) return null;
+		// a text box drawn as WordArt: its box Word's, its text in the drawing (CR-083)
+		if (extent!=null && FOShapes.hasText(wsp)) {
+			org.docx4j.chart.render.api.WordArtRenderer.Drawn art = FOShapes.wordArt(context, wsp, extent.getCx(), extent.getCy());
+			if (art!=null) return createWordArtBox(context, anchorOrInline, document, art);
+		}
 		org.docx4j.chart.render.api.ShapeRenderer.Drawn drawn = (extent==null) ? null
 				: FOShapes.draw(context, wsp, extent.getCx(), extent.getCy());
 		boolean text = FOShapes.hasText(wsp);
@@ -495,6 +500,49 @@ public class XsltFOFunctions {
 		FOShapes.anchorText(container, wsp);
 		if (drawn!=null && !drawn.isEmpty()) FOShapes.addDrawing(document, container, drawn);
 		return container;
+    }
+
+    /**
+     * The container's mark that it holds WordArt (CR-083), its box's width and height in points: its text is in its
+     * drawing, so the caller doesn't convert the text box's paragraphs into it, and {@link #placeInline} sizes an inline
+     * one by it. The caller removes it ({@link #takeWordArt}).
+     */
+    static final String HINT_WORDART = "docx4j-wordart";
+
+    /**
+     * A text box drawn as WordArt (CR-083 phases 1 and 2): a container of the box Word draws ({@code wrap="none"}: as
+     * wide as its text, {@code a:spAutoFit}: as tall, its stored extent being stale in Word's own WordArt), placed and
+     * wrapped by its anchor as a text box is, at that size; the drawing in it, and no text, the text being in the
+     * drawing (real or invisible, as Word's PDF has it).
+     */
+    private static Element createWordArtBox(FOConversionContext context, Object anchorOrInline, Document document,
+			org.docx4j.chart.render.api.WordArtRenderer.Drawn art) {
+		double w = art.getWidth(), h = art.getHeight();
+		Element container = FOTextBoxes.createContainer(document, "inline", w, h, 0, "p:0", 0, 0, new double[] { 0, 0, 0, 0 });
+		if (anchorOrInline instanceof org.docx4j.dml.wordprocessingDrawing.Anchor && FOTextBoxes.isEnabled()) {
+			// placed by its anchor as Word places the box it draws, not the extent it stores
+			org.docx4j.dml.wordprocessingDrawing.Anchor anchor = XmlUtils.deepCopy((org.docx4j.dml.wordprocessingDrawing.Anchor)anchorOrInline);
+			org.docx4j.dml.CTPositiveSize2D size = new org.docx4j.dml.CTPositiveSize2D();
+			size.setCx(Math.max(1, Math.round(w * 12700)));
+			size.setCy(Math.max(1, Math.round(h * 12700)));
+			anchor.setExtent(size);
+			org.docx4j.model.images.WordXmlPictureE20.stampAnchorHints(container, anchor, context);
+			if ("topAndBottom".equals(container.getAttribute(WordLayoutFixups.HINT_ANCHOR))) {
+				container.setAttribute(WordLayoutFixups.HINT_ANCHOR, "square");
+			}
+			stampTextBeside(container, anchor);
+		}
+		FOShapes.addWordArt(document, container, art);
+		container.appendChild(document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block"));
+		container.setAttribute(HINT_WORDART, FOTextBoxes.fmt(w) + " " + FOTextBoxes.fmt(h));
+		return container;
+    }
+
+    /** Whether the container holds WordArt (its text in its drawing); the mark is removed.  @since 17.3.7 (CR-083) */
+    static boolean takeWordArt(Element container) {
+		if (container==null || !container.hasAttribute(HINT_WORDART)) return false;
+		container.removeAttribute(HINT_WORDART);
+		return true;
     }
 
     /** The least extent a shape drawn as a picture is given, in pt: a line has no height (or no width), and an SVG
@@ -590,9 +638,20 @@ public class XsltFOFunctions {
 		if (!"block-container".equals(container.getLocalName())) return container;
 		org.docx4j.dml.CTPositiveSize2D extent = ((org.docx4j.dml.wordprocessingDrawing.Inline)anchorOrInline).getExtent();
 		if (extent==null || extent.getCx() <= 0 || extent.getCy() <= 0) return container;
+		double w = extent.getCx() / 12700d, h = extent.getCy() / 12700d;
+		if (container.hasAttribute(HINT_WORDART)) {
+			// WordArt: the box Word draws (CR-083)
+			String[] wh = container.getAttribute(HINT_WORDART).trim().split("\\s+");
+			try {
+				w = Double.parseDouble(wh[0]);
+				h = Double.parseDouble(wh[1]);
+			} catch (RuntimeException e) {
+				// the extent
+			}
+		}
 		Element holder = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline-container");
-		holder.setAttribute("width", FOTextBoxes.pt(extent.getCx() / 12700d));
-		holder.setAttribute("height", FOTextBoxes.pt(extent.getCy() / 12700d));
+		holder.setAttribute("width", FOTextBoxes.pt(w));
+		holder.setAttribute("height", FOTextBoxes.pt(h));
 		holder.setAttribute("alignment-adjust", "after-edge");
 		holder.setAttribute("overflow", "visible");
 		Element box = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block-container");
@@ -673,7 +732,9 @@ public class XsltFOFunctions {
 			Element container = createShapeTextBox(context, anchorOrInline, document);
 			if (container==null) return null;
 			document.appendChild(placeInline(document, container, anchorOrInline));
-			Node childResults = (childResultsIt==null || !FOShapes.hasText(shape(anchorOrInline))) ? null : childResultsIt.nextNode();
+			// WordArt's text is in its drawing (CR-083)
+			boolean art = takeWordArt(container);
+			Node childResults = (art || childResultsIt==null || !FOShapes.hasText(shape(anchorOrInline))) ? null : childResultsIt.nextNode();
 			if (childResults!=null) {
 				XmlUtils.treeCopy(childResults, container);
 			}

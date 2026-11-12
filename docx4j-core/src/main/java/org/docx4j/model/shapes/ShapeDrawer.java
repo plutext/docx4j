@@ -71,6 +71,43 @@ public interface ShapeDrawer {
 	}
 
 	/**
+	 * A text box drawn as WordArt (CR-083): its shape at the box Word draws and its text laid out, warped and painted
+	 * as Word's PDF paints it, as SVG, for an output docx4j-core writes itself (HTML).
+	 *
+	 * @param host the part the text box is in (for its fonts)
+	 * @param cx the extent's width in EMU
+	 * @param cy the extent's height in EMU
+	 * @return null where this drawer doesn't draw WordArt, or it couldn't be drawn (the text box then stays text)
+	 * @since 17.3.7
+	 */
+	default WordArtDrawing drawWordArt(WordArtText art, org.docx4j.openpackaging.parts.Part host, ThemeColors theme, long cx, long cy,
+			Function<String, BufferedImage> pictures) {
+		return null;
+	}
+
+	/** A WordArt drawn: points from its box's top left, y down; the box is the one Word draws, not the extent */
+	interface WordArtDrawing {
+
+		/** As SVG, a user unit a point, its canvas {@link #getBounds()}: the paths, then the text (real or invisible) */
+		Document toSvg();
+
+		/** All it paints, the box included */
+		Rectangle2D getBounds();
+
+		/** The box's width as Word draws it ({@code wrap="none"}: its text's) */
+		double getWidth();
+
+		/** The box's height as Word draws it ({@code a:spAutoFit}: its lines') */
+		double getHeight();
+
+		/** The gaps, stable codes (render.wordart.*, render.shape.*) */
+		List<String> getProblems();
+
+		/** Its text, for a picture's alternative text */
+		String getText();
+	}
+
+	/**
 	 * A picture as Word draws it, in its frame: points from its box's top left, y down. Drawn in this order: the effect
 	 * pictures under it; its preset shadow; the fill behind it, then the picture, both clipped to the outline; the effect pictures over it;
 	 * the line. Where an effect picture takes its place (a soft edge), that picture is drawn for the fill, the picture

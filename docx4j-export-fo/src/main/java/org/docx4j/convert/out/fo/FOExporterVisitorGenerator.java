@@ -412,6 +412,8 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 		if (container==null) return;
 		// an inline shape on its line, in an fo:inline-container of its extent (17.3.7)
 		getCurrentParent().appendChild(XsltFOFunctions.placeInline(document, container, anchorOrInline));
+		// WordArt's text is in its drawing (17.3.7, CR-083)
+		if (XsltFOFunctions.takeWordArt(container)) return;
 		org.docx4j.wml.CTTxbxContent txbx = XsltFOFunctions.shapeTextBox(anchorOrInline);
 		if (txbx!=null) {
 			conversionContext.enterTextBox();
