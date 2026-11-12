@@ -171,6 +171,8 @@ From Jason's two documents (`cr083-wordart-jason.docx`, `cr083-styles-hand.docx`
 
 ## 10. For Jason: CR changes proposed
 
+Made in the CR on 2026-11-12, as recommended (Jason: "make the phase 0 findings section 10 proposed CR changes").
+
 1. **D2: settled by Word.** Glyph outlines with invisible text, exactly where Word uses them (section 1's table), and
    real text elsewhere. Where Word drops the text altogether (3-D WordArt, a fill with transparency), docx4j can
    keep it invisibly (recommended: search and copy keep working, nothing visible changes). Word makes its text invisible with transparency (`ca 0`), not mode 3; the CR's `fill="none"`
