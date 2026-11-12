@@ -286,6 +286,9 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
   - a derived picture that can't be written leaves the stored one.
   - Gate: b464 against b463 0 movers, the probes' PDFs and HTML the same.
 - **Phase 5, CHANGELOG, Getting Started, the register.**
+  - CHANGELOG and register DONE 2026-11-12 (Jason: "do the CHANGELOG and register now"): a line each under PDF and
+    HTML output; the register's cause `picture-colour-adjustments-not-drawn` fixed, with what's open.
+  - Getting Started waits: its .docx (the source the other formats are built from) has Jason's uncommitted edits.
 
 ## 7. Risks
 

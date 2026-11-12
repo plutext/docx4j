@@ -40,7 +40,8 @@ Changes in Version 17.3.7
 - A picture anchored in its paragraph, wrapped square with text on both sides, has text set either side of it, as Word sets it, on a renderer with the fork's `line-segments` (2.12-docx4j.2); elsewhere it stays a side float (CR-032).
 - Beside such a picture, a paragraph's leading tab is measured from the margin, its stops under the picture skipped, as Word measures it, on a renderer with the fork's `fixed-tab-beside-obstacle` (CR-032).
 - 3-D drawings are drawn with Word's geometry: its 62 cameras, bevels, extrusion, contour and depth, on pictures and shapes, their shadows, glows and reflections in their plane; shaded as Word shades them: all 27 light rigs, their directions and rotations, and every material but legacyWireframe, clear and translucentPowder among them; legacyWireframe is approximated and reported (CR-081; needs docx4j-chart-render).
-- What isn't drawn as Word draws it is logged with a code (`render.effect.*`), in PDF and HTML, now also a picture's colour adjustments (`blip_recolour`; CR-084 draws them) and a metafile picture's frame and effects (`metafile`) (CR-081).
+- A picture's colour adjustments are drawn as Word draws them: Recolor, brightness and contrast, transparency, Set Transparent Color and the rest of `a:blip`'s effects, and a VML picture's; an adjusted metafile is drawn as a 200 dpi picture, as Word draws it. `hsl` and `blur`, which Word draws black or not at all, follow the standard; what isn't drawn as Word draws it is logged (`render.picture.*`) (CR-084).
+- What isn't drawn as Word draws it is logged with a code (`render.effect.*`), in PDF and HTML, now also a picture's colour adjustments where they aren't drawn (`blip_recolour`) and a metafile picture's frame and effects (`metafile`) (CR-081).
 
 - The paragraphs in a bordered or shaded group no longer take the first one's bold, colour or alignment, and an empty `w:pBdr` (ONLYOFFICE writes one in every style) makes no group: a contract's clauses had come out in a heading's bold blue.
 - In a table cell, a paragraph after the list or table the cell opens with keeps its auto spacing before; it had been taken for the cell's first.
@@ -52,6 +53,7 @@ Changes in Version 17.3.7
 - A picture's effects and frame are drawn: the picture is an inline SVG with them (CR-081).
 - A shape's effects are drawn in its SVG, as in the PDF (CR-081).
 - 3-D pictures and shapes are drawn in their SVG, as in the PDF (CR-081).
+- A picture's colour adjustments are drawn, as in the PDF; a picture without any is written as stored (CR-084).
 
 ### Shapes
 - `org.docx4j.model.shapes.ShapeGeometry` evaluates a shape's preset or custom geometry as Word does (Apache POI's geometry engine, repackaged).
