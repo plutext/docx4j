@@ -11,7 +11,16 @@ left unexplained and textButtonPour's further lines are still off. Fidelity gate
 Follow Path remade 2026-11-13 from a round of 435 probes (Jason: "commit then do the Follow Path probes"; findings §4):
 Word scales the path and the text by D / (D + 2T), the text rectangle's larger side over itself plus twice the lines'
 ink, and spaces the glyphs by arc length along the scaled path; glyph places median 1.11 pt (7.07 with the first fit);
-textButton within 0.8 pt; gate b467: 0 movers. Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
+textButton within 0.8 pt; gate b467: 0 movers.
+Phase 3 designed 2026-11-13 (Jason: "design CR-083 phase 3"; `CR-083-notes/phase3-findings.md`): phase 0's effect
+probes read again (pictures under real text, one for each glyph on Follow Path, an inner shadow written as a shadow
+scaled to 0, and room in the line that grows an `spAutoFit` box, in body text too); a round of probes first.
+D12 to D15 decided as recommended the same day (Jason: "decisions 12 to 15 as recommended"). Reviewed the same day
+by a Claude Fable 5.1 session (Jason: "have fable review the design"), its findings applied (Jason: "yes, apply those
+changes"; findings §3): Word draws a text effect at about 0.6 of its stated size and in a frame that isn't the glyphs'
+ink, both now the round's to measure (about 190 probes), and D14's reflection is one mirrored block, cut glyph by
+glyph.
+Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
 for a WordArt's shadow and glow. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
 a gap"):
@@ -315,7 +324,72 @@ catalogue (through the portfolio).
     adjusted short. Glyph places median 1.11 pt (7.07), outlines 1.25 pt (7.73); phase 0's Follow Path pages 1.36
     (2.85); textButton within 0.8 pt. Open: 141 probes Word measures about 0.06 em outside the path (no trigger found),
     a circle adjusted short, lines of unequal sizes.
-- **Phase 3, effects on WordArt** (needs CR-081.1): shadow, glow and reflection on the glyphs.
+- **Phase 3, effects on WordArt** (needs CR-081.1, done): a run's `w14:shadow`, `w14:glow` and `w14:reflection` drawn
+  on its glyphs as Word draws them. Designed 2026-11-13 (Jason: "design CR-083 phase 3";
+  `CR-083-notes/phase3-findings.md`); reviewed the same day by a Claude Fable 5.1 session, its findings applied
+  (Jason: "yes, apply those changes"; findings §3).
+  - **What Word does**, from phase 0's probes read again (findings §1):
+    - the effects are pictures at 200 dpi under real text, an inner shadow over it; `w14:alpha` in an effect's colour
+      is a transparency, as in a fill;
+    - **at about 0.6 of their stated size**: a sharp shadow 6 pt long is drawn 2.50 pt across and 2.50 down, where
+      4.24 is stated, and an 18 pt glow fades to 5% 7.75 pt outside the ink, where CR-081's rule for a shape gives
+      13.7. So CR-081's rules don't carry over to text unchanged; the scale (one on `dist`, `blurRad` and `rad`, or
+      not) is the round's;
+    - **in a frame that isn't the glyphs' ink**: a squashed shadow is scaled about a point near the descent line; a
+      flat reflection starts at the ink's foot, fades over about 32 pt times `endPos` (near the ascent), and moved 4 pt
+      down starts 10 pt down; a warped one is mirrored about the warped block's foot. The frame is the round's;
+    - flat text and a two-path warp take one picture for each effect over the whole text; Follow Path takes one for
+      each glyph, drawn in turn with it (D14), each a cut of the whole block's effect: its reflection is one mirrored
+      arch, written glyph by glyph;
+    - `w14:shadow` with `sx` and `sy` 0 and `algn="none"` (the gallery's style 15) is drawn as an inner shadow (D15);
+    - effects take room in the line: the text sits lower in its box and an `spAutoFit` box grows (style 1's shadow:
+      3.70 pt taller, the text 1.20 lower; a glow of 18 pt: 8.16 lower), the same flat and warped, and nothing across.
+      Phase 0's 15 points fit the drawn effect's reach past the line (0.62 of a shadow's, 0.45 of a glow's radius,
+      adding, in steps of 0.24 pt), which is likely the 0.6 above: a hypothesis for the round. A reflection's room
+      isn't explained (D13). Body text takes room too, which phase 5 assumed it wouldn't.
+  - **A round first**, `cr083-phase3` (findings §2, about 190 probes in 11 files, `build_effects.py` to write): the
+    scale (sharp shadows 12 pt long at each size and face); the frame (a reflection's distance swept, a word with
+    descenders); the room (shadow, glow and reflection swept; sizes and faces; anchors, lines and runs); which glyphs
+    share a picture (runs, lines, each kind of warp); the silhouette (hollow, gradient and transparent text); what Word
+    reads as an inner shadow; theme colours; a shape's own `a:effectLst` on a WordArt (does its text cast it, CR-081
+    phase 3's `render.effect.shape_text`); a turned box (do the shadow's direction and the reflection follow the box or
+    the page); and body text's room, for phase 5. Read by `read_effects.py` (extended by the review: empty pictures
+    kept, Word's glyph paths, a shadow's drawn offset, a glow's contours).
+  - **Model** (docx4j-core): `TextEffects.effects(RPr)` gives the run's `w14:shadow`, `w14:glow` and `w14:reflection`
+    as a DrawingML `a:effectLst` (`a:outerShdw`, or `a:innerShdw` where Word reads the shadow as inner; `a:glow`;
+    `a:reflection`), converted as its fills are (marshalled, renamed, read back), `w14:alpha` read as a transparency,
+    and Word's scale for text applied to its lengths once the round has measured it; `WordArtText.Run.getEffects()`.
+  - **Drawing** (docx4j-chart-render, `WordArtRenderer`):
+    - the units: the glyphs that share one picture (the whole text, flat or on two paths, unless the round shows runs
+      or lines apart). Each unit goes through CR-081's `Effects.draw`, with a painter of its glyphs as drawn (filled
+      and stroked; a run Word keeps as text painted as its glyphs, for the silhouette) and, as the drawing's box, the
+      frame the round finds (the candidates: the lines' ascent-to-descent box flat, the warped block's ink warped).
+      Follow Path draws the whole block's effects in the block's frame and cuts a picture for each glyph from them
+      (D14);
+    - the room (D13), taken from the drawn effects' reach: the lines are laid out, their effects drawn in the line's
+      frame and their reach past each line measured, and then the box is sized and the warp maps the text into it.
+      Under `spAutoFit` the box's growth changes Follow Path's D (its scale, D / (D + 2T));
+    - the SVG in Word's order: under each unit its reflection, shadow and glow, then its glyph paths, then the text,
+      then an inner shadow; on Follow Path each glyph's pictures and the glyph in turn, a picture Word writes empty
+      left out. `Drawn.getBounds()` takes the pictures in, which pass the box; the wrap's extent is the file's
+      `wp:effectExtent`, as for every drawing, so the pictures don't change it;
+    - CR-081's resolution (D3: 200 dpi, coarser by blur) and cap (D10) unchanged, each picture capped; past the cap,
+      `render.effect.over_limit`.
+  - **Routes**: nothing new. The FO routes place the drawing by its bounds (`FOShapes.addWordArt`), and HTML embeds the
+    same SVG, its pictures as `data:` URIs, as CR-081's.
+  - **Reports**: `render.wordart.effect` only for what isn't drawn as Word draws it (a shadow the round doesn't
+    explain). 3-D WordArt is drawn flat with its effects until phase 6 (D10), still reported `render.wordart.flat_3d`.
+  - **Not here**: a text box whose only mark is a run's effect stays text, its effects phase 5's (D12).
+  - **Gate:**
+    - the round's probes and phase 0's effect probes (wa30-17 to -25, wa31, wg10 to wg12, wa00) through docx4j's PDF
+      with Word's fonts, read by `read_effects.py` for both. First the geometry: the pictures Word draws (count and
+      order), a shadow's offset, a glow's contours, a reflection's mirror line and fade, the box within 0.05 pt and the
+      real text within 0.06 pt (or a step of 0.24 pt, if that is Word's rounding). Then the alpha: each picture's
+      against Word's at the page's pixels, within 1 of 255 on average flat (CR-081's measure, `compare_effects.py`:
+      0.44 to 0.76 there), warped as their glyphs' outlines are;
+    - the fidelity corpora unmoved (none of their text boxes is WordArt: phase 1-2 findings §5), events equal;
+    - tests: `WordArtRendererTest` (the conversion, w14's alpha and the scale, the units and their frame, the room, the
+      inner shadow) and `WordArtFoTest` (an effect picture under real text, the text still extracted).
 - **Phase 4, VML WordArt** (D6).
   - First, round 2 (findings §11): Word's own shapetypes for types 137 to 175, and a VML probe of each.
   - `v:textpath` drawn from its shapetype's own `path`, `formulas` and `adj`, through a VML formula evaluator, and then
@@ -339,6 +413,10 @@ catalogue (through the portfolio).
     and glow as `text-shadow` where CSS can carry them; anything CSS can't is reported (D9).
   - First, before the fork release: a solid `w14:textFill` as the text's colour, docx4j-side only, in PDF and HTML.
   - **Gate:** the body-text probes within tolerance; a fidelity gate (layout unmoved, since only painting changes).
+  - **Revised by phase 3's design** (2026-11-13; phase 3 findings §1, D13): Word gives a body run's shadow, glow or
+    reflection room in its line, as in WordArt (wb50: a glow of 18 pt sets its line 8.16 pt lower and the next
+    paragraph 20.9; a reflection the next paragraph up to 21.4), so this phase changes layout as well as painting:
+    docx4j gives the run's line the room, from phase 3's round (fb10), and the fidelity gate's movers are read as that.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).
@@ -436,6 +514,36 @@ catalogue (through the portfolio).
   phase 3 have it. Recommendation: yes.
   **Decided 2026-11-12** (Jason: "D1, D4, D7, D8, D9, D11 as recommended"): yes.
 
+Proposed with phase 3's design, 2026-11-13 (phase 3 findings §1), and decided the same day as recommended:
+
+- **D12. A run's shadow, glow or reflection alone doesn't make a text box WordArt.** §5.1 marks WordArt by a warp, by
+  Word's own form (`textNoShape` with `wrap="none"`, which every WordArt Word inserts has, its gallery styles
+  included), or by a run Word draws as outlines. A text box with none of these but a run with a shadow (Word's text
+  effects applied to the text in a shape) stays FO text: this CR's line layout isn't a paragraph layout engine, and
+  such a box can hold anything. Its run effects are phase 5's, through the fork, and are reported until then.
+  Recommendation: yes.
+  **Decided 2026-11-13** (Jason: "decisions 12 to 15 as recommended"): yes.
+- **D13. The room effects take.** In WordArt (phase 3): Word's rule, from the round. If the round finds none that fits
+  every probe, the best fit, its residual stated in the findings, as Follow Path's 0.06 em regime was. In body text
+  (phase 5): the room changes docx4j's layout, which phase 5 assumed it wouldn't; it gives the run's line the room
+  docx4j-side, from the round's body probes. Recommendation: yes, both.
+  **Decided 2026-11-13** (Jason: "decisions 12 to 15 as recommended"): yes, both.
+- **D14. Follow Path: a picture for each glyph**, as Word draws it: each glyph's effects drawn with the glyph, in turn,
+  so that a glyph's shadow falls on the glyph before it, and its reflection mirrored about the glyph. One picture of the
+  whole path's text would be fewer pictures but not Word's look: its reflection one mirrored arch, where Word's is a
+  row of mirrored letters. Recommendation: as Word.
+  **Decided 2026-11-13** (Jason: "decisions 12 to 15 as recommended"): as Word.
+  **Its rationale corrected 2026-11-13** by the design's review (findings §1, §3 item 4; Jason: "yes, apply those
+  changes"): Word's per-glyph reflection isn't mirrored about the glyph. Each glyph's picture is a cut of one
+  reflection of the whole block, flipped about the block's foot and faded over the block, so Word's look *is* one
+  mirrored arch, written glyph by glyph (wa31-06; the glyphs at the arch's top get empty pictures). The decision stands
+  for the drawing order, a picture for each glyph in turn; the effects' geometry is the whole block's.
+- **D15. The inner shadow.** w14 has no inner shadow. Word's gallery writes one as `w14:shadow` with `sx="0" sy="0"
+  algn="none"` (style 15), and Word draws it inside the letters, over the text. docx4j reads it as `a:innerShdw` (its
+  blur, distance, direction and colour) in the forms the round shows Word reads as inner, and draws any other
+  shadow scaled to 0 as Word does (nothing, if that is what Word draws). Recommendation: as Word measures.
+  **Decided 2026-11-13** (Jason: "decisions 12 to 15 as recommended"): as Word measures.
+
 ## 9. Out of scope
 
 `w14:ligatures`, `w14:numForm`, `w14:numSpacing`, `w14:stylisticSets` and `w14:cntxtAlts`, which are OpenType
@@ -457,9 +565,9 @@ features, not effects; pptx text warps (pptx4j could use the same code later); P
 
 ## 11. Effort (rough)
 
-Phase 0 three days; phase 1 three days (the line layout and invisible text); phase 2 three days; phase 3 one day; phase
-4 two days; phase 5 three days docx4j-side, plus the fork's CR; phase 6 two days after CR-081.5; phase 7 one day;
-phase 8 half a day. About four weeks.
+Phase 0 three days; phase 1 three days (the line layout and invisible text); phase 2 three days; phase 3 four days
+(revised by its design: the round one, the code two, the gate one); phase 4 two days; phase 5 three days docx4j-side,
+plus the fork's CR; phase 6 two days after CR-081.5; phase 7 one day; phase 8 half a day. About four weeks.
 
 ## 12. Specifications
 
