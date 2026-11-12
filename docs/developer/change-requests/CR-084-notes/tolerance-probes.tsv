@@ -1,0 +1,36 @@
+set	file	page	probe	picture	note	summary
+cr084-clrchange-tol	rk90-white	1	rk90-01	tol-white.png	white, PNG, unadjusted	unadjusted | tol-white.png
+cr084-clrchange-tol	rk90-white	2	rk90-02	tol-white.png	white, PNG, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white.png
+cr084-clrchange-tol	rk90-white	3	rk90-03	tol-white.png	white, PNG, clrChange white to blue	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=0000FF | tol-white.png
+cr084-clrchange-tol	rk90-white	4	rk90-04	tol-white.png	white, PNG, clrChange white to blue, useA 0	clrChange useA=0 clrFrom srgbClr val=FFFFFF clrTo srgbClr val=0000FF | tol-white.png
+cr084-clrchange-tol	rk90-white	5	rk90-05	tol-white-q75.jpeg	white, JPEG 75 4:2:0, unadjusted	unadjusted | tol-white-q75.jpeg
+cr084-clrchange-tol	rk90-white	6	rk90-06	tol-white-q75.jpeg	white, JPEG 75 4:2:0, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white-q75.jpeg
+cr084-clrchange-tol	rk90-white	7	rk90-07	tol-white-q75.jpeg	white, JPEG 75 4:2:0, clrChange white to blue	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=0000FF | tol-white-q75.jpeg
+cr084-clrchange-tol	rk90-white	8	rk90-08	tol-white-q100.jpeg	white, JPEG 100 4:4:4, unadjusted	unadjusted | tol-white-q100.jpeg
+cr084-clrchange-tol	rk90-white	9	rk90-09	tol-white-q100.jpeg	white, JPEG 100 4:4:4, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white-q100.jpeg
+cr084-clrchange-tol	rk90-white	10	rk90-10	tol-white-q50.jpeg	white, JPEG 50 4:2:0, unadjusted	unadjusted | tol-white-q50.jpeg
+cr084-clrchange-tol	rk90-white	11	rk90-11	tol-white-q50.jpeg	white, JPEG 50 4:2:0, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white-q50.jpeg
+cr084-clrchange-tol	rk90-white	12	rk90-12	tol-white-rgba.png	white, PNG with an alpha channel, unadjusted	unadjusted | tol-white-rgba.png
+cr084-clrchange-tol	rk90-white	13	rk90-13	tol-white-rgba.png	white, PNG with an alpha channel, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white-rgba.png
+cr084-clrchange-tol	rk90-white	14	rk90-14	tol-white-pal.png	white, palette PNG, unadjusted	unadjusted | tol-white-pal.png
+cr084-clrchange-tol	rk90-white	15	rk90-15	tol-white-pal.png	white, palette PNG, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white-pal.png
+cr084-clrchange-tol	rk90-white	16	rk90-16	tol-white.gif	white, GIF, unadjusted	unadjusted | tol-white.gif
+cr084-clrchange-tol	rk90-white	17	rk90-17	tol-white.gif	white, GIF, clrChange white to transparent	clrChange clrFrom srgbClr val=FFFFFF clrTo srgbClr val=FFFFFF alpha val=0 | tol-white.gif
+cr084-clrchange-tol	rk91-red	1	rk91-01	tol-red.png	red, PNG, unadjusted	unadjusted | tol-red.png
+cr084-clrchange-tol	rk91-red	2	rk91-02	tol-red.png	red, PNG, clrChange red to transparent	clrChange clrFrom srgbClr val=FF0000 clrTo srgbClr val=FF0000 alpha val=0 | tol-red.png
+cr084-clrchange-tol	rk91-red	3	rk91-03	tol-red-q75.jpeg	red, JPEG 75 4:2:0, unadjusted	unadjusted | tol-red-q75.jpeg
+cr084-clrchange-tol	rk91-red	4	rk91-04	tol-red-q75.jpeg	red, JPEG 75 4:2:0, clrChange red to transparent	clrChange clrFrom srgbClr val=FF0000 clrTo srgbClr val=FF0000 alpha val=0 | tol-red-q75.jpeg
+cr084-clrchange-tol	rk91-red	5	rk91-05	tol-red-q100.jpeg	red, JPEG 100 4:4:4, unadjusted	unadjusted | tol-red-q100.jpeg
+cr084-clrchange-tol	rk91-red	6	rk91-06	tol-red-q100.jpeg	red, JPEG 100 4:4:4, clrChange red to transparent	clrChange clrFrom srgbClr val=FF0000 clrTo srgbClr val=FF0000 alpha val=0 | tol-red-q100.jpeg
+cr084-clrchange-tol	rk92-grey	1	rk92-01	tol-grey.png	grey, PNG, unadjusted	unadjusted | tol-grey.png
+cr084-clrchange-tol	rk92-grey	2	rk92-02	tol-grey.png	grey, PNG, clrChange grey to transparent	clrChange clrFrom srgbClr val=808080 clrTo srgbClr val=808080 alpha val=0 | tol-grey.png
+cr084-clrchange-tol	rk92-grey	3	rk92-03	tol-grey-q75.jpeg	grey, JPEG 75 4:2:0, unadjusted	unadjusted | tol-grey-q75.jpeg
+cr084-clrchange-tol	rk92-grey	4	rk92-04	tol-grey-q75.jpeg	grey, JPEG 75 4:2:0, clrChange grey to transparent	clrChange clrFrom srgbClr val=808080 clrTo srgbClr val=808080 alpha val=0 | tol-grey-q75.jpeg
+cr084-clrchange-tol	rk92-grey	5	rk92-05	tol-grey-q100.jpeg	grey, JPEG 100 4:4:4, unadjusted	unadjusted | tol-grey-q100.jpeg
+cr084-clrchange-tol	rk92-grey	6	rk92-06	tol-grey-q100.jpeg	grey, JPEG 100 4:4:4, clrChange grey to transparent	clrChange clrFrom srgbClr val=808080 clrTo srgbClr val=808080 alpha val=0 | tol-grey-q100.jpeg
+cr084-clrchange-tol	rk93-blue	1	rk93-01	tol-blue.png	blue, PNG, unadjusted	unadjusted | tol-blue.png
+cr084-clrchange-tol	rk93-blue	2	rk93-02	tol-blue.png	blue, PNG, clrChange blue to transparent	clrChange clrFrom srgbClr val=336699 clrTo srgbClr val=336699 alpha val=0 | tol-blue.png
+cr084-clrchange-tol	rk93-blue	3	rk93-03	tol-blue-q75.jpeg	blue, JPEG 75 4:2:0, unadjusted	unadjusted | tol-blue-q75.jpeg
+cr084-clrchange-tol	rk93-blue	4	rk93-04	tol-blue-q75.jpeg	blue, JPEG 75 4:2:0, clrChange blue to transparent	clrChange clrFrom srgbClr val=336699 clrTo srgbClr val=336699 alpha val=0 | tol-blue-q75.jpeg
+cr084-clrchange-tol	rk93-blue	5	rk93-05	tol-blue-q100.jpeg	blue, JPEG 100 4:4:4, unadjusted	unadjusted | tol-blue-q100.jpeg
+cr084-clrchange-tol	rk93-blue	6	rk93-06	tol-blue-q100.jpeg	blue, JPEG 100 4:4:4, clrChange blue to transparent	clrChange clrFrom srgbClr val=336699 clrTo srgbClr val=336699 alpha val=0 | tol-blue-q100.jpeg

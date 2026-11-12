@@ -59,7 +59,7 @@ So D3 is settled: docx4j draws the blip, with its `a:` children, and never needs
 | `alphaInv` (no colour) | black, with alpha `1 - alpha` | 1, exact |
 | `alphaMod` | alpha times the container's result on the picture itself (with `alphaModFix 50%`: `0.5 alpha^2`) | 1, alpha 0.5 |
 | `alphaRepl` | alpha replaced; a fully transparent pixel's colour comes back black | 1, alpha 0.5 |
-| `clrChange` | the exact colour only (the nearest probed, 4 levels off, unchanged; phase 1: the corpus shows a tolerance, about a level on a PNG and at least 16 on a JPEG, phase1-findings.md §4); with `useA="1"` alpha must match too, with `useA="0"` the target's alpha is ignored (red to transparent changes nothing) | 7 |
+| `clrChange` | the exact colour only (the nearest probed, 4 levels off, unchanged; phase 1b measured a tolerance by the picture's format: the largest channel within 16 levels on a JPEG, 1 on a PNG, 0 on a GIF or with useA="0", phase1-findings.md §6); with `useA="1"` alpha must match too, with `useA="0"` the target's alpha is ignored (red to transparent changes nothing) | 7 |
 | `clrRepl` | every pixel the colour, alpha kept | 1, exact |
 | `fillOverlay` | `mult`: product; `screen`: `1 - (1 - a)(1 - b)` | 2, exact |
 | `tint` | each hue turned `amt` of the way to `hue`, the shorter way (an exactly opposite hue by the sign of the plain difference); lightness and saturation kept | 2, 7 |

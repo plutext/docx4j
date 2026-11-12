@@ -7,7 +7,8 @@ recommended; commit phase 0; start phase 1"). Phase 0 DONE: its rulings are in �
 picture. Gate passed: phase 0's 174 probes through docx4j's PDF 0 failing, the fidelity corpora 0 movers (b452 against
 b450), and every PDF without a drawn adjustment unchanged but for date fields (`CR-084-notes/phase1-findings.md`). Two
 findings: `biLevel`'s threshold is rounded (refined, built); `clrChange` has a tolerance in Word, about a level on a PNG
-and at least 16 on a JPEG, still exact in docx4j pending a probe round. Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
+and at least 16 on a JPEG, measured and built in phase 1b (DONE 2026-11-12: the largest channel within 16 levels on a JPEG, 1 on a PNG, 0 on a
+GIF or with `useA="0"`; 13145 and 4102 now as Word's). Proposed 2026-11-10. Drafted on Jason's request ("CR-081 D7 make a CR for this", 2026-11-10): CR-081's D7
 leaves `a:blip`'s colour effects out of CR-081, which is about `a:effectLst`. Not started; D1 to D9 open (§8). Needs
 nothing from CR-080 to CR-083. Read against docx4j 67b54b7fd, Apache POI trunk ae62bb5116, and the specifications in §12.
 Owner: Jason Harrop. Drafted with Claude Opus 5.5.
@@ -207,6 +208,30 @@ Phase 0 adds the load survey's counts (3.72M documents), through the portfolio.
   - `clrChange` is exact, as phase 0 found on PNG. The corpus shows Word with a tolerance (findings §4): about a level
     on a PNG, at least 16 levels on a JPEG, where five of the corpus's six pictures are. A probe round, for Jason,
     before it's built.
+- **Phase 1b, `clrChange`'s tolerance** (Jason, 2026-11-12: "do the Set Transparent Color tolerance round").
+  - The round, `cr084-clrchange-tol`, was staged 2026-11-12 (`CR-084-notes/build_tolerance.py`,
+    `tolerance-probes.tsv`): 4 files, 35 probes, schema-valid, drawn by docx4j.
+  - Colours near a target (white, red, mid-grey, 336699), each channel moved alone, all three together, and two at
+    once, by up to 80 levels, made transparent:
+    - as PNG, JPEG 75 4:2:0 (as the corpus's) and JPEG 100 4:4:4;
+    - for white also JPEG 50, a PNG with an alpha channel, a palette PNG and a GIF, and to an opaque colour, with and
+      without `useA`.
+  - Each patch is one JPEG MCU, so it decodes flat. A JPEG's levels are its decoded patch centres
+    (`tolerance-sources.json`).
+  - Then the rule is built in `PictureRecolour`, and phase 1's gate is run again.
+  - **DONE 2026-11-12** (`CR-084-notes/phase1-findings.md` §6). All 4 jobs ran silent. The measure is the largest
+    channel's difference from `clrFrom`; the tolerance is the picture format's:
+    - a JPEG 16 (quality 50 to 100, 4:2:0 and 4:4:4);
+    - a GIF 0;
+    - a PNG 1, or 0 with `useA="0"`.
+  - Built: `PictureRecolour.apply(..., sourceFormat)`.
+  - Found on the way: a compressed variant's name dropped its source's extension, so two pictures differing only by
+    it shared one file (a defect since 17.3.0, now fixed).
+  - Gate:
+    - the round's 4,864 patches as Word takes them, but 20 JPEG 4:2:0 patches at the boundary (the decoders);
+    - phase 0's probes 0 failing;
+    - b461 against b459: 0 movers, only the `clrChange` documents' PDFs changed;
+    - 13145's and 4102's pictures transparent as Word's (0.890, 0.565).
 - **Phase 2, Word 2010's adjustments.** Phase 0 confirmed the blip is already adjusted (findings §2; D3): a test that
   docx4j draws the blip, with its `a:` children, and never the `a14:imgLayer`.
 - **Phase 3, VML** (D4). `v:imagedata`'s attributes through the same operations.

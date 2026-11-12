@@ -214,12 +214,12 @@ final class PictureEffects {
 		if (fx != null || is3d(pic)) {
 			picture = read(bytes, w, h, crop);
 			if (picture == null) report("render.effect.picture_unread", part.getPartName() == null ? "" : part.getPartName().getName());
-			else if (!recolour.isNone()) picture = recolour.apply(picture, pixelsPerPoint(picture, w, crop));
+			else if (!recolour.isNone()) picture = recolour.apply(picture, pixelsPerPoint(picture, w, crop), PictureRecolour.formatOf(bytes));
 		}
 		if (href == null && !recolour.isNone()) {
 			// the part's own bytes, adjusted (the crop is cut here)
 			BufferedImage whole = picture != null ? picture : read(bytes, w, h, null);
-			if (whole != null && picture == null) whole = recolour.apply(whole, pixelsPerPoint(whole, w, PictureCrop.NONE));
+			if (whole != null && picture == null) whole = recolour.apply(whole, pixelsPerPoint(whole, w, PictureCrop.NONE), PictureRecolour.formatOf(bytes));
 			href = whole == null ? null : png(whole);
 		}
 		ThemeColors theme = null;

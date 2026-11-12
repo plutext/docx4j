@@ -296,7 +296,7 @@ public final class PictureCompression {
 
 		if (cropping) image = crop(image, crop);
 		// adjusted after the crop and before the resampling, as Word does (CR-084 D8)
-		if (recolouring) image = recolour.apply(image, sized ? image.getWidth() / widthPt : 0);
+		if (recolouring) image = recolour.apply(image, sized ? image.getWidth() / widthPt : 0, format);
 
 		int w = image.getWidth(), h = image.getHeight();
 		int tw = w, th = h;

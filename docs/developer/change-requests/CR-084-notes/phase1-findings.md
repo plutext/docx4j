@@ -109,11 +109,65 @@ The corpus says otherwise. Each of its six `clrChange` pictures makes white tran
 - **4102 (a PNG)**: Word clears 81% of the pixels 1 level off white on their farthest channel, and none at 2.
 - So Word's tolerance looks format-dependent: about a level for a PNG, at least 16 for a JPEG. It might instead depend
   on the colour (white here, red in the probes).
-- Not built: the rule is still exact. It needs a probe round (phase 0's section 8 left it open): near-white and
-  near-red grids at 1-level steps, as PNG and as JPEG at a few qualities, with and without `useA`.
+- Not built in phase 1: the rule stayed exact until phase 1b's probe round (section 6).
 
 ## 5. Open
 
-- `clrChange`'s tolerance (section 4): a probe round, for Jason.
 - 13145's adjusted picture is 1,557 by 608 px in docx4j's PDF and 1,536 by 600 in Word's. Word resampled it; its
   unadjusted pictures at the same resolution it keeps. Not in the probes, and outside this phase.
+
+## 6. Phase 1b: `clrChange`'s tolerance, measured and built
+
+Jason, 2026-11-12: "do the Set Transparent Color tolerance round".
+
+**The round.** `cr084-clrchange-tol` (`build_tolerance.py`, `tolerance-probes.tsv`) ran the same day on the
+word-bridge: 4 files, 35 probes, all silent. It is read by `read_tolerance.py` into `tolerance-word.json` and fitted by
+`fit_tolerance.py`.
+- The colours are near a target: white, red, mid-grey and 336699.
+- Each channel is moved alone, all three together, and two at once, by up to 80 levels.
+- They are made transparent, and on white also turned an opaque blue, with and without `useA`.
+- The formats:
+  - PNG;
+  - JPEG at quality 75 with 4:2:0, as the corpus's five are;
+  - JPEG at 100 with 4:4:4;
+  - on white also JPEG at 50, a PNG with an alpha channel, a palette PNG and a GIF.
+- Each patch is one JPEG MCU, so it decodes flat. Word writes an unadjusted JPEG through as it is, and an adjusted
+  picture losslessly, so the patches it keeps show its own decoding: within 2 levels of the Java-side decoder's at
+  4:2:0, exact at 4:4:4.
+
+**The rule.** The largest channel's difference from `clrFrom`, against a tolerance set by the picture's format. The sum
+and the Euclidean distance both overlap; this measure separates every lossless probe.
+
+| Picture | Taken | Left | Tolerance |
+|---|---|---|---|
+| PNG (RGB, with alpha, palette), white, red, grey, 336699 | at most 1 level | from 2 | 1 |
+| PNG, `useA="0"` (white to blue) | the exact colour | from 1 | 0 |
+| GIF | the exact colour | from 1 | 0 |
+| JPEG, quality 50, 75, 100, 4:2:0 and 4:4:4, all four targets | at most 16 levels (4:4:4 exactly) | from 17 | 16 |
+
+- The opaque target follows the same rule.
+- Unmeasured: a JPEG with `useA="0"` (16 is taken), other lossless formats (1), a rasterised metafile (1), an alpha
+  near `clrFrom`'s (exact, as in phase 0).
+
+**Built.** `PictureRecolour.apply(picture, pixelsPerPoint, sourceFormat)`. `PictureCompression` passes ImageIO's format
+name, and `PictureEffects` the format sniffed from the bytes. `ClrChange` takes a colour within
+`clrChangeTolerance(format, useA)`.
+
+**A defect found on the way.** A compressed variant's part name dropped its source's extension. So `tol-white.png` and
+`tol-white.gif`, made transparent alike, wrote one file, and the PNG's page drew the GIF's exact result.
+`AbstractConversionImageHandler.derivedName` now keeps it (`logo-png-...`, `logo-gif-...`). This has affected any two
+pictures named alike but for their extension, cropped alike, since 17.3.0.
+
+**The gate.**
+- **The round through `PictureRecolour`** (`PictureRecolourWordTest.clrChangeTakesWhatWordTakes`, from
+  `clrchange-word.tsv`): 4,844 of 4,864 patches as Word takes them. The 20 that differ are JPEG 4:2:0 patches 15 to 18
+  levels out: the two decoders.
+- **The round through docx4j's PDF:** the same 20, and no other.
+- **Phase 0's probes:** 174, 0 failing.
+- **b461 against b459:** 0 movers, events equal, the probes' PDFs the same. Only the `clrChange` documents' PDFs
+  changed (12338, 1426, 13145, 6088, 4102), besides the two clocks.
+- **The corpus pictures:**
+  - 13145's picture is now 0.890 transparent, as Word's (b459 0.829): no near-white specks left;
+  - 4102's is 0.565, as Word's (b459 0.531).
+- **Suites:** core-tests 2,645, export-fo 111, export-fo-tests 960.
+

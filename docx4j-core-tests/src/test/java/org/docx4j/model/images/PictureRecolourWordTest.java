@@ -149,4 +149,50 @@ public class PictureRecolourWordTest {
 		assertTrue(failures.size() + " patches off Word (of " + compared + "):\n" + String.join("\n", failures.subList(0, Math.min(40, failures.size())))
 				+ "\n" + summary, failures.isEmpty());
 	}
+
+	/**
+	 * {@code clrChange}'s tolerance against Word (phase 1b, round cr084-clrchange-tol, 19 probes): whether Word took each
+	 * patch (cleared it, or turned it blue), against {@link PictureRecolour}'s rule for the picture's format. The only
+	 * patches let differ are a JPEG's within 2 levels of the boundary, where Word's decoder and the one that read the
+	 * source (the table's) part by up to 2 levels.
+	 */
+	@Test
+	public void clrChangeTakesWhatWordTakes() throws Exception {
+		List<String> failures = new ArrayList<String>();
+		int probes = 0, patches = 0, excused = 0;
+		for (String[] r : table("clrchange-word.tsv")) {
+			if (r[0].equals("probe")) continue;
+			String probe = r[0], format = r[2];
+			long[] src = argb(r[4]), word = argb(r[5]);
+			CTBlip blip = blip(r[3]);
+			PictureRecolour rc = PictureRecolour.of(blip, (ThemeColors) null);
+			org.docx4j.model.color.ResolvedColor from = org.docx4j.model.color.DrawingMLColors.resolve(
+					((org.docx4j.dml.CTColorChangeEffect) blip.getAlphaBiLevelOrAlphaCeilingOrAlphaFloor().get(0)).getClrFrom(), null);
+			BufferedImage out = rc.apply(picture(src), 0, format);
+			probes++;
+			for (int i = 0; i < 256; i++) {
+				if (word[i] == ABSENT) continue;
+				int ours = out.getRGB(i % 16, i / 16);
+				boolean wordTook = (word[i] >>> 24) < 128 || isBlue(word[i]) && !isBlue(src[i]);
+				boolean weTook = (ours >>> 24) < 128 || isBlue(ours) && !isBlue(src[i]);
+				patches++;
+				if (wordTook == weTook) continue;
+				int d = Math.max(Math.abs((int) ((src[i] >> 16) & 0xFF) - from.getRed()),
+						Math.max(Math.abs((int) ((src[i] >> 8) & 0xFF) - from.getGreen()), Math.abs((int) (src[i] & 0xFF) - from.getBlue())));
+				if (format.equals("jpeg") && Math.abs(d - 16.5) <= 2) {
+					excused++;
+					continue;
+				}
+				failures.add(String.format(Locale.ROOT, "%s (%s) patch %d, %d levels off: Word %s, docx4j %s", probe, r[1], i, d,
+						wordTook ? "took it" : "left it", weTook ? "took it" : "left it"));
+			}
+		}
+		assertTrue("probes " + probes, probes == 19);
+		assertTrue(failures.size() + " of " + patches + " patches (" + excused + " excused at a JPEG's boundary):\n"
+				+ String.join("\n", failures.subList(0, Math.min(30, failures.size()))), failures.isEmpty());
+	}
+
+	private static boolean isBlue(long argb) {
+		return (argb & 0xFF) > 200 && ((argb >> 16) & 0xFF) < 60 && ((argb >> 8) & 0xFF) < 60;
+	}
 }

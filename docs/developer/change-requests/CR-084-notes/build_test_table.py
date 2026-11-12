@@ -10,6 +10,8 @@ Writes, into docx4j-core-tests/src/test/resources/images/recolour/:
                     (RRGGBBAA; '-' where a patch isn't in the picture, as outside a crop)
 
 The VML probes (rk70) are phase 3's; the photo's (rk60, rk82) have no patches.
+  clrchange-word.tsv  phase 1b's clrChange tolerance round (tolerance-word.json): each probe's format, a:blip children,
+                    the source's patches as decoded and Word's
 
 usage: build_test_table.py"""
 import importlib.util, json, os
@@ -53,6 +55,37 @@ def main():
         for r in [['probe', 'note', 'picture', 'filter', 'blip', 'word']] + rows:   # no field holds a tab or a newline
             f.write('\t'.join(r) + '\n')
     print(len(rows), 'probes,', len(sources), 'pictures ->', os.path.normpath(OUT))
+    clrchange_table()
+
+def clrchange_table():
+    """Phase 1b's round (tolerance-word.json, read_tolerance.py): each clrChange probe's picture format, its a:blip
+    children, the source's patches as decoded and Word's, into clrchange-word.tsv."""
+    import csv as _csv
+    tw = json.load(open(os.path.join(HERE, 'tolerance-word.json'), encoding='utf-8'))
+    blips = {}
+    spec = importlib.util.spec_from_file_location('tolerance', os.path.join(HERE, 'build_tolerance.py'))
+    tol = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tol)
+    for fname, base in tol.FILES:
+        prefix = fname.split('-')[0]
+        for i, p in enumerate(tol.fam(base)):
+            blips[f'{prefix}-{i + 1:02d}'] = p
+    rows = []
+    for k, v in sorted(tw.items()):
+        p = blips[k]
+        if 'clrChange' not in p.blip:
+            continue
+        fmt = tol.PICTURES[p.picture][1].split('.')[-1]          # png, jpeg, gif
+        pic = [q for q in v['pictures'] if q.get('patches')][0]
+        rows.append([k, v['note'], fmt, p.blip, ' '.join(hexc(list(c) + [255]) for c in v['decoded']),
+                     ' '.join(hexc(c) for c in pic['patches'])])
+    with open(os.path.join(OUT, 'clrchange-word.tsv'), 'w', encoding='utf-8', newline='') as f:
+        f.write('# CR-084 phase 1b: the clrChange tolerance round (cr084-clrchange-tol); each probe\'s picture format, '
+                'its a:blip children, the source\'s patches as decoded (RRGGBBAA) and Word\'s; written by '
+                'CR-084-notes/build_test_table.py\n')
+        for r in [['probe', 'note', 'format', 'blip', 'source', 'word']] + rows:
+            f.write('\t'.join(r) + '\n')
+    print(len(rows), 'clrChange probes')
 
 if __name__ == '__main__':
     main()

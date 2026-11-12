@@ -137,10 +137,7 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 				PictureCompression.resolution(picture.getWmlPackage(), pictureResolution));
 		if (r == null) return null;
 		try {
-			String name = part.getPartName() == null ? "/word/media/picture" : part.getPartName().getName();
-			int dot = name.lastIndexOf('.');
-			if (dot > name.lastIndexOf('/')) name = name.substring(0, dot);
-			name = name + "-" + Integer.toHexString(variant.hashCode()) + "." + r.extension;
+			String name = derivedName(part.getPartName() == null ? null : part.getPartName().getName(), variant, r.extension);
 			BinaryPart derived = new BinaryPart(new org.docx4j.openpackaging.parts.PartName(name));
 			derived.setContentType(new org.docx4j.openpackaging.contenttype.ContentType(r.contentType));
 			derived.setBinaryData(r.bytes);
@@ -155,6 +152,22 @@ public abstract class AbstractConversionImageHandler implements ConversionImageH
 			log.warn("Couldn't store the compressed picture: " + e.getMessage());
 			return null;
 		}
+	}
+
+	/**
+	 * The name of a picture's compressed variant: its part's name, the variant's hash, the new extension. The part's own
+	 * extension is kept in it (image1-png-..., image1-gif-...): until 17.3.7 it was dropped, so two parts differing only
+	 * by it, given the same crop or adjustment, wrote one file, and every use of either drew the last one written
+	 * (measured: a PNG and a GIF made transparent, the PNG drawn with the GIF's exact clrChange).
+	 *
+	 * @param partName the part's name; null for none
+	 * @since 17.3.7
+	 */
+	static String derivedName(String partName, String variant, String extension) {
+		String name = partName == null ? "/word/media/picture" : partName;
+		int dot = name.lastIndexOf('.');
+		if (dot > name.lastIndexOf('/')) name = name.substring(0, dot) + "-" + name.substring(dot + 1);
+		return name + "-" + Integer.toHexString(variant.hashCode()) + "." + extension;
 	}
 
 	protected String createKey(Relationship relationship, BinaryPart part) {

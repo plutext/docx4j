@@ -129,15 +129,31 @@ public class PictureRecolourTest {
 		assertEquals(BufferedImage.TYPE_INT_ARGB, out.getType());
 	}
 
+	/** Set Transparent Color's tolerance is the picture format's (phase 1b): a JPEG's 16 levels, a GIF's none, a PNG's 1
+	 *  (none with useA="0") */
 	@Test
-	public void setTransparentColourIsExact() throws Exception {
-		BufferedImage im = new BufferedImage(2, 1, BufferedImage.TYPE_INT_RGB);
-		im.setRGB(0, 0, 0xFFFFFF);
-		im.setRGB(1, 0, 0xFEFFFF);
-		BufferedImage out = recolour("<a:clrChange><a:clrFrom><a:srgbClr val=\"FFFFFF\"/></a:clrFrom>"
-				+ "<a:clrTo><a:srgbClr val=\"FFFFFF\"><a:alpha val=\"0\"/></a:srgbClr></a:clrTo></a:clrChange>").apply(im, 0);
-		assertEquals(0, out.getRGB(0, 0) >>> 24);
-		assertEquals(0xFFFEFFFF, out.getRGB(1, 0));
+	public void setTransparentColoursToleranceIsTheFormats() throws Exception {
+		String toClear = "<a:clrChange><a:clrFrom><a:srgbClr val=\"FFFFFF\"/></a:clrFrom>"
+				+ "<a:clrTo><a:srgbClr val=\"FFFFFF\"><a:alpha val=\"0\"/></a:srgbClr></a:clrTo></a:clrChange>";
+		int[] colours = { 0xFFFFFF, 0xFEFFFF, 0xFDFFFF, 0xEFFFFF, 0xEEFFFF };
+		BufferedImage im = new BufferedImage(colours.length, 1, BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < colours.length; i++) im.setRGB(i, 0, colours[i]);
+		assertEquals("png", "11000", cleared(recolour(toClear).apply(im, 0, "png")));
+		assertEquals("no format: a lossless picture's", "11000", cleared(recolour(toClear).apply(im, 0)));
+		assertEquals("jpeg", "11110", cleared(recolour(toClear).apply(im, 0, "jpeg")));
+		assertEquals("gif", "10000", cleared(recolour(toClear).apply(im, 0, "gif")));
+		String toBlueNoA = "<a:clrChange useA=\"0\"><a:clrFrom><a:srgbClr val=\"FFFFFF\"/></a:clrFrom>"
+				+ "<a:clrTo><a:srgbClr val=\"0000FF\"/></a:clrTo></a:clrChange>";
+		BufferedImage blue = recolour(toBlueNoA).apply(im, 0, "png");
+		assertEquals(0xFF0000FF, blue.getRGB(0, 0));
+		assertEquals("useA 0 on a PNG: the exact colour only", 0xFFFEFFFF, blue.getRGB(1, 0));
+	}
+
+	/** Which pixels are transparent, as 1s and 0s */
+	private static String cleared(BufferedImage im) {
+		StringBuilder b = new StringBuilder();
+		for (int x = 0; x < im.getWidth(); x++) b.append((im.getRGB(x, 0) >>> 24) == 0 ? '1' : '0');
+		return b.toString();
 	}
 
 	@Test
@@ -183,4 +199,16 @@ public class PictureRecolourTest {
 		r = PictureCompression.compress(png, PictureCrop.NONE, recolour("<a:grayscl/>"), 9, 9, PictureCompression.resolution(null, "word"));
 		assertEquals(25, r.width);
 	}
+
+	/** Two pictures differing only by their extension, compressed alike, get two files (phase 1b's round found one
+	 *  overwriting the other) */
+	@Test
+	public void aDerivedPicturesNameKeepsItsSourcesExtension() {
+		String png = AbstractConversionImageHandler.derivedName("/word/media/logo.png", "v", "png");
+		String gif = AbstractConversionImageHandler.derivedName("/word/media/logo.gif", "v", "png");
+		assertFalse(png.equals(gif));
+		assertTrue(png, png.startsWith("/word/media/logo-png-") && png.endsWith(".png"));
+		assertTrue(AbstractConversionImageHandler.derivedName(null, "v", "jpg").startsWith("/word/media/picture-"));
+	}
 }
+

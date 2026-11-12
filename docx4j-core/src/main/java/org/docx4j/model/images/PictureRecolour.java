@@ -73,8 +73,9 @@ import org.slf4j.LoggerFactory;
  * <li>{@code alphaModFix}, {@code alphaBiLevel}, {@code alphaCeiling}, {@code alphaFloor}, {@code alphaInv},
  *     {@code alphaRepl}: as their names say; {@code alphaMod}: the alpha times the alpha of its container's effects
  *     applied to the picture itself;</li>
- * <li>{@code clrChange}: the exact colour only (and its alpha, with {@code useA}, the default), to {@code clrTo}'s
- *     colour, and its alpha with {@code useA};</li>
+ * <li>{@code clrChange}: the colour (and its alpha, with {@code useA}, the default), within a tolerance that depends
+ *     on the picture's format (a JPEG 16 levels, a GIF none, a PNG 1; {@link #apply(BufferedImage, double, String)}),
+ *     to {@code clrTo}'s colour, and its alpha with {@code useA};</li>
  * <li>{@code clrRepl}: every pixel the colour, its alpha kept; {@code fillOverlay}: a solid fill blended as its
  *     {@code blend} says;</li>
  * <li>{@code tint}: each hue turned {@code amt} of the way to {@code hue}, the shorter way round, its lightness and
@@ -317,6 +318,14 @@ public final class PictureRecolour {
 	 * @return src itself where there is nothing to apply
 	 */
 	public BufferedImage apply(BufferedImage src, double pixelsPerPoint) {
+		return apply(src, pixelsPerPoint, null);
+	}
+
+	/**
+	 * As {@link #apply(BufferedImage, double)}, for a picture stored in the format named (ImageIO's name: jpeg, png,
+	 * gif, ...; null for a lossless one), which sets how near a colour {@code clrChange} takes (phase 1b).
+	 */
+	public BufferedImage apply(BufferedImage src, double pixelsPerPoint, String sourceFormat) {
 		if (src == null || isNone()) return src;
 		report();
 		int w = src.getWidth(), h = src.getHeight();
@@ -335,6 +344,7 @@ public final class PictureRecolour {
 		double ppp = pixelsPerPoint > 0 ? pixelsPerPoint : 96 / 72d;
 		List<Op> run = new ArrayList<Op>();
 		for (Op op : ops) {
+			if (op instanceof ClrChange) op = ((ClrChange) op).forFormat(sourceFormat);
 			if (op instanceof Blur) {
 				pixels(px, run);
 				run.clear();
@@ -582,26 +592,72 @@ public final class PictureRecolour {
 	}
 
 	/** The exact colour, and its alpha with useA, to clrTo's colour, and its alpha with useA */
+	/**
+	 * How far, in levels of 255 on any one channel, a colour may be from {@code clrChange}'s {@code clrFrom} and still be
+	 * taken, by the format the picture is stored in (phase 1b, round cr084-clrchange-tol: grids of colours near white,
+	 * red, mid-grey and 336699, each channel alone, all three and two together; the largest channel's difference is
+	 * the measure, the sum and the distance overlap):
+	 * <ul>
+	 * <li>a JPEG, 16, at quality 50, 75 and 100, 4:2:0 and 4:4:4 alike (Word's decoder within 2 levels of Java's);</li>
+	 * <li>a GIF, 0: the exact colour;</li>
+	 * <li>anything else (a PNG, with or without alpha, a palette PNG), 1; with {@code useA="0"}, 0.</li>
+	 * </ul>
+	 * Unmeasured: a JPEG with {@code useA="0"} (16 is taken), another lossless format (1), a metafile rasterised (1).
+	 */
+	/** The picture's format from its first bytes, as ImageIO names it (jpeg, png, gif); null where it isn't one of those */
+	static String formatOf(byte[] b) {
+		if (b == null || b.length < 4) return null;
+		if ((b[0] & 0xFF) == 0xFF && (b[1] & 0xFF) == 0xD8) return "jpeg";
+		if (b[0] == 'G' && b[1] == 'I' && b[2] == 'F') return "gif";
+		if ((b[0] & 0xFF) == 0x89 && b[1] == 'P' && b[2] == 'N' && b[3] == 'G') return "png";
+		return null;
+	}
+
+	static int clrChangeTolerance(String sourceFormat, boolean useA) {
+		String f = sourceFormat == null ? "" : sourceFormat.toLowerCase(Locale.ROOT);
+		if (f.equals("jpeg") || f.equals("jpg")) return 16;
+		if (f.equals("gif")) return 0;
+		return useA ? 1 : 0;
+	}
+
+	/** The exact colour, and its alpha with useA, to clrTo's colour, and its alpha with useA; the colour within the
+	 *  source format's tolerance ({@link #clrChangeTolerance}) */
 	static final class ClrChange extends Op {
 		final int fr, fg, fb, fa;
 		final double[] to;
 		final double toA;
 		final boolean useA;
+		/** levels on any channel; -1 until the source's format is known (then that of a lossless picture) */
+		final int tol;
 
 		ClrChange(ResolvedColor from, ResolvedColor to, boolean useA) {
-			super("clrChange" + hex(from) + "," + hex(to) + (useA ? "" : ",noA"), useA && to.getAlpha() < ResolvedColor.OPAQUE);
-			fr = from.getRed();
-			fg = from.getGreen();
-			fb = from.getBlue();
-			fa = level(from.getAlpha() / (double) ResolvedColor.OPAQUE);
-			this.to = rgb(to);
-			this.toA = clamp(to.getAlpha() / (double) ResolvedColor.OPAQUE);
+			this(from.getRed(), from.getGreen(), from.getBlue(), level(from.getAlpha() / (double) ResolvedColor.OPAQUE),
+					rgb(to), clamp(to.getAlpha() / (double) ResolvedColor.OPAQUE), useA, -1,
+					"clrChange" + hex(from) + "," + hex(to) + (useA ? "" : ",noA"), useA && to.getAlpha() < ResolvedColor.OPAQUE);
+		}
+
+		private ClrChange(int fr, int fg, int fb, int fa, double[] to, double toA, boolean useA, int tol, String key, boolean addsAlpha) {
+			super(key, addsAlpha);
+			this.fr = fr;
+			this.fg = fg;
+			this.fb = fb;
+			this.fa = fa;
+			this.to = to;
+			this.toA = toA;
 			this.useA = useA;
+			this.tol = tol;
+		}
+
+		/** This change for a picture stored in the format named */
+		ClrChange forFormat(String sourceFormat) {
+			int t = clrChangeTolerance(sourceFormat, useA);
+			return t == tol ? this : new ClrChange(fr, fg, fb, fa, to, toA, useA, t, key, addsAlpha);
 		}
 
 		@Override
 		void pixel(double[] p) {
-			if (level(p[0]) != fr || level(p[1]) != fg || level(p[2]) != fb) return;
+			int t = tol < 0 ? clrChangeTolerance(null, useA) : tol;
+			if (Math.abs(level(p[0]) - fr) > t || Math.abs(level(p[1]) - fg) > t || Math.abs(level(p[2]) - fb) > t) return;
 			if (useA && level(p[3]) != fa) return;
 			p[0] = to[0];
 			p[1] = to[1];
