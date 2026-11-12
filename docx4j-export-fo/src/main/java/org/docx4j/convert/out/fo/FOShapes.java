@@ -105,9 +105,11 @@ final class FOShapes {
 			final Part host = context.getCurrentPart();
 			org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.draw(art,
 					org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, relId -> picture(host, relId));
+			if (drawn == null) return null;
 			for (String code : drawn.getProblems()) log.warn(code + ": WordArt (CR-083 D9)");
 			return drawn;
-		} catch (RuntimeException e) {
+		} catch (RuntimeException | OutOfMemoryError e) {
+			// out of memory too: the drawing is let go and the text box stays text, as a picture's adjustments are (CR-084)
 			log.warn("render.wordart.content: WordArt couldn't be drawn, left as text: " + e, e);
 			return null;
 		}

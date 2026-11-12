@@ -220,7 +220,8 @@ public final class HtmlShapes {
 			List<Element> texts = new ArrayList<Element>();
 			texts.add(null);
 			return new Box(box, shapes, texts);
-		} catch (RuntimeException e) {
+		} catch (RuntimeException | OutOfMemoryError e) {
+			// out of memory too: the drawing is let go and the text box stays text, as a picture's adjustments are (CR-084)
 			log.warn("render.wordart.content: WordArt couldn't be drawn in HTML, left as text: " + e, e);
 			return null;
 		}

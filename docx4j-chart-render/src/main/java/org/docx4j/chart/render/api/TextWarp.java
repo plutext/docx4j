@@ -49,8 +49,43 @@ final class TextWarp {
 	/** How finely a glyph's curves are flattened before they are mapped, in points */
 	static final double FLATNESS = 0.01;
 
-	/** The longest piece of an outline mapped as one straight line, in points */
+	/** The longest piece of an outline mapped as one straight line, in points, up to a glyph of 50 pt ({@link #segment}) */
 	static final double MAX_SEGMENT = 0.5;
+
+	/**
+	 * The points a WordArt's warped outlines may have, past which it is drawn unwarped (CR-083 phases 1 and 2 review:
+	 * 3,200 glyphs warped at 0.5 pt made an SVG of 12.8 MB): about 17 MB of path data
+	 */
+	static final int MAX_POINTS = 1_000_000;
+
+	/** The limit in force: {@link #MAX_POINTS}, lowered by a test */
+	static volatile int maxPoints = MAX_POINTS;
+
+	/**
+	 * The longest piece mapped as one straight line for a glyph of this size: {@link #MAX_SEGMENT}, or a hundredth of
+	 * the size past 50 pt, so that a glyph's points don't grow with its size (a 400 pt glyph: 4 pt pieces)
+	 */
+	static double segment(double size) {
+		return Math.max(MAX_SEGMENT, size / 100);
+	}
+
+	/** The points a WordArt's warp may still write */
+	static final class Budget {
+		int left;
+
+		Budget(int points) {
+			this.left = points;
+		}
+	}
+
+	/** Past the {@link Budget}: the WordArt is drawn unwarped */
+	static final class OverLimit extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		OverLimit() {
+			super(null, null, false, false);
+		}
+	}
 
 	private TextWarp() {}
 
@@ -233,24 +268,35 @@ final class TextWarp {
 	 * mapped; the subpaths kept, closed as they were. Its winding rule is kept.
 	 */
 	static Path2D.Double warp(Shape shape, Mapping m) {
+		return warp(shape, m, MAX_SEGMENT, null);
+	}
+
+	/**
+	 * As {@link #warp(Shape, Mapping)}, each piece cut at most segment long, its points taken from the budget (null:
+	 * none)
+	 *
+	 * @throws OverLimit where the budget runs out
+	 */
+	static Path2D.Double warp(Shape shape, Mapping m, double segment, Budget budget) {
 		Path2D.Double out = new Path2D.Double(shape instanceof Path2D ? ((Path2D) shape).getWindingRule() : Path2D.WIND_NON_ZERO);
 		double[] c = new double[6], p = new double[2];
 		double cx = 0, cy = 0, sx = 0, sy = 0;
 		for (PathIterator it = new FlatteningPathIterator(shape.getPathIterator(null), FLATNESS, 16); !it.isDone(); it.next()) {
 			switch (it.currentSegment(c)) {
 				case PathIterator.SEG_MOVETO:
+					if (budget != null && --budget.left < 0) throw new OverLimit();
 					m.map(c[0], c[1], p);
 					out.moveTo(p[0], p[1]);
 					cx = sx = c[0];
 					cy = sy = c[1];
 					break;
 				case PathIterator.SEG_LINETO:
-					line(out, m, cx, cy, c[0], c[1], p);
+					line(out, m, cx, cy, c[0], c[1], p, segment, budget);
 					cx = c[0];
 					cy = c[1];
 					break;
 				case PathIterator.SEG_CLOSE:
-					line(out, m, cx, cy, sx, sy, p);
+					line(out, m, cx, cy, sx, sy, p, segment, budget);
 					out.closePath();
 					cx = sx;
 					cy = sy;
@@ -262,9 +308,13 @@ final class TextWarp {
 		return out;
 	}
 
-	private static void line(Path2D.Double out, Mapping m, double x0, double y0, double x1, double y1, double[] p) {
+	private static void line(Path2D.Double out, Mapping m, double x0, double y0, double x1, double y1, double[] p, double segment,
+			Budget budget) {
 		double len = Math.hypot(x1 - x0, y1 - y0);
-		int n = Math.max(1, (int) Math.ceil(len / MAX_SEGMENT));
+		double cut = Math.ceil(len / segment);
+		if (!(cut < Integer.MAX_VALUE)) throw new OverLimit();
+		int n = Math.max(1, (int) cut);
+		if (budget != null && (budget.left -= n) < 0) throw new OverLimit();
 		for (int i = 1; i <= n; i++) {
 			double f = (double) i / n;
 			m.map(x0 + f * (x1 - x0), y0 + f * (y1 - y0), p);

@@ -85,8 +85,23 @@ public final class WordArtText {
 	/** A warp docx4j has no definition of: the text drawn unwarped */
 	public static final String UNKNOWN_PRESET = "render.wordart.unknown_preset";
 
-	/** A run whose font has no file docx4j can outline: the WordArt left as text */
+	/** A run whose face has no font file docx4j can outline: drawn in AWT's fallback face */
 	public static final String FONT = "render.wordart.font";
+
+	/**
+	 * A run's underline, strike, highlight or shading on warped WordArt, not drawn: drawn on flat WordArt as the FO
+	 * output draws them; how Word warps them is not measured (phase 3's round)
+	 */
+	public static final String DECORATION = "render.wordart.decoration";
+
+	/** A warp whose outlines would pass {@code WordArtRenderer}'s limit on points: the text drawn unwarped */
+	public static final String OVER_LIMIT = "render.wordart.over_limit";
+
+	/** A run's fill or colour that couldn't be resolved or drawn (a gradient with no stops, a colour that doesn't resolve) */
+	public static final String FILL = "render.wordart.fill";
+
+	/** A run's outline that couldn't be drawn */
+	public static final String OUTLINE = "render.wordart.outline";
 
 	/** How Word's PDF draws a run (CR-083 D2, phase 0 findings section 1) */
 	public enum Paint {
@@ -111,6 +126,13 @@ public final class WordArtText {
 		boolean shadow, glow, reflection, threeD, textFill, alpha;
 		String lang;
 		RPr rPr;
+		/** the paragraph mark of a paragraph with no runs: no text, its line's height */
+		boolean mark;
+		org.docx4j.wml.UnderlineEnumeration underline;
+		ResolvedColor underlineColour, highlight, shading;
+		boolean strike, doubleStrike;
+		/** a superscript's raise or a subscript's drop (negative), in points of the unreduced size */
+		double rise;
 		/** Word's ascent and descent, and its single line, as fractions of the size (WordLineMetrics) */
 		double ascent = 0.8, descent = 0.2, single = 1.2;
 
@@ -198,6 +220,57 @@ public final class WordArtText {
 		/** It has 3-D ({@code w14:props3d} or {@code w14:scene3d}) */
 		public boolean isThreeD() {
 			return threeD;
+		}
+
+		/**
+		 * The paragraph mark of a paragraph with no runs: no text, but its line is as high as the mark's size, as Word
+		 * lays an empty paragraph out
+		 */
+		public boolean isMark() {
+			return mark;
+		}
+
+		/** Its underline ({@code w:u}), or null for none; drawn as the FO output draws it, a single line of any kind but double */
+		public org.docx4j.wml.UnderlineEnumeration getUnderline() {
+			return underline;
+		}
+
+		/** The underline's colour; null for automatic (the text's) */
+		public ResolvedColor getUnderlineColour() {
+			return underlineColour;
+		}
+
+		/** Struck through once ({@code w:strike}) */
+		public boolean isStrike() {
+			return strike;
+		}
+
+		/** Struck through twice ({@code w:dstrike}) */
+		public boolean isDoubleStrike() {
+			return doubleStrike;
+		}
+
+		/** Its highlight ({@code w:highlight}), or null */
+		public ResolvedColor getHighlight() {
+			return highlight;
+		}
+
+		/** Its shading's fill ({@code w:shd}), or null */
+		public ResolvedColor getShading() {
+			return shading;
+		}
+
+		/**
+		 * A superscript's raise, or a subscript's drop (negative), in points: of the unreduced size, as the FO output has
+		 * them ({@link org.docx4j.model.properties.run.VerticalAlignment}); its {@link #getSize()} is already reduced
+		 */
+		public double getRise() {
+			return rise;
+		}
+
+		/** It has an underline, a strike, a highlight or a shading: drawn on flat WordArt, reported on warped */
+		public boolean hasDecoration() {
+			return underline != null || strike || doubleStrike || highlight != null || shading != null;
 		}
 
 		/** Its language ({@code w:lang}), or null */
@@ -332,7 +405,7 @@ public final class WordArtText {
 		boolean paths = false, any = false;
 		for (Paragraph p : paragraphs) {
 			for (Run r : p.runs) {
-				if (r.lineBreak) continue;
+				if (r.lineBreak || r.mark) continue;
 				any = true;
 				if (r.paint(false) != Paint.TEXT) paths = true;
 				if (r.hasEffect() && !problems.contains(EFFECT)) problems.add(EFFECT);
@@ -350,12 +423,11 @@ public final class WordArtText {
 		return new WordArtText(wsp, paragraphs, problems, warped);
 	}
 
-	/** The styles (by their JAXB object) known to define a w14:textFill or w14:textOutline, or not */
-	private static final java.util.Map<Object, Boolean> STYLED = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<Object, Boolean>());
-
 	/**
 	 * Whether a run of the text box may have a fill or an outline Word draws as glyph outlines: one of its runs states
-	 * one directly, or the document's styles define one (cheap, so that an ordinary text box isn't read run by run)
+	 * one directly, or the document's styles define one (cheap, so that an ordinary text box isn't read run by run).
+	 * The styles are read each time, not cached: a style changed in memory between conversions counts (one pass over
+	 * the styles a text box; CR-083 phases 1 and 2 review).
 	 */
 	private static boolean mayHaveTextEffects(org.docx4j.wml.CTTxbxContent content, WordprocessingMLPackage pkg) {
 		final boolean[] found = { false };
@@ -384,24 +456,17 @@ public final class WordArtText {
 			return true;
 		}
 		if (styles == null) return false;
-		Boolean styled = STYLED.get(styles);
-		if (styled == null) {
-			boolean any = false;
-			if (styles.getDocDefaults() != null && styles.getDocDefaults().getRPrDefault() != null) {
-				RPr r = styles.getDocDefaults().getRPrDefault().getRPr();
-				any = r != null && (r.getTextFill() != null || r.getTextOutline() != null);
-			}
-			for (org.docx4j.wml.Style st : styles.getStyle()) {
-				if (any) break;
-				RPr r = st.getRPr();
-				if (r != null && (r.getTextFill() != null || r.getTextOutline() != null)) any = true;
-				org.docx4j.wml.PPr pp = st.getPPr();
-				if (pp != null && pp.getRPr() != null && (pp.getRPr().getTextFill() != null || pp.getRPr().getTextOutline() != null)) any = true;
-			}
-			styled = any;
-			STYLED.put(styles, styled);
+		if (styles.getDocDefaults() != null && styles.getDocDefaults().getRPrDefault() != null) {
+			RPr r = styles.getDocDefaults().getRPrDefault().getRPr();
+			if (r != null && (r.getTextFill() != null || r.getTextOutline() != null)) return true;
 		}
-		return styled;
+		for (org.docx4j.wml.Style st : styles.getStyle()) {
+			RPr r = st.getRPr();
+			if (r != null && (r.getTextFill() != null || r.getTextOutline() != null)) return true;
+			org.docx4j.wml.PPr pp = st.getPPr();
+			if (pp != null && pp.getRPr() != null && (pp.getRPr().getTextFill() != null || pp.getRPr().getTextOutline() != null)) return true;
+		}
+		return false;
 	}
 
 	/** A bodyPr scene3d that is only Word's flat default (an orthographic front camera, no turn) */
@@ -505,6 +570,23 @@ public final class WordArtText {
 			}
 			String bad = inline(p.getContent(), p.getPPr(), para);
 			if (bad != null) return bad;
+			if (para.runs.isEmpty()) {
+				// an empty paragraph: a line as high as its mark, as Word lays it out (it was no line at all)
+				RPr markRPr;
+				try {
+					markRPr = resolver.getEffectiveParagraphMarkRPr(p.getPPr());
+				} catch (Exception e) {
+					markRPr = null;
+				}
+				Run mark = new Run();
+				mark.mark = true;
+				mark.text = "";
+				mark.rPr = markRPr;
+				mark.size = size(markRPr);
+				mark.face = face(markRPr);
+				metrics(mark);
+				para.runs.add(mark);
+			}
 			out.add(para);
 			return null;
 		}
@@ -614,8 +696,36 @@ public final class WordArtText {
 				run.reflection = rPr.getReflection() != null;
 				run.threeD = rPr.getProps3D() != null || rPr.getScene3D() != null;
 				if (rPr.getLang() != null) run.lang = rPr.getLang().getVal();
+				decorations(run, rPr);
 			}
 			para.runs.add(run);
+		}
+
+		/**
+		 * The run's underline, strikes, highlight and shading, and a superscript's or subscript's size and raise, as the FO
+		 * output reads them (TextDecoration, HighlightColor, RShading, VerticalAlignment): the line layout drew none of
+		 * them (CR-083 phases 1 and 2 review)
+		 */
+		void decorations(Run run, RPr rPr) {
+			if (rPr.getU() != null && rPr.getU().getVal() != null && rPr.getU().getVal() != org.docx4j.wml.UnderlineEnumeration.NONE) {
+				run.underline = rPr.getU().getVal();
+				run.underlineColour = WordColors.of(rPr.getU(), theme);
+			}
+			run.strike = isOn(rPr.getStrike());
+			run.doubleStrike = isOn(rPr.getDstrike());
+			if (rPr.getHighlight() != null && rPr.getHighlight().getVal() != null && !"none".equals(rPr.getHighlight().getVal())) {
+				run.highlight = ResolvedColor.ofHex(rPr.getHighlight().getHexVal());
+			}
+			if (rPr.getShd() != null) run.shading = WordColors.fill(rPr.getShd(), theme);
+			if (rPr.getVertAlign() != null && rPr.getVertAlign().getVal() != null) {
+				org.docx4j.wml.STVerticalAlignRun va = rPr.getVertAlign().getVal();
+				boolean sup = va == org.docx4j.wml.STVerticalAlignRun.SUPERSCRIPT;
+				if (sup || va == org.docx4j.wml.STVerticalAlignRun.SUBSCRIPT) {
+					run.rise = run.size * (sup ? org.docx4j.model.properties.run.VerticalAlignment.SUPERSCRIPT_RAISE
+							: -org.docx4j.model.properties.run.VerticalAlignment.SUBSCRIPT_DROP);
+					run.size *= org.docx4j.model.properties.run.VerticalAlignment.SIZE_FACTOR;
+				}
+			}
 		}
 
 		/** Word's line metrics for the run's face: the document font's own where docx4j knows them, else its file's */

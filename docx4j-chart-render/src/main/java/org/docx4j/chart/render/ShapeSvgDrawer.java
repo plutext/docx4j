@@ -62,6 +62,7 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 			long cx, long cy, Function<String, BufferedImage> pictures) {
 		final org.docx4j.chart.render.api.WordArtRenderer.Drawn d = org.docx4j.chart.render.api.WordArtRenderer.draw(art,
 				org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, pictures == null ? null : pictures::apply);
+		if (d == null) return null;
 		return new WordArtDrawing() {
 			@Override
 			public Document toSvg() {

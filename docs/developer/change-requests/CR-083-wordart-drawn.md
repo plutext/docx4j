@@ -20,6 +20,8 @@ by a Claude Fable 5.1 session (Jason: "have fable review the design"), its findi
 changes"; findings §3): Word draws a text effect at about 0.6 of its stated size and in a frame that isn't the glyphs'
 ink, both now the round's to measure (about 190 probes), and D14's reflection is one mirrored block, cut glyph by
 glyph.
+Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
+suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
 for a WordArt's shadow and glow. Read against docx4j c0a66b610, Apache POI trunk ae62bb5116 and docxide-pdf 9508da2, and the specifications in §12.
 Revised 2026-11-09 (Jason: "add a rendering phase to the CRs where appropriate: WordArt or SmartArt we can't output is
@@ -324,6 +326,17 @@ catalogue (through the portfolio).
     adjusted short. Glyph places median 1.11 pt (7.07), outlines 1.25 pt (7.73); phase 0's Follow Path pages 1.36
     (2.85); textButton within 0.8 pt. Open: 141 probes Word measures about 0.06 em outside the path (no trigger found),
     a circle adjusted short, lines of unequal sizes.
+- **Phases 1 and 2 reviewed** 2026-11-13 by a Claude Fable 5.1 session (Jason: "have fable review the phase 1 and phase
+  2 implementations"), read-only, aimed at what the gates don't reach; its nine findings fixed (Jason: "fix all 9 as
+  suggested"; phase 1-2 findings §8): a run's underline, strikes, highlight, shading and vertical alignment, which the
+  line layout dropped, drawn on flat WordArt as the FO output draws them and reported on warped
+  (`render.wordart.decoration`); a warp's points capped (a piece a hundredth of its glyph's size past 50 pt, at most
+  1,000,000 points, past which it is drawn unwarped, `render.wordart.over_limit`) and running out of memory leaving the
+  text box as text; an empty paragraph a line as high as its mark; lines broken at a geometry's narrower text
+  rectangle; one space where a line wraps in the alternative text; silent drops reported (`render.wordart.fill`,
+  `render.wordart.outline`, `render.wordart.font` for AWT's fallback); a quote in a family's name; the styles not
+  cached; a box of no width left as text. Gates: phase 0's probes and the Follow Path round as before against Word
+  (one file's warped outlines cut more coarsely, unmoved against Word); b468 against b464 and b467, 0 movers.
 - **Phase 3, effects on WordArt** (needs CR-081.1, done): a run's `w14:shadow`, `w14:glow` and `w14:reflection` drawn
   on its glyphs as Word draws them. Designed 2026-11-13 (Jason: "design CR-083 phase 3";
   `CR-083-notes/phase3-findings.md`); reviewed the same day by a Claude Fable 5.1 session, its findings applied

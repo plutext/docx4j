@@ -175,3 +175,64 @@ the rings 9.8).
   wa30-12).
 - WordArt in a group or canvas stays text.
 - Shadow, glow, reflection (phase 3) and 3-D (phase 6) are reported, not drawn.
+
+## 8. The review of phases 1 and 2 (2026-11-13)
+
+A Claude Fable 5.1 session reviewed the code of 36e922c7b and 838c88c78 read-only at Jason's request ("have fable
+review the phase 1 and phase 2 implementations"), aimed at what the gates don't reach (the probes are Aptos, simple
+runs, Word's own WordArt; the corpora have none). It ran a scratch harness on odd input (zero extents, spaces alone, an
+empty first paragraph, emoji and combining marks, `adj` 0 and 10^9, turned and flipped boxes, `vert`, 3,200 glyphs):
+nothing threw out of a conversion, no NaN or infinity was written, no loop stuck. Its nine findings, each read in the
+code by this session before fixing, and fixed (Jason: "fix all 9 as suggested"):
+
+1. **A run's decorations were dropped** (reproduced). Any `textNoShape` box with `wrap="none"` is Word's own form, and
+   so WordArt, whatever its runs; `WordArtText.Run` carried no underline, strike, highlight, shading or vertical
+   alignment, so such a box drew them none, where the FO text route had drawn all of them. Now read
+   (`WordArtText.Reader.decorations`) as the FO output reads them, and drawn on flat WordArt as it draws them: an
+   underline (any kind a single line; double, two; the heavy kinds twice as thick; `words` the words alone; its colour
+   or the text's) and strikes at the font's own positions and thicknesses, a highlight or shading behind the run's
+   stretch (the line's trailing spaces left out), a superscript or subscript at 65% raised 0.36 or lowered 0.16 of the
+   size (`VerticalAlignment`'s constants). On warped WordArt the decorations aren't drawn and are reported
+   (`render.wordart.decoration`): how Word warps them isn't measured (phase 3's round can add probes).
+   `w:position` and `w:w`, which the FO output doesn't draw either, are left.
+2. **No bound on the warped outlines** (reproduced: 300 glyphs at 400 pt, or 3,200 at 36 pt, on textInflate made an
+   SVG of 12.6 and 12.8 MB; an `OutOfMemoryError` ended the conversion, the routes catching only runtime exceptions).
+   Each piece is now cut at most a hundredth of its glyph's size (`TextWarp.segment`: 0.5 pt up to 50 pt, unchanged
+   there), the points a WordArt's warp writes are counted against `TextWarp.MAX_POINTS` (1,000,000, about 17 MB of path
+   data), past which it is drawn unwarped and reported (`render.wordart.over_limit`), and the FO and HTML routes leave
+   the text box as text on running out of memory, as CR-084 does a picture's adjustments.
+3. **An empty paragraph had no line** (reproduced): with no run, its line took no height. Its mark is now a run of no
+   text (`Run.isMark`) with the mark's effective properties (`PropertyResolver.getEffectiveParagraphMarkRPr`), so its
+   line is as high as the mark's size, as Word lays an empty paragraph out. A WordArt of empty paragraphs alone stays
+   text.
+4. **Lines broken at the box, placed in the geometry's text rectangle** (read): an ellipse's is narrower. The lines are
+   now broken again at the text rectangle's width where it is narrower (once: under `spAutoFit` the rectangle then
+   follows the new height).
+5. **The alternative text had two spaces where a line wrapped** (reproduced): each line's trailing spaces are dropped
+   before the lines are joined.
+6. **Silent drops** (read): a fill that couldn't be drawn (a gradient with no stops, a colour that doesn't resolve) is
+   reported `render.wordart.fill`, an outline that couldn't be drawn `render.wordart.outline`, and a face drawn in AWT's
+   own fallback `render.wordart.font` (declared and never raised; a substitute docx4j's mapping gives, which FOP draws
+   too, isn't a fallback).
+7. **A quote in a family's name** broke the SVG's font-family list (read): a family with an apostrophe is quoted with
+   double quotes, a quote of the same kind escaped.
+8. **The styles' answer was cached for good** (read): a style changed in memory after a first conversion kept the old
+   one. The cache is gone; the styles are read each time (one pass a text box).
+9. **A box of no width** that its text doesn't size was laid out a glyph a line (reproduced): `WordArtRenderer.draw`
+   returns null for it (and for no height that `a:spAutoFit` doesn't size), and it stays text, as other text boxes do.
+
+Not findings, noted by the review: hyperlinks and bookmarks inside a WordArt lose their targets (its paragraphs aren't
+written); a tab is a space; `vert` is ignored (as by the text route); `TextEffects` marshals a run's w14 fill once a
+run.
+
+Tests (`WordArtRendererTest`, ten more): decorations drawn flat and reported warped, `words`, a superscript's size and
+raise, the limit and the unwarped drawing past it, an empty paragraph's line, an ellipse's narrower lines, one space
+where a line wraps, a fill reported, AWT's fallback told from a substitute, a quoted family, a style changed later, a
+box of no width.
+
+Gates (the fixes in the bin dirs): phase 0's 19 probe files through docx4j's PDF with Word's Aptos, against the
+committed render: 18 the same, and `wa20-form`'s warped outlines cut more coarsely past 50 pt (fix 2), Word against
+them unmoved (`gate_wordart.py`: 19 of 34 within 0.5 pt and 32 within 1 pt before and after; one probe's mean 0.126 to
+0.125 pt); the Follow Path round's 14 files the same. b468 against b464 and against b467: 0 movers, events equal; the
+corpora's PDFs as b467's but for the two time fields (5361, 11875), the probes' 324 the same. core-tests 2,653,
+chart-render 85, export-fo 111, export-fo-tests 966 pass.

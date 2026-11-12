@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
 import org.docx4j.dml.CTGradientFillProperties;
+import org.docx4j.dml.CTLineProperties;
 import org.docx4j.dml.CTNoFillProperties;
 import org.docx4j.dml.CTSolidColorFillProperties;
 import org.docx4j.dml.CTTextBodyProperties;
@@ -68,8 +69,13 @@ import org.w3c.dom.Element;
  * draws nothing, its text kept invisibly.</li>
  * <li><b>Warps</b> (phase 2, {@link TextWarp}): two paths map the block's ink between them (section 20.1.9.19); one path
  * (Follow Path) sets each glyph on it, turned to it, the text scaled; more than two give each line a band.</li>
+ * <li><b>Decorations</b>: a run's underline, strikes, highlight and shading are drawn on flat WordArt as the FO output
+ * draws them, and a superscript or subscript is set as it sets them; on warped WordArt the decorations are reported
+ * ({@link WordArtText#DECORATION}), how Word warps them not being measured.</li>
  * </ul>
- * Shadows, glows and reflections (phase 3) and 3-D (phase 6) aren't drawn yet, and are reported.
+ * Shadows, glows and reflections (phase 3) and 3-D (phase 6) aren't drawn yet, and are reported. A face with no font
+ * file is drawn in AWT's fallback and reported ({@link WordArtText#FONT}); a warp whose outlines would pass
+ * {@link TextWarp#MAX_POINTS} points is drawn unwarped ({@link WordArtText#OVER_LIMIT}).
  *
  * @since 17.3.7
  */
@@ -81,6 +87,10 @@ public final class WordArtRenderer {
 	private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
 
 	private static final String SVG_NS = "http://www.w3.org/2000/svg";
+
+	/** AWT's logical families: a font made of a face with no file is one of them */
+	private static final java.util.Set<String> LOGICAL = new java.util.HashSet<String>(java.util.Arrays.asList("Dialog", "DialogInput",
+			"SansSerif", "Serif", "Monospaced"));
 
 	private WordArtRenderer() {}
 
@@ -207,14 +217,28 @@ public final class WordArtRenderer {
 	 * and the generic family of its class: FOP draws the first it has, a browser the first it has
 	 */
 	static String families(Font font, String face) {
-		StringBuilder b = new StringBuilder("'").append(font.getFamily()).append("'");
-		if (face != null && !face.equalsIgnoreCase(font.getFamily())) b.append(", '").append(face).append("'");
+		StringBuilder b = new StringBuilder(quoted(font.getFamily()));
+		if (face != null && !face.equalsIgnoreCase(font.getFamily())) b.append(", ").append(quoted(face));
 		org.docx4j.fonts.FontFallback.FontClass c = org.docx4j.fonts.FontFallback.classOf(face == null ? font.getFamily() : face);
 		if (c == org.docx4j.fonts.FontFallback.FontClass.UNKNOWN) c = org.docx4j.fonts.FontFallback.classOf(font.getFamily());
 		String generic = c == org.docx4j.fonts.FontFallback.FontClass.SERIF ? "serif" : c == org.docx4j.fonts.FontFallback.FontClass.SANS ? "sans-serif"
 				: c == org.docx4j.fonts.FontFallback.FontClass.MONO ? "monospace" : null;
 		if (generic != null) b.append(", ").append(generic);
 		return b.toString();
+	}
+
+	/**
+	 * The face has no file, docx4j's mapping no substitute: AWT made the font of one of its logical families, which FOP
+	 * doesn't draw the run's text in (a substitute docx4j maps, which FOP draws too, isn't a fallback)
+	 */
+	static boolean fellBack(Font font, String face) {
+		return LOGICAL.contains(font.getFamily(Locale.ROOT)) && (face == null || !LOGICAL.contains(face));
+	}
+
+	/** A family as a CSS string: in single quotes, or double where it has one, a backslash before any quote of that kind */
+	static String quoted(String family) {
+		String q = family.indexOf('\'') < 0 ? "'" : "\"";
+		return q + family.replace("\\", "\\\\").replace(q, "\\" + q) + q;
 	}
 
 	// ------------------------------------------------------------------ layout
@@ -265,6 +289,8 @@ public final class WordArtRenderer {
 	static final class Layout {
 		final List<Line> lines = new ArrayList<Line>();
 		double width, height;
+		/** faces with no font file, drawn in AWT's fallback */
+		final java.util.Set<String> unmapped = new java.util.LinkedHashSet<String>();
 	}
 
 	/** The outlines of glyphs, by font and glyph code, at {@link #OUTLINE_SIZE} */
@@ -295,7 +321,7 @@ public final class WordArtRenderer {
 					glyphs.add(g);
 					continue;
 				}
-				shape(r, fonts, fontScale, kernAll, cache, glyphs);
+				shape(r, fonts, fontScale, kernAll, cache, glyphs, out.unmapped);
 			}
 			List<Line> lines = breakLines(p, glyphs, width);
 			for (int i = 0; i < lines.size(); i++) {
@@ -320,9 +346,11 @@ public final class WordArtRenderer {
 	}
 
 	/** A run's glyphs, measured at {@link #OUTLINE_SIZE} and scaled to its size */
-	private static void shape(WordArtText.Run r, ChartFonts fonts, double fontScale, boolean kernAll, Outlines cache, List<Glyph> out) {
+	private static void shape(WordArtText.Run r, ChartFonts fonts, double fontScale, boolean kernAll, Outlines cache, List<Glyph> out,
+			java.util.Set<String> unmapped) {
 		double size = r.getSize() * fontScale;
 		Font base = fonts.font(r.getFace(), r.isBold(), r.isItalic(), 1);
+		if (r.getText() != null && !r.getText().isEmpty() && fellBack(base, fonts.face(r.getFace()))) unmapped.add(fonts.face(r.getFace()));
 		Font big = base.deriveFont(OUTLINE_SIZE);
 		if (kernAll || r.isKerned()) big = big.deriveFont(Collections.singletonMap(TextAttribute.KERNING, TextAttribute.KERNING_ON));
 		Font at = big.deriveFont((float) size);
@@ -458,6 +486,8 @@ public final class WordArtRenderer {
 	 *
 	 * @param cx the extent's width in EMU (the stored one: Word's own WordArt stores 144 by 144 pt, whatever its text)
 	 * @param cy the extent's height in EMU
+	 * @return null where it can't be drawn as WordArt and stays text: an extent of no width that its text doesn't size
+	 *         ({@code wrap="none"}), or of no height that its lines don't ({@code a:spAutoFit})
 	 */
 	public static Drawn draw(WordArtText art, ChartFonts fonts, ThemeColors theme, long cx, long cy, ShapeRenderer.Pictures pictures) {
 		CTWordprocessingShape wsp = art.getShape();
@@ -467,6 +497,8 @@ public final class WordArtRenderer {
 		if (in == null) in = ShapeText.DEFAULT_INSETS.clone();
 		boolean wrapNone = body != null && body.getWrap() == STTextWrappingType.NONE;
 		boolean fit = body != null && body.getSpAutoFit() != null;
+		// a box of no width (or height) that its text doesn't size: one glyph a line; left as text, as other text boxes are
+		if (cx <= 0 && !wrapNone || cy <= 0 && !fit) return null;
 		double fontScale = 1, lineScale = 1;
 		if (body != null && body.getNormAutofit() != null) {
 			fontScale = body.getNormAutofit().getFontScale() / 100000.0;
@@ -476,18 +508,32 @@ public final class WordArtRenderer {
 		boolean warpNamed = body != null && body.getPrstTxWarp() != null;
 		double boxW = cx / 12700.0, boxH = cy / 12700.0;
 		double avail = wrapNone ? Double.POSITIVE_INFINITY : Math.max(1, boxW - in[0] - in[2]);
-		Layout layout = layout(art, fonts, avail, fontScale, lineScale, warpNamed);
-		double w = wrapNone ? layout.width + in[0] + in[2] : boxW;
-		double h = fit ? layout.height + in[1] + in[3] : boxH;
+		Layout layout;
+		double w, h;
+		ShapeRenderer.Drawn shape;
+		double[] tin;
+		Rectangle2D.Double rect;
+		for (int pass = 0;; pass++) {
+			layout = layout(art, fonts, avail, fontScale, lineScale, warpNamed);
+			w = wrapNone ? layout.width + in[0] + in[2] : boxW;
+			h = fit ? layout.height + in[1] + in[3] : boxH;
 
-		// the shape, at the box Word draws
-		long wEmu = Math.max(1, Math.round(w * 12700)), hEmu = Math.max(1, Math.round(h * 12700));
-		ShapeRenderer.Drawn shape = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, wEmu, hEmu, pictures, true,
-				body != null && body.getFlatTx() != null);
+			// the shape, at the box Word draws
+			long wEmu = Math.max(1, Math.round(w * 12700)), hEmu = Math.max(1, Math.round(h * 12700));
+			shape = ShapeRenderer.draw(wsp.getSpPr(), wsp.getStyle(), theme, wEmu, hEmu, pictures, true,
+					body != null && body.getFlatTx() != null);
+			tin = ShapeText.textInsets(in, shape.getOutlines(), wsp, w, h);
+			if (tin == null) tin = in;
+			rect = new Rectangle2D.Double(tin[0], tin[1], Math.max(0, w - tin[0] - tin[2]), Math.max(0, h - tin[1] - tin[3]));
+			// a geometry whose text rectangle is narrower than the box (an ellipse): the lines broken at its width, as the
+			// text route breaks them (once: under spAutoFit the rectangle then follows the new height)
+			if (wrapNone || pass > 0 || rect.width >= avail - 1e-6) break;
+			avail = Math.max(1, rect.width);
+		}
 		for (String p : shape.getProblems()) if (!problems.contains(p)) problems.add(p);
-		double[] tin = ShapeText.textInsets(in, shape.getOutlines(), wsp, w, h);
-		if (tin == null) tin = in;
-		Rectangle2D.Double rect = new Rectangle2D.Double(tin[0], tin[1], Math.max(0, w - tin[0] - tin[2]), Math.max(0, h - tin[1] - tin[3]));
+		if (!layout.unmapped.isEmpty()) {
+			if (!problems.contains(WordArtText.FONT)) problems.add(WordArtText.FONT);
+		}
 
 		// the lines placed in the text rectangle: aligned, anchored
 		String anchor = ShapeText.anchor(wsp);
@@ -527,8 +573,10 @@ public final class WordArtRenderer {
 
 		StringBuilder text = new StringBuilder();
 		for (Line l : layout.lines) {
-			for (Glyph g : l.glyphs) if (g.chars != null) text.append(g.chars);
-			text.append(l.last ? "\n" : " ");
+			StringBuilder line = new StringBuilder();
+			for (Glyph g : l.glyphs) if (g.chars != null) line.append(g.chars);
+			// the space a wrapped line ends with is the one between the lines
+			text.append(line.toString().stripTrailing()).append(l.last ? "\n" : " ");
 		}
 		return new Drawn(drawing, spans, w, h, rect(bounds), shape.getOutlines(), problems, text.toString().trim());
 	}
@@ -572,7 +620,12 @@ public final class WordArtRenderer {
 
 	/** The glyph's outline where it is laid out, unwarped: its line's start and baseline */
 	private static Shape placed(Line l, Glyph g) {
-		return AffineTransform.getTranslateInstance(l.x0 + g.x, l.top + l.baseline).createTransformedShape(g.outline);
+		return AffineTransform.getTranslateInstance(l.x0 + g.x, baseline(l, g)).createTransformedShape(g.outline);
+	}
+
+	/** The glyph's baseline: its line's, raised by a superscript or lowered by a subscript */
+	private static double baseline(Line l, Glyph g) {
+		return l.top + l.baseline - g.run.getRise();
 	}
 
 	/**
@@ -590,7 +643,42 @@ public final class WordArtRenderer {
 			}
 		}
 		Map<Glyph, double[]> followed = null;
-		if (warped != null) followed = WordArtWarps.warp(layout, warped.name, warped.paths, warped.rect, drawn, problems);
+		if (warped != null) {
+			Map<Glyph, Shape> flat = new HashMap<Glyph, Shape>(drawn);
+			try {
+				followed = WordArtWarps.warp(layout, warped.name, warped.paths, warped.rect, drawn, problems);
+			} catch (TextWarp.OverLimit e) {
+				// too many points to warp: the text drawn as if it had no warp, reported
+				drawn.clear();
+				drawn.putAll(flat);
+				followed = null;
+				warped = null;
+				if (!problems.contains(WordArtText.OVER_LIMIT)) problems.add(WordArtText.OVER_LIMIT);
+			}
+		}
+
+		// a run's shading and highlight behind it, where the text isn't warped (as the FO output draws them)
+		boolean decorations = false;
+		for (Line l : layout.lines) for (Glyph g : l.glyphs) decorations |= g.run.hasDecoration();
+		if (decorations && warped != null) {
+			if (!problems.contains(WordArtText.DECORATION)) problems.add(WordArtText.DECORATION);
+			decorations = false;
+		}
+		List<Stretch> stretches = decorations ? stretches(layout) : Collections.<Stretch>emptyList();
+		Rectangle2D painted = null;
+		for (Stretch st : stretches) {
+			WordArtText.Run r = st.run;
+			double size = st.font.getSize2D();
+			Rectangle2D.Double behind = new Rectangle2D.Double(st.x0, st.baseline - r.getAscent() * size, st.x1 - st.x0,
+					(r.getAscent() + r.getDescent()) * size);
+			for (org.docx4j.model.color.ResolvedColor rc : new org.docx4j.model.color.ResolvedColor[] { r.getShading(), r.getHighlight() }) {
+				Color c = Fills.awt(rc);
+				if (c == null || st.x1 <= st.x0) continue;
+				Shape sh = turn.createTransformedShape(behind);
+				drawing.add(new Drawing.Area(sh, c, null, 0, "wordart.highlight"));
+				painted = union(painted, sh.getBounds2D());
+			}
+		}
 
 		// each run: its glyphs over all its lines, painted at once (a gradient spans the run)
 		Map<WordArtText.Run, Path2D.Double> byRun = new java.util.LinkedHashMap<WordArtText.Run, Path2D.Double>();
@@ -601,24 +689,26 @@ public final class WordArtRenderer {
 				byRun.computeIfAbsent(g.run, r -> new Path2D.Double(Path2D.WIND_NON_ZERO)).append(turn.createTransformedShape(s), false);
 			}
 		}
-		Rectangle2D painted = null;
 		Fills fills = new Fills(theme);
 		for (Map.Entry<WordArtText.Run, Path2D.Double> e : byRun.entrySet()) {
 			WordArtText.Run r = e.getKey();
 			if (r.paint(warped != null) != WordArtText.Paint.PATHS) continue;
 			Path2D.Double s = e.getValue();
 			Object fill = r.getFill();
+			boolean filled = false;
 			if (fill == null) {
 				Color c = Fills.awt(r.getColour());
 				if (c != null) {
 					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
 					painted = union(painted, s.getBounds2D());
+					filled = true;
 				}
 			} else if (fill instanceof CTSolidColorFillProperties) {
 				Color c = Fills.awt(DrawingMLColors.resolve(fill, theme));
 				if (c != null) {
 					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
 					painted = union(painted, s.getBounds2D());
+					filled = true;
 				}
 			} else if (fill instanceof CTGradientFillProperties) {
 				Drawing.Gradient gr = fills.gradient((CTGradientFillProperties) fill);
@@ -627,13 +717,62 @@ public final class WordArtRenderer {
 					a.setGradient(gr);
 					drawing.add(a);
 					painted = union(painted, s.getBounds2D());
+					filled = true;
 				}
 			} else if (!(fill instanceof CTNoFillProperties)) {
 				Color c = Fills.awt(r.getColour());
-				if (c != null) drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
+				if (c != null) {
+					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
+					filled = true;
+				}
+			} else {
+				filled = true; // no fill: nothing to draw
 			}
-			if (r.getOutline() != null && r.getOutline().getNoFill() == null) {
-				painted = union(painted, ShapeRenderer.strokeText(drawing, s, r.getOutline(), theme));
+			if (!filled && !problems.contains(WordArtText.FILL)) problems.add(WordArtText.FILL);
+			CTLineProperties ln = r.getOutline();
+			if (ln != null && ln.getNoFill() == null) {
+				Rectangle2D stroked = ShapeRenderer.strokeText(drawing, s, ln, theme);
+				if (stroked == null && (ln.getSolidFill() != null || ln.getGradFill() != null || ln.getPattFill() != null)
+						&& !problems.contains(WordArtText.OUTLINE)) {
+					problems.add(WordArtText.OUTLINE);
+				}
+				painted = union(painted, stroked);
+			}
+		}
+
+		// a run's underline and strikes, where the text isn't warped (as the FO output draws them)
+		for (Stretch st : stretches) {
+			WordArtText.Run r = st.run;
+			Color c = Fills.awt(r.getUnderlineColour() != null ? r.getUnderlineColour() : textColour(r, theme));
+			Color text = Fills.awt(textColour(r, theme));
+			java.awt.font.LineMetrics lm = st.font.getLineMetrics(st.chars.toString(), FRC);
+			double size = st.font.getSize2D();
+			double ut = lm.getUnderlineThickness() > 0 ? lm.getUnderlineThickness() : size * 0.05;
+			double uo = lm.getUnderlineOffset() > 0 ? lm.getUnderlineOffset() : size * 0.1;
+			double stt = lm.getStrikethroughThickness() > 0 ? lm.getStrikethroughThickness() : ut;
+			double so = lm.getStrikethroughOffset() < 0 ? lm.getStrikethroughOffset() : -size * 0.25;
+			List<double[]> bars = new ArrayList<double[]>();
+			if (r.getUnderline() != null && c != null) {
+				org.docx4j.wml.UnderlineEnumeration u = r.getUnderline();
+				double t = heavy(u) ? 2 * ut : ut;
+				for (double[] x : st.underlined) {
+					bars.add(new double[] { x[0], x[1], st.baseline + uo - t / 2, t, c.getRGB() });
+					if (u == org.docx4j.wml.UnderlineEnumeration.DOUBLE || u == org.docx4j.wml.UnderlineEnumeration.WAVY_DOUBLE) {
+						bars.add(new double[] { x[0], x[1], st.baseline + uo + 1.5 * t, t, c.getRGB() });
+					}
+				}
+			}
+			if (text != null && r.isDoubleStrike()) {
+				bars.add(new double[] { st.x0, st.x1, st.baseline + so - 1.5 * stt, stt, text.getRGB() });
+				bars.add(new double[] { st.x0, st.x1, st.baseline + so + 0.5 * stt, stt, text.getRGB() });
+			} else if (text != null && r.isStrike()) {
+				bars.add(new double[] { st.x0, st.x1, st.baseline + so - stt / 2, stt, text.getRGB() });
+			}
+			for (double[] b : bars) {
+				if (b[1] <= b[0]) continue;
+				Shape sh = turn.createTransformedShape(new Rectangle2D.Double(b[0], b[2], b[1] - b[0], b[3]));
+				drawing.add(new Drawing.Area(sh, new Color((int) b[4], true), null, 0, "wordart.line"));
+				painted = union(painted, sh.getBounds2D());
 			}
 		}
 
@@ -668,7 +807,7 @@ public final class WordArtRenderer {
 					span = null;
 					continue;
 				}
-				double scale = 1, x = l.x0 + g.x, y = l.top + l.baseline;
+				double scale = 1, x = l.x0 + g.x, y = baseline(l, g);
 				if (span == null || span.font != g.font || Math.abs(span.size - g.font.getSize2D()) > 1e-9
 						|| !same(span.fill, fill) || Math.abs(span.y - y) > 1e-6) {
 					span = new Span();
@@ -689,6 +828,89 @@ public final class WordArtRenderer {
 		// spans of spaces alone carry nothing
 		spans.removeIf(s -> s.text.toString().trim().isEmpty());
 		return painted;
+	}
+
+	/**
+	 * A stretch of one run's glyphs on a line, for its decorations: from its first glyph to its last, the line's trailing
+	 * spaces left out; its baseline (raised or lowered); the spans its underline takes (its words alone for
+	 * {@code w:u="words"})
+	 */
+	static final class Stretch {
+		WordArtText.Run run;
+		Font font;
+		double baseline, x0, x1;
+		final StringBuilder chars = new StringBuilder();
+		final List<double[]> underlined = new ArrayList<double[]>();
+	}
+
+	/** The stretches of the runs that have a decoration, line by line (a run Word draws nothing of has none) */
+	static List<Stretch> stretches(Layout layout) {
+		List<Stretch> out = new ArrayList<Stretch>();
+		for (Line l : layout.lines) {
+			int last = -1;
+			for (int i = l.glyphs.size() - 1; i >= 0; i--) {
+				Glyph g = l.glyphs.get(i);
+				if (!g.space && !g.lineBreak) {
+					last = i;
+					break;
+				}
+			}
+			Stretch cur = null;
+			boolean inWord = false;
+			for (int i = 0; i <= last; i++) {
+				Glyph g = l.glyphs.get(i);
+				if (g.lineBreak || !g.run.hasDecoration() || g.run.paint(false) == WordArtText.Paint.NONE) {
+					cur = null;
+					continue;
+				}
+				double x = l.x0 + g.x;
+				if (cur == null || cur.run != g.run || cur.font != g.font) {
+					cur = new Stretch();
+					cur.run = g.run;
+					cur.font = g.font;
+					cur.baseline = baseline(l, g);
+					cur.x0 = x;
+					out.add(cur);
+					inWord = false;
+				}
+				cur.x1 = x + g.advance;
+				if (g.chars != null) cur.chars.append(g.chars);
+				boolean words = g.run.getUnderline() == org.docx4j.wml.UnderlineEnumeration.WORDS;
+				if (!words) {
+					if (cur.underlined.isEmpty()) cur.underlined.add(new double[] { cur.x0, cur.x1 });
+					else cur.underlined.get(0)[1] = cur.x1;
+				} else if (g.space) {
+					inWord = false;
+				} else {
+					if (!inWord) cur.underlined.add(new double[] { x, x + g.advance });
+					else cur.underlined.get(cur.underlined.size() - 1)[1] = x + g.advance;
+					inWord = true;
+				}
+			}
+		}
+		for (Stretch st : out) if (st.chars.length() == 0) st.chars.append('x');
+		return out;
+	}
+
+	/** The colour Word draws a run's text in: its solid fill's, else {@code w:color} */
+	private static org.docx4j.model.color.ResolvedColor textColour(WordArtText.Run r, ThemeColors theme) {
+		Object f = r.getFill();
+		if (f instanceof CTSolidColorFillProperties) {
+			org.docx4j.model.color.ResolvedColor c = DrawingMLColors.resolve(f, theme);
+			if (c != null) return c;
+		}
+		return r.getColour();
+	}
+
+	/** An underline drawn twice as thick (the FO output's heavy kinds) */
+	private static boolean heavy(org.docx4j.wml.UnderlineEnumeration u) {
+		switch (u) {
+			case THICK: case DOTTED_HEAVY: case DASHED_HEAVY: case DASH_LONG_HEAVY: case DASH_DOT_HEAVY: case DASH_DOT_DOT_HEAVY:
+			case WAVY_HEAVY:
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	private static boolean same(Color a, Color b) {

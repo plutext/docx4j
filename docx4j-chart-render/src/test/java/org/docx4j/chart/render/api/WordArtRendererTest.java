@@ -357,4 +357,159 @@ public class WordArtRendererTest {
 			assertTrue(all.contains("WordArt"));
 		}
 	}
+
+	// ------------------------------------------------------------------ the review of phases 1 and 2
+
+	/** Drawn with an extent of this size */
+	private static WordArtRenderer.Drawn draw(String content, String bodyPr, long cx, long cy) throws Exception {
+		WordprocessingMLPackage pkg = pkg(anchor(content, bodyPr));
+		WordArtText art = WordArtText.of(shape(pkg), pkg);
+		assertNotNull(art);
+		return WordArtRenderer.draw(art, ChartFonts.of(pkg.getMainDocumentPart()), ThemeColors.of(pkg), cx, cy, null);
+	}
+
+	private static List<Drawing.Area> areas(WordArtRenderer.Drawn d, String role) {
+		List<Drawing.Area> out = new ArrayList<Drawing.Area>();
+		for (Object o : d.getDrawing().getItems()) {
+			if (o instanceof Drawing.Area && role.equals(((Drawing.Area) o).getRole())) out.add((Drawing.Area) o);
+		}
+		return out;
+	}
+
+	/**
+	 * A run's underline, strike, highlight and superscript (the review's finding 1): drawn on flat WordArt as the FO
+	 * output draws them, where the line layout drew none; on a warp, reported and not drawn
+	 */
+	@Test
+	public void decorationsAreDrawnOnFlatWordArt() throws Exception {
+		String runs = run("<w:u w:val=\"single\"/>", "Under") + run("<w:strike/>", "Struck") + run("<w:highlight w:val=\"yellow\"/>", "Lit");
+		WordArtRenderer.Drawn d = draw(para(runs), wordForm("textNoShape"));
+		List<Drawing.Area> lines = areas(d, "wordart.line");
+		assertEquals("an underline and a strike", 2, lines.size());
+		List<Drawing.Area> lit = areas(d, "wordart.highlight");
+		assertEquals(1, lit.size());
+		assertEquals(new java.awt.Color(255, 255, 0), lit.get(0).getFill());
+		double baseline = Double.parseDouble(texts(d).get(0).getAttribute("y"));
+		Rectangle2D under = lines.get(0).getShape().getBounds2D(), struck = lines.get(1).getShape().getBounds2D();
+		assertTrue("the underline below the baseline: " + under, under.getMinY() > baseline);
+		assertTrue("the strike above it: " + struck, struck.getMaxY() < baseline);
+		assertTrue("the highlight behind the text", d.getDrawing().getItems().indexOf(lit.get(0)) < d.getDrawing().getItems().indexOf(lines.get(0)));
+		assertFalse(d.getProblems().contains(WordArtText.DECORATION));
+
+		// a superscript: 65% of the size, raised 0.36 of it, as the FO output sets it
+		d = draw(para(run("", "x") + run("<w:vertAlign w:val=\"superscript\"/>", "2")), wordForm("textNoShape"));
+		List<Element> t = texts(d);
+		assertEquals(2, t.size());
+		assertEquals(36 * 0.65, Double.parseDouble(t.get(1).getAttribute("font-size")), 1e-6);
+		assertEquals(36 * 0.36, Double.parseDouble(t.get(0).getAttribute("y")) - Double.parseDouble(t.get(1).getAttribute("y")), 1e-6);
+
+		// warped: reported, not drawn (how Word warps them is not measured)
+		d = draw(para(run("<w:u w:val=\"single\"/>", "WordArt")), fixed("textInflate"));
+		assertTrue(d.getProblems().contains(WordArtText.DECORATION));
+		assertTrue(areas(d, "wordart.line").isEmpty());
+	}
+
+	/** w:u="words": the words underlined, not the spaces between them */
+	@Test
+	public void wordsUnderlinesTheWordsAlone() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run("<w:u w:val=\"words\"/>", "Word Art")), wordForm("textNoShape"));
+		assertEquals(2, areas(d, "wordart.line").size());
+	}
+
+	/** The warp's points capped (finding 2): a piece a hundredth of the glyph's size past 50 pt; past the limit, unwarped */
+	@Test
+	public void aWarpPastTheLimitIsDrawnUnwarped() throws Exception {
+		assertEquals(0.5, TextWarp.segment(36), 1e-9);
+		assertEquals(4, TextWarp.segment(400), 1e-9);
+		int was = TextWarp.maxPoints;
+		try {
+			TextWarp.maxPoints = 100;
+			WordArtRenderer.Drawn d = draw(para(run("", "WordArt")), fixed("textInflate"));
+			assertTrue(d.getProblems().contains(WordArtText.OVER_LIMIT));
+			assertFalse("drawn as if it had no warp: real text", "none".equals(texts(d).get(0).getAttribute("fill")));
+		} finally {
+			TextWarp.maxPoints = was;
+		}
+		WordArtRenderer.Drawn d = draw(para(run("", "WordArt")), fixed("textInflate"));
+		assertFalse(d.getProblems().contains(WordArtText.OVER_LIMIT));
+	}
+
+	/** An empty paragraph is a line as high as its mark (finding 3): it was no line at all */
+	@Test
+	public void anEmptyParagraphIsItsMarksLine() throws Exception {
+		String text = para(run("", "WordArt"));
+		String empty = "<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\" w:line=\"240\" w:lineRule=\"auto\"/><w:rPr><w:sz w:val=\"40\"/></w:rPr></w:pPr></w:p>";
+		double without = draw(text, wordForm("textNoShape")).getHeight();
+		double with = draw(empty + text, wordForm("textNoShape")).getHeight();
+		assertTrue("a 20 pt mark's line: " + (with - without), with - without > 20 && with - without < 30);
+		WordArtText art = read(empty + text, wordForm("textNoShape"));
+		assertTrue(art.getParagraphs().get(0).getRuns().get(0).isMark());
+	}
+
+	/** The lines are broken at the width of the text rectangle the geometry gives (finding 4): an ellipse's is narrower */
+	@Test
+	public void linesBreakAtTheGeometrysTextRectangle() throws Exception {
+		String words = para(run(OUTLINE, "WordArt drawn in a box that is shaped as an ellipse"));
+		int inRect = lines(draw(words, fixed(null)));
+		WordprocessingMLPackage pkg = pkg(anchor(words, fixed(null)).replace("prst=\"rect\"", "prst=\"ellipse\""));
+		WordArtText art = WordArtText.of(shape(pkg), pkg);
+		int inEllipse = lines(WordArtRenderer.draw(art, ChartFonts.of(pkg.getMainDocumentPart()), ThemeColors.of(pkg), 3657600, 1828800, null));
+		assertTrue(inRect + " lines in the rectangle, " + inEllipse + " in the ellipse", inEllipse > inRect);
+	}
+
+	/** The lines of invisible text, by their baselines */
+	private static int lines(WordArtRenderer.Drawn d) {
+		java.util.Set<String> ys = new java.util.HashSet<String>();
+		for (Element e : texts(d)) ys.add(e.getAttribute("y"));
+		return ys.size();
+	}
+
+	/** The alternative text has no double space where a line wraps (finding 5) */
+	@Test
+	public void theTextHasOneSpaceWhereALineWraps() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run("", "Hello World Hello World")), fixed("textInflate"));
+		assertTrue(lines(d) > 1);
+		assertEquals("Hello World Hello World", d.getText());
+	}
+
+	/** What isn't drawn is reported (finding 6): a gradient with no stops, a face with no font file and no substitute */
+	@Test
+	public void whatIsNotDrawnIsReported() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run("<w14:textFill><w14:gradFill><w14:gsLst/><w14:lin w14:ang=\"0\" w14:scaled=\"0\"/></w14:gradFill>"
+				+ "</w14:textFill>", "WordArt")), fixed("textInflate"));
+		assertTrue(d.getProblems().toString(), d.getProblems().contains(WordArtText.FILL));
+		// AWT's own fallback (no file, and docx4j's mapping found no substitute, which FOP would draw too)
+		assertTrue(WordArtRenderer.fellBack(new java.awt.Font("No Such Face 4711", java.awt.Font.PLAIN, 12), "No Such Face 4711"));
+		assertFalse(WordArtRenderer.fellBack(new java.awt.Font("Serif", java.awt.Font.PLAIN, 12), "Serif"));
+	}
+
+	/** A family with a quote in its name is quoted with the other kind (finding 7) */
+	@Test
+	public void aQuoteInAFamilyIsQuoted() {
+		assertEquals("'Aptos'", WordArtRenderer.quoted("Aptos"));
+		assertEquals("\"O'Brien Sans\"", WordArtRenderer.quoted("O'Brien Sans"));
+		assertEquals("\"Both'\\\"\"", WordArtRenderer.quoted("Both'\""));
+	}
+
+	/** A style changed after a first conversion counts (finding 8): the styles aren't cached */
+	@Test
+	public void aStyleChangedLaterCounts() throws Exception {
+		WordprocessingMLPackage pkg = pkg(anchor(para("<w:r><w:rPr><w:rStyle w:val=\"Fancy\"/><w:sz w:val=\"72\"/></w:rPr><w:t>WordArt</w:t></w:r>"),
+				fixed(null)));
+		org.docx4j.wml.Styles styles = pkg.getMainDocumentPart().getStyleDefinitionsPart().getContents();
+		org.docx4j.wml.Style fancy = (org.docx4j.wml.Style) XmlUtils.unmarshalString("<w:style " + NS + " w:type=\"character\" w:styleId=\"Fancy\">"
+				+ "<w:name w:val=\"Fancy\"/><w:rPr><w:b/></w:rPr></w:style>");
+		styles.getStyle().add(fancy);
+		assertNull("no effect: text", WordArtText.of(shape(pkg), pkg));
+		fancy.setRPr(((org.docx4j.wml.Style) XmlUtils.unmarshalString("<w:style " + NS + " w:type=\"character\" w:styleId=\"Fancy\"><w:rPr>"
+				+ OUTLINE + "</w:rPr></w:style>")).getRPr());
+		assertNotNull("its outline now", WordArtText.of(shape(pkg), pkg));
+	}
+
+	/** A box of no width its text doesn't size stays text (finding 9); Word's own form sizes itself */
+	@Test
+	public void aBoxOfNoWidthStaysText() throws Exception {
+		assertNull(draw(para(run(OUTLINE, "WordArt")), fixed(null), 0, 1828800));
+		assertNotNull(draw(para(run("", "WordArt")), wordForm("textNoShape"), 0, 0));
+	}
 }

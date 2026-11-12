@@ -57,8 +57,9 @@ final class WordArtWarps {
 			Rectangle2D.Double rect, Map<WordArtRenderer.Glyph, Shape> drawn, List<String> problems) {
 		int n = paths.size();
 		List<WordArtRenderer.Line> lines = layout.lines;
+		TextWarp.Budget budget = new TextWarp.Budget(TextWarp.maxPoints);
 		if (n == 2) {
-			envelope(lines, paths.get(0), paths.get(1), drawn);
+			envelope(lines, paths.get(0), paths.get(1), drawn, budget);
 			return null;
 		}
 		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
@@ -80,7 +81,7 @@ final class WordArtWarps {
 			List<WordArtRenderer.Line> mine = byBand.get(b);
 			if (mine.isEmpty()) continue;
 			if (single) followPath(mine, paths.get(b), rect, drawn, placed, false, false);
-			else envelope(mine, paths.get(2 * b), paths.get(2 * b + 1), drawn, block, tallest);
+			else envelope(mine, paths.get(2 * b), paths.get(2 * b + 1), drawn, block, tallest, budget);
 		}
 		// lines with no band (none drawn): Word draws them nowhere
 		return placed;
@@ -107,8 +108,8 @@ final class WordArtWarps {
 
 	/** The lines' ink mapped between the top and the bottom path (section 20.1.9.19) */
 	private static void envelope(List<WordArtRenderer.Line> lines, TextWarp.Measured top, TextWarp.Measured bottom,
-			Map<WordArtRenderer.Glyph, Shape> drawn) {
-		envelope(lines, top, bottom, drawn, null, 0);
+			Map<WordArtRenderer.Glyph, Shape> drawn, TextWarp.Budget budget) {
+		envelope(lines, top, bottom, drawn, null, 0, budget);
 	}
 
 	/** The lines' ink, unwarped */
@@ -129,7 +130,7 @@ final class WordArtWarps {
 	 * ink, centred on this band's (a 24 pt line in a band beside a 48 pt one is half its height, as in Word's PDF)
 	 */
 	private static void envelope(List<WordArtRenderer.Line> lines, TextWarp.Measured top, TextWarp.Measured bottom,
-			Map<WordArtRenderer.Glyph, Shape> drawn, Rectangle2D block, double tallest) {
+			Map<WordArtRenderer.Glyph, Shape> drawn, Rectangle2D block, double tallest, TextWarp.Budget budget) {
 		Rectangle2D ink = ink(lines, drawn);
 		if (ink == null || ink.getWidth() <= 0 || ink.getHeight() <= 0) return;
 		if (block != null) {
@@ -141,7 +142,8 @@ final class WordArtWarps {
 		for (WordArtRenderer.Line l : lines) {
 			for (WordArtRenderer.Glyph g : l.glyphs) {
 				Shape s = drawn.get(g);
-				if (s != null) drawn.put(g, TextWarp.warp(s, m));
+				// each piece at most a hundredth of the glyph's size long (0.5 pt up to 50 pt), within the box's budget
+				if (s != null) drawn.put(g, TextWarp.warp(s, m, TextWarp.segment(g.font.getSize2D()), budget));
 			}
 		}
 	}
