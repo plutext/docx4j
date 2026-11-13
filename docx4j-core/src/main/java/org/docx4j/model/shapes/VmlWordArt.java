@@ -46,12 +46,14 @@ import org.slf4j.LoggerFactory;
  * an {@code a:effectLst} (D19). Its shape's geometry, which warps it, is {@link VmlGeometry}'s from
  * {@link WordArtText#getVml()}.
  * <p>
- * Provisional until the phase's round (phase 4 findings §3) measures Word: a gradient's {@code angle} (0 taken as
- * blending down, positive counterclockwise), its {@code focus} (0 from colour to {@code color2}, 100 the reverse, 50
- * and -50 mirrored about the middle); a {@code v:shadow} with no {@code on} taken as off (Part 4's default is on,
- * Office's legacy WordArt writes one on styles with no shadow); a shadow's lengths in points; a picture fill drawn in
- * its colour and reported, a compound line drawn single and reported, a double, perspective or emboss shadow drawn
- * single (or, emboss, not) and reported; {@code v-text-spacing} not applied; the default face Arial and size 36 pt.
+ * A gradient as Word draws it (cr083-phase4's wv45, phase 4 findings §10): {@code color2} at the focus, {@code color}
+ * at the ends, so with no focus from {@code color2} to {@code color}; a negative focus the colours swapped, the focus
+ * taken from the far end; a {@code colors} list in place of the two; blended by Word's sigma curve in gamma-2.2 light
+ * unless the {@code method} is {@code none} or {@code linear}. A radial gradient is drawn as a circle where Word's is a
+ * rectangle. A {@code v:shadow} with no {@code on} is off (Part 4's default is on; Office's legacy WordArt writes one on
+ * styles with no shadow); an emboss a double shadow, light above and to the left; a picture fill drawn in its colour
+ * and reported, a compound line drawn single and reported, a perspective shadow not drawn and reported;
+ * {@code v-text-spacing} not applied; the default face Arial and size 36 pt.
  *
  * @since 17.3.7
  */
@@ -62,7 +64,7 @@ public final class VmlWordArt {
 	/** A VML WordArt's geometry that can't be evaluated or is past a limit: nothing drawn */
 	public static final String BAD_GEOMETRY = "render.wordart.bad_geometry";
 
-	/** A VML shadow not drawn as Word draws it: double, perspective, emboss, or offset as a percentage */
+	/** A VML shadow not drawn as Word draws it: perspective */
 	public static final String SHADOW = "render.wordart.shadow";
 
 	private static final String A = "http://schemas.openxmlformats.org/drawingml/2006/main";
@@ -263,9 +265,14 @@ public final class VmlWordArt {
 			double opacity2 = number(r.child(CTFill.class, CTFill::getOpacity2), opacity);
 			double focus = number(r.child(CTFill.class, CTFill::getFocus), 0);
 			if (Math.abs(focus) > 1) focus /= 100; // "50" as well as "50%"
-			String[][] stops = stops(rgb, opacity, rgb2, opacity2, focus);
+			org.docx4j.vml.STFillMethod method = r.child(CTFill.class, CTFill::getMethod);
+			boolean sigma = method != org.docx4j.vml.STFillMethod.NONE && method != org.docx4j.vml.STFillMethod.LINEAR;
+			List<double[]> stops = stops(run(r.child(CTFill.class, CTFill::getColors), rgb, opacity, rgb2, opacity2), focus, sigma);
 			StringBuilder x = new StringBuilder("<a:gradFill xmlns:a=\"" + A + "\" rotWithShape=\"1\"><a:gsLst>");
-			for (String[] s : stops) x.append("<a:gs pos=\"").append(s[0]).append("\">").append(srgb(s[1], Double.parseDouble(s[2]))).append("</a:gs>");
+			for (double[] s : stops) {
+				x.append("<a:gs pos=\"").append(Math.round(s[0] * 100000)).append("\">")
+						.append(srgb(String.format("%06X", (int) s[1]), s[2])).append("</a:gs>");
+			}
 			x.append("</a:gsLst>");
 			if (type == STFillType.GRADIENT_RADIAL) {
 				x.append("<a:path path=\"circle\"><a:fillToRect l=\"50000\" t=\"50000\" r=\"50000\" b=\"50000\"/></a:path>");
@@ -287,16 +294,105 @@ public final class VmlWordArt {
 				org.docx4j.dml.CTSolidColorFillProperties.class);
 	}
 
-	/** A gradient's stops by its focus: {pos in 100,000ths, rgb, opacity} */
-	private static String[][] stops(String c1, double o1, String c2, double o2, double focus) {
-		if (Math.abs(focus) < 1e-9) return new String[][] { { "0", c1, "" + o1 }, { "100000", c2, "" + o2 } };
-		if (Math.abs(focus - 1) < 1e-9) return new String[][] { { "0", c2, "" + o2 }, { "100000", c1, "" + o1 } };
-		if (focus > 0) {
-			long mid = Math.round(focus * 100000);
-			return new String[][] { { "0", c1, "" + o1 }, { "" + mid, c2, "" + o2 }, { "100000", c1, "" + o1 } };
+	/**
+	 * Word's sigma blend, VML's default gradient method: {@code color2}'s weight at each sixteenth of the way from
+	 * {@code color}, in gamma-2.2 light (cr083-phase4's wv45-09, red to blue: Word's 256 samples, red and blue summing
+	 * to 1 within 0.005 at gamma 2.2; this table within 11 of 255 of every sample, the middle (187, 0, 186) where an
+	 * even blend gives (128, 0, 128))
+	 */
+	private static final double[] SIGMA = { 0, .018, .0443, .0854, .1422, .2147, .2996, .3976, .5, .6024, .7004, .7853,
+			.8578, .9146, .9557, .982, 1 };
+
+	private static final double GAMMA = 2.2;
+
+	/**
+	 * A gradient's colours from {@code color} (0) to {@code color2} (1), each {position, rgb, opacity}: its
+	 * {@code colors} list where it has one ("0 red;32768f yellow;1 blue", a position a fraction, {@code f} 65,536ths,
+	 * wv45-15), held at its first and last colours to 0 and 1, the opacity from {@code opacity} to {@code opacity2}
+	 */
+	static List<double[]> run(String colors, String c1, double o1, String c2, double o2) {
+		List<double[]> out = new ArrayList<double[]>();
+		if (colors != null) {
+			for (String e : colors.split(";")) {
+				String t = e.trim();
+				int sp = t.indexOf(' ');
+				if (sp < 0) continue;
+				double p = number(t.substring(0, sp), Double.NaN);
+				String c = VmlColours.rgb(t.substring(sp + 1).trim());
+				if (Double.isNaN(p) || c == null) continue;
+				p = Math.max(0, Math.min(1, p));
+				out.add(new double[] { p, Integer.parseInt(c, 16), o1 + (o2 - o1) * p });
+			}
+			out.sort((a, b) -> Double.compare(a[0], b[0]));
 		}
-		long mid = Math.round(Math.min(1, -focus) * 100000);
-		return new String[][] { { "0", c2, "" + o2 }, { "" + mid, c1, "" + o1 }, { "100000", c2, "" + o2 } };
+		if (out.size() < 2) {
+			out.clear();
+			out.add(new double[] { 0, Integer.parseInt(c1, 16), o1 });
+			out.add(new double[] { 1, Integer.parseInt(c2, 16), o2 });
+			return out;
+		}
+		if (out.get(0)[0] > 0) out.add(0, new double[] { 0, out.get(0)[1], o1 });
+		double[] last = out.get(out.size() - 1);
+		if (last[0] < 1) out.add(new double[] { 1, last[1], o2 });
+		return out;
+	}
+
+	/**
+	 * A gradient's stops along its axis, each {position 0 to 1, rgb, opacity}, from its colours ({@link #run}) and
+	 * its focus, as Word draws them (wv45-09 to -15): the run from {@code color} at the ends to {@code color2} at the
+	 * focus, so with focus 0 from {@code color2} at the axis's start to {@code color} at its end, with 100% the
+	 * reverse, with 50% {@code color} at both ends and {@code color2} in the middle, each half the whole run; a
+	 * negative focus the colours swapped and the focus taken from the far end (-50% measured, -100% as Part 4 has it,
+	 * as 100%); with {@code sigma} each step of the run blended by Word's curve ({@link #SIGMA}).
+	 */
+	static List<double[]> stops(List<double[]> run, double focus, boolean sigma) {
+		List<double[]> r = run;
+		double at = focus;
+		if (focus < 0) {
+			r = new ArrayList<double[]>();
+			for (int i = run.size() - 1; i >= 0; i--) r.add(new double[] { 1 - run.get(i)[0], run.get(i)[1], run.get(i)[2] });
+			at = 1 + focus;
+		}
+		at = Math.max(0, Math.min(1, at));
+		if (sigma) r = sigma(r);
+		List<double[]> out = new ArrayList<double[]>();
+		if (at > 0) {
+			for (double[] s : r) out.add(new double[] { at * s[0], s[1], s[2] });
+		}
+		if (at < 1) {
+			for (int i = r.size() - 1; i >= 0; i--) {
+				double[] s = r.get(i);
+				double x = at + (1 - at) * (1 - s[0]);
+				if (!out.isEmpty() && Math.abs(out.get(out.size() - 1)[0] - x) < 1e-9) continue;
+				out.add(new double[] { x, s[1], s[2] });
+			}
+		}
+		return out;
+	}
+
+	/** The run with each step blended by Word's sigma curve, at sixteenths */
+	private static List<double[]> sigma(List<double[]> run) {
+		List<double[]> out = new ArrayList<double[]>();
+		for (int i = 0; i + 1 < run.size(); i++) {
+			double[] a = run.get(i), b = run.get(i + 1);
+			for (int k = i == 0 ? 0 : 1; k < SIGMA.length; k++) {
+				double w = SIGMA[k];
+				out.add(new double[] { a[0] + (b[0] - a[0]) * k / (SIGMA.length - 1), blend((int) a[1], (int) b[1], w),
+						a[2] + (b[2] - a[2]) * w });
+			}
+		}
+		return out;
+	}
+
+	/** Two colours blended in gamma-2.2 light, {@code w} of the second */
+	static int blend(int a, int b, double w) {
+		int rgb = 0;
+		for (int shift = 16; shift >= 0; shift -= 8) {
+			double ca = ((a >> shift) & 255) / 255.0, cb = ((b >> shift) & 255) / 255.0;
+			double v = Math.pow((1 - w) * Math.pow(ca, GAMMA) + w * Math.pow(cb, GAMMA), 1 / GAMMA);
+			rgb |= (int) Math.round(Math.max(0, Math.min(1, v)) * 255) << shift;
+		}
+		return rgb;
 	}
 
 	/** {@code v:stroke} as a DrawingML outline, or null where it isn't stroked */
@@ -347,16 +443,17 @@ public final class VmlWordArt {
 	 * {@code v:shadow} as Word draws it on VML WordArt (cr083-phase4's wv45): copies of the glyphs, filled, no stroke,
 	 * under them, each {dx, dy, rgb, opacity} in the order drawn: for a double shadow the second ({@code offset2},
 	 * {@code color2}) then the first; an offset a percentage of the shape's width and height; the defaults 2pt,2pt and
-	 * gray. Emboss and perspective (copies Word turns and lightens) none, reported in {@link #of}.
+	 * gray. An emboss is a double shadow (wv45-35: a copy in #CBCBCB at -2pt,-2pt, then one in its colour at 2pt,2pt,
+	 * then the glyphs; at its defaults only). A perspective (copies Word turns and lightens) none, reported in {@link #of}.
 	 */
 	public static java.util.List<double[]> shadows(VmlShapes.Resolved r, double w, double h) {
 		java.util.List<double[]> out = new java.util.ArrayList<double[]>();
 		if (r == null || !r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return out;
 		STShadowType type = r.child(CTShadow.class, CTShadow::getType);
-		if (type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) return out;
+		if (type == STShadowType.PERSPECTIVE) return out;
 		String fillRgb = fillColour(r);
 		double opacity = number(r.child(CTShadow.class, CTShadow::getOpacity), 1);
-		if (type == STShadowType.DOUBLE) {
+		if (type == STShadowType.DOUBLE || type == STShadowType.EMBOSS) {
 			double[] o2 = offset(r.child(CTShadow.class, CTShadow::getOffset2), w, h, -2, -2);
 			String c2 = VmlColours.rgb(r.child(CTShadow.class, CTShadow::getColor2), fillRgb);
 			out.add(new double[] { o2[0], o2[1], Integer.parseInt(c2 == null ? "CBCBCB" : c2, 16), opacity });
@@ -380,11 +477,11 @@ public final class VmlWordArt {
 		return out;
 	}
 
-	/** {@code v:shadow} reported where it isn't drawn as Word draws it: emboss and perspective ({@link #shadows} draws the rest) */
+	/** {@code v:shadow} reported where it isn't drawn as Word draws it: perspective ({@link #shadows} draws the rest) */
 	static void shadow(VmlShapes.Resolved r, String fillRgb, List<String> problems) {
 		if (!r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return;
 		STShadowType type = r.child(CTShadow.class, CTShadow::getType);
-		if ((type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) && !problems.contains(SHADOW)) problems.add(SHADOW);
+		if (type == STShadowType.PERSPECTIVE && !problems.contains(SHADOW)) problems.add(SHADOW);
 	}
 
 	/**

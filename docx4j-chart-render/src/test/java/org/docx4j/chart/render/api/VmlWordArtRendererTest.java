@@ -317,6 +317,67 @@ public class VmlWordArtRendererTest {
 		}
 	}
 
+	/** A gradient fill's stops, each "pos rgb" */
+	private static List<String> stops(String fill) throws Exception {
+		Case c = read(type(P136), shape("fillcolor=\"red\"", "", "<v:fill type=\"gradient\" color2=\"blue\" " + fill + "/>"));
+		List<String> out = new ArrayList<String>();
+		Object g = c.art.getParagraphs().get(0).getRuns().get(0).getFill();
+		for (org.docx4j.dml.CTGradientStop s : ((org.docx4j.dml.CTGradientFillProperties) g).getGsLst().getGs()) {
+			out.add(s.getPos() + " " + s.getSrgbClr().getVal());
+		}
+		return out;
+	}
+
+	/**
+	 * A gradient as Word draws it (cr083-phase4's wv45-09 to -15): color2 at the focus, color at the ends, so with no
+	 * focus from color2 to color; blended by Word's sigma curve in gamma-2.2 light unless its method is none
+	 */
+	@Test
+	public void aGradientRunsFromColor2AtItsFocusToColorAtItsEnds() throws Exception {
+		List<String> plain = stops("");
+		assertEquals(17, plain.size());
+		assertEquals("0 0000FF", plain.get(0));
+		assertEquals("100000 FF0000", plain.get(16));
+		// the middle Word's (187, 0, 186), where an even blend gives (128, 0, 128)
+		assertEquals("50000 BA00BA", plain.get(8));
+		List<String> hundred = stops("focus=\"100%\"");
+		assertEquals("0 FF0000", hundred.get(0));
+		assertEquals("100000 0000FF", hundred.get(16));
+		// 50%: color at both ends, color2 in the middle, each half the whole curve; -50% the colours swapped
+		List<String> fifty = stops("focus=\"50%\"");
+		assertEquals(33, fifty.size());
+		assertEquals("0 FF0000", fifty.get(0));
+		assertEquals("50000 0000FF", fifty.get(16));
+		assertEquals("100000 FF0000", fifty.get(32));
+		assertEquals("25000 BA00BA", fifty.get(8));
+		List<String> minus = stops("focus=\"-50%\"");
+		assertEquals("0 0000FF", minus.get(0));
+		assertEquals("50000 FF0000", minus.get(16));
+		assertEquals("100000 0000FF", minus.get(32));
+		// a colours list, with method none: its colours unblended, from the far end (wv45-15)
+		assertEquals(java.util.Arrays.asList("0 0000FF", "50000 FFFF00", "100000 FF0000"),
+				stops("colors=\"0 red;32768f yellow;1 blue\" method=\"none\""));
+	}
+
+	/** An emboss is a double shadow: a light copy above and to the left, then its colour below and to the right (wv45-35) */
+	@Test
+	public void anEmbossIsADoubleShadow() throws Exception {
+		Case c = read(type(P136), shape("fillcolor=\"#336699\"", "", "<v:shadow on=\"t\" type=\"emboss\" color=\"#868686\"/>"));
+		List<double[]> s = VmlWordArt.shadows(c.resolved, 288, 144);
+		assertEquals(2, s.size());
+		assertEquals(-2, s.get(0)[0], 1e-9);
+		assertEquals(-2, s.get(0)[1], 1e-9);
+		assertEquals(0xCBCBCB, (int) s.get(0)[2]);
+		assertEquals(2, s.get(1)[0], 1e-9);
+		assertEquals(2, s.get(1)[1], 1e-9);
+		assertEquals(0x868686, (int) s.get(1)[2]);
+		assertFalse(draw(c, 0, true).getProblems().contains(VmlWordArt.SHADOW));
+		// a perspective shadow still none, reported
+		Case p = read(type(P136), shape("fillcolor=\"#336699\"", "", "<v:shadow on=\"t\" type=\"perspective\"/>"));
+		assertTrue(VmlWordArt.shadows(p.resolved, 288, 144).isEmpty());
+		assertTrue(p.art.getProblems().contains(VmlWordArt.SHADOW));
+	}
+
 	@Test
 	public void aFormulaThatCantBeReadDrawsNothingAndIsReported() throws Exception {
 		Case c = read(type(P136).replace("sum #0 0 10800", "frobnicate #0 0 10800"), shape("fillcolor=\"black\"", "", ""));

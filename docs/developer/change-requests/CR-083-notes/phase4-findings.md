@@ -586,3 +586,68 @@ without trim, `qb` outside WordArt.
 
 Tests: `VmlShapesTest` (a shapetype after its shape, the one before the shape, a copy found in the part),
 `VmlWordArtRendererTest` (`qb` draws nothing, same letter heights, a turned shape's ink aligned).
+
+## 10. The open items triaged; gradients and emboss read (2026-11-13)
+
+Jason: "ask fable whether it is worth fixing any of those open items now, and if so whether it wants to do it or you
+should", then "do as fable recommends". A Claude Fable 5.1 triage, read-only, of section 9's open list against Word's
+PDFs on disk: gradients and emboss now, by this session (one class, measured on PDFs already on disk, no VM run);
+wv47-14 later, by Fable (it crosses the FO writer and the fork: an FO hint the fork resolves against the body region);
+the rest left, with the numbers below. Each finding was checked here before applying.
+
+**Gradients (wv45-09 to -16), read from Word's shadings** (`grad.py` in this session's scratch: each pattern's axis
+on the page and its function sampled; Word writes one shading a glyph, a sampled function of 256 or 511 steps; the box
+measure reads only filled paths, so these were "none" in sections 7 to 9):
+
+- **`color2` at the focus, `color` at the ends.** With no focus (wv45-09, angle 0) Word runs from blue (`color2`) at
+  the box's top to red (`fillcolor`) at its foot; docx4j ran red to blue. Angle 90 (wv45-11) blue at the left; angle 45
+  (wv45-10) the same axis as docx4j's (section 8, finding 4, holds), its colours swapped. Focus 100% (wv45-13) red at
+  the top, blue at the foot; 50% (wv45-12) red at both ends, blue in the middle; -50% (wv45-14) blue at both ends, red
+  in the middle. Part 4 (§19, `focus`) says 100% and -100% both reverse the gradient, so a negative focus is the
+  colours swapped and the focus taken from the far end (-100% as 100%; -50% measured, where the two readings agree).
+  docx4j had 0 and 100% backwards (`VmlWordArt.stops`); 50% and -50% were right.
+- **A `colors` list** (wv45-15, `colors="0 red;32768f yellow;1 blue" method="none"`): blue at the top, yellow in the
+  middle, red at the foot, the list's positions run from the far end as `color` to `color2` are; docx4j ignored the
+  list. A position is a fraction, `f` 65,536ths (`VmlWordArt.run`; a list held at its first and last colours to 0 and
+  1, unmeasured).
+- **Word blends by a curve, in gamma-2.2 light, unless the method is `none`.** wv45-09's middle is (187, 0, 186), where
+  an even blend gives (128, 0, 128); red and blue raised to 2.2 sum to 1 within 0.005 across its 256 samples (at 2.0
+  within 0.07, at 2.4 within 0.065), so the blend is in gamma-2.2 light, along an S-curve, the weight of `color2`
+  0.018, 0.044, 0.085, 0.142, 0.215, 0.300, 0.398, 0.5 at each sixteenth and symmetric about the middle (of the closed
+  forms tried, cosine, smoothstep and logistic, the best is within 4.7 of 255; the table, its 17 stops drawn evenly
+  between, within 11, the worst between the first two stops, where gamma's curve is steepest). With focus 50% each
+  half is the whole curve. With `method="none"` (wv45-15) Word's blend is even, in sRGB: (128, 128, 128) between blue
+  and yellow. Part 4 gives `sigma` as the default. `VmlWordArt.SIGMA` and `blend`: each step of the run 16 stops, in
+  gamma-2.2 light, unless the method is `none` or `linear` (`linear`, `any` and `linear sigma` unmeasured).
+- **A radial gradient** (wv45-16, `focusposition=".5,.5"`) Word draws as a picture: `color2` (blue) in the middle and
+  `color` (red) at the box's edges, by the same curve, its rings rectangles. docx4j's `a:path` gradient is a circle
+  reaching the corners; with the stops above its colours are Word's way round, its shape still a circle (a rectangle
+  path gradient isn't in `Fills`).
+
+docx4j's gradients against Word's at 101 points along the axis: within 11 of 255 on wv45-09, -12, -13, -14 (the worst
+at t = 0.01), within 1 on wv45-15; before, 255 on wv45-09 and -15 (reversed), 59 on wv45-12 (an even blend).
+
+**Emboss (wv45-35, `v:shadow on="t" type="emboss" color="#868686"`)** Word draws as a double shadow: a copy of the glyphs
+in #CBCBCB at -2pt,-2pt, then one in the shadow's colour at 2pt,2pt, then the glyphs and their stroke. That is
+`VmlWordArt.shadows`' double shadow at its defaults (`color2` #CBCBCB, `offset2` -2pt,-2pt), so an emboss is drawn as
+one and no longer reported; measured at its defaults only. wv45-35 2.0 pt to 0.1. A perspective shadow is still not
+drawn, and reported.
+
+**Left, and why** (Fable's reading, with its numbers): wv41-11 (Circle on two lines, 6.6 pt): the "r" is Word's size
+but about 5 pt further round the arc and 8 pt higher (Word 466.9 to 558.6 by 195.8 to 255.1, docx4j 461.9 to 552.0 by
+186.3 to 250.5), the other glyphs within 0.7; a placement along the ellipse, rare. wv42-26 (o:spt 156, its second adj
+moved, 4.9 pt): the envelope's lerp between the paths agrees with Word's W; only the t's right end differs (Word 426.6
+at 379.4, docx4j 431.5 at 375.9); it needs a probe set. The compound line (wv45-26) is the measure: Word draws the
+thickThin line as filled paths (7 nonzero, 7 even-odd), docx4j as a stroke the box measure doesn't read. 3-D (288
+paths a probe), the tile picture, the turned group (34.6 pt), the table cell and the residuals: rare, or the measure.
+
+**The round again** (`rerun.sh`): within 0.7 pt 228 of 263 (227), wv45-35 0.1 (2.0), nothing else moved; Word's 40
+shapetypes as before (worst 1.5). Gate b478 against b464: 0 movers, events equal, the corpora's PDFs as b477's but for
+the two time fields (5361, 11875), the probes' 324 the same. Tests: `VmlWordArtRendererTest` (a gradient from
+`color2` at its focus to `color` at its ends, the curve's middle, 50% and -50%, a colours list; an emboss a double
+shadow, a perspective reported).
+
+Still open: wv47-14 (later, Fable: an FO hint the fork resolves against the body region, perhaps shared with DrawingML
+anchors relative to the margin, unverified); wv41-11; wv42-26; a radial gradient's rectangle; the reported gaps
+(perspective, 3-D, a compound line, a tile picture, a turned group). Unmeasured: `top` alignment,
+`v-same-letter-heights` without trim, `qb` outside WordArt, a colours list with a focus or the curve, an emboss's offsets.

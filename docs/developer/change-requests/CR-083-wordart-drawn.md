@@ -578,6 +578,12 @@ catalogue (through the portfolio).
     glyph the box's height, mapped across by its advance; a turned shape aligned down its reference aligned by its
     ink (bottom as well as centre). 12 of the 17 within 0.7 pt, one at 0.8, the four blank in both; the round 227 of
     263 within 0.7.
+  - **Gradients and emboss** 2026-11-13 (findings §10; Jason: "do as fable recommends", on a Fable triage of the open
+    items): a VML gradient runs from `color2` at its focus to `color` at its ends (docx4j had no focus and 100%
+    backwards), a `colors` list read, the blend Word's curve in gamma-2.2 light unless the method is `none`; an emboss
+    a double shadow, light above and to the left. The round 228 of 263 within 0.7 pt; gate b478 0 movers. Left: the
+    watermark under an overflowing header (wv47-14: later, with the fork), Circle on two lines, o:spt 156's second
+    adj, a radial gradient's rectangle, the reported gaps.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF
