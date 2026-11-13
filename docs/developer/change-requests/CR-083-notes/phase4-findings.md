@@ -4,7 +4,9 @@ Designed 2026-11-13 (Jason: "start phase 4", "write up a design for phase 4"), o
 is known before the round: phase 0's VML probes read again (Word's PDFs and saves of `wv20-vml-spt-mode12` and
 `wv30-watermarks`, the round of 2026-11-12), the one real document with VML WordArt, docx4j's code, and the standard.
 Section 2 is the round the design needs; section 3 the questions it answers. The design itself is in the CR (phase 4,
-and D16 to D19). Later sections hold what the phase finds.
+and D16 to D19). Reviewed the same day by a Claude Fable 5.1 session (Jason: "commit then have fable review the
+design"), its 13 findings applied (Jason: "apply all 13 to the CR and the findings note, with finding 9 as a revision
+to D17"; section 4). Later sections hold what the phase finds.
 
 ## 1. What is known before the round
 
@@ -15,8 +17,19 @@ and D16 to D19). Later sections hold what the phase finds.
   the WordArt, visible or invisible. wv30's watermarks likewise: the glyphs filled, in silver (`.753`) at alpha
   `.50196` where `v:fill opacity=".5"` (128 of 255), and not in the page's text. So Word writes no invisible text for
   VML WordArt, where it does for DrawingML WordArt drawn as outlines (phase 0 findings §1).
-- **The fill rule is even-odd** on both. Phase 0 didn't record the rule of a wps WordArt's glyph paths; the round reads
-  both (a self-overlapping glyph, section 2).
+- **The fill rule is even-odd**, and Word's PDF writer fills every path so: VML WordArt (wv20-42, 7 paths; wv30, 9 a
+  page), DrawingML WordArt (wa10-01, 7; wa14, 20; wa20-form, 7) and real3's table borders alike (review, finding 3).
+  Java2D's glyph outlines are drawn nonzero, which differs only where a glyph's contours overlap: docx4j writes
+  `fill-rule="evenodd"` on WordArt's glyph paths, one probe (wv44) checking a glyph that overlaps itself.
+- **The text is stretched to the box, by its ink with `trim`** (review, finding 2). wv20-42 (`trim`, `fitshape`,
+  `fitpath`; the box 288 by 144 pt at (144, 252)): the glyphs' ink runs from 144.00 to 431.96 across and from 252.00 to
+  395.92 down, the box's edges, so the string's ink box is mapped onto the shape's box, about 2.25 times across and 5.3
+  down, before the two paths warp it. Phase 2's DrawingML envelope keeps the text's natural width, centred (CR §2).
+  wv30-02 (a horizontal watermark, no `trim`, 468 by 117 pt): the ink runs 467.83 of the 468 across but only 76.91 of
+  the 117 down, the capitals' tops 7.1 pt below the box's top and the baseline 33 pt above its foot. So without `trim`
+  the box down is some font-metric box (the room for ascenders and descenders, which `trim` removes, Part 4 says), not
+  the ink. Neither "WordArt" nor "WATERMARK" has a descender, so phase 0 can't say which metrics: the round's strings
+  (wv44) can.
 
 ### 1.2 Shapetypes
 
@@ -33,7 +46,8 @@ and D16 to D19). Later sections hold what the phase finds.
 
 ### 1.3 Word's watermark
 
-Word's own form (wv30, as Word 365 saves its Watermark dialog's output, in each header):
+The form (wv30, in each header) is `build_wordart.py`'s copy of the watermarks on this machine's documents
+(`Mark.header`), not output from Word's Watermark dialog; Word's save kept it, adding `w10:wrap` (review, finding 5):
 - the shapetype 136 whole: 14 formulas, `adj="10800"`, `path="m@7,l@8,m@5,21600l@6,21600e"` (two lines, the top and
   the bottom of the text), `v:path textpathok="t"`, **`v:textpath on="t" fitshape="t"`**, a handle;
 - the shape `PowerPlusWaterMarkObject<n>`: `position:absolute`, 468 by 117 pt, `rotation:315` (diagonal) or none
@@ -42,9 +56,11 @@ Word's own form (wv30, as Word 365 saves its Watermark dialog's output, in each 
   `v:fill opacity=".5"` where semitransparent; **`v:textpath style="font-family:&quot;Aptos&quot;;font-size:1pt"
   string="..."`**; `w10:wrap anchorx="margin" anchory="margin"`.
 
-So the text path's `on` and `fitshape` come from the shapetype and its `string` and `style` from the shape: a
-`v:textpath` is merged with its shapetype's attribute by attribute, and Word draws the result. With `fitshape` and a
-1 pt font, the text fills the box, as [MS-OI29500] 2.1.1812 says.
+So the text path's `fitshape` comes from the shapetype and its `string` and `style` from the shape, and Word draws the
+result: at a 1 pt font the text spans the box's width, which without `fitshape` it would not (it would sit along the
+first part of the path). A `v:textpath` is merged with its shapetype's attribute by attribute. For `on` the probe
+can't tell: the shapetype's `v:path textpathok="t"` overrides `on` by the standard, so wv30 draws either way; wv43's
+`on="f"` and `textpathok="f"` probes settle it, and wv47 adds a watermark Word's own command makes (section 2).
 
 ### 1.4 The corpora's one document
 
@@ -56,15 +72,17 @@ headers (3, 5, 7), each a `w:object` holding a `v:group` (158.6 by 80.2 pt, `coo
 - `fillcolor="blue" strokecolor="blue"`, `v:stroke joinstyle="miter"`, `v:shadow color="#868686"` with no `on`;
 - `v:textpath` in Arial Black 8 pt, `v-text-kern:t`, `trim="t"`, `fitpath="t"`.
 
-**Word doesn't print any of them.** The three headers are the first-page headers of sections 2 to 4, all continuous,
-so no page shows them: Word's PDF (real3's golden, five pages) has no fill in blue and no shadow's grey. So the
-document is the gate's negative check (docx4j draws none of the three either, which rests on its header selection for
-continuous sections), not an oracle for drawing. No document on this machine has VML WordArt that Word prints but the
-probes; the load survey's counts (c) and (d) (OWED-QUERIES) are the only real-world measure.
+**Word doesn't print any of them.** The three headers are the first-page headers (`w:type="first"`) of sections 2 to
+4, and those sections have no `w:titlePg`, so a first-page header is never used whatever the section's type (they are
+continuous too); Word's PDF (real3's golden, five pages) has no fill in blue and no shadow's grey. docx4j's
+`HeaderFooterPolicy` likewise activates a first-page header only with `w:titlePg` (review, finding 4). So the document
+is the gate's negative check, and a robust one, not an oracle for drawing. No document on this machine has VML
+WordArt that Word prints but the probes; the load survey's counts (c) and (d) (OWED-QUERIES) are the only real-world
+measure.
 
 Part 4 §19.1.2.18 gives `v:shadow`'s `on` a default of true, which would draw real3's grey shadow. Office's legacy
-WordArt writes `<v:shadow color="#868686"/>` on styles that have no shadow, so Word likely reads a missing `on` as false;
-the round measures it (wv45).
+WordArt writes `<v:shadow color="#868686"/>` on styles that have no shadow, so Word likely reads a missing `on` as
+false; the round measures it (wv45).
 
 ### 1.5 What docx4j does today
 
@@ -76,11 +94,29 @@ the round measures it (wv45).
   "nothing to render": real3's pictures and WordArt alike.
 - **No VML geometry**: nothing in docx4j evaluates a `v:formulas` or a VML `path` (CR-080 D6 left VML shapes to a later
   CR).
+- **The renderer is DrawingML's** (review, finding 1): `WordArtRenderer.draw` takes the wps shape for the insets
+  (`ShapeText.bodyInsets`), the box (`ShapeRenderer.draw` of its `spPr`), the text rectangle (`ShapeText.textInsets`),
+  the turn (`ShapeRenderer.turn` of its `a:xfrm`) and the warp (`ShapeGeometry.textWarp` of its `prstTxWarp`), and
+  `WordArtText` is built on the wps. Only `WordArtWarps.warp` is neutral: it goes by the paths' count, the preset's name
+  flagging only `textCircle`.
+- **No VML turn or flip in FO**: nothing in docx4j-export-fo reads a VML style's `rotation` or `flip` (`FOTextBoxes`'
+  rotation is `layout-flow:vertical`'s). FOP has no z-order: it paints region-before before region-body
+  (`AbstractRenderer.renderPageAreas`), so a header's watermark comes out under the body's text, and a region is
+  clipped only with `overflow="hidden"`; but a header's shape in front of the text is under it too, and a body shape
+  behind the text paints in document order (review, finding 8). HTML's `createHtmlImgE10` doesn't position a VML
+  picture: it sits in its line.
+- **Shapetypes in the tree**: Word writes a shapetype once in a part, in the first `w:pict` that uses it, later ones
+  carrying only `type`; real3's are inside its groups. docx4j's JAXB keeps them (`Pict.getAnyAndAny` holds
+  `CTShapetype`, `CTGroup.getEGShapeElements` the nested ones). Under CR-051's word mode an `mc:Fallback` beside a
+  Choice is dropped at load, so a shapetype only in an earlier Fallback is gone; Word reads the Choice too, so nothing
+  is lost, but the lookup must take an unresolved `type` (it draws nothing, as Word's save of wv20-41 shows; review,
+  finding 10).
 - **What exists to build on**:
   - VML placement: `XsltFOFunctions.anchorVmlPicture` and `FOTextBoxes.createVmlPictureContainer` (17.1.0), with
     `WordLayoutFixups`' page, margin and centred positions, behind and in front, in table cells (the placement
     properties are those a shape doesn't take from its shapetype: section 1.6);
-  - VML colours: `PictureRecolour.vmlColour` (CR-084 phase 3);
+  - VML colours: `PictureRecolour.vmlColour` (CR-084 phase 3), which doesn't yet read `#RRGGBB [n]` or the
+    `fill darken(n)` forms (review, finding 11);
   - phases 1 to 3: the line layout, the warps by path count (`WordArtWarps.warp`: one path Follow Path, two an envelope,
     more bands), the paint (DrawingML fills and outlines), the effects (CR-081's, through `Effects.drawText`);
   - the watermark test: `InspectWalk` (CR-050) finds a watermark by the `PowerPlusWaterMarkObject` id.
@@ -103,7 +139,14 @@ ISO/IEC 29500-4 (5th edition, December 2016):
   `@n` (an earlier formula), `#n` (adj 0 to 7), constants 0 to 65535, and named values (`width`, `height`, `xcenter`,
   `ycenter`, `xlimo`, `ylimo`, `hasfill`, `hasstroke`, `lineDrawn`, `pixelLineWidth`, `pixelWidth`, `pixelHeight`,
   `emuWidth`, `emuHeight`, `emuWidth2`, `emuHeight2`).
-- **§19.1.2.14 `path`**: `m l c x e t r v nf ns ae al at ar wa wr qx qy qb`, values or `@n`/`#n` references.
+- **§19.1.2.14 `path`**: `m l c x e t r v nf ns ae al at ar wa wr qx qy qb`, values or `@n`/`#n` references. Left open
+  by the standard, and so for docx4j to state (review, finding 7): `ae`/`al` take their angles in fd and their sizes as
+  semi-axes, with the sweep's sign in a y-down space; repeated `qx`/`qy` pairs alternate their tangent; repeated
+  parameters repeat the command, an omitted value is 0, and `@` and the command letters delimit (`m@7,l@8,`,
+  `@2@14`); a forward `@n`, a `#n` past the adj list, division by zero in `prod`, `if` at 0, 32-bit and fd overflow;
+  `coordsize` 0 or absent; `nf` and `ns` for each `e`-delimited set; and values for `pixelWidth`, `pixelHeight`,
+  `pixelLineWidth` and `lineDrawn` (real3's `_x0000_t75` uses them). `prod`'s half-up rounding can't be seen (1/21600
+  of 144 pt is 0.007 pt), so the standard's is taken.
 - **§19.1.2.18 `shadow`**: `on` (default true), `type` (single, double, emboss, perspective), `offset` (default
   2pt,2pt), `offset2`, `color`, `color2`, `opacity`, `matrix`, `origin`, `obscured`.
 
@@ -112,47 +155,64 @@ ISO/IEC 29500-4 (5th edition, December 2016):
 Two sets through word-bridge, in order. Names `wv40` up (phase 0 used `wv10` to `wv30`; the bridge's staging and
 portfolio folders have no `wv4`).
 
-**`cr083-phase4a`, Word's shapetypes** (D16), one file:
+**`cr083-phase4a`, Word's shapetypes** (D16), one file from a word-bridge script:
 - wv40-shapetypes: the 40 legacy WordArt, types 136 to 175, each "WordArt" in Aptos 36 pt as Word inserts it, one a
-  page, in a mode-12 document; outputs docx and pdf. The docx gives Word's own 40 shapetypes (path, formulas, adj,
-  `v:path`, `v:textpath`, handles), and the shape's attributes as Word's insert writes them; the PDF is Word's drawing of
-  each at its defaults, the first oracle file. `build_vml.py harvest` reads them into `shapetypes-word.xml`, the
-  round's input and the tests' fixture (D16).
+  page, in a mode-12 document; and in a header, a text watermark as Word's Watermark command makes it (it records as
+  `Shapes.AddTextEffect` on the header's shapes); outputs docx and pdf. The docx gives Word's own 40 shapetypes (path,
+  formulas, adj, `v:path`, `v:textpath`, handles), and the shape's attributes as Word's insert writes them, its default
+  stroke among them (legacy WordArt is outlined by default: real3's has `strokecolor` and no `stroked="f"`); the PDF is
+  Word's drawing of each at its defaults, the first oracle file. `build_vml.py harvest` reads them into
+  `shapetypes-word.xml`, the round's input and the tests' fixture (D16), by each shapetype's `o:spt`, never by the
+  order made: `MsoPresetTextEffectShape`'s order isn't `o:spt`'s (CascadeUp and CascadeDown are 39 and 40 but types
+  154 and 155; CurveUp and CurveDown 17 and 18 for 152 and 153; CanUp and CanDown 19 and 20 for 174 and 175; the waves
+  21 to 24 for 156 to 159).
+- The script (review, finding 6): `Shapes.AddTextEffect` (it returns a legacy `TextEffect` shape; it is what Word's
+  Watermark command records, VML even in mode 15), then `TextEffect.PresetShape` 1 to 40, `TextEffect.FontName` and
+  `FontSize`, `NormalizedHeight` false; each at (144, 252) on the page, 288 by 144 pt, a label paragraph above it. If
+  the save holds wps shapes, `SetCompatibilityMode 12` and again; if Word still won't, D16's route (b).
 
 **`cr083-phase4`, the probes** (built by `build_vml.py` from `shapetypes-word.xml`, with `build_wordart.py`'s
 `Vml` helpers; "WordArt" in Aptos 36 pt, a 288 by 144 pt box anchored to the page at (144, 252) as phase 0's, unless
-the probe varies it). About 300 probes, one a page, in eight files:
-- **wv41-types** (80): each type at its default adj; again with "Word" over "Art" on two lines.
-- **wv42-adj** (60): each type with an adj, one other value (two for the types with two), and one out of its handle's
-  range (does Word clamp to the handle's `xrange`/`yrange`?).
-- **wv43-geometry** (25): the shape's own `path` over its shapetype's; the shape's `adj` with empty entries
+the probe varies it; the shape's other attributes, its stroke included, as Word's insert writes them in wv40, so that
+only what a probe varies differs from Word's own). About 285 probes, one a page, in seven files (resized by the
+review, finding 13):
+- **wv41-types** (60): each type at its default adj; again with "Word" over "Art" on two lines, for 20 of them (the
+  types with more than two paths, and a sample of the others).
+- **wv42-adj** (45): each type with an adj at one other value, the types with two adj a second value for the second,
+  and a few out of their handle's range (does Word clamp to the handle's `xrange`/`yrange`?).
+- **wv43-geometry** (32): the shape's own `path` over its shapetype's; the shape's `adj` with empty entries
   (real3's `,10800`); `coordsize` other than 21600 and a `coordorigin` not 0; a shape with no `type` and its own path
   (Word's save of wv20-42); a dangling `type`; two shapetypes with one id (which wins); the shapetype after the shape;
   a shapetype only in another part; a definition by `o:spt` only after a whole one of the same `o:spt` (phase 0's
   question, done right); `v:textpath` attributes on the shapetype only, on the shape only, and conflicting; `on="f"`;
-  `textpathok="f"`.
-- **wv44-textpath** (45): `fitshape`, `fitpath`, `trim`, `xscale` each on and off on a two-path and a one-path type;
+  `textpathok="f"`; `coordsize` 0 and absent; a custom arc (`al` and `ae` swept each way: a sign error shows as
+  mirrored text); five custom formulas each moving a visible line (a forward `@n`, a `#n` past the adj list, a
+  division by zero in `prod`, `if` at 0, an fd overflow).
+- **wv44-textpath** (57): `fitshape`, `fitpath`, `trim`, `xscale` each on and off on a two-path and a one-path type;
+  a string of descenders only ("gyp") and one of capitals only ("WAVE"), each with `trim` on and off, in Aptos,
+  Calibri and Times New Roman (which box the text is mapped from: section 1.1);
   `font-size` 1, 12, 36 and 72 pt on one box (the same drawing?); bold, italic; `v-text-align`'s six values on two lines
   of unequal length; `v-same-letter-heights`; `v-rotate-letters`; `v-text-kern` on and off ("AVATAR"); `v-text-spacing`
   80 and 150 in both modes; `v-text-reverse`; `text-decoration:underline` (kept, not drawn, says 2.1.1812); three
   lines; an empty string; a 60-character string; a glyph that overlaps itself (the fill rule).
-- **wv45-paint** (40): `fillcolor` named, hex, a system colour, `fill darken(118)`; `filled="f"`; `opacity` 0.5 and
-  0.2; gradients (`type="gradient"` at angles 0, 45 and 90, `color2`, `focus` 0, 50, 100 and -50, a `colors` list,
-  `type="gradientRadial"` with `focusposition` and `focussize`); `type="pattern"`, `tile` and `frame` with a picture;
-  `stroked="f"`, `strokeweight` 0.25, 2 and 6 pt, `strokecolor`, `dashstyle`, `joinstyle`, `endcap`,
-  `linestyle="thickThin"`, stroke `opacity`; `v:shadow` with no `on` (real3's), `on="t"` at its defaults, offsets 4 pt
-  and -3 pt, colour and opacity, `type="double"` with `offset2` and `color2`, `type="perspective"` with a `matrix` and
-  `origin`, `type="emboss"`, `obscured`; `o:extrusion on="t"` (3-D).
+- **wv45-paint** (34): `fillcolor` named, hex, `#RRGGBB [n]`, a system colour, `fill darken(118)`; `filled="f"`;
+  `opacity` 0.5 and 0.2; gradients (`type="gradient"` at angles 0, 45 and 90, `color2`, `focus` 0, 50, 100 and -50, a
+  `colors` list, `type="gradientRadial"` with `focusposition` and `focussize`); one picture fill (`type="tile"`);
+  `stroked="f"` and Word's default stroke, `strokeweight` 0.25, 2 and 6 pt, `strokecolor`, `dashstyle`, `joinstyle`,
+  `endcap`, one compound line (`linestyle="thickThin"`), stroke `opacity`; `v:shadow` with no `on` (real3's),
+  `on="t"` at its defaults, offsets 4 pt and -3 pt and as a percentage, colour and opacity, one shadow on two box sizes
+  (are its lengths points, whatever the text's size?), `type="double"` with `offset2` and `color2`,
+  `type="perspective"` with a `matrix` and `origin`, `type="emboss"`, `obscured`; `o:extrusion on="t"` (3-D).
 - **wv46-placement** (30): inline in a line (no `position`); anchored to the page, margin, column and paragraph;
   centred; `rotation` 30, 90 and 315; `flip` x, y and xy (does the text read mirrored?); wrap none, square and
   topAndBottom, behind (negative `z-index`) and in front; in a table cell; in a `v:group` with a picture (real3's
   form, in the body and in a header that prints), and in a `w:object` holding one; the same WordArt in a mode-12 and a
   mode-15 document.
-- **wv47-watermarks** (25), Word's own form (section 1.3) in the header of a page with body text: diagonal and
+- **wv47-watermarks** (26), the form of section 1.3 and the one Word's own command made in wv40, in the header of a
+  page with body text: diagonal and
   horizontal; semitransparent and not; Aptos, Calibri and Times New Roman; `font-size` 1 pt (Word's "Auto") and fixed
   sizes 36, 72 and 144 pt with the box Word's dialog would give; colours; landscape and A4 pages; unequal margins (what
   it's centred on); first-page and even headers; two sections with different watermarks.
-- **wv48-wps** (5): DrawingML WordArt with a self-overlapping glyph, for the fill rule of section 1.1.
 
 Read by `read_vml.py <results> <docxdir> <out.jsonl>`: each probe's parameters from its own docx, and from Word's PDF
 its glyph paths (points, fill rule, colour, alpha), stroke, any shadow path or picture, and its placement (the paths'
@@ -161,18 +221,69 @@ comparison. Every file is expected silent; none goes on the stop list.
 
 ## 3. What the round answers
 
-1. Whether Word's VML envelope and Follow Path are phase 2's (§20.1.9.19 on the shape's box, by arc length; Follow
-   Path's D / (D + 2T)), or legacy WordArt's own: `fitshape` and `fitpath` stretching the text to the box and along the
-   path, which DrawingML has no attribute for.
-2. Whether `font-size` changes anything once the text is fitted (the watermark's 1 pt says not, under `fitshape`).
+1. The stretch before the warp (section 1.1): with `trim` the ink box onto the shape's box; without it, which metric box
+   (ascent and descent, with the line gap or not, in each face); and then whether the two paths warp it as phase 2's
+   envelope does (§20.1.9.19, by arc length) and Follow Path as phase 2's (D / (D + 2T)) or by `fitpath` along the path.
+2. Whether `font-size` changes anything once the text is fitted (the watermark's 1 pt says not, under `fitshape`), and
+   so whether phases 1 to 3's size-bound rules mean anything here: Word's kerning of WordArt is `v-text-kern`'s, the
+   line gap matters only to the box without `trim`, and phase 3's (size / 72)^0.7 has no size to take, VML WordArt
+   being always on a path, where phase 3 found Word draws effects at their stated lengths (review, finding 12).
 3. How the path count maps to a warp kind for each of the 40 types (one path Follow Path, two an envelope, more bands),
    and which types phase 2's 11 unexplained presets correspond to.
-4. Word's merge of a shape with its shapetype (attribute by attribute, as section 1.3 shows for `v:textpath`; and for
-   `v:fill`, `v:stroke`, `v:shadow` and `adj`), its rule for an unresolved or duplicated id, and whether the handle's
-   range clamps an adj.
-5. The paint: VML gradients on glyphs (one gradient across the text, or a glyph each?), picture fills, the stroke's
-   join and dash, and the shadow: drawn as a path (a sharp shadow is a copy of the glyphs) or a picture; a missing `on`.
+4. Word's merge of a shape with its shapetype (attribute by attribute, as section 1.3 shows for `fitshape`; `on`
+   against `textpathok`; and for `v:fill`, `v:stroke`, `v:shadow` and `adj`), its rule for an unresolved or duplicated
+   id, whether the handle's range clamps an adj, and what the edge cases of the formulas and the arcs come to
+   (section 1.6).
+5. The paint: VML gradients on glyphs (one gradient across the text, or a glyph each? `angle` and `focus`, -50 to 100
+   and mirrored, against `a:lin`'s conventions), picture fills, Word's default stroke, the stroke's join and dash, and
+   the shadow: drawn as a path (a sharp shadow is a copy of the glyphs) or a picture, its offset in points or a
+   percentage, a missing `on`.
 6. 3-D (`o:extrusion`): a picture of the whole, as wps 3-D WordArt (D10), or something else.
 7. Placement: whether the VML picture route's measurements hold for WordArt, a turned box's place (turned about its
    centre, placed by its unturned box?), flip, and a watermark's centring relative to the margin.
-8. The fill rule of wps WordArt's glyph paths, in case docx4j's (nonzero, from Java2D's outlines) differs from Word's.
+8. (Answered before the round: Word fills every path even-odd, section 1.1.)
+
+## 4. The review (2026-11-13)
+
+A Claude Fable 5.1 session reviewed the design read-only (Jason: "commit then have fable review the design"), against
+phase 0's PDFs and saves, real3's document and its golden, Part 4 and the code; it ran no Word. Its 13 findings, each
+checked here before applying (the numbers of 2, 3, 4, 5 and 8 measured again), were applied the same day (Jason:
+"apply all 13 to the CR and the findings note, with finding 9 as a revision to D17"):
+
+1. **The renderer is DrawingML's** (section 1.5): the design named no way in for VML. Applied: a geometry source for
+   `WordArtRenderer` (the warp's paths, the box and its drawing, the text rectangle, the turn and the fit), with a
+   DrawingML source (today's code, moved) and a VML one, and a VML form of the `textCircle` flag (CR phase 4).
+2. **The fit isn't phase 2's envelope**: with `trim` the ink box is stretched to the shape's box (wv20-42), without it a
+   font-metric box (wv30-02) (section 1.1). Applied: the stretch is a step of the design, and wv44 has descender-only
+   and capitals-only strings under `trim` on and off in three faces. The CR's "fills its parent shape's box" (§2) said
+   too much.
+3. **Word fills every path even-odd**, DrawingML WordArt too (section 1.1). Applied: §3 item 8 answered, wv48 dropped,
+   `fill-rule="evenodd"` on WordArt's glyph paths.
+4. **real3's reason is `w:titlePg`**, not continuity (section 1.4). Applied.
+5. **wv30's watermark is the builder's copy, not Word's dialog's**, and it can't tell a merged `on` from
+   `textpathok`'s override (section 1.3). Applied: wv40 makes a watermark by Word's own command, wv43 settles `on`.
+6. **D16 (a) is feasible** (about 75% sure, from Word's object model as documented), with two cautions: harvest by
+   `o:spt`, not by `MsoPresetTextEffectShape`'s order; retry in mode 12 if the save holds wps shapes. Applied to wv40's
+   script (section 2).
+7. **The evaluator's rules** the standard leaves open (section 1.6), and its result: `e`-delimited sets with their
+   `nf`/`ns` flags and the text box rectangle, if CR-080 D6's CR is to reuse it, not "each sub-path an outline".
+   Applied: the CR's geometry step, and wv43's arc and formula probes.
+8. **FO placement**: sound, but nothing reads a VML `rotation` or `flip`, and FOP has no z-order (section 1.5).
+   Applied: the container keeps the unturned box, which Word places, the SVG at the drawing's bounds inside it,
+   overflow visible, as `FOShapes.addWordArt` does; z-order stated as a limitation; HTML's VML WordArt inline.
+9. **D17's test should follow its argument**: repetition on every page holds for any VML WordArt in a header or
+   footer part, and a renamed or hand-copied watermark lacks the `PowerPlusWaterMarkObject` id (LibreOffice and Aspose
+   write it, a hand copy needn't). Applied as a revision to D17: by the part, not the id.
+10. **Shapetype lookup** by part, groups included; an `mc:Fallback` dropped under word mode (section 1.5). Applied to
+    `VmlShapes`.
+11. **D18 and D19's gaps**: nested groups; a group's children placed by `left` and `top` through `coordorigin`
+    (`createVmlContainer` reads `margin-left` and `margin-top` only); a group's picture needs its own entry, the picture
+    route taking a `w:pict`; VML gradients' `angle` and `focus` conventions; `#RRGGBB [n]` and `fill darken(n)`;
+    legacy WordArt's default stroke (the probes now copy Word's insert); a shadow's offset as a percentage. Applied to
+    D18, D19 and the round.
+12. **Phases 1 to 3's size-bound rules under fit**: kerning is `v-text-kern`'s; the line gap matters only without
+    `trim`; (size / 72)^0.7 has no size to take, and VML WordArt is always on a path, where Word draws effects at their
+    stated lengths. Applied: `v:shadow`'s lengths are points, wv45 checks a shadow on two box sizes.
+13. **The round's size**: cut wv48, wv42 to about 45, wv45's picture fills and compound lines to one each, wv41's two
+    lines to 20 types; add findings 2, 5 and 7's probes. About 285 probes. The effort was tight: phase 4 is now eight
+    days.
