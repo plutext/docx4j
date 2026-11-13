@@ -43,9 +43,16 @@ public class PageBreakParagraphLineTest extends AbstractXSLFOTest {
 		org.docx4j.Docx4jProperties.setProperty(PROPERTY, "true");
 	}
 
+	/** The property as it was: removed where it was unset, since Preprocess reads it as on when unset (left "false",
+	 *  every later test in the JVM ran without the break paragraph's line: FloatingTablePositionTest's anchorsPageBreak
+	 *  failed whenever it ran after this class) */
 	@org.junit.After
 	public void restore() {
-		org.docx4j.Docx4jProperties.setProperty(PROPERTY, saved == null ? "false" : saved);
+		if (saved == null) {
+			org.docx4j.Docx4jProperties.getProperties().remove(PROPERTY);
+		} else {
+			org.docx4j.Docx4jProperties.setProperty(PROPERTY, saved);
+		}
 	}
 
 	private static final String W = "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"";

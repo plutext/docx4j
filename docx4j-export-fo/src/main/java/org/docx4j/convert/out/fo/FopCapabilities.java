@@ -240,7 +240,12 @@ public final class FopCapabilities {
 		 *  CR-080-notes/bothsides-findings.md &#xa7;6), and the renderer does so from the block's stops.  With it
 		 *  docx4j marks such a leader ({@link XsltFOFunctions}); without it the leader is written as before, since
 		 *  a renderer without the hook takes any mark for a tab it lays out itself.  @since 17.3.7 */
-		FIXED_TAB_BESIDE_OBSTACLE("fixed-tab-beside-obstacle");
+		FIXED_TAB_BESIDE_OBSTACLE("fixed-tab-beside-obstacle"),
+		/** A body run's Word 2010 text effects (fork fop/CR-043; docx4j CR-083 phase 5): {@code docx4j:effect-room} on a
+		 *  run's inline (an empty paragraph's block) as room in its Word line, {@code docx4j:text-effect} an id the
+		 *  renderer hands to the painter docx4j sets on the {@code FOUserAgent}, which draws the run's pictures and, where
+		 *  Word draws it as paths, its glyphs, the text then drawn invisibly ({@link TextEffectsFo}).  @since 17.3.7 */
+		TEXT_EFFECTS("text-effects");
 
 		private final String key;
 

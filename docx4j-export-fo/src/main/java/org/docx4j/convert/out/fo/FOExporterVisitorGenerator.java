@@ -915,6 +915,9 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 			//if (rPr!=null) {
 				XsltFOFunctions.createFoAttributes(conversionContext.getWmlPackage(), rPr, ((Element)currentParent) );
 			//}
+			// a run's text effects, through the renderer's painter (CR-083 phase 5)
+			TextEffectsFo.mark(conversionContext.getWmlPackage(), conversionContext.getConversionSettings(), rPr,
+					(Element) currentParent);
 			
 						
 		} catch (Exception e) {

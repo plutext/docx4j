@@ -555,6 +555,47 @@ public final class WordArtText {
 		return r.blocks(content, out);
 	}
 
+	/**
+	 * A body run's paint and effects from its effective {@code w:rPr}: its fill, outline, shadow, glow and reflection,
+	 * its colour, size, face and Word's line metrics for the face, as a WordArt run of that formatting (CR-083 phase 5:
+	 * the FO renderer fork's text-effect painter draws a body run as phases 1 to 3 draw a flat WordArt run).
+	 *
+	 * @param rPr the run's effective properties (the paragraph mark's for an empty paragraph or a number)
+	 * @return null where the package can't be read
+	 * @since 17.3.7
+	 */
+	public static Run bodyRun(WordprocessingMLPackage pkg, RPr rPr) {
+		try {
+			return new Reader(pkg).run(rPr, "");
+		} catch (RuntimeException e) {
+			log.warn("A run's text effects couldn't be read: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Whether Word draws more of a body run than its text in its colour (CR-083 phase 5): a fill other than solid and
+	 * opaque (a gradient, a transparent colour, none), a visible outline, a shadow, a glow or a reflection. 3-D alone is
+	 * phase 6's.
+	 *
+	 * @since 17.3.7
+	 */
+	public static boolean hasBodyEffect(RPr rPr) {
+		if (rPr == null) return false;
+		if (rPr.getGlow() != null || rPr.getShadow14() != null || rPr.getReflection() != null) return true;
+		if (rPr.getTextOutline() != null) {
+			org.docx4j.w14.CTTextOutlineEffect o = rPr.getTextOutline();
+			if (o.getNoFill() == null && (o.getSolidFill() != null || o.getGradFill() != null)) return true;
+		}
+		org.docx4j.w14.CTFillTextEffect f = rPr.getTextFill();
+		if (f != null) {
+			if (f.getNoFill() != null || f.getGradFill() != null) return true;
+			Object dml = TextEffects.fill(f);
+			if (dml instanceof CTSolidColorFillProperties && TextEffects.hasAlpha((CTSolidColorFillProperties) dml)) return true;
+		}
+		return false;
+	}
+
 	private static final class Reader {
 		final WordprocessingMLPackage pkg;
 		final PropertyResolver resolver;
@@ -735,11 +776,17 @@ public final class WordArtText {
 		/** The text so far as a run of rPr's formatting */
 		void flush(StringBuilder text, RPr rPr, Paragraph para) {
 			if (text.length() == 0) return;
+			Run run = run(rPr, text.toString());
+			text.setLength(0);
+			para.runs.add(run);
+		}
+
+		/** A run of rPr's formatting and this text */
+		Run run(RPr rPr, String text) {
 			Run run = new Run();
 			run.rPr = rPr;
 			run.caps = rPr != null && isOn(rPr.getCaps());
-			run.text = run.caps ? text.toString().toUpperCase(java.util.Locale.ROOT) : text.toString();
-			text.setLength(0);
+			run.text = run.caps ? text.toUpperCase(java.util.Locale.ROOT) : text;
 			run.face = face(rPr);
 			run.size = size(rPr);
 			metrics(run);
@@ -771,7 +818,7 @@ public final class WordArtText {
 				if (rPr.getLang() != null) run.lang = rPr.getLang().getVal();
 				decorations(run, rPr);
 			}
-			para.runs.add(run);
+			return run;
 		}
 
 		/**

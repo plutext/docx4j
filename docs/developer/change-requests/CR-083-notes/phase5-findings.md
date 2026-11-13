@@ -4,7 +4,8 @@ Phase 5 draws a body run's Word 2010 text effects: `w14:textFill`, `w14:textOutl
 `w14:reflection`, in body paragraphs, table cells, headers and footers, and in text boxes with no warp (phase 3's D12).
 3-D (`w14:props3d`, `w14:scene3d`) is phase 6's. The design is in the CR (phase 5, D3, D20 to D24). This note holds
 what is known before the round (section 1), what the FOP fork offers (section 2), the round (section 3), the
-design's review (section 4), step 1 with the fork's CR (section 5), and the round read (section 6).
+design's review (section 4), step 1 with the fork's CR (section 5), the round read (section 6), and step 2, the
+painter (section 7).
 
 ## 1. What is known before the round (2026-11-13)
 
@@ -369,4 +370,86 @@ run's id, one font, one line: its areas' glyphs together, their union), under be
 last, in place of area and run-on-line; decorations in the first build (the underline's and strike's positions and
 thicknesses, a return key so that FOP skips its own); the area's direction for a reversed gradient; a background
 extended by the room (low priority).
+
+## 7. Step 2: the painter (2026-11-14)
+
+Jason: "do step 2", on the fork's r85 (fop/CR-043, merged to 2.12-docx4j.2 at a3a0ceb10) and then r86 (fop/CR-043.1,
+the grouping below; unmerged at writing).
+
+### 7.1 Built
+
+- **The marking** (docx4j-export-fo `TextEffectsFo`, where the renderer advertises `text-effects`, a new
+  `FopCapabilities` entry): a run Word draws more of than its text in its colour (`WordArtText.hasBodyEffect`: an
+  outline, a gradient, a transparent fill, none, a shadow, a glow, a reflection) gets an id on its `fo:inline` in
+  both FO routes (the visitor's `handleRPr`, the XSLT route's `createBlockForRPr`), its effects in the conversion's
+  table as a WordArt run of its formatting (`WordArtText.bodyRun`, the run factory phases 1 to 3 use, now shared);
+  a shadow, glow or reflection also its room, phase 3's rule at the run's stated size, unraised; an empty paragraph's
+  mark its room on its `fo:block`. Written as hints, which `WordLayoutFixups.lineBoxAttributes` turns into
+  `docx4j:text-effect` and `docx4j:effect-room` as it does a run's font; the two names in `TextEffectsFo`, not in
+  docx4j's `WordLayoutElementMapping`, which names the attributes of the renderer docx4j is built against
+  (2.12-docx4j.1: `WordLayoutAttributesTest`), until docx4j moves to the one with them.
+- **The painter** (docx4j-chart-render `TextEffectPainter`, a `BiFunction` of maps, the fork's `TextEffectKeys`
+  strings copied), set per conversion on the `FOUserAgent` by `FORendererApacheFOP.textEffectPainter`, by reflection:
+  the group's glyphs from the font file (`Font.createFonts`, a collection's face by name; ids the file's, from the
+  fork), at the fork's positions, a simulated italic sheared; drawn by `WordArtRenderer.drawBody`, a third entry
+  beside `draw` and `drawVml`: under the text the effect pictures (`unit`, phase 3's, at `TextEffects.scale`), then,
+  where Word draws the run as paths, the glyphs filled and stroked (`paintGlyphs`, now shared with WordArt's loop) and
+  the underline and strikes painted with them; over the text an inner shadow. The gradient's frame is the group's
+  FRAME with the suppressed trailing space and the last letter spacing; a right-to-left run's gradient mirrored. The
+  SVG returned with its rectangle; GLYPHS_DRAWN where Word draws paths or nothing, DECORATIONS_DRAWN where the run's
+  decorations were painted. A face whose glyphs can't be had (no file, no ids) isn't painted: the text is drawn as
+  without effects, reported once (`render.wordart.body_effect`).
+- **Not built**: a numbered paragraph's mark painting its number (wb82-30, -31): the label is a block, the fork reads
+  the id from inlines only, and the number would have to be wrapped in an inline the label rule reads; Word's own room
+  there is unexplained. The highlight over the room (the fork's, low priority). Mode 2. Phase 7's gap report takes
+  these.
+
+### 7.2 Against Word
+
+- **Drawing, page by page** (counts of shadings, pictures, filled and stroked paths, invisible text; Word's PDFs
+  against docx4j's, wb50, wb80, wb82, wg20, r86): every page alike but for: wb80-15 (Word merged the two identical
+  runs on save: one picture to docx4j's two), wb80-24, -25 (Word draws a path gradient other than a circle as a
+  picture, docx4j as a radial shading), wb82-24, -25 (the telephone a colour emoji picture in Word), wb82-26 (a
+  simulated bold: the thickening's own shading), wb82-02 (docx4j keeps the text Word drops), wb82-30, -31 (the
+  number, above), wg20-05, -10 (3-D bevels, phase 6).
+- **Frames**: on r85 a run's chunks (docx4j's inner inlines, a tab's leader, the syllables of soft hyphens) were
+  groups of their own (wb80-12: two frames, 346.30 to 413.54 and 432.00 to 523.75, where Word has one, 344.40 to
+  523.92; wb82-23: 29 where Word has 3). The fork's r86 groups a line's consecutive areas of one id and one font across
+  inner inlines, leaders and spaces: wb80-12's one frame 346.30 to 523.75, wb80-13's two pictures, wb82-23's three
+  frames, as Word's. The remaining offsets are the text's own (docx4j's line starts 1.9 pt later on wb80-02).
+- **The room** (wb81, stext baselines): every pitch within 0.25 pt of Word's at 10 to 14 pt, under auto 1.15, double,
+  exact and atLeast (wb81-17: 28.09 and 31.91 against 28.08 and 31.94; wb81-20: 23.76 and 36.24 against 23.76 and
+  36.26), a superscript's and a subscript's, an empty paragraph's mark (37.99 against 37.94), a table row (21.38
+  against 21.36), a header's line (1.91 against 1.92) and a page's first line (3.69 against 3.84). A paragraph of
+  spaces alone is 2.5 pt taller than Word's with or without the glow (its line sized by its run, not its mark): not the
+  effects'.
+
+### 7.3 Found and fixed
+
+- **A simulated bold's thickening as a union**: the glyphs and their stroke made one `Area`, which split every curve:
+  corpus 4102's one run ("LTD CLEAN WORLD", Sylfaen bold italic, outlined, underlined) wrote 61,801 path operators,
+  its PDF 305 KB to 718 KB and its render 132 to 1,040 ms. Now the stroke is filled on its own, not outlined (as the
+  renderer strokes the face): 353 KB, 172 ms.
+- **A test that left a property off**: `PageBreakParagraphLineTest` restored `pageBreakParagraphLine` to "false"
+  where it had been unset, which `Preprocess` reads as on; any test after it in the JVM ran without the break
+  paragraph's line, and `FloatingTablePositionTest`'s two `anchorsPageBreak` tests failed once a new test file moved
+  them after it (bisected with JUnitCore over the 101 classes before it). It now removes the property.
+
+### 7.4 Tests and gates
+
+- Tests: chart-render `TextEffectBodyTest` (7: a gradient's paths over its frame by the curve, mirrored right to left;
+  a glow a picture under real text; no fill nothing; an inner shadow over; decorations and a bold's thickening; the
+  painter's answers; the decorations' rectangles); export-fo-tests `TextEffectsFoTest` (5: the room by phase 3's rule
+  and a superscript's at its size, which runs are marked, the conversion's table, the hints to attributes). Suites:
+  core-tests 2,697, chart-render 119, export-fo 111, export-fo-tests 977 pass.
+- Gates (the corpora, 12 threads; docx4j bins against the fork's jars):
+  - b483: step 2 on r85 against b482 (HEAD on r85): one mover, real's 15_de-DE_sdt_79 +65 lines, 0.7949 to 0.9775 (an
+    empty paragraph whose mark has a shadow: its room, 1.00 above and 2.10 below, the only change in its FO); events
+    equal. PDFs changed: 79 and 14 (that room), 14372 (4 runs painted, +11%), 252 (14 shadowed runs, +38%, render
+    1.02 to 1.37 s), 4102 (+135%: the union above).
+  - b485: HEAD's bins on r86 against b482 (r85): 0 movers, events equal, 37 hooks, the PDFs the same but the time
+    fields, the probes the same. r86's control passed.
+  - b486: step 2 (final) on r86 against b485: the one mover 79 (+65), events equal; PDF size 14372 +11%, 252 +38%, 4102
+    +15%, 14 and 79 unchanged; render times within the run's noise (the corpora's totals -1.6% to +1.7%); the probes'
+    324 the same.
 

@@ -385,9 +385,37 @@ public class FORendererApacheFOP extends AbstractFORenderer { //implements FORen
 	    FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
 	    allowPageNumberZero(foUserAgent);
 		rowFirstPartRoom(foUserAgent);
+		textEffectPainter(foUserAgent, settings);
 		settings.getSettings().put(FO_USER_AGENT, foUserAgent);
 		
 		return foUserAgent;
+	}
+
+	private static volatile java.lang.reflect.Method setTextEffectPainter;
+
+	/**
+	 * The conversion's text-effect painter on its user agent (CR-083 phase 5; fop/CR-043): the renderer calls it for
+	 * each body run with a {@code docx4j:text-effect} id, once per run, font and line, and draws what it returns
+	 * ({@link org.docx4j.convert.out.fo.TextEffectsFo}). Per conversion, not on the factory, which a caller may share
+	 * across conversions and threads. Called reflectively, since this module compiles against a FOP without the method.
+	 *
+	 * @since 17.3.7
+	 */
+	static void textEffectPainter(FOUserAgent foUserAgent, FOSettings settings) {
+		if (foUserAgent==null) return;
+		java.util.function.BiFunction<String, java.util.Map<String, Object>, java.util.Map<String, Object>> painter
+				= org.docx4j.convert.out.fo.TextEffectsFo.painter(settings);
+		if (painter==null) return;
+		try {
+			java.lang.reflect.Method m = setTextEffectPainter;
+			if (m==null) {
+				m = FOUserAgent.class.getMethod("setTextEffectPainter", java.util.function.BiFunction.class);
+				setTextEffectPainter = m;
+			}
+			m.invoke(foUserAgent, painter);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			log.warn("text-effects advertised but not callable: " + e);
+		}
 	}
 
 	private static volatile java.lang.reflect.Method setPageNumberZeroAllowed;

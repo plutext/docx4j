@@ -954,53 +954,9 @@ public final class WordArtRenderer {
 		for (Map.Entry<WordArtText.Run, Path2D.Double> e : byRun.entrySet()) {
 			WordArtText.Run r = e.getKey();
 			if (r.paint(warped != null) != WordArtText.Paint.PATHS) continue;
-			Path2D.Double s = e.getValue();
 			Rectangle2D frame = frames.get(r);
-			Object fill = r.getFill();
-			boolean filled = false;
-			if (fill == null) {
-				Color c = Fills.awt(r.getColour());
-				if (c != null) {
-					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
-					painted = union(painted, s.getBounds2D());
-					filled = true;
-				}
-			} else if (fill instanceof CTSolidColorFillProperties) {
-				Color c = Fills.awt(DrawingMLColors.resolve(fill, theme));
-				if (c != null) {
-					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
-					painted = union(painted, s.getBounds2D());
-					filled = true;
-				}
-			} else if (fill instanceof CTGradientFillProperties) {
-				Drawing.Gradient gr = fills.wordGradient((CTGradientFillProperties) fill);
-				if (gr != null) {
-					Drawing.Area a = new Drawing.Area(s, gr.getColours()[0], null, 0, "wordart.fill");
-					a.setGradient(gr);
-					if (frame != null) a.setGradientFrame(turn.createTransformedShape(frame).getBounds2D());
-					drawing.add(a);
-					painted = union(painted, s.getBounds2D());
-					filled = true;
-				}
-			} else if (!(fill instanceof CTNoFillProperties)) {
-				Color c = Fills.awt(r.getColour());
-				if (c != null) {
-					drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
-					filled = true;
-				}
-			} else {
-				filled = true; // no fill: nothing to draw
-			}
-			if (!filled && !problems.contains(WordArtText.FILL)) problems.add(WordArtText.FILL);
-			CTLineProperties ln = r.getOutline();
-			if (ln != null && ln.getNoFill() == null) {
-				Rectangle2D stroked = ShapeRenderer.strokeText(drawing, s, ln, theme);
-				if (stroked == null && (ln.getSolidFill() != null || ln.getGradFill() != null || ln.getPattFill() != null)
-						&& !problems.contains(WordArtText.OUTLINE)) {
-					problems.add(WordArtText.OUTLINE);
-				}
-				painted = union(painted, stroked);
-			}
+			painted = paintGlyphs(r, e.getValue(), frame == null ? null : turn.createTransformedShape(frame).getBounds2D(), fills,
+					theme, drawing, problems, painted);
 		}
 
 		// a run's underline and strikes, where the text isn't warped (as the FO output draws them)
@@ -1266,6 +1222,209 @@ public final class WordArtRenderer {
 			// what is shown of it: within its clip
 			Rectangle2D shown = dp.getClip() == null ? dp.getInto() : dp.getInto().createIntersection(dp.getClip().getBounds2D());
 			if (shown.getWidth() > 0 && shown.getHeight() > 0) painted = union(painted, shown);
+		}
+		return painted;
+	}
+
+	/**
+	 * A body run's part on a line, as the FO renderer fork's text-effect painter is handed it (one run, one font, one
+	 * line), painted as Word's PDF paints it (CR-083 phase 5, D20; phase 5 findings sections 1.1 and 6): under its text,
+	 * its shadow, glow and reflection pictures at {@link TextEffects#scale} of the size on its frame, as phase 3 draws a
+	 * flat WordArt run's; then, where Word draws the run as paths (an outline, a gradient, a transparent fill: {@link
+	 * WordArtText.Paint#PATHS}), its glyphs filled and stroked, and its underline and strikes painted with them (wb80-17
+	 * to -19); over its text, an inner shadow. Points from the group's start on its baseline, y down.
+	 *
+	 * @param glyphs the glyphs as placed
+	 * @param size the size they are drawn at
+	 * @param frame the run's box on the line: its advance across, its ascent and descent down (y negative above)
+	 * @param gradientFrame the box a gradient spans: Word's, the frame with a trailing space and the last letter spacing
+	 * @param decorations the underline's and strikes' rectangles, painted as the glyphs where the run is paths
+	 * @param rtl a right-to-left run, its gradient mirrored across
+	 * @param over the call after the text (an inner shadow); else the one before it
+	 * @since 17.3.7
+	 */
+	public static Body drawBody(WordArtText.Run r, Shape glyphs, double size, Rectangle2D frame, Rectangle2D gradientFrame,
+			List<Shape> decorations, boolean rtl, ThemeColors theme, boolean over) {
+		return drawBody(r, glyphs, null, size, frame, gradientFrame, decorations, rtl, theme, over);
+	}
+
+	/**
+	 * As {@link #drawBody(WordArtText.Run, Shape, double, Rectangle2D, Rectangle2D, List, boolean, ThemeColors, boolean)},
+	 * with a simulated bold's thickening: the glyphs' stroke, filled as they are and not outlined, as the renderer
+	 * strokes a face it has no bold of (not unioned with the glyphs: a union splits every curve, 61,801 path operators for
+	 * 15 glyphs on corpus 4102)
+	 */
+	public static Body drawBody(WordArtText.Run r, Shape glyphs, Shape thickening, double size, Rectangle2D frame,
+			Rectangle2D gradientFrame, List<Shape> decorations, boolean rtl, ThemeColors theme, boolean over) {
+		List<String> problems = new ArrayList<String>();
+		Drawing drawing = new Drawing(Math.max(1, frame.getWidth()), Math.max(1, frame.getHeight()));
+		Drawing inner = new Drawing(Math.max(1, frame.getWidth()), Math.max(1, frame.getHeight()));
+		Rectangle2D painted = null;
+		org.docx4j.dml.CTEffectList fx = r.getEffects();
+		if (fx != null && (over ? fx.getInnerShdw() != null : fx.getGlow() != null || fx.getOuterShdw() != null || fx.getReflection() != null)) {
+			org.docx4j.dml.CTEffectList these = (org.docx4j.dml.CTEffectList) org.docx4j.XmlUtils.deepCopy(fx);
+			if (over) {
+				these.setGlow(null);
+				these.setOuterShdw(null);
+				these.setReflection(null);
+			} else {
+				these.setInnerShdw(null);
+			}
+			CTEffectList scaled = TextEffects.scaled(these, TextEffects.scale(size), TextEffects.reflectionScale(size),
+					TextEffects.REFLECTION_MOVE * r.getDescent() * size);
+			Rectangle2D mirror = frame.getY() < 0 ? new Rectangle2D.Double(frame.getX(), frame.getY(), frame.getWidth(), -frame.getY())
+					: frame;
+			painted = unit(scaled, theme, frame, mirror, glyphs, r, new AffineTransform(), drawing, inner, problems, painted,
+					ShapeRenderer.maxPixelsPerPoint(), null, new ArrayList<Drawing.Picture>());
+			if (over) painted = bounds(inner);
+		}
+		WordArtText.Paint paint = r.paint(false);
+		boolean paths = paint == WordArtText.Paint.PATHS;
+		boolean decorated = false;
+		if (!over && paths) {
+			Fills fills = new Fills(theme);
+			if (thickening != null) painted = paintGlyphs(r, thickening, gradientFrame, rtl, false, fills, theme, drawing, problems, painted);
+			painted = paintGlyphs(r, glyphs, gradientFrame, rtl, fills, theme, drawing, problems, painted);
+			if (decorations != null) {
+				for (Shape d : decorations) {
+					painted = paintGlyphs(r, d, gradientFrame, rtl, fills, theme, drawing, problems, painted);
+					decorated = true;
+				}
+			}
+		}
+		return new Body(over ? inner : drawing, painted, !over && paint != WordArtText.Paint.TEXT, decorated, problems);
+	}
+
+	/** What a drawing's pictures and areas cover; null where it has none */
+	private static Rectangle2D bounds(Drawing d) {
+		Rectangle2D out = null;
+		for (Object o : d.getItems()) {
+			if (o instanceof Drawing.Picture) {
+				Drawing.Picture p = (Drawing.Picture) o;
+				Rectangle2D shown = p.getClip() == null ? p.getInto() : p.getInto().createIntersection(p.getClip().getBounds2D());
+				out = union(out, shown);
+			} else if (o instanceof Drawing.Area) {
+				out = union(out, ((Drawing.Area) o).getShape().getBounds2D());
+			}
+		}
+		return out;
+	}
+
+	/** A body run's group painted ({@link #drawBody}): points from the group's start on its baseline, y down */
+	public static final class Body {
+		private final Drawing drawing;
+		private final Rectangle2D bounds;
+		private final boolean glyphs, decorations;
+		private final List<String> problems;
+
+		Body(Drawing drawing, Rectangle2D bounds, boolean glyphs, boolean decorations, List<String> problems) {
+			this.drawing = drawing;
+			this.bounds = bounds;
+			this.glyphs = glyphs;
+			this.decorations = decorations;
+			this.problems = problems;
+		}
+
+		/** What it paints; null where it paints nothing (an invisible run) */
+		public Rectangle2D getBounds() {
+			return bounds;
+		}
+
+		/** Whether it draws the glyphs (or Word draws none of them): the text is then drawn invisibly */
+		public boolean isGlyphsDrawn() {
+			return glyphs;
+		}
+
+		/** Whether it draws the run's underline and strikes, so that they are drawn nowhere else */
+		public boolean isDecorationsDrawn() {
+			return decorations;
+		}
+
+		public Drawing getDrawing() {
+			return drawing;
+		}
+
+		public List<String> getProblems() {
+			return problems;
+		}
+
+		/** As SVG, a user unit a point, its canvas {@link #getBounds()}; null where it paints nothing */
+		public Document toSvg() {
+			return bounds == null || !(bounds.getWidth() > 0) || !(bounds.getHeight() > 0) ? null : SvgWriter.toSvg(drawing, bounds);
+		}
+	}
+
+	/**
+	 * A run's glyphs painted as Word paints them as paths (D2): filled with its fill (its colour, a solid fill, a gradient
+	 * over frame by Word's curve where it has two stops at its ends, or none), stroked with its outline. The area painted.
+	 *
+	 * @param frame the box a gradient spans (the run's frame); null for the glyphs' own bounds
+	 */
+	private static Rectangle2D paintGlyphs(WordArtText.Run r, Shape s, Rectangle2D frame, Fills fills, ThemeColors theme,
+			Drawing drawing, List<String> problems, Rectangle2D painted) {
+		return paintGlyphs(r, s, frame, false, fills, theme, drawing, problems, painted);
+	}
+
+	/** As {@link #paintGlyphs(WordArtText.Run, Shape, Rectangle2D, Fills, ThemeColors, Drawing, List, Rectangle2D)}, a
+	 *  gradient mirrored across where {@code mirror} (a right-to-left run's: Word starts a 0 degree gradient at its right,
+	 *  phase 5 findings section 6.1, wb82-28) */
+	private static Rectangle2D paintGlyphs(WordArtText.Run r, Shape s, Rectangle2D frame, boolean mirror, Fills fills,
+			ThemeColors theme, Drawing drawing, List<String> problems, Rectangle2D painted) {
+		return paintGlyphs(r, s, frame, mirror, true, fills, theme, drawing, problems, painted);
+	}
+
+	/** As above; the outline left off where not {@code outlined} (a simulated bold's thickening, filled only) */
+	private static Rectangle2D paintGlyphs(WordArtText.Run r, Shape s, Rectangle2D frame, boolean mirror, boolean outlined,
+			Fills fills, ThemeColors theme, Drawing drawing, List<String> problems, Rectangle2D painted) {
+		Object fill = r.getFill();
+		boolean filled = false;
+		if (fill == null) {
+			Color c = Fills.awt(r.getColour());
+			if (c != null) {
+				drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
+				painted = union(painted, s.getBounds2D());
+				filled = true;
+			}
+		} else if (fill instanceof CTSolidColorFillProperties) {
+			Color c = Fills.awt(DrawingMLColors.resolve(fill, theme));
+			if (c != null) {
+				drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
+				painted = union(painted, s.getBounds2D());
+				filled = true;
+			}
+		} else if (fill instanceof CTGradientFillProperties) {
+			Drawing.Gradient gr = fills.wordGradient((CTGradientFillProperties) fill);
+			if (gr != null && mirror) {
+				double[] f = gr.getFocus();
+				gr = new Drawing.Gradient(gr.getStops(), gr.getColours(), gr.isLinear(), gr.isLinear() ? 180 - gr.getAngle() : 0,
+						gr.isScaled(), f == null ? null : new double[] { f[2], f[1], f[0], f[3] });
+			}
+			if (gr != null) {
+				Drawing.Area a = new Drawing.Area(s, gr.getColours()[0], null, 0, "wordart.fill");
+				a.setGradient(gr);
+				if (frame != null) a.setGradientFrame(frame);
+				drawing.add(a);
+				painted = union(painted, s.getBounds2D());
+				filled = true;
+			}
+		} else if (!(fill instanceof CTNoFillProperties)) {
+			Color c = Fills.awt(r.getColour());
+			if (c != null) {
+				drawing.add(new Drawing.Area(s, c, null, 0, "wordart.fill"));
+				filled = true;
+			}
+		} else {
+			filled = true; // no fill: nothing to draw
+		}
+		if (!filled && !problems.contains(WordArtText.FILL)) problems.add(WordArtText.FILL);
+		CTLineProperties ln = outlined ? r.getOutline() : null;
+		if (ln != null && ln.getNoFill() == null) {
+			Rectangle2D stroked = ShapeRenderer.strokeText(drawing, s, ln, theme);
+			if (stroked == null && (ln.getSolidFill() != null || ln.getGradFill() != null || ln.getPattFill() != null)
+					&& !problems.contains(WordArtText.OUTLINE)) {
+				problems.add(WordArtText.OUTLINE);
+			}
+			painted = union(painted, stroked);
 		}
 		return painted;
 	}

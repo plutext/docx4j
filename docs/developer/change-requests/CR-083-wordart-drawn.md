@@ -64,6 +64,8 @@ gradients now Word's shadings within 1 of 255 and 0.2 pt; gates b479 and b480 0 
 its fill's colour, as Word draws it. The round read the same day (findings §6): the frame a run's part on each line
 in one font, decorations painted as the glyphs, a right-to-left gradient reversed, the room phase 3's rule at body
 sizes (atLeast moving the baseline), and a shape's two-stop gradient on Word's curve too (applied; gate b481 0 movers).
+Step 2 built the same day (Jason: "do step 2"; findings §7) on the fork's r85 and r86: the painter, the ids and the
+room; Word's drawing on every page of the round but for the gaps phase 7 lists; gates b483 and b486 one mover, +65 lines.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -707,6 +709,14 @@ catalogue (through the portfolio).
       baseline up by the room below, a superscript's at its stated size unraised; D24's condition confirmed, and a
       shape's two-stop gradient on the curve too. The fork told what changes for fop/CR-043 (the painter once per
       run, font and line; decorations in its first build; the direction; the atLeast baseline).
+    - Step 2 built the same day (Jason: "do step 2"; findings §7) on the fork's r85 (fop/CR-043, merged) and r86
+      (fop/CR-043.1: a group across a run's inner inlines, leaders and spaces, asked for when wb80-12 and wb82-23 came
+      out split): `TextEffectsFo` marks a body run with its id and room (an empty paragraph's room on its block) where
+      the renderer has `text-effects`; `TextEffectPainter`, set per conversion on the `FOUserAgent`, draws each group
+      through `WordArtRenderer.drawBody` from the font file's glyphs at the fork's positions. Against Word: every page of
+      wb50, wb80, wb82 and wg20 drawn alike but for merged runs, emoji, non-circular path gradients, 3-D and a numbered
+      mark (not built); the room within 0.25 pt under every spacing rule. Gates b483 (r85) and b486 (r86): one mover,
+      real's 79 +65 lines (an empty paragraph's room); PDFs +11%, +38% and +15% on the three documents painted.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).

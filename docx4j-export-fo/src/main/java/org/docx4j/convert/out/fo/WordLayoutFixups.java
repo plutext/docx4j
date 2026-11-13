@@ -821,6 +821,25 @@ public final class WordLayoutFixups {
 			}
 			span.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.SMALL_CAPS, scale);
 		}
+		// a run's text effect and the room it takes (TextEffectsFo), on its inline, the room on an empty paragraph's
+		// block, for the renderer's painter and Word line (fop/CR-043).  @since 17.3.7
+		for (String kind : new String[] { "inline", "block" }) {
+			for (Element el : elements(doc, kind)) {
+				for (String[] h : new String[][] {
+						{ TextEffectsFo.HINT_TEXT_EFFECT, TextEffectsFo.TEXT_EFFECT },
+						{ TextEffectsFo.HINT_EFFECT_ROOM, TextEffectsFo.EFFECT_ROOM } }) {
+					String v = el.getAttribute(h[0]);
+					if (v.length() == 0) continue;
+					el.removeAttribute(h[0]);
+					if (ns == null) continue;
+					if (!declared) {
+						doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+						declared = true;
+					}
+					el.setAttributeNS(ns, "docx4j:" + h[1], v);
+				}
+			}
+		}
 		// the tab leaders and, on their paragraph's block, the stops they are laid out
 		// against (XsltFOFunctions.tabToFO / applyTabStopHints).  @since 17.0.5
 		for (Element leader : elements(doc, "leader")) {

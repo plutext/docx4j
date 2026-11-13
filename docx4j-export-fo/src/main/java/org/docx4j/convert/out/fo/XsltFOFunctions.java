@@ -2064,6 +2064,8 @@ public class XsltFOFunctions {
 				}
 				
 				foBlockElement.setTextContent(" ");
+				// the room its mark's shadow, glow or reflection takes (CR-083 phase 5; wb81-23)
+				TextEffectsFo.markEmpty(wmlPackage, rPrParagraphMark!=null ? rPrParagraphMark : rPr, (Element) foBlockElement);
 				applyEmptyParagraphLineHeight(foBlockElement, fontFamily, pPr,
 						(rPrParagraphMark!=null ? rPrParagraphMark : rPr),
 						runFontSelector==null ? null : runFontSelector.lineMetricsFontName(rPrParagraphMark!=null ? rPrParagraphMark : rPr));
@@ -4985,6 +4987,10 @@ public class XsltFOFunctions {
 			//if (rPr!=null) {				
 				createFoAttributes(context.getWmlPackage(), rPr, ((Element)foInlineElement) );
 			//}
+			// a run's text effects, through the renderer's painter (CR-083 phase 5)
+			if (jaxbR instanceof RPr) {
+				TextEffectsFo.mark(context.getWmlPackage(), context.getConversionSettings(), rPr, (Element) foInlineElement);
+			}
 			
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
