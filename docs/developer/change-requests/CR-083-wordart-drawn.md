@@ -29,6 +29,11 @@ and the room it takes in its line, Word's rule on that frame (`TextEffects.reach
 by a Claude Fable 5.1 session (Jason: "commit, then have fable conduct a review of the implementation"; findings §5):
 a scaled reflection's fade fixed (sy -50% now as Word's), a reflection's `algn="none"` read as `b`, a budget on Follow
 Path's pictures, and four smaller; gate b470 0 movers.
+Phase 4 designed 2026-11-13 (Jason: "start phase 4", "write up a design for phase 4"; `CR-083-notes/phase4-findings.md`):
+Word draws VML WordArt as filled glyph paths with no text in its PDF, and merges a `v:textpath` with its shapetype's
+attribute by attribute (its watermark needs it); phase 0's "first shapetype of an `o:spt` wins" was a probe fault; real3's
+one document's three VML WordArt never print, so the oracle is a round: Word's own 40 shapetypes first, then about 300
+probes. D16 to D19 decided as recommended the same day (Jason: "decisions 16 to 19 as recommended").
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -141,7 +146,9 @@ and office-open-xml-viewer each implement part of it and serve as cross-checks; 
   top and a bottom path), and 4 have more (`textButton` 3, `textDeflateInflate` 4, `textButtonPour` and
   `textDeflateInflateDeflate` 6: bands for lines of text).
 - VML WordArt (`v:shape` with `v:textpath` and a `v:shapetype` of `o:spt` 136 to 175) is not drawn at all (the XSLT's
-  "TODO: handle w:pict containing other than ./v:shape/v:imagedata").
+  "TODO: handle w:pict containing other than ./v:shape/v:imagedata"; the visitor takes it for a picture and logs
+  "Couldn't find imageData!"). In a `w:object`'s `v:group` neither it nor the group's pictures are drawn. Nothing in
+  docx4j evaluates VML formulas or paths (phase 4 findings §1.5).
 
 ## 2. What Word does (phase 0 measured it)
 
@@ -248,7 +255,9 @@ points to a copy bundled with it, as it does for other third-party code.
 ## 4. Corpus facts (2026-11-09, the four fidelity corpora)
 
 `a:prstTxWarp` other than `textNoShape`: 0 documents in 561. w14 text effects in a run: real 2 documents (4), real2 4
-(53), real3 3 (11), real-c2 2 (39), in text boxes and body text alike. VML `v:textpath`: real3 1 document (6). WordArt
+(53), real3 3 (11), real-c2 2 (39), in text boxes and body text alike. VML `v:textpath`: real3 1 document (6: three
+WordArt and their shapetypes, in the first-page headers of continuous sections, which Word doesn't print; phase 4
+findings §1.4). WordArt
 is rare in these corpora, which were chosen for text. Phase 0 counts warps and run effects in the load survey's
 catalogue (through the portfolio).
 
@@ -432,7 +441,61 @@ catalogue (through the portfolio).
   - `v:textpath` drawn from its shapetype's own `path`, `formulas` and `adj`, through a VML formula evaluator, and then
     by phases 1 to 3, with Office's `textpath` rules (§12). A shapetype with no path draws nothing, as in Word. Text
     watermarks are drawn as filled outlines.
-  - **Gate:** the probes and real3's document (6 `v:textpath`) within tolerance.
+  - **Gate:** the probes and real3's document (6 `v:textpath`) within tolerance (revised by the design below: real3's
+    never print, so that document checks that docx4j draws none of them either).
+  - **Designed** 2026-11-13 (Jason: "start phase 4", "write up a design for phase 4"; `CR-083-notes/phase4-findings.md`),
+    D16 to D19 decided as recommended (Jason: "decisions 16 to 19 as recommended"). What is known (findings §1): Word
+    draws VML WordArt as even-odd filled glyph paths with no text in its PDF, visible or invisible, watermarks
+    included; a `v:textpath` is merged with its shapetype's attribute by attribute (Word's own watermark has `on` and
+    `fitshape` on the shapetype, `string` and `style` on the shape); phase 0's "first shapetype of an `o:spt` wins" was
+    a probe fault (an unresolved `type`); real3's three VML WordArt are in first-page headers of continuous sections
+    and never print, so that document is the gate's negative check and the probes are the oracle. The design:
+  - **The round first** (findings §2): Word's own 40 shapetypes and its drawing of each (`cr083-phase4a`, D16), then
+    about 300 probes in eight files (`cr083-phase4`): each type at its default and another adj, one and two lines; the
+    geometry's inheritance and ids; `textpath`'s attributes and style; paint, shadow and 3-D; placement, turned and
+    flipped, in a group and a `w:object`; watermarks as Word writes them; wps WordArt's fill rule. Findings §3 lists what
+    it answers, first whether Word's VML envelope and Follow Path are phase 2's.
+  - **Model** (docx4j-core):
+    - `VmlShapes` (new): a shape resolved against its shapetype, by its `type`'s id in the shape's part (an unresolved or
+      duplicated id by Word's rule, from the round): `coordsize`, `coordorigin`, `adj` (an empty entry the
+      shapetype's), `path`, `v:formulas` and `v:path`, and `v:textpath`, `v:fill`, `v:stroke`, `v:shadow` and
+      `o:extrusion` merged attribute by attribute, the shape's winning; the placement from the shape's own style (the
+      properties Part 4 says a shape doesn't take from its shapetype);
+    - `WordArtText.ofVml`: the model phases 1 to 3 draw, from it: a paragraph for each line of `string`, a run each
+      with the style's font, size, weight, slant, kerning and spacing; `v:fill` and `v:stroke` as DrawingML
+      (`a:solidFill`, `a:gradFill`, `a:noFill`, `a:ln`, `opacity` as alpha) and `v:shadow` as an `a:effectLst`, as far
+      as D19 goes; beside them the text path's fit (`fitshape`, `fitpath`, `trim`, `xscale`, `v-text-align` with
+      Office's default of center, `v-same-letter-heights`, `v-rotate-letters`);
+    - VML colours read once, `PictureRecolour.vmlColour` moved to a shared reader (named and system colours, and the
+      `fill darken(n)` forms).
+  - **Geometry** (docx4j-chart-render, `VmlGeometry`, new): the formulas (Part 4 §19.1.2.4's 18 operations, with Word's
+    `prod` for the standard's `product`, integer results rounded as the standard says, the named values) and the path
+    (§19.1.2.14's commands), evaluated in `coordsize` and mapped to the shape's box, each sub-path an outline; a group's
+    coordinates likewise (D18). Written so that CR-080 D6's later CR (VML shapes) reuses it. Bounded: 128 formulas, as
+    the standard has, and a cap on a path's commands. A formula or path that can't be read draws nothing and is
+    reported.
+  - **Drawing** (`WordArtRenderer`): the text-path sub-paths warp the text as phase 2's do, by their count (one Follow
+    Path, two an envelope, more bands), on the shape's whole box (no insets), with VML's fit rules as the round finds
+    them; no path, nothing, as Word; then phases 1 and 3's paint and effects; `rotation` and `flip` turn the drawing as
+    `a:xfrm`'s do; the glyph paths filled by Word's rule. Text: none for a watermark, invisible elsewhere (D17, D2).
+  - **Routes**: the visitor's `w:pict` and `w:object` branches, and the XSLTs' `w:pict` templates (their TODO), send a
+    shape with an `on` text path (or a group holding one, D18) to the WordArt route ahead of the picture route. FO
+    places the SVG at the drawing's bounds with the VML picture container (`XsltFOFunctions.anchorVmlPicture`,
+    `FOTextBoxes.createVmlPictureContainer`: page, margin, centred, behind), an inline one in its line; HTML writes the
+    same SVG where it writes a VML picture, watermarks not (D17).
+  - **Reports**: `render.wordart.fill` (a picture fill), `render.wordart.shadow` (an emboss shadow, or one the round
+    doesn't explain), `render.wordart.flat_3d` (`o:extrusion`, drawn flat as D10 has it), `render.wordart.bad_geometry`,
+    `render.wordart.over_limit`; a group's other shapes `render.shape.vml` (D18). A shapetype with no path isn't
+    reported: Word draws nothing either.
+  - **Gate:**
+    - the round's probes through docx4j's PDF with Word's fonts (`gate_vml.py`, from `gate_wordart.py`): glyph outlines
+      against Word's (two-path warps within phase 2's 0.5 pt, Follow Path to phase 2's median), colour and alpha
+      exact, a shadow's offset within 0.1 pt, placement within 0.5 pt, the watermark pages by pixel;
+    - real3's document: none of its three WordArt drawn, as in Word; the fidelity corpora otherwise unmoved, events
+      equal but for the new codes;
+    - tests: `VmlGeometryTest` (each operation's rounding, the standard's examples, Word's 40 shapetypes against the
+      round's paths), `WordArtRendererTest` (a VML WordArt, a watermark, a group), `WordArtFoTest` (a watermark in a
+      header, behind the text, with no text in the PDF; a VML WordArt in the body with invisible text), and HTML's.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF
@@ -531,7 +594,8 @@ catalogue (through the portfolio).
   - Word writes no VML WordArt from DrawingML (its Word 2007 mode save turns WordArt into a plain text box), so the
     earlier oracle, Word's own conversion, doesn't exist. The oracle is Word's PDF of VML probes; round 2 needs Word's
     own shapetypes for types 137 to 175 (findings §11).
-  - Whatever the count: one real3 document has six, and Word's text watermark is VML WordArt.
+  - Whatever the count: one real3 document has six, and Word's text watermark is VML WordArt. (Phase 4's design found
+    that real3's three never print: first-page headers of continuous sections; phase 4 findings §1.4.)
 - **D7. A WordArt's text in the text model** stays as it is: the text box's text (CR-046), unaffected by the warp.
   Recommendation: yes.
   **Decided 2026-11-12** (Jason: "D1, D4, D7, D8, D9, D11 as recommended"): yes.
@@ -583,6 +647,52 @@ Proposed with phase 3's design, 2026-11-13 (phase 3 findings §1), and decided t
   shadow scaled to 0 as Word does (nothing, if that is what Word draws). Recommendation: as Word measures.
   **Decided 2026-11-13** (Jason: "decisions 12 to 15 as recommended"): as Word measures.
 
+Proposed with phase 4's design, 2026-11-13 (phase 4 findings §1), and decided the same day as recommended:
+
+- **D16. Word's own shapetypes, the round's input.** No machine here has Word's definitions of types 137 to 175 (phase
+  0 findings §11), and docx4j draws from them (D6). Three routes:
+  - (a) a word-bridge script: Word makes the 40 legacy WordArt through its object model in a mode-12 document
+    (`Shapes.AddTextEffect`, then each `TextEffect.PresetShape`) and saves docx and PDF. The bridge runs only scripts
+    on its trusted list, so the VM session writes it and Jason installs it: minutes of his time, and a tool for later
+    rounds;
+  - (b) Jason inserts them by hand in a Word 2007-mode document (Insert, WordArt gives the legacy gallery; the 40 shapes
+    by Change Shape): about half an hour;
+  - (c) the load survey's query (e), the definitions seen identically in five or more documents: waits on the copy
+    home.
+
+  The definitions are kept in `CR-083-notes/shapetypes-word.xml` and as test fixtures: Microsoft's shape data as Word
+  writes it into every such document, not any document's content. docx4j ships no table of them (D6).
+  Recommendation: (a), falling back to (b) if Word's object model won't make legacy WordArt; (c), when it comes, as a
+  check that Word's definitions are the same across its versions.
+  **Decided 2026-11-13** (Jason: "decisions 16 to 19 as recommended"): (a), then (b) if need be; (c) as a check.
+- **D17. Watermarks: no text, and not in HTML.** By D2 docx4j keeps WordArt's text invisibly where Word's PDF has none,
+  and Word's PDF has none for any VML WordArt (phase 4 findings §1.1). A watermark is on every page, so its text would
+  be a search hit on every page and in every page's copied and extracted text, which Word's PDF doesn't have.
+  Recommendation:
+  - a watermark (VML WordArt whose shape id starts `PowerPlusWaterMarkObject`, as Word's Watermark dialog writes it:
+    CR-050's test) is drawn with no text, as Word; other VML WordArt keeps D2's invisible text;
+  - HTML doesn't write watermarks: it has no page to centre them on, and docx4j's HTML shows a header only in paged
+    media.
+
+  Alternatives: no text for any VML WordArt (as Word throughout); or text for watermarks too (D2 unchanged).
+  **Decided 2026-11-13** (Jason: "decisions 16 to 19 as recommended"): a watermark has no text and isn't in HTML; other VML WordArt keeps D2's invisible text.
+- **D18. VML groups.** A VML WordArt can be one shape of a `v:group`, as real3's three are (beside a picture, in a
+  `w:object`), and docx4j draws no VML group today (CR-080 D6 left VML shapes to a later CR). Recommendation: phase 4
+  draws a group's WordArt and its pictures (`v:imagedata`), each placed by the route it would take alone at its box
+  mapped through the group's `coordsize`, `coordorigin` and its own `left`, `top`, `width` and `height`; a group's
+  other shapes, and a turned or flipped group, are reported (`render.shape.vml`) until CR-080 D6's CR. And ask the
+  load survey's (c) to count VML WordArt inside a `v:group` (only real3's are known, and Word doesn't print them).
+  Alternative: groups wait for CR-080 D6's CR, their WordArt reported.
+  **Decided 2026-11-13** (Jason: "decisions 16 to 19 as recommended"): a group's WordArt and pictures drawn, its other shapes reported; the survey asked.
+- **D19. VML paint, shadow and 3-D.** VML paints a shape with `v:fill` (solid, gradient, gradientRadial, pattern, tile,
+  frame; opacity), `v:stroke` (weight, colour, dash, join, cap, compound lines, opacity) and `v:shadow` (single,
+  double, perspective, emboss), and adds 3-D with `o:extrusion`. Recommendation: solid and gradient fills, opacity,
+  and every stroke but compound lines, as Word draws them on glyphs (the round), through phase 1's DrawingML paint;
+  single, double and perspective shadows as Word draws them, through CR-081's effects (or as paths, if Word's are);
+  picture fills, compound lines and emboss reported; `o:extrusion` drawn flat with its fill and shadow and reported
+  `render.wordart.flat_3d`, as D10 has it, its 3-D with phase 6 if CR-081's renderer takes it.
+  **Decided 2026-11-13** (Jason: "decisions 16 to 19 as recommended"): yes.
+
 ## 9. Out of scope
 
 `w14:ligatures`, `w14:numForm`, `w14:numSpacing`, `w14:stylisticSets` and `w14:cntxtAlts`, which are OpenType
@@ -605,8 +715,9 @@ features, not effects; pptx text warps (pptx4j could use the same code later); P
 ## 11. Effort (rough)
 
 Phase 0 three days; phase 1 three days (the line layout and invisible text); phase 2 three days; phase 3 four days
-(revised by its design: the round one, the code two, the gate one); phase 4 two days; phase 5 three days docx4j-side,
-plus the fork's CR; phase 6 two days after CR-081.5; phase 7 one day; phase 8 half a day. About four weeks.
+(revised by its design: the round one, the code two, the gate one); phase 4 six days (revised by its design: the
+shapetypes and the round two, the code three, the gate one); phase 5 three days docx4j-side, plus the fork's CR; phase
+6 two days after CR-081.5; phase 7 one day; phase 8 half a day. About five weeks.
 
 ## 12. Specifications
 

@@ -146,6 +146,9 @@ measures them as it does section 3.
 - The whole type-136 shapetype, placed after an spt-only 136 in the same document, also drew nothing (its save:
   `o:spt="100"`, `path=""`). So Word may take a type's definition from the first shapetype of that `o:spt` it reads.
   To test alone in round 2.
+  **Corrected 2026-11-13** (phase 4 findings §1.2): a probe fault, not a Word rule. That shapetype kept the id
+  `_x0000_t136`, which the spt-only 136 already had, and the shape pointed at `#_x0000_t136w`, which no shapetype has;
+  so wv20-41 shows only that a shape whose `type` doesn't resolve draws nothing. The question stays for round 2.
 - **Word's save in Word 2007 mode drops the warp**: each wps WordArt became a plain VML text box (`o:spt="202"`,
   `v:textbox`), with no `v:textpath` and no `a:prstTxWarp`. Word writes no VML WordArt from DrawingML, so D6's
   "Word's own conversion" oracle doesn't exist.
