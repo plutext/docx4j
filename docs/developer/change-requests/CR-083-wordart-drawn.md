@@ -39,6 +39,22 @@ same day by a Claude Fable 5.1 session (Jason: "commit then have fable review th
 text's ink box (`trim`) or a metric box onto the shape's box before the warp; every path filled even-odd; real3's
 WordArt unprinted for want of `w:titlePg`; the evaluator's open points stated; a VML turn in FO; D17 revised to go by
 the part, not the id; the round about 285 probes, phase 4 eight days.
+Phase 4 built 2026-11-13 from Word's own 40 shapetypes and two rounds (`cr083-phase4`, 263 probes; `cr083-phase4b`,
+17), reviewed by a Claude Fable 5.1 session and its open items triaged by another (findings §5 to §10): 228 of 263
+within 0.7 pt of Word's ink, Word's 40 shapetypes within 1.5, gates b471 to b478 0 movers; closed the same day (Jason:
+"close phase 4"), a watermark centred on the margin under a header that overflows it split off as phase 4b, the rest
+left to phase 7's gap report.
+Phase 5 designed 2026-11-14 (Jason: "close phase 4; design phase 5, then give your design to fable for review";
+`CR-083-notes/phase5-findings.md`): phase 0's and phase 3's body-text probes read again (Word's gradient on a body run
+spans the run's advance and font box, blended by phase 4's curve; the room is phase 3's rule) and the fork read (the
+`docx4j:` namespace and the Word line take a span's room; foreign attributes don't reach text yet); D20 to D24
+proposed: docx4j paints a body run's glyph paths and pictures through a callback the fork calls as it draws the run, the
+text kept real (D20, revising D3's modes); a round of about 70 probes first. Reviewed the same day by a Claude Fable
+5.1 session, its 13 findings applied (phase 5 findings §4): Word's curve is the two-stop gradient's only, any other
+blended evenly; the painter draws an SVG document as an artifact, from glyph ids at the fork's positions, its effects
+found per render; the room under each spacing rule stated. D20, D21 and D23 decided as recommended, D22 and D24 as the
+review has them (Jason: "D20 as recommended; D21 as recommended; D23 as recommended; D22 and D24 as per fable
+review").
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -584,6 +600,22 @@ catalogue (through the portfolio).
     a double shadow, light above and to the left. The round 228 of 263 within 0.7 pt; gate b478 0 movers. Left: the
     watermark under an overflowing header (wv47-14: later, with the fork), Circle on two lines, o:spt 156's second
     adj, a radial gradient's rectangle, the reported gaps.
+  - **Closed** 2026-11-13 (Jason: "close phase 4"). The watermark under an overflowing header is phase 4b. The rest
+    go to phase 7's gap report with findings §10's numbers: Circle on two lines (wv41-11, 6.6 pt), o:spt 156's second
+    adj (wv42-26, 4.9), a radial gradient drawn as a circle where Word's rings are rectangles, a perspective shadow,
+    `o:extrusion` drawn flat, a compound line drawn single, a tile picture drawn in its colour, a turned group drawn
+    unturned.
+- **Phase 4b, a VML shape centred on the margin under a header that overflows it** (split from phase 4, 2026-11-13;
+  findings §8 finding 5, §10).
+  - Word centres such a shape (wv47-14, a watermark with `mso-position-vertical:center` relative to the margin, top
+    margin 36 pt under a header that runs past it) between the body's top, where the header ends, and the bottom
+    margin: its ink centre 397.3 = (60.6 + 733.9) / 2, where docx4j's is 12.4 pt off. With the header inside the
+    margin (wv50-03, -04) docx4j is within 0.2.
+  - docx4j writes the placement into the FO before the header's height is known; the FOP fork learns it as it lays the
+    page out. So the fix is an FO hint the fork resolves against the body region, perhaps shared with DrawingML
+    anchors relative to the margin (unverified): a design first, with the fork's session, then a fork release.
+  - For a Claude Fable 5.1 session (its triage, findings §10: it crosses the FO writer and the fork).
+  - **Gate:** wv47-14 within 0.7 pt; a fidelity gate.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF
@@ -607,6 +639,45 @@ catalogue (through the portfolio).
     docx4j gives the run's line the room, from phase 3's round (wb70), and the fidelity gate's movers are read as that.
     Measured (phase 3 findings §4, wb70): the room is WordArt's rule, `TextEffects.reach`, for the line alone and for a
     run within it.
+  - **Designed 2026-11-14** (phase 5 findings; D20 to D24 proposed). The bullets above are D3's first plan; where they
+    differ, this design holds.
+    - A round first, cr083-phase5 (about 70 probes, phase 5 findings §3): what body text adds to phases 0 and 3 (a run
+      broken across lines, neighbouring runs' pictures, decorations, the room at body sizes and under each spacing
+      rule, in cells and headers, effects from styles), and whether a shape's gradient is blended by the same curve.
+    - docx4j-side, before the fork's release (step 1): a solid `w14:textFill` as the text's colour, over `w:color`, its
+      `w14:alpha` as the colour's alpha (FOP writes an `ExtGState` for 1 to 254); HTML's CSS (D23); a DrawingML gradient
+      of two stops at 0 and 100% blended by Word's curve wherever docx4j paints one, any other evenly (D24).
+    - The run's effect on its span (D21): docx4j writes `docx4j:text-effect` (an id) on the run's `fo:inline`, in both
+      FO routes, from a new run property the property factory makes from the effective `w:rPr`, and keeps the run's
+      effects by that id for the render; and `docx4j:effect-room` (above and below, in points, from
+      `TextEffects.reach` at the run's size and metrics) where the run has a shadow, glow or reflection (D22). Both
+      only where the renderer advertises a capability of its own, `text-effects` (as `word-layout` is advertised
+      today), so that this docx4j writes nothing for a fork without it.
+    - The fork (its CR, drafted by its session from this design): the room added to the span's ascent and descent in
+      `WordLineLayoutManager.wordLine` (D22); the effect id copied from the innermost inline onto the run's `TextArea`
+      (`TextLayoutManager`, into the area's foreign attributes) and handed to the painter by `IFRenderer.renderText`;
+      a text-effect painter, found through the render (the `FOUserAgent`), not set on the factory, which a caller may
+      share across conversions and threads; called for each text area with an id, under its text (after its
+      background) and over it, with its glyph ids, their positions as the fork sets them (dx, dp, letter and word
+      spacing, the hyphen), the font, size, any simulated style, and the span's box; it returns an SVG document and
+      its rectangle, which the fork draws with `IFPainter.drawImage(Document, Rectangle)` as an artifact, not a
+      Figure; and the text drawn in mode 3 where the painter says it drew the glyphs (PDF inside the text object
+      `drawText` opens; Java2D, the fill skipped; the IF serializer, an attribute on `<text>`) (D20).
+    - docx4j's painter (step 2, with the fork's release): a third entry in `WordArtRenderer` beside `draw` and
+      `drawVml`, taking a run's glyphs as placed (by glyph id, from D4's same font file; a font whose ids aren't the
+      file's reported, not drawn) and drawing them as phases 1 to 3 draw a flat run, in Word's order (phase 5
+      findings §1.1): the pictures (`Effects.drawText`, at (size / 72)^0.7), then, where the run has an outline, a
+      gradient or a transparent fill, its glyph paths filled and stroked (`Fills`, the outline as phase 1's); an inner
+      shadow over the text. The gradient's frame is the run's advance on its line and the fork's span box down; a run
+      split into several text areas on a line takes the enclosing inline's rectangle or their union, as the round
+      finds Word does.
+    - An option, decided by the gate's size numbers: PDF text rendering mode 2 for the common case, a solid outline
+      over a solid fill, with no glyph paths (D20).
+    - Reports: a run's effects not drawn as Word draws them (`render.wordart.body_effect`, D9); none where the renderer
+      lacks the capability (the effects are then dropped as today, the solid fill kept).
+    - **Gate:** the round's probes within phase 3's tolerances (the box 0.05 pt, the pictures as phase 3's); a fidelity
+      gate whose movers are among the corpora's 12 documents with effects (phase 5 findings §1.4), each read line by
+      line; their PDF size and render time against b478, any past a threshold reported.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).
@@ -658,6 +729,9 @@ catalogue (through the portfolio).
   outlined or gradient body run is glyph paths over invisible text, as on WordArt, and a shadow, glow or reflection is
   a picture under real text. The fork's route stays: modes 2 and 7 look the same and keep the text real. It is a known
   departure from Word's mechanism, not from its appearance.
+  **Revised 2026-11-14 by D20** (phase 5's design and its review): docx4j paints the glyph paths and pictures through
+  a callback the fork calls as it draws the run, over the text drawn invisibly (mode 3), which is Word's own
+  mechanism; modes 2 and 7 are no longer the route (mode 2 kept as an option for a solid outline over a solid fill).
 - **D4. The same font file FOP embeds**, loaded into `java.awt.Font` through `PhysicalFonts`, not AWT's lookup by family
   name. Recommendation: yes.
   **Decided 2026-11-12** (Jason: "D1, D4, D7, D8, D9, D11 as recommended"): yes.
@@ -800,6 +874,56 @@ Proposed with phase 4's design, 2026-11-13 (phase 4 findings §1), and decided t
   read; legacy WordArt's default stroke drawn (the probes copy Word's insert, which states it); a shadow's offset as a
   percentage read; a `v:shadow`'s lengths in points, not phase 3's (size / 72)^0.7, checked on two box sizes.
 
+Proposed with phase 5's design, 2026-11-14 (phase 5 findings §1, §2):
+
+- **D20. Who paints a body run's effects: docx4j, through a callback the fork calls** (revises D3's modes). D3 had the
+  fork's PDF painter draw an outline in text rendering mode 2 and a gradient in mode 7 with a shading, and the effect
+  pictures from the glyph positions with CR-081's renderer. Two things argue against it. The fork would need its own
+  copy of what phases 1 to 3 measured (Word's outline widths and joins, gradients and their curve, compound and gradient
+  outlines, transparent fills, the pictures' scale, frame and fade); and CR-081's renderer is docx4j's, which the fork
+  can't call. Options: (a) D3 as written; (b) the fork calls a text-effect painter docx4j sets on `FopFactoryBuilder`,
+  for each text area with an effect, under and over its text, and docx4j's painter draws the pictures and, where the
+  run has an outline, a gradient or a transparent fill, the glyphs as paths over the text drawn in mode 3, which is
+  Word's own mechanism (phase 0 findings §1; wb50: paths over the run's text at alpha 0); (c) (b) with real visible
+  text under the paths. Recommendation: (b). The text stays real, searchable and tagged (invisible, as WordArt's is,
+  D2); the paint is phases 1 to 3's code; the fork's change is generic (an id carried to the painter, a callback, mode
+  3). The cost: visible body glyphs become paths where the run has an outline or gradient, as in Word's PDF.
+  **Decided 2026-11-14** (Jason: "D20 as recommended"): (b). From the review (phase 5 findings §4, findings 2, 4 to 6,
+  11): the painter returns an SVG document and its rectangle, drawn by the fork's `IFPainter.drawImage(Document,
+  Rectangle)` as an artifact, so every output takes it; it draws from glyph ids at the fork's positions, with any
+  simulated style; under and over are one moment where the text is invisible, two calls kept for an inner shadow;
+  mode 2 kept as an option for a solid outline over a solid fill, if the gate's PDF sizes call for it. (c) is wrong:
+  paths over visible text cover twice, changing alpha and edges.
+- **D21. How the effect reaches the fork: an id.** Options: (a) the run's `w14` effect elements serialised into the
+  attribute; (b) an id (`docx4j:text-effect="fx3"`) into a table the conversion keeps, which docx4j's painter reads.
+  Recommendation: (b): the fork never parses `w14`, the FO stays small; the cost is that FO saved and rendered later
+  outside docx4j loses the effects (reported where the painter finds no table).
+  **Decided 2026-11-14** (Jason: "D21 as recommended"): (b). From the review (finding 8): the table is the render's,
+  reached through the `FOUserAgent`, not the factory's.
+- **D22. The room through the fork's Word line.** docx4j computes each run's reach (`TextEffects.reach`, phase 3) and
+  writes it on the run's span (`docx4j:effect-room="above below"`); the fork's `WordLineLayoutManager.wordLine` adds it
+  to the span's ascent and descent. Without Word mode no room is given. Recommendation: yes; the round says whether
+  auto spacing's multiple applies to it and what exact and atLeast do.
+  **Decided 2026-11-14 as the review has it** (Jason: "D22 and D24 as per fable review"; finding 9): the room added to
+  `alt` and `pitch - alt` in `wordLine` before the maximum; exact spacing gives none (`wordLine` skips it); atLeast
+  absorbs the room in any slack today and auto's multiple applies to it, both as the round finds Word does, the fork
+  told which; `TextEffects.reach` needs the run's width only for a shadow skewed vertically (`ky`), whose room docx4j
+  takes at the run's whole advance.
+- **D23. HTML: CSS as far as it goes.** A solid fill as `color` (with its alpha); an outline as
+  `-webkit-text-stroke`; a gradient as `background-clip: text` with the curve's stops; a shadow and a glow as
+  `text-shadow` at Word's drawn sizes; a reflection, an inner shadow and a compound or gradient outline reported (D9);
+  no room. Recommendation: yes.
+  **Decided 2026-11-14** (Jason: "D23 as recommended"): yes; the curve's stops for a two-stop gradient only (D24).
+- **D24. DrawingML gradients blended by Word's curve.** Word blends a body run's DrawingML gradient as it blends a VML
+  one (phase 5 findings §1.2): in gamma-2.2 light along an S-curve. docx4j blends WordArt's DrawingML gradients evenly
+  (phases 1 to 3). Recommendation: blend WordArt's and body text's by the curve now (`VmlWordArt.SIGMA`, shared), and
+  shapes' (CR-080, CR-081) if the round's shape probe shows Word does there too.
+  **Decided 2026-11-14 as the review has it** (Jason: "D22 and D24 as per fable review"; finding 1): the curve for a
+  gradient of two stops at 0 and 100% only; any other (more stops, or stops inside the run) blended evenly in sRGB
+  between its stops and held at its end colours outside, as Word does (wb50-15, wg20-06 to -08), and as docx4j does
+  today. Shapes' after the round's three shape probes. A VML `colors` list with the default method keeps phase 4's
+  curve between its colours (unmeasured).
+
 ## 9. Out of scope
 
 `w14:ligatures`, `w14:numForm`, `w14:numSpacing`, `w14:stylisticSets` and `w14:cntxtAlts`, which are OpenType
@@ -814,6 +938,13 @@ features, not effects; pptx text warps (pptx4j could use the same code later); P
   - stroked text, text as a clip with a shading;
   - effect pictures from glyph positions.
 
+  Revised by phase 5's design (D20 to D22, decided 2026-11-14): the capability `text-effects`; the run's
+  `docx4j:effect-room` added to its span's ascent and descent in the Word line (exact none; atLeast and auto as the
+  round finds); its `docx4j:text-effect` id copied onto the text area and handed to the painter; a text-effect painter
+  found through the `FOUserAgent`, called under and over each such text area with its glyph ids, positions, font, size,
+  simulated style and span box, returning an SVG document drawn by `IFPainter.drawImage(Document, Rectangle)` as an
+  artifact; mode 3 for text the painter draws over, in each painter and the IF serializer.
+
   If a FOP limitation is found, it is recorded in Enterprise CR-001 §6.6, as the CLAUDE.md says.
 - `legals/NOTICE`: an entry for any ported code (D5), with the MIT permission notice where the code is
   office-open-xml-viewer's, to Jason for review before the first ported file is committed.
@@ -824,8 +955,10 @@ features, not effects; pptx text warps (pptx4j could use the same code later); P
 Phase 0 three days; phase 1 three days (the line layout and invisible text); phase 2 three days; phase 3 four days
 (revised by its design: the round one, the code two, the gate one); phase 4 eight days (revised by its design and its
 review: the shapetypes and the round two, the code five (the geometry source, the evaluator, the stretch, groups and
-paint, the routes), the gate one); phase 5 three days docx4j-side, plus the fork's CR; phase 6 two days after
-CR-081.5; phase 7 one day; phase 8 half a day. About five and a half weeks.
+paint, the routes), the gate one); phase 5 six days docx4j-side (revised by its design and its review: the round one,
+step 1 one, the painter and the routes three, the gate one), plus the fork's CR (about three days, its session's, each
+painter and the serializer included); phase 6 two days after
+CR-081.5; phase 7 one day; phase 8 half a day. About six weeks.
 
 ## 12. Specifications
 
