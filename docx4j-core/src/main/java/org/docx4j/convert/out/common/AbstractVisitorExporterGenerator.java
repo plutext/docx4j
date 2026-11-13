@@ -115,6 +115,9 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 			// w:object template does; descending would only reach the v:shape and
 			// its o:OLEObject, for which there is nothing to emit.  @since 17.1.0
 			(o instanceof org.docx4j.wml.CTObject) ||
+			// VML WordArt: apply() drew it whole; its v:shapetype, v:path and v:textpath have nothing to emit
+			// (17.3.7, CR-083 phase 4)
+			(o instanceof org.docx4j.wml.Pict && isVmlWordArt((org.docx4j.wml.Pict) o)) ||
 			(o instanceof org.docx4j.wml.FldChar)) {
 			return false;
 		} else {
@@ -122,6 +125,35 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		}
 	}
 	
+	/** Whether a VML group holds a shape with a text path, in it or a group in it */
+	private static boolean holdsWordArt(org.docx4j.vml.CTGroup g, int depth) {
+		if (depth > 16) return false;
+		for (jakarta.xml.bind.JAXBElement<?> j : g.getPathOrFormulasOrHandles()) {
+			Object u = j.getValue();
+			if (u instanceof org.docx4j.vml.CTGroup && holdsWordArt((org.docx4j.vml.CTGroup) u, depth + 1)) return true;
+			if (u instanceof org.docx4j.vml.CTShape) {
+				for (jakarta.xml.bind.JAXBElement<?> k : ((org.docx4j.vml.CTShape) u).getPathOrFormulasOrHandles()) {
+					if (k.getValue() instanceof org.docx4j.vml.CTTextPath) return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** Whether this w:pict's shape has a text path: VML WordArt, which apply() draws whole (CR-083 phase 4) */
+	private static boolean isVmlWordArt(org.docx4j.wml.Pict pict) {
+		for (Object o : pict.getAnyAndAny()) {
+			Object u = XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.vml.CTShape) {
+				for (jakarta.xml.bind.JAXBElement<?> j : ((org.docx4j.vml.CTShape) u).getPathOrFormulasOrHandles()) {
+					if (j.getValue() instanceof org.docx4j.vml.CTTextPath) return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
 	protected Node getCurrentParent() {
 		//this might be executed within a new level of traversal util
 		//currentSpan or currentP might be null
@@ -533,7 +565,13 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		    v:imagedata (an inline control, say) nothing is emitted, as in the XSLT. */
 
 			org.docx4j.vml.VmlShapeElements shape = vmlShape((org.docx4j.wml.CTPictureBase)o);
-			if (hasImageData(shape)) {
+			if (shape instanceof org.docx4j.vml.CTGroup && holdsWordArt((org.docx4j.vml.CTGroup) shape, 0)) {
+				// a VML group holding WordArt: drawn (CR-083 phase 4, D18); any other, nothing, as before
+				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
+				if (foreignFragment != null && foreignFragment.hasChildNodes()) {
+					getCurrentParent().appendChild( document.importNode(foreignFragment, true) );
+				}
+			} else if (hasImageData(shape)) {
 				DocumentFragment foreignFragment = createImage(IMAGE_E10, conversionContext, o);
 				if (foreignFragment==null) {
 					log.warn("createImage returned null for w:object");
@@ -581,7 +619,12 @@ public abstract class AbstractVisitorExporterGenerator<CC extends AbstractWmlCon
 		} else {
 			log.warn("Need to handle " + o.getClass().getName() );
             if(log.isDebugEnabled()) {
-                log.debug(XmlUtils.marshaltoString(o));
+                try {
+                    log.debug(XmlUtils.marshaltoString(o));
+                } catch (RuntimeException e) {
+                    // a type with no root element of its own (a v:shapetype)
+                    log.debug("(can't be marshalled alone: " + e.getMessage() + ")");
+                }
             }
 			// as the XSLT's no-match template (notImplemented): in debug mode, make
 			// the gap visible in the output itself (message returns null otherwise)

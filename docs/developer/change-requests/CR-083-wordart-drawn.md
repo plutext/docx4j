@@ -535,6 +535,25 @@ catalogue (through the portfolio).
       Word's 40 shapetypes against the round's paths), `WordArtRendererTest` (a VML WordArt, a watermark, a group, both
       geometry sources), `WordArtFoTest` (a watermark in a header, turned, behind the text, with no text in the PDF; a
       VML WordArt in the body with invisible text), and HTML's.
+  - **Built in part** 2026-11-13, before the round (Jason: "commit then start implementation"; findings §5): the
+    model, geometry, drawing and routes as designed but for these:
+    - `VmlGeometry` in docx4j-core beside CR-080's `ShapeGeometry`, returning its `ShapeOutlines`;
+    - the geometry source as a second entry, `WordArtRenderer.drawVml`, sharing the layout, warp, paint and effects
+      with three hooks (a fitted run takes no room; a two-path warp's frame down; the style's turn), so DrawingML's
+      `draw` is unchanged;
+    - `fill-rule="evenodd"` left until wv44: a run's glyphs are one path, where even-odd would cut holes between
+      overlapping glyphs.
+    Phase 0's VML probes through docx4j: nothing where Word draws nothing; wv20-42's slanted path within 0.04 pt of
+    Word's ink; the horizontal watermark within 0.1 pt; the turned watermarks within 0.7 pt once a turned drawing's ink
+    is centred down its box, as Word's are (findings §6). Word's own 40 shapetypes (wv40, D16 (a)): all 40 within
+    1.7 pt of Word's ink (39 within 0.7, median 0.1), the arcs' direction confirmed, a shadow with no `on` off; Follow
+    Path (an odd number of text paths, whatever `fitshape` says) lays the text along the whole path, a line 0.22 em
+    above the baseline on it (findings §6). Provisional until the round: the no-`trim` em box and Follow Path's rise
+    (one face each), gradients, and the rest findings §5 lists. Tests: core-tests
+    2,676, chart-render 103, export-fo 111, export-fo-tests 971 pass. Gates b471, b472 and b473 (the last build)
+    against b464: 0 movers,
+    events equal, the corpora's PDFs as b470's but for the two time fields (5361, 11875; real3's VML WordArt document
+    the same: its three still not drawn, as in Word), the probes' 324 the same.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF

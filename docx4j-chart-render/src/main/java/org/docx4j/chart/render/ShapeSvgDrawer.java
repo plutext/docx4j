@@ -60,8 +60,19 @@ public final class ShapeSvgDrawer implements ShapeDrawer {
 	@Override
 	public WordArtDrawing drawWordArt(org.docx4j.model.shapes.WordArtText art, org.docx4j.openpackaging.parts.Part host, ThemeColors theme,
 			long cx, long cy, Function<String, BufferedImage> pictures) {
-		final org.docx4j.chart.render.api.WordArtRenderer.Drawn d = org.docx4j.chart.render.api.WordArtRenderer.draw(art,
-				org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, pictures == null ? null : pictures::apply);
+		return wordArt(org.docx4j.chart.render.api.WordArtRenderer.draw(art,
+				org.docx4j.model.chart.ChartFonts.of(host), theme, cx, cy, pictures == null ? null : pictures::apply));
+	}
+
+	@Override
+	public WordArtDrawing drawVmlWordArt(org.docx4j.model.shapes.WordArtText art, org.docx4j.model.shapes.ShapeOutlines geometry,
+			org.docx4j.openpackaging.parts.Part host, ThemeColors theme, double w, double h, double rotation, boolean flipH,
+			boolean flipV, boolean withText) {
+		return wordArt(org.docx4j.chart.render.api.WordArtRenderer.drawVml(art, geometry, org.docx4j.model.chart.ChartFonts.of(host),
+				theme, w, h, rotation, flipH, flipV, withText));
+	}
+
+	private static WordArtDrawing wordArt(final org.docx4j.chart.render.api.WordArtRenderer.Drawn d) {
 		if (d == null) return null;
 		return new WordArtDrawing() {
 			@Override

@@ -182,6 +182,111 @@ public final class HtmlShapes {
 	}
 
 	/**
+	 * A w:pict or w:object holding VML WordArt (CR-083 phase 4), drawn: the SVG the PDF has, in its line at its box,
+	 * where HTML writes a VML picture (it positions none). Not written from a header or footer (D17).
+	 *
+	 * @return the fragment, empty where nothing is written (a header's or footer's, or one Word draws nothing of); null
+	 *         where it isn't VML WordArt, for the picture route
+	 * @since 17.3.7
+	 */
+	public static org.w3c.dom.DocumentFragment vmlWordArt(AbstractWmlConversionContext context, Object pictOrIterator) {
+		org.docx4j.wml.CTPictureBase pict = null;
+		if (pictOrIterator instanceof org.docx4j.wml.CTPictureBase) {
+			pict = (org.docx4j.wml.CTPictureBase) pictOrIterator;
+		} else if (pictOrIterator instanceof org.w3c.dom.traversal.NodeIterator) {
+			org.w3c.dom.Node n = ((org.w3c.dom.traversal.NodeIterator) pictOrIterator).nextNode();
+			if (n == null) return null;
+			try {
+				Object jaxb = org.docx4j.XmlUtils.unwrap(org.docx4j.XmlUtils.unmarshal(n, org.docx4j.jaxb.Context.jc,
+						"object".equals(n.getLocalName()) ? org.docx4j.wml.CTObject.class : org.docx4j.wml.Pict.class));
+				if (jaxb instanceof org.docx4j.wml.CTPictureBase) pict = (org.docx4j.wml.CTPictureBase) jaxb;
+			} catch (Exception e) {
+				log.warn("VML WordArt couldn't be read: " + e.getMessage());
+				return null;
+			}
+		}
+		if (pict == null || context == null || context.getWmlPackage() == null) return null;
+		org.docx4j.vml.CTShape shape = null;
+		for (Object o : pict.getAnyAndAny()) {
+			Object u = org.docx4j.XmlUtils.unwrap(o);
+			if (u instanceof org.docx4j.vml.CTShape) {
+				shape = (org.docx4j.vml.CTShape) u;
+				break;
+			}
+		}
+		if (shape == null) return null;
+		Document document = org.docx4j.XmlUtils.neww3cDomDocument();
+		org.w3c.dom.DocumentFragment frag = document.createDocumentFragment();
+		try {
+			Part part = context.getCurrentPart();
+			Object root = part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart
+					? ((org.docx4j.openpackaging.parts.JaxbXmlPart<?>) part).getJaxbElement() : null;
+			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root);
+			if (!r.isTextPath()) return null;
+			// D17: VML WordArt in a header or footer isn't written in HTML
+			if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart
+					|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.FooterPart) return frag;
+			ShapeDrawer drawer = ShapeDrawer.getDrawer();
+			org.docx4j.model.shapes.WordArtText art = org.docx4j.model.shapes.VmlWordArt.of(r, context.getWmlPackage());
+			if (drawer == null || art == null) return frag;
+			java.util.Map<String, String> props = style(r.getStyle());
+			double w = org.docx4j.model.shapes.VmlShapes.length(props.get("width"), 0);
+			double h = org.docx4j.model.shapes.VmlShapes.length(props.get("height"), 0);
+			String flip = props.getOrDefault("flip", "").toLowerCase(java.util.Locale.ROOT);
+			double rotation = 0;
+			try {
+				String rot = props.getOrDefault("rotation", "0").trim().toLowerCase(java.util.Locale.ROOT);
+				rotation = rot.endsWith("fd") ? Double.parseDouble(rot.substring(0, rot.length() - 2)) / 65536 : Double.parseDouble(rot);
+			} catch (NumberFormatException e) {
+				rotation = 0;
+			}
+			ShapeOutlines geometry = org.docx4j.model.shapes.VmlGeometry.outlines(r.definition(), w, h);
+			ShapeDrawer.WordArtDrawing d = drawer.drawVmlWordArt(art, geometry, part, ThemeColors.of(context.getWmlPackage()), w, h,
+					rotation, flip.contains("x"), flip.contains("y"), true);
+			if (d == null) return frag;
+			for (String code : d.getProblems()) log.warn(code + ": VML WordArt in HTML (CR-083 D9)");
+			Element box = document.createElement("span");
+			box.setAttribute("class", BOX_CLASS);
+			box.setAttribute("style", "display:inline-block;position:relative;vertical-align:bottom;width:" + pt(w) + ";height:" + pt(h));
+			box.setAttribute("role", "img");
+			box.setAttribute("aria-label", d.getText() == null ? "" : d.getText());
+			Element svg = (Element) document.importNode(d.toSvg().getDocumentElement(), true);
+			svg.setAttribute("width", pt(w));
+			svg.setAttribute("height", pt(h));
+			svg.setAttribute("viewBox", "0 0 " + num(w) + " " + num(h));
+			svg.setAttribute("preserveAspectRatio", "none");
+			svg.setAttribute("overflow", "visible");
+			svg.setAttribute("style", "position:absolute;left:0;top:0;overflow:visible");
+			svg.setAttribute("aria-hidden", "true");
+			SvgIds.prefix(svg, "vml-" + Integer.toHexString(System.identityHashCode(shape)) + "-");
+			box.appendChild(svg);
+			frag.appendChild(box);
+			return frag;
+		} catch (RuntimeException | OutOfMemoryError e) {
+			log.warn("render.wordart.content: VML WordArt couldn't be drawn in HTML: " + e, e);
+			return frag;
+		}
+	}
+
+	/** For the XSLT's w:pict template, which has found a text path: the drawing, or nothing */
+	public static org.w3c.dom.DocumentFragment vmlWordArtXslt(org.docx4j.convert.out.html.HTMLConversionContext context,
+			org.w3c.dom.traversal.NodeIterator pict) {
+		org.w3c.dom.DocumentFragment frag = vmlWordArt(context, pict);
+		return frag != null ? frag : org.docx4j.XmlUtils.neww3cDomDocument().createDocumentFragment();
+	}
+
+	/** A style attribute's properties */
+	private static java.util.Map<String, String> style(String css) {
+		java.util.Map<String, String> out = new java.util.LinkedHashMap<String, String>();
+		if (css == null) return out;
+		for (String decl : css.split(";")) {
+			int colon = decl.indexOf(':');
+			if (colon > 0) out.put(decl.substring(0, colon).trim().toLowerCase(java.util.Locale.ROOT), decl.substring(colon + 1).trim());
+		}
+		return out;
+	}
+
+	/**
 	 * A text box drawn as WordArt (CR-083 phase 1): a box of the size Word draws ({@code wrap="none"}: as wide as its
 	 * text; {@code a:spAutoFit}: as tall), holding the SVG the PDF has, its text in it real or invisible as Word's PDF has
 	 * it; no text container, the text being in the drawing. Null where it isn't WordArt or can't be drawn: then it is a

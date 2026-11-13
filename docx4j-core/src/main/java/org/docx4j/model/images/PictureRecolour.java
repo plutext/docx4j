@@ -234,23 +234,7 @@ public final class PictureRecolour {
 	 * (VML may follow a colour with an index, "#FFFFFF [9]"). Null for any other (a scheme's "fill darken(50)").
 	 */
 	static String vmlColour(String s) {
-		if (s == null) return null;
-		String v = s.trim();
-		java.util.regex.Matcher m = java.util.regex.Pattern
-				.compile("(?i)rgb\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)").matcher(v);
-		if (m.lookingAt()) {
-			int r = Integer.parseInt(m.group(1)), g = Integer.parseInt(m.group(2)), b = Integer.parseInt(m.group(3));
-			if (r > 255 || g > 255 || b > 255) return null;
-			return String.format("%02X%02X%02X", r, g, b);
-		}
-		v = v.split("\\s+")[0];
-		if (v.matches("#?[0-9A-Fa-f]{3}")) {
-			String d = v.startsWith("#") ? v.substring(1) : v;
-			StringBuilder b = new StringBuilder();
-			for (char c : d.toCharArray()) b.append(c).append(c);
-			return b.toString().toUpperCase(Locale.ROOT);
-		}
-		return org.docx4j.model.color.WordColors.normalise(v);
+		return org.docx4j.model.shapes.VmlColours.rgb(s);
 	}
 
 	private static boolean isTrue(org.docx4j.vml.STTrueFalse v) {

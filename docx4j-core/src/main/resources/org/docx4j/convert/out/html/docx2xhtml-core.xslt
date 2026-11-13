@@ -438,6 +438,10 @@
 			  			$conversionContext, 
 			  			$wpict)" />
 			</xsl:when>
+			<xsl:when test="./v:shape/v:textpath">
+				<!--  VML WordArt, drawn (17.3.7, CR-083 phase 4) -->
+			  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlShapes.vmlWordArtXslt($conversionContext, .)" />
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
 			<xsl:copy-of

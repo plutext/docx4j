@@ -138,6 +138,8 @@ public final class WordArtText {
 		double ascent = 0.8, descent = 0.2, single = 1.2;
 		/** the font's external leading, which Word puts above the ascent, as a fraction of the size */
 		double leading;
+		/** a VML WordArt's: stretched to its shape's box, so its effects take no room in its line (CR-083 phase 4) */
+		boolean fitted;
 
 		/** Word's ascent for its font, as a fraction of its size: its single line's share above the baseline */
 		public double getAscent() {
@@ -244,6 +246,16 @@ public final class WordArtText {
 		/** It has 3-D ({@code w14:props3d} or {@code w14:scene3d}) */
 		public boolean isThreeD() {
 			return threeD;
+		}
+
+		/**
+		 * A VML WordArt's run, stretched to its shape's box (its text path's {@code fitshape}): its effects take no room
+		 * in its line, the box being fixed
+		 *
+		 * @since 17.3.7 (CR-083 phase 4)
+		 */
+		public boolean isFitted() {
+			return fitted;
 		}
 
 		/**
@@ -369,25 +381,41 @@ public final class WordArtText {
 	}
 
 	private final CTWordprocessingShape shape;
+	private final VmlShapes.Resolved vml;
 	private final List<Paragraph> paragraphs;
 	private final List<String> problems;
 	private final boolean warped;
 
 	private WordArtText(CTWordprocessingShape shape, List<Paragraph> paragraphs, List<String> problems, boolean warped) {
+		this(shape, null, paragraphs, problems, warped);
+	}
+
+	WordArtText(CTWordprocessingShape shape, VmlShapes.Resolved vml, List<Paragraph> paragraphs, List<String> problems,
+			boolean warped) {
 		this.shape = shape;
+		this.vml = vml;
 		this.paragraphs = Collections.unmodifiableList(paragraphs);
 		this.problems = problems;
 		this.warped = warped;
 	}
 
-	/** The text box */
+	/** The text box; null for VML WordArt ({@link #getVml()}) */
 	public CTWordprocessingShape getShape() {
 		return shape;
 	}
 
-	/** Its body properties: insets, wrap, autofit, anchor, warp */
+	/**
+	 * The VML shape with its shapetype, for VML WordArt ({@link VmlWordArt#of}); null for a DrawingML text box
+	 *
+	 * @since 17.3.7 (CR-083 phase 4)
+	 */
+	public VmlShapes.Resolved getVml() {
+		return vml;
+	}
+
+	/** Its body properties: insets, wrap, autofit, anchor, warp; null for VML WordArt */
 	public CTTextBodyProperties getBodyPr() {
-		return shape.getBodyPr();
+		return shape == null ? null : shape.getBodyPr();
 	}
 
 	public List<Paragraph> getParagraphs() {

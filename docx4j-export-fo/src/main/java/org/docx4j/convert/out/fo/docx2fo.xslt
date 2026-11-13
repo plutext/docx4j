@@ -660,6 +660,11 @@
   			string(./v:shape/@style),
   			string(./v:shape/w10:wrap/@type))" />
 		</xsl:when>
+		<xsl:when test="./v:shape/v:textpath or ./v:group">
+			<!--  VML WordArt, drawn from its shapetype's path and formulas (17.3.7, CR-083 phase 4) -->
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlWordArt(
+		  	$conversionContext, .)" />
+		</xsl:when>
 		<xsl:when test="./v:shape/v:textbox">
 			<!--  from 3.0.1 -->
 			<xsl:variable name="childResults">
@@ -715,6 +720,11 @@
   			$wobject,
   			string(./v:shape/@style),
   			string(./v:shape/w10:wrap/@type))" />
+		</xsl:when>
+		<xsl:when test="./v:group">
+			<!--  a VML group holding WordArt (17.3.7, CR-083 phase 4, D18) -->
+		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlWordArt(
+		  	$conversionContext, .)" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:object containing other than ./v:shape/v:imagedata</xsl:comment>

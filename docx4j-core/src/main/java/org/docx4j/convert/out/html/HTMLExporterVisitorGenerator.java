@@ -596,6 +596,11 @@ public class HTMLExporterVisitorGenerator extends AbstractVisitorExporterGenerat
 	protected DocumentFragment createImage(int imgType, HTMLConversionContext conversionContext, Object anchorOrInline) {
 			switch (imgType) {
 			case IMAGE_E10:
+				if (anchorOrInline instanceof org.docx4j.wml.CTPictureBase) {
+					// VML WordArt: drawn, not taken for a picture (CR-083 phase 4)
+					DocumentFragment art = HtmlShapes.vmlWordArt(conversionContext, anchorOrInline);
+					if (art != null) return art;
+				}
 				return WordXmlPictureE10.createHtmlImgE10(conversionContext, anchorOrInline);
 			case IMAGE_E20:
 				return WordXmlPictureE20.createHtmlImgE20(conversionContext, anchorOrInline);

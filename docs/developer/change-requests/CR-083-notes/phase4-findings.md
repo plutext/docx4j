@@ -287,3 +287,109 @@ checked here before applying (the numbers of 2, 3, 4, 5 and 8 measured again), w
 13. **The round's size**: cut wv48, wv42 to about 45, wv45's picture fills and compound lines to one each, wv41's two
     lines to 20 types; add findings 2, 5 and 7's probes. About 285 probes. The effort was tight: phase 4 is now eight
     days.
+
+## 5. Built before the round (2026-11-13)
+
+Jason: "commit then start implementation", on 779c69303. The parts that don't wait on the round, built and tested; the
+round (`cr083-phase4a`, then `cr083-phase4`) decides what is marked provisional below.
+
+**Where the design changed in the building:**
+- `VmlGeometry` is in docx4j-core (`org.docx4j.model.shapes`, beside CR-080's `ShapeGeometry`, whose `ShapeOutlines`
+  it returns), not in docx4j-chart-render: the geometry engine is core's.
+- The geometry source (review finding 1) is a second entry, `WordArtRenderer.drawVml`, beside `draw`, the review's
+  alternative: it shares the line layout, the warp (`WordArtWarps.warp`, by the paths' count), the paint and the
+  effects, with three hooks: a VML run is `fitted` (its effects take no room in its fixed box), a two-path warp can
+  take a frame down in place of the lines' ink (the stretch without `trim`), and the turn is the style's `rotation`
+  and `flip` about the box's centre. DrawingML's `draw` is unchanged, so the corpora can't move by it.
+- `fill-rule="evenodd"` (review finding 3) isn't applied: the renderer joins a run's glyphs into one path so that a
+  gradient spans the run, and even-odd on that path would cut holes where two glyphs overlap (a script face, tight
+  kerning), which Word's one path a glyph never shows. Left until wv44's self-overlapping glyph shows what Word's PDF
+  does; an even-odd fill a glyph is the change then.
+
+**Built:**
+- docx4j-core: `VmlGeometry` (the 18 operations with Part 4's rounding, the path's commands, `e`-delimited sets with
+  `nf`/`ns`, the text box rectangle, the named values, the bounds of section 1.6, `subPaths` for the text paths);
+  `VmlShapes` (a part's shapetypes indexed, groups included, cached by its root; a shape's attributes and children
+  read over its shapetype's one attribute at a time; `isTextPath`); `VmlWordArt` (the model: a paragraph a line of
+  `string`, the style's face, size, weight, slant and kerning, `v-text-align` with Office's center; `v:fill` and
+  `v:stroke` as DrawingML, legacy WordArt's default stroke drawn; `v:shadow` as a sharp outer shadow; `o:extrusion`
+  reported flat); `VmlColours` (shared with `PictureRecolour`, which now also reads system colours); `WordArtText`'s
+  `getVml()` and `Run.isFitted()`; `ShapeDrawer.drawVmlWordArt` (HTML's way to the renderer).
+- docx4j-chart-render: `WordArtRenderer.drawVml` and its hooks (`VML_EM_ABOVE`, `vmlTurn`); `ShapeSvgDrawer`.
+- Routes: the FO visitor and XSLT (`FOShapes.vmlWordArt`, `XsltFOFunctions.createVmlWordArt`, `docx2fo.xslt`'s
+  `w:pict` and `w:object` templates), placed by the VML picture container; a group holding WordArt (D18) placed by its
+  own style, each WordArt and picture in a container at its box through the group's coordinates, other shapes and a
+  turned group reported (`render.shape.vml`); HTML's visitor and XSLT (`HtmlShapes.vmlWordArt`, `docx2xhtml-core.xslt`),
+  in its line, nothing from a header or footer (D17). The visitor no longer descends into a `w:pict` whose WordArt it
+  drew (its `v:shapetype`, `v:path` and `v:textpath` were warned of as "Need to handle", and at debug level a
+  `v:shapetype`'s marshalling threw).
+
+**Phase 0's VML probes through docx4j** (`wv20-vml-spt-mode12`, `wv30-watermarks`, with Word's Aptos):
+- wv20-01 to -41 (only an `o:spt`, or an unresolved `type`): nothing, as Word;
+- wv20-42 (the slanted path, `trim`): ink 144.00 to 432.00 by 252.00 to 396.00, Word's 144.00 to 431.96 by 252.00
+  to 395.92; the text again invisibly (mode 3);
+- wv30-02 (horizontal, no `trim`): 63.65 to 531.65 by 369.56 to 446.46, Word's 63.73 to 531.56 by 369.58 to 446.49
+  (the em-box rule was fitted to this probe, so it is no test of it); silver at alpha .5019608, Word's .50196;
+- wv30-01 and -03 (turned 315 degrees): the same size as Word's to 0.1 pt ("WATERMARK" 385.3 by 372.7, Word's 385.2
+  by 372.6) but 14.3 and 15.5 pt higher. Not a rotation-centre error of docx4j's alone: the offset differs with the
+  text, so Word turns or places a turned VML shape by something docx4j doesn't model. For wv46's and wv47's turned
+  probes; open.
+- No watermark text in the PDF, as Word; red `#c00000` opaque, as Word.
+
+**Provisional until the round** (each a constant or a branch to change): the arc's angle direction
+(`VmlGeometry.ANGLE_SIGN`, GDI's); the no-`trim` em box (`WordArtRenderer.VML_EM_ABOVE` = 0.718, one probe); Follow
+Path as phase 2's, a closed single path as `textCircle`; a `v:shadow` with no `on` off; a gradient's angle (0 blending
+down) and focus; a picture fill drawn in its colour, a compound line single, a double or perspective shadow single,
+emboss not drawn, all reported; `v-text-spacing` not applied; Arial and 36 pt where the style gives none; two
+shapetypes of one id, the first; `on` needed whatever `textpathok`; a `coordsize` side 0 or absent, 1,000.
+
+**Not built:** the turned placement above; HTML for a group's WordArt (nothing, as before); the evaluation of Word's
+40 shapetypes against Word's drawing of them (wv40, awaited).
+
+**Tests:** `VmlGeometryTest` (17), `VmlShapesTest` (6) in core-tests; `VmlWordArtRendererTest` (9, HTML both routes
+included) in chart-render; `VmlWordArtFoTest` (4, both routes: a header watermark with no text, body WordArt with
+invisible text, a shapetype with only its `o:spt`, a group) in export-fo-tests. core-tests 2,676, chart-render 102,
+export-fo 111, export-fo-tests 971 pass.
+
+**Gate b471** against b464: 0 movers, events equal; the corpora's PDFs as b470's but for the two time fields (5361,
+11875), real3's VML WordArt document among the same (its three WordArt still not drawn, as in Word: section 1.4); the
+probes' 324 the same. **b472** (the turned watermarks' placement, section 6) and **b473** (Follow Path, section 6; the
+last build) likewise: 0 movers, events equal, the PDFs as b471's but for the time fields, the probes the same.
+chart-render's tests 103 with `onePathTheTextGoesAlongIt`.
+
+## 6. Word's shapetypes: cr083-phase4a (2026-11-13)
+
+The word-bridge script `legacy-wordart` (written by the VM session, installed by Jason; D16 (a)) ran as job wv40:
+silent, script exit 0, 15.8 s, Word 16.0.20326.20318, mode 12 legacy at the first try. `wv40-shapetypes` holds 40
+`v:shape`, each with its own `v:shapetype`, `o:spt` 136 to 175 once each; `wv40-watermark` a text watermark made by
+`Shapes.AddTextEffect` in the header (not Word's recorded Watermark macro: its leftover `v:shadow color` and a
+`v:stroke r:id` to a JPEG pattern are COM's). The definitions are in `shapetypes-word.xml` (by `o:spt`).
+
+**What Word's own form is** (`harvest.py`'s read of the docx): the shape gives only `type` and `style` (and its text
+path), so VML's defaults hold, and Word's PDF draws them: the glyphs filled white and stroked black at 0.75 pt with
+round joins. The text path's `style` is the face and `v-text-kern:t`, no `font-size`; `trim="t" fitpath="t"`. Each
+shape carries `<v:shadow color="#868686"/>` with no `on`, and Word draws no shadow (its PDF's fills are all white):
+**a missing `on` is off**, as section 5 took it. The shapetypes' text paths: 136 to 143 and 148 to 175 `fitshape`
+(152, 153, 156 to 167 `xscale` too); 144 to 147 (the curves: Arch Up, Arch Down, Circle, Button) `fitpath` with
+`v-text-kern`. Their paths: two sub-paths for most; `al` arcs with formula angles for 144 to 151 (adj in fd, 144's
+11796480 = 180 degrees); 147, 151 three or four; 166 four and 167 six (bands).
+
+**docx4j against Word's PDF, each type at its defaults** (`cmp40.py`, the glyphs' ink box): 36 of the 40 within 0.7 pt
+(30 within 0.2), from Word's own definitions with no change to the code: the two-path types, the bands (166, 167),
+the pour types' arcs (148 to 151, within 0.2 pt), which settles the arcs' direction (`ANGLE_SIGN`, GDI's). The four
+Follow Path types (144 to 147) were wrong by 110 to 285 pt: Word lays the text along the whole path, its ink reaching
+40 pt past the box (144: 103.7 to 461.8 across for a box of 144 to 432), where phase 2's DrawingML rule (D / (D + 2T))
+shrinks it. Read from Word's glyph by glyph paths (`glyphs.py`): each glyph upright to the path, its middle at its
+advance, the text sized to the path's length; the glyphs' centres 1.03 to 1.05 of the ellipse, so it is a line through
+the glyphs, not their baseline, that is on the path. What decides it is the number of text paths, not `fitshape`:
+Word's own curve shapes carry `fitshape="t"` (the shapetype `fitpath`) and draw along their paths, so docx4j lays the
+text along each path where there is an odd number (as DrawingML's one-path presets), sized by `fitpath`
+(`WordArtWarps.along`), the line `VML_ALONG_RISE` = 0.22 em above the baseline on the path (fitted: 0.2 gives 2.0,
+1.7 and 3.6 pt on 144, 145, 146; 0.22 gives 0.3, 0.2 and 1.7). With one line Button (147) takes its first path, as
+Word's PDF has it (the same page as 144). **All 40 types within 1.7 pt of Word's ink (39 within 0.7 pt, median
+0.1 pt).** Provisional: one face, one line; the round's faces and lines decide.
+
+**Turned watermarks**: Word centres the turned ink's bounding box down the box (wv30-01, -03 and wv40-watermark, all
+within 0.3 pt), while across its turn about the box's centre is docx4j's (within 0.55 pt). docx4j now does so
+(`drawVml`: a trial paint, then the turn moved down by the ink's offset; provisional, for wv46's turns and other
+anchors): wv30-01 within 0.23 pt, wv30-03 0.70, wv40-watermark 0.31; wv30-02 (unturned) as before.

@@ -683,6 +683,11 @@ public class FOExporterVisitorGenerator extends AbstractVisitorExporterGenerator
 	protected DocumentFragment createImage(int imgType, FOConversionContext conversionContext, Object anchorOrInline) {
 			switch (imgType) {
 			case IMAGE_E10:
+				if (anchorOrInline instanceof org.docx4j.wml.CTPictureBase) {
+					// VML WordArt: drawn, not taken for a picture (CR-083 phase 4)
+					DocumentFragment art = XsltFOFunctions.createVmlWordArt(conversionContext, anchorOrInline);
+					if (art != null) return art;
+				}
 				DocumentFragment e10 = WordXmlPictureE10.createXslFoImgE10(conversionContext, anchorOrInline);
 				if (anchorOrInline instanceof org.docx4j.wml.CTPictureBase) {
 					// an absolutely positioned VML picture is placed as Word places it,

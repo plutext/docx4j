@@ -85,6 +85,23 @@ public interface ShapeDrawer {
 		return null;
 	}
 
+	/**
+	 * A VML WordArt ({@link VmlWordArt}) drawn on its shape's geometry, as Word's PDF paints it, as SVG, for HTML (CR-083
+	 * phase 4).
+	 *
+	 * @param geometry the shape's geometry at its size ({@link VmlGeometry#outlines})
+	 * @param w the shape's width in points
+	 * @param h its height
+	 * @param rotation its style's rotation, degrees clockwise
+	 * @param withText whether its text is written again invisibly (D17)
+	 * @return null where this drawer doesn't draw VML WordArt
+	 * @since 17.3.7
+	 */
+	default WordArtDrawing drawVmlWordArt(WordArtText art, ShapeOutlines geometry, org.docx4j.openpackaging.parts.Part host,
+			ThemeColors theme, double w, double h, double rotation, boolean flipH, boolean flipV, boolean withText) {
+		return null;
+	}
+
 	/** A WordArt drawn: points from its box's top left, y down; the box is the one Word draws, not the extent */
 	interface WordArtDrawing {
 

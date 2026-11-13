@@ -340,6 +340,44 @@ public class XsltFOFunctions {
     }
 
     /**
+     * A w:pict or w:object holding VML WordArt, drawn (CR-083 phase 4): for the visitor's picture route and the XSLT's
+     * w:pict template alike.
+     *
+     * @param pict the w:pict or w:object as JAXB, or (XSLT) a NodeIterator over it
+     * @return the fragment, empty where Word draws nothing; null where it isn't VML WordArt
+     * @since 17.3.7
+     */
+    public static DocumentFragment createVmlWordArt(FOConversionContext context, NodeIterator pict) {
+		return createVmlWordArt((AbstractWmlConversionContext) context, (Object) pict);
+    }
+
+    /** As above, for the visitor (a w:pict or w:object as JAXB) */
+    public static DocumentFragment createVmlWordArt(AbstractWmlConversionContext context, Object pict) {
+		org.docx4j.wml.CTPictureBase p = null;
+		if (pict instanceof org.docx4j.wml.CTPictureBase) {
+			p = (org.docx4j.wml.CTPictureBase) pict;
+		} else if (pict instanceof org.w3c.dom.traversal.NodeIterator) {
+			org.w3c.dom.Node n = ((org.w3c.dom.traversal.NodeIterator) pict).nextNode();
+			if (n == null) return null;
+			try {
+				Object jaxb = XmlUtils.unmarshal(n, Context.jc,
+						"object".equals(n.getLocalName()) ? org.docx4j.wml.CTObject.class : org.docx4j.wml.Pict.class);
+				jaxb = XmlUtils.unwrap(jaxb);
+				if (jaxb instanceof org.docx4j.wml.CTPictureBase) p = (org.docx4j.wml.CTPictureBase) jaxb;
+			} catch (Exception e) {
+				log.warn("VML WordArt couldn't be read: " + e.getMessage());
+				return null;
+			}
+		}
+		DocumentFragment frag = FOShapes.vmlWordArt(context, p);
+		if (frag == null && pict instanceof org.w3c.dom.traversal.NodeIterator) {
+			// the XSLT's test found a text path: what isn't drawn as WordArt is nothing, as no picture route follows
+			return XmlUtils.neww3cDomDocument().createDocumentFragment();
+		}
+		return frag;
+    }
+
+    /**
      * The fo:external-graphic of an absolutely positioned VML picture, in the
      * fo:block-container WordLayoutFixups places (the same treatment a VML text box
      * gets, see {@link FOTextBoxes}).  A picture the shape lays out in the line, or a

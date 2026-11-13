@@ -55,11 +55,21 @@ final class WordArtWarps {
 	 */
 	static Map<WordArtRenderer.Glyph, double[]> warp(WordArtRenderer.Layout layout, String name, List<TextWarp.Measured> paths,
 			Rectangle2D.Double rect, Map<WordArtRenderer.Glyph, Shape> drawn, List<String> problems) {
+		return warp(layout, name, paths, rect, drawn, problems, null);
+	}
+
+	/**
+	 * As above; frame, where given, the top and bottom of what two paths map down, in place of the lines' ink (a VML text
+	 * path without {@code trim}: CR-083 phase 4), the ink still mapped across
+	 */
+	static Map<WordArtRenderer.Glyph, double[]> warp(WordArtRenderer.Layout layout, String name, List<TextWarp.Measured> paths,
+			Rectangle2D.Double rect, Map<WordArtRenderer.Glyph, Shape> drawn, List<String> problems, double[] frame) {
 		int n = paths.size();
 		List<WordArtRenderer.Line> lines = layout.lines;
 		TextWarp.Budget budget = new TextWarp.Budget(TextWarp.maxPoints);
+		if ("vml-along".equals(name) || "vml-along-natural".equals(name)) return along(lines, paths, drawn, "vml-along".equals(name));
 		if (n == 2) {
-			envelope(lines, paths.get(0), paths.get(1), drawn, budget);
+			envelope(lines, paths.get(0), paths.get(1), drawn, null, 0, budget, frame);
 			return null;
 		}
 		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
@@ -84,6 +94,52 @@ final class WordArtWarps {
 			else envelope(mine, paths.get(2 * b), paths.get(2 * b + 1), drawn, block, tallest, budget);
 		}
 		// lines with no band (none drawn): Word draws them nowhere
+		return placed;
+	}
+
+	/**
+	 * How far above the baseline, in ems, the line a VML Follow Path's glyphs sit on runs: fitted to Word's o:spt 144, 145
+	 * and 146 in Aptos (wv40: 0.22 puts their ink within 0.3, 0.2 and 1.7 pt of Word's; 0.2 within 2.0, 1.7, 3.6).
+	 * Provisional, one face, until the round's faces (phase 4 findings section 6).
+	 */
+	static final double VML_ALONG_RISE = 0.22;
+
+	/**
+	 * VML's Follow Path (an odd number of text paths: o:spt 144 to 147), as Word draws it (wv40, CR-083 phase 4 findings
+	 * section 6): each line along its path (line i on path i, the extra ones on the first), its glyphs scaled together
+	 * so that the line's advance is the path's whole length ({@code fitpath}; without it at their size, centred,
+	 * unmeasured), each glyph's middle at
+	 * its advance along the path, the line {@link #VML_ALONG_RISE} of an em above its baseline on the path, turned to the
+	 * path's direction (so upright to it: outside an arch drawn over the top, inside one drawn under the bottom). A further line on the same path stands inward by the
+	 * lines before it, unmeasured.
+	 *
+	 * @return each glyph's scale and the place and turn its text is drawn at: {scale, x, y, angle in radians}
+	 */
+	static Map<WordArtRenderer.Glyph, double[]> along(List<WordArtRenderer.Line> lines, List<TextWarp.Measured> paths,
+			Map<WordArtRenderer.Glyph, Shape> drawn, boolean fit) {
+		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
+		List<List<WordArtRenderer.Line>> byBand = bands(lines, paths.size());
+		for (int b = 0; b < paths.size(); b++) {
+			TextWarp.Measured path = paths.get(b);
+			double length = path.length;
+			if (!(length > 0)) continue;
+			double inward = 0;
+			for (WordArtRenderer.Line l : byBand.get(b)) {
+				double width = l.width();
+				if (!(width > 0)) continue;
+				double s = fit ? length / width : 1;
+				double start = fit ? 0 : Math.max(0, (length - width) / 2);
+				for (WordArtRenderer.Glyph g : l.glyphs) {
+					if (g.lineBreak) continue;
+					double u = (start + s * (g.x + g.advance / 2)) / length;
+					double ox = g.advance / 2, oy = -inward / s - VML_ALONG_RISE * g.font.getSize2D();
+					if (g.outline != null && !g.space) drawn.put(g, TextWarp.place(g.outline, ox, oy, s, path, u));
+					java.awt.geom.Point2D.Double origin = TextWarp.placed(0, 0, ox, oy, s, path, u);
+					placed.put(g, new double[] { s, origin.x, origin.y, path.angle(u) });
+				}
+				inward += l.height * s;
+			}
+		}
 		return placed;
 	}
 
@@ -131,8 +187,14 @@ final class WordArtWarps {
 	 */
 	private static void envelope(List<WordArtRenderer.Line> lines, TextWarp.Measured top, TextWarp.Measured bottom,
 			Map<WordArtRenderer.Glyph, Shape> drawn, Rectangle2D block, double tallest, TextWarp.Budget budget) {
+		envelope(lines, top, bottom, drawn, block, tallest, budget, null);
+	}
+
+	private static void envelope(List<WordArtRenderer.Line> lines, TextWarp.Measured top, TextWarp.Measured bottom,
+			Map<WordArtRenderer.Glyph, Shape> drawn, Rectangle2D block, double tallest, TextWarp.Budget budget, double[] frame) {
 		Rectangle2D ink = ink(lines, drawn);
 		if (ink == null || ink.getWidth() <= 0 || ink.getHeight() <= 0) return;
+		if (frame != null && frame[1] > frame[0]) ink = new Rectangle2D.Double(ink.getX(), frame[0], ink.getWidth(), frame[1] - frame[0]);
 		if (block != null) {
 			// a band's lines across the block's ink, and down a range as tall as the tallest band's, centred on their own
 			double h = Math.max(ink.getHeight(), tallest);
