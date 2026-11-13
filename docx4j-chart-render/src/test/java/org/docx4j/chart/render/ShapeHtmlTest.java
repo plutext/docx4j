@@ -227,6 +227,26 @@ public class ShapeHtmlTest {
 		}
 	}
 
+	/**
+	 * A shape's gradient of two stops at 0 and 100% blended by Word's curve, any other evenly (CR-083 D24; the
+	 * cr083-phase5 round's wb82-13 to -15: (187, 0, 186) halfway from red to blue, where an even blend gives (128, 0, 128))
+	 */
+	@Test
+	public void aShapesTwoStopGradientTakesWordsCurve() throws Exception {
+		String three = GRADIENT.replace("<a:gs pos=\"100000\">", "<a:gs pos=\"50000\"><a:srgbClr val=\"FFFF00\"/></a:gs><a:gs pos=\"100000\">");
+		for (int flags : BOTH) {
+			Element two = (Element) html("<w:p>" + inline(4, graphic(WPS, wsp("rect", GRADIENT, null, "<wps:bodyPr/>"))) + "</w:p>", flags)
+					.getElementsByTagNameNS("*", "linearGradient").item(0);
+			assertEquals(flagName(flags), 17, two.getElementsByTagNameNS("*", "stop").getLength());
+			String middle = ((Element) two.getElementsByTagNameNS("*", "stop").item(8)).getAttribute("style")
+					+ ((Element) two.getElementsByTagNameNS("*", "stop").item(8)).getAttribute("stop-color");
+			assertTrue(flagName(flags) + ": " + middle, middle.contains("186,0,186") || middle.toLowerCase().contains("ba00ba"));
+			Element even = (Element) html("<w:p>" + inline(4, graphic(WPS, wsp("rect", three, null, "<wps:bodyPr/>"))) + "</w:p>", flags)
+					.getElementsByTagNameNS("*", "linearGradient").item(0);
+			assertEquals(flagName(flags), 3, even.getElementsByTagNameNS("*", "stop").getLength());
+		}
+	}
+
 	/** Two shapes in one paragraph: two boxes, each with its own label, and their drawings' ids each their own */
 	@Test
 	public void twoShapesAreTwoBoxesTheirIdsTheirOwn() throws Exception {

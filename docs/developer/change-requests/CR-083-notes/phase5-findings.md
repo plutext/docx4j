@@ -3,8 +3,8 @@
 Phase 5 draws a body run's Word 2010 text effects: `w14:textFill`, `w14:textOutline`, `w14:shadow`, `w14:glow` and
 `w14:reflection`, in body paragraphs, table cells, headers and footers, and in text boxes with no warp (phase 3's D12).
 3-D (`w14:props3d`, `w14:scene3d`) is phase 6's. The design is in the CR (phase 5, D3, D20 to D24). This note holds
-what is known before the round (section 1), what the FOP fork offers (section 2), the round (section 3), and the
-design's review (section 4).
+what is known before the round (section 1), what the FOP fork offers (section 2), the round (section 3), the
+design's review (section 4), step 1 with the fork's CR (section 5), and the round read (section 6).
 
 ## 1. What is known before the round (2026-11-13)
 
@@ -125,8 +125,22 @@ Read in `../xmlgraphics-fop-plutext` at 2.12-docx4j.2 (e06e12a37).
 - **A colour's alpha**: FOP writes an `ExtGState` for a fill colour's alpha from 1 to 254 (`PDFColorHandler.writeAlpha`,
   `#RRGGBBAA` parsed by `ColorUtil`), never for 0, so a fully transparent colour is drawn opaque: invisible text needs
   mode 3.
+- **Corrected by the fork's session** (2026-11-14, drafting fop/CR-043 against e06e12a37; section 5.2):
+  - Glyph ids: under subset embedding, the default, `MultiByteFont.mapCodePoint` returns the subset's selector
+    (`cidSet.mapCodePoint`), not the file's glyph id, so the ids `drawTextWithDX` writes are not the file's. The fork
+    hands the painter `MultiByteFont.findGlyphIndex(cp)`, the file's ids, which `createGlyphVector(frc, int[])` draws
+    from the same file. With the written ids the painter would have drawn the wrong glyphs in nearly every subset font.
+  - The artifact needs no new painter method: with no structure element in the IF context `PDFPainter.drawImage(Document)`
+    gets ARTIFACT from `addImageContentItem(null)`, and `PDFImageHandlerSVG` wraps the drawing in `/Artifact BMC`; the
+    fork resets the element around the effect's draw and restores the text's (its Span and ActualText kept).
+  - Simulated bold: `startSimulateStyle` writes a raw `2 Tr` with a stroke width outside `PDFTextUtil`'s mode tracking;
+    under mode 3 the fork skips it (else the invisible text is stroked), the painter told and drawing the style itself;
+    the SVG-table font path (`drawSVGText`) is skipped too.
+  - JDK types: docx4j's `WordLayoutCustomizer` sets `setWordLayoutFontMetrics` by reflection with a `BiFunction`, so that
+    docx4j loads against Apache FOP; a fork interface for the painter would break that.
+  - The `wordLine` line numbers are one off on that tree: the maxima at 1365 and 1366, atLeast 1425, auto 1433.
 
-## 3. The round (proposed): cr083-phase5, about 70 probes
+## 3. The round: cr083-phase5, 88 probes (staged 2026-11-14)
 
 Word 365, mode 15, through the word-bridge as the earlier rounds; read by the page's paths, shadings, pictures and the
 text's baselines (`grad.py`, `fills.py`, `read_effects.py`). What body text adds to phases 0 and 3:
@@ -151,6 +165,13 @@ text's baselines (`grad.py`, `fills.py`, `read_effects.py`). What body text adds
   line under atLeast spacing.
 - Resting on few probes before the round: the gradient's frame (wb50-13, -14: one face, two sizes), the curve's
   condition (five probes), the drawing order (three).
+
+Built 2026-11-14 by `build_body.py` (`probes-body.tsv`): wb80-body-lines 25, wb81-body-room 29 (its two header probes
+last, each its own section; each page a plain line first, so that it holds its own reference), wb82-body-forms 32 (a
+styles part with a character and a paragraph style, a numbering part, a hyperlink to a bookmark, a text box and three
+shapes), wb83-body-hyphen 2 (`w:autoHyphenation`); the runs' line breaks checked against Aptos's own advances. Staged as
+`cr083-phase5`, verified and announced by the portfolio (to-vm 288, controls `cr083n-mu-control-a`/`-b`), on bridge
+22479f7; results awaited.
 
 ## 4. The design's review (2026-11-14)
 
@@ -186,3 +207,166 @@ per fable review. apply all 13 then commit etc"):
 12. (should) The round's additions: section 3.
 13. (should) The painter and the routes three days, not two; the fork's three days take in each painter and the
     serializer: the CR's §11.
+
+## 5. Step 1 and the fork's CR (2026-11-14)
+
+Jason: "commence phase 5". The round staged (section 3), the fork's CR drafted by its session (5.2), and step 1, which
+waits on neither, built (5.1).
+
+### 5.1 Step 1
+
+- **A solid fill as the run's colour** (`TextFill`, from `PropertyFactory.createProperties`, after `FontColor`, both FO
+  routes and HTML): the fill's colour through the theme, over `w:color` (wb50-01); its `w14:alpha` (a transparency) as
+  "#RRGGBBAA" in FO, which FOP draws at that alpha, none left written 01 (FOP draws 00 opaque); rgba() in HTML. The
+  paragraph mark's fill colours its number (unmeasured; the round's wb82-30 and -31). A gradient or no fill keeps
+  `w:color` in PDF until the painter draws them. Word draws a transparent run as a filled path over invisible text;
+  docx4j keeps it real (D20).
+- **HTML's CSS (D23)**: a gradient as the run's background clipped to its text (`-webkit-text-fill-color:
+  transparent`, so an underline keeps `w:color`); DrawingML's angle plus 90 degrees, a path gradient radial about its
+  focus (a circle, others an ellipse, reported); no fill transparent text; an outline as `-webkit-text-stroke` (width
+  0 as 0.25 pt; compound and dashed drawn solid, gradient not drawn, reported); a shadow and a glow as `text-shadow` at
+  `TextEffects.scale` of the run's size (a shadow's blur radius 2/3 of `blurRad`, Word's sigma being `blurRad` / 3 and
+  CSS's half the radius; a glow's radius its own, CSS having no spread), in em at 11 pt's scale where the run states
+  no size; a reflection and an inner shadow reported (`render.wordart.body_effect`, once a JVM at warn).
+- **Word's curve (D24)**: `GradientCurve` (the table and blend `VmlWordArt` had) for a gradient of exactly two stops at
+  0 and 100%; `Fills.wordGradient` for WordArt's runs (and, after the round, shapes' fills: section 6.4), 17 stops. Measured on phase 0's probes (Word's PDFs, shading
+  functions sampled at quarters, `grad.py`): wa30-13, -14, -16 (linear 0 and 90 degrees, path circle) Word (238, 0,
+  106), (186, 0, 187), (106, 0, 238), docx4j now (238, 0, 105), (186, 0, 186), (105, 0, 238), each within 1 (before
+  the even blend, (191, 0, 64) a quarter of the way); wa30-15 (three stops) and wg10-06 to -08 (stops inside, gallery
+  styles 6 to 8) unchanged, already within 1. Shapes' gradients took the curve after the round (section 6.4).
+- **Found measuring it: flat WordArt's gradient spans the run's frame, not its ink.** Word's axis at 90 degrees on
+  wa30-14 and wg10-06 to -08 runs 255.6 to 299.5 (43.9 pt at 36 pt, the run's ascent to descent, as on body text,
+  section 1.2), docx4j's ran 265.9 to 289.8 (the ink of "WordArt"). Now `Drawing.Area.setGradientFrame` carries the
+  run's frame (its advance across, `getAscent` to `getDescent` down, over all its lines) on unwarped text: every axis
+  within 0.2 pt of Word's (wa30-13 151.3 to 279.2 against 151.2 to 279.1; wa30-15 at 45 degrees likewise), the radial
+  radius 67.627 pt against Word's 67.625. A warp's frame is unmeasured and stays the ink.
+- **Tests**: core-tests `TextEffectPropertiesTest` (14: the curve, its condition, the FO colour and alpha, the theme,
+  a gradient keeping `w:color`, the mark, each CSS form, both HTML routes and a character style); export-fo-tests
+  `TextFillFoTest` (both FO routes: fill, alpha, scheme, character style, gradient); chart-render
+  `WordArtRendererTest` (the curve's 17 stops, three and inside stops even; the frame on flat text, the ink on a
+  warp). Suites: core-tests 2,697, chart-render 111, export-fo 111, export-fo-tests 972 pass.
+- **Gates** (against b464): b479 (step 1 without the frame) 0 movers, events equal; against b478 the corpora's PDFs
+  the same but for the time fields (5361, 11875), today's date in nine documents' DATE fields (b478 ran the day
+  before), and 5075, whose two "Costco" runs carry `w14:textFill` 002D56 at `lumMod` 75%: now #002240, Word's PDF
+  (0, 34, 65), before `w:color`'s #002D56. b480 (the final build) 0 movers, events equal; against b479 the time fields
+  and 14114, one inline's letter spacing 0.223 to 0.212 pt, a flake: rendered alone, both builds write 0.223 (no
+  WordArt in it). The probes' 324 PDFs the same.
+
+### 5.2 The fork's CR
+
+fop/CR-043 (`../xmlgraphics-fop-plutext/docs/developer/change-requests/CR-043-text-effects.md`, 18bb8d136, updated
+45687e5c7), drafted by the fork's session from the CR's §10 and this note's sections 2 and 4; a design only, its build
+Jason's to order in that session. Its corrections to section 2 are there. Its questions, answered:
+- (a) The painter: `FOUserAgent.setTextEffectPainter(BiFunction<String, Map<String, Object>, Map<String, Object>>)`,
+  JDK types only, set by reflection; called with the id and phase (under, over), glyphs (the file's ids, or null for
+  a single-byte or Type 1 face: reported, not drawn), x and y, text, font-uri, font-name, font-size, bold-simulated,
+  italic-shear, color, area (the text area's advance and span box) and run-on-line (the enclosing inline's rectangle
+  on the line); returning svg, rect and, under, glyphs-drawn. The keys are constants in the fork's
+  `org.apache.fop.docx4j.TextEffectKeys`; docx4j copies the strings.
+- (b) The frame: both area and run-on-line passed; the painter takes the one the round shows.
+- (c) The room kept apart from the plain ascent and descent (the line max(plain, alt + above)), the same as adding it
+  before the maximum, so that `declaredBaselineLine` and the list-label rule still see a declared line; atLeast
+  absorbing it and auto's factor applying, as D22 has them, until the round (wb81) says otherwise.
+- (d) Decorations painted as the glyphs: a return key, later, if wb80-17 to -19 show it.
+- (e) Four days, the subset's ids and the room kept apart the extra; mode 2 half a day more.
+- PostScript, AFP and PCL have no invisible mode: there the text isn't drawn where the painter draws the glyphs (the
+  pictures are); a known limit in the fork's CR. The IF carries `docx4j:invisible` on `<text>` and the SVGs as
+  artifact images, so an IF rendered later comes out the same.
+- Enterprise CR-001 §6.6 item 70 (85031ab): FOP draws no text effects and gives a run no room for them; docx4j's
+  workaround step 1.
+
+## 6. The round read (2026-11-14)
+
+`cr083-phase5`'s six jobs silent and complete on bridge 22479f7 (Word 16.0.20326.20318); read from Word's PDFs with
+`read_body.py` (new: each page's drawing in order from `mutool trace`, text extents and baselines, shadings' axes,
+pictures), `grad.py` (the shadings' colours) and `read_effects.py` (which pictures are empty). Word's saves: wb80 two
+identical shadowed runs merged (wb80-15 is one run), runs split at a tab; wb82 a soft-hyphenated run one run a syllable,
+the internal hyperlink a HYPERLINK field, VML fallbacks for two shapes; wb81 note parts added.
+
+### 6.1 Lines and frames (wb80, wb82, wb83)
+
+- **A run broken across lines is drawn line by line**: on each line its pictures, its paths (or its shading), its text
+  at alpha 0 (wb80-01 to -09), one picture a line for a shadow, glow or reflection (wb80-04, -05, -06, -09), so the
+  next line's picture lies over the line before's text. A gradient is one a line, never one across the run.
+- **The frame is the run's part on its line, per font**: across, from its first glyph's origin to its last advance,
+  including a trailing space (wb80-02: 344.40 to 508.08, its text 344.54 to 507.96; mid-line wb80-14), the last glyph's
+  letter spacing (wb80-11: 490.08, the glyphs 486.96), a line-end hyphen (wb83-01, wb82-23) and a justified line's
+  stretched spaces (wb80-10); spanning a tab (wb80-12: two text objects, one shading 344.40 to 523.92) and soft hyphens
+  (wb82-23: Word splits the text at each, one shading a line); split by a font fallback (wb82-24: "stars ", the
+  Segoe UI Symbol "★★★" and "and " each its own frame, the fallback's in its own font box). Down, the line box (wb80-03:
+  121.92 to 151.20, the pitch exactly; three lines' frames contiguous, wb80-08). Ends on Word's 0.24 pt grid. The
+  effect pictures group the same way (wb80-13: one glow over the tab; wb82-25: one a font).
+- **Word's shading encoding**: some shadings are mirrored, the function running there and back over twice the axis
+  (blue, red, blue), only the frame's half on the page (shapes, wb82-13 to -15: -144 to 432 for a shape at 144 to 432;
+  underlines; wb82-19; wb83-01's last line). The visible gradient is the same; a reader must sample the function, not
+  take the axis.
+- **Decorations are painted as the glyphs**: an underline and a strike-through filled with the run's gradient over the
+  run's frame and stroked with its outline, after the run's text (wb80-17, -18); a hollow run's underline stroked only
+  (wb80-19); a hyperlink's text and underline in its colour, outlined (wb82-03).
+- **A right-to-left run's gradient is reversed**: at 0 degrees it starts at the run's right end, its reading start
+  (wb82-28: blue at the left, red at the right).
+- Highlight and shading drawn before the glow picture, over the line box including the room (wb80-20, -21: 51.36 at
+  36 pt with a glow of 8). 45 degrees with `scaled` 0 and 1 as docx4j has them (wb80-22, -23). Path gradients `rect`
+  and `shape` are pictures in Word's PDF, not shadings (wb80-24, -25). Simulated bold: the glyphs filled and stroked
+  (wb82-26); simulated italic sheared paths (wb82-27). Outlines 0.25 to 6 pt at their stated widths at 11 pt (wb82-04
+  to -09); an outline's alpha its stroke's (wb82-10: 0.498). A text box's runs as body text's (wb82-11, -12).
+- Word emits empty pictures (alpha 0 throughout) for a paragraph mark with a glow (wb81-23, wb82-30's second) and for a
+  run of spaces alone (wb81-24): nothing to draw.
+- Unexplained, one probe each: a gradient from a character style with a glow (wb82-01) framed by the ink (346.08 to
+  444.48, the ink 345.60 to 444.41), not the advance; a paragraph style's outlined text with no invisible text in
+  Word's PDF (wb82-02). A follow-up pair would separate the style from the glow.
+
+### 6.2 The room (wb81, wb82-32)
+
+Phase 3's rule (`TextEffects.reach`) holds at body sizes within one 0.24 pt grid step. Plain pitch (Aptos) 12.24,
+13.44, 14.64, 17.04 at 10, 11, 12, 14 pt; room above and below measured (predicted):
+
+| Aptos | shadow blur 4, 3 at 45 degrees | glow 5 | reflection sharp, 4 down |
+|---|---|---|---|
+| 10 pt | 0.48, 1.44 (0.47, 1.54) | 0.96, 0.72 (0.94, 0.94) | 0, 4.32 (0, 4.46) |
+| 11 pt | 0.48, 1.68 (0.50, 1.64) | 0.96, 0.96 (1.01, 1.01) | 0, 4.80 (0, 4.90) |
+| 12 pt | 0.72, 1.68 (0.54, 1.75) | 0.96, 1.20 (1.07, 1.07) | 0, 5.28 (0, 5.35) |
+| 14 pt | 0.48, 2.16 (0.60, 1.95) | 1.20, 1.20 (1.19, 1.19) | 0, 6.24 (0, 6.24) |
+
+- **Spacing rules** (14 pt, a glow of 8: 1.91 each side; a reflection 6.24 below): auto 1.15 and double apply their
+  multiple to the room (wb81-13: 21.60 and 22.08 against 21.50 and 22.07 so; wb81-14, -18 within 0.3); exact gives
+  none (wb81-15, -19: every pitch 24.0); atLeast under the line's height as single spacing (wb81-16); **atLeast with
+  slack keeps its height, the room absorbed, but the baseline moves up by the room below** (wb81-17: 28.08 then 31.94;
+  wb81-20, a reflection: 23.76 then 36.24, 30 - 6.24 and 30 + 6.24); two runs unequal the line the larger (wb82-32:
+  4.32, glow 18's 4.29).
+- **A superscript or subscript takes the room of its run at its stated size, unraised** (wb81-21, -22: 1.92 above and
+  below at 14 pt, where the raised small glyph would take 2.08 above and none below).
+- An empty paragraph whose mark has an effect takes the room (wb81-23: 3.86); a run of spaces alone takes none, its
+  line the mark's (wb81-24). A table row grows by the room, the cell's text moved down by the room above (wb81-25:
+  3.84, 1.92). The first line of a page moves down from the margin by the room above (wb81-26, -27: 3.60 at 36 pt); a
+  header grows by it (wb81-28, -29: the body 3.84 lower).
+- Unexplained, one probe: a numbered paragraph whose mark has a glow got room above (2.88) and none below (wb82-30); the
+  mark's glow paints the number (a picture) and a gradient on the mark fills it (wb82-31).
+
+### 6.3 The curve (wb82)
+
+D24's condition confirmed on more faces and sizes: two stops at 0 and 100% by the curve (wb82-16, Calibri 20 pt; -20,
+Times New Roman 48 pt: (238, 0, 106), (186, 0, 187), (106, 0, 238)); two stops inside the run even (wb82-17: (145, 0,
+110) halfway), two stops at 0 and 60% even with the end colour held past 60% (wb82-21: (149, 0, 106) a quarter of the
+way, (42, 0, 212) halfway), three and four stops even (wb82-18, -22).
+
+### 6.4 Shapes' gradients (wb82-13 to -15)
+
+A shape's own gradient fill is blended as a run's: two stops at 0 and 100% by the curve ((187, 0, 186) halfway, where an
+even blend gives (128, 0, 128)), two stops inside the shape even ((145, 0, 110)), three even. So D24's second half is
+decided by measurement: `Fills.wordGradient` (renamed from `textGradient`) now serves a shape's fill in
+`ShapeRenderer` too; a line's gradient and a chart's stay even (unmeasured). Test: chart-render `ShapeHtmlTest` (a
+shape's two-stop gradient 17 stops, its middle (186, 0, 186); three stops three), chart-render 112 pass. Gate b481
+against b464: 0 movers, events equal; against b480 the time fields and 14114 back to b479's letter spacing (b480's
+0.212 the flake); no corpus document has a two-stop shape gradient at the ends. The probes' 324 the same.
+
+### 6.5 To the fork (sent 2026-11-14)
+
+From 6.1 and 6.2, for fop/CR-043: the room as built (auto's factor on it, exact none, atLeast absorbed) with the
+baseline under atLeast moved up by the room below (to be confirmed in its `wordLine`); the room relative to the
+unraised baseline (a superscript's); an empty paragraph's room from its block; the painter called once per group (the
+run's id, one font, one line: its areas' glyphs together, their union), under before its first area and over after its
+last, in place of area and run-on-line; decorations in the first build (the underline's and strike's positions and
+thicknesses, a return key so that FOP skips its own); the area's direction for a reversed gradient; a background
+extended by the room (low priority).
+

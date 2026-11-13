@@ -295,17 +295,6 @@ public final class VmlWordArt {
 	}
 
 	/**
-	 * Word's sigma blend, VML's default gradient method: {@code color2}'s weight at each sixteenth of the way from
-	 * {@code color}, in gamma-2.2 light (cr083-phase4's wv45-09, red to blue: Word's 256 samples, red and blue summing
-	 * to 1 within 0.005 at gamma 2.2; this table within 11 of 255 of every sample, the middle (187, 0, 186) where an
-	 * even blend gives (128, 0, 128))
-	 */
-	private static final double[] SIGMA = { 0, .018, .0443, .0854, .1422, .2147, .2996, .3976, .5, .6024, .7004, .7853,
-			.8578, .9146, .9557, .982, 1 };
-
-	private static final double GAMMA = 2.2;
-
-	/**
 	 * A gradient's colours from {@code color} (0) to {@code color2} (1), each {position, rgb, opacity}: its
 	 * {@code colors} list where it has one ("0 red;32768f yellow;1 blue", a position a fraction, {@code f} 65,536ths,
 	 * wv45-15), held at its first and last colours to 0 and 1, the opacity from {@code opacity} to {@code opacity2}
@@ -343,7 +332,7 @@ public final class VmlWordArt {
 	 * focus, so with focus 0 from {@code color2} at the axis's start to {@code color} at its end, with 100% the
 	 * reverse, with 50% {@code color} at both ends and {@code color2} in the middle, each half the whole run; a
 	 * negative focus the colours swapped and the focus taken from the far end (-50% measured, -100% as Part 4 has it,
-	 * as 100%); with {@code sigma} each step of the run blended by Word's curve ({@link #SIGMA}).
+	 * as 100%); with {@code sigma} each step of the run blended by Word's curve ({@link GradientCurve}).
 	 */
 	static List<double[]> stops(List<double[]> run, double focus, boolean sigma) {
 		List<double[]> r = run;
@@ -370,29 +359,18 @@ public final class VmlWordArt {
 		return out;
 	}
 
-	/** The run with each step blended by Word's sigma curve, at sixteenths */
+	/** The run with each step blended by Word's sigma curve, at sixteenths ({@link GradientCurve}) */
 	private static List<double[]> sigma(List<double[]> run) {
 		List<double[]> out = new ArrayList<double[]>();
 		for (int i = 0; i + 1 < run.size(); i++) {
 			double[] a = run.get(i), b = run.get(i + 1);
-			for (int k = i == 0 ? 0 : 1; k < SIGMA.length; k++) {
-				double w = SIGMA[k];
-				out.add(new double[] { a[0] + (b[0] - a[0]) * k / (SIGMA.length - 1), blend((int) a[1], (int) b[1], w),
-						a[2] + (b[2] - a[2]) * w });
+			for (int k = i == 0 ? 0 : 1; k <= GradientCurve.STEPS; k++) {
+				double w = GradientCurve.weight(k);
+				out.add(new double[] { a[0] + (b[0] - a[0]) * k / GradientCurve.STEPS,
+						GradientCurve.blend((int) a[1], (int) b[1], w), a[2] + (b[2] - a[2]) * w });
 			}
 		}
 		return out;
-	}
-
-	/** Two colours blended in gamma-2.2 light, {@code w} of the second */
-	static int blend(int a, int b, double w) {
-		int rgb = 0;
-		for (int shift = 16; shift >= 0; shift -= 8) {
-			double ca = ((a >> shift) & 255) / 255.0, cb = ((b >> shift) & 255) / 255.0;
-			double v = Math.pow((1 - w) * Math.pow(ca, GAMMA) + w * Math.pow(cb, GAMMA), 1 / GAMMA);
-			rgb |= (int) Math.round(Math.max(0, Math.min(1, v)) * 255) << shift;
-		}
-		return rgb;
 	}
 
 	/** {@code v:stroke} as a DrawingML outline, or null where it isn't stroked */

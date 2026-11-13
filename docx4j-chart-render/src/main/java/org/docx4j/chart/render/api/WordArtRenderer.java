@@ -936,11 +936,26 @@ public final class WordArtRenderer {
 				byRun.computeIfAbsent(g.run, r -> new Path2D.Double(Path2D.WIND_NON_ZERO)).append(turn.createTransformedShape(s), false);
 			}
 		}
+		// on flat text a gradient spans the run's frame, not its ink: its advance across, its font's ascent to descent
+		// down (wa30-14, wg10-06 to -08: Word's axis 43.9 pt at 36 pt, the ink's 23.9; a warp's frame is unmeasured)
+		Map<WordArtText.Run, Rectangle2D> frames = new HashMap<WordArtText.Run, Rectangle2D>();
+		if (warped == null) {
+			for (Line l : layout.lines) {
+				for (Glyph g : l.glyphs) {
+					if (g.lineBreak || g.font == null) continue;
+					double size = g.font.getSize2D(), base = baseline(l, g);
+					Rectangle2D.Double box = new Rectangle2D.Double(l.x0 + g.x, base - g.run.getAscent() * size, g.advance,
+							(g.run.getAscent() + g.run.getDescent()) * size);
+					frames.merge(g.run, box, (a, b) -> a.createUnion(b));
+				}
+			}
+		}
 		Fills fills = new Fills(theme);
 		for (Map.Entry<WordArtText.Run, Path2D.Double> e : byRun.entrySet()) {
 			WordArtText.Run r = e.getKey();
 			if (r.paint(warped != null) != WordArtText.Paint.PATHS) continue;
 			Path2D.Double s = e.getValue();
+			Rectangle2D frame = frames.get(r);
 			Object fill = r.getFill();
 			boolean filled = false;
 			if (fill == null) {
@@ -958,10 +973,11 @@ public final class WordArtRenderer {
 					filled = true;
 				}
 			} else if (fill instanceof CTGradientFillProperties) {
-				Drawing.Gradient gr = fills.gradient((CTGradientFillProperties) fill);
+				Drawing.Gradient gr = fills.wordGradient((CTGradientFillProperties) fill);
 				if (gr != null) {
 					Drawing.Area a = new Drawing.Area(s, gr.getColours()[0], null, 0, "wordart.fill");
 					a.setGradient(gr);
+					if (frame != null) a.setGradientFrame(turn.createTransformedShape(frame).getBounds2D());
 					drawing.add(a);
 					painted = union(painted, s.getBounds2D());
 					filled = true;

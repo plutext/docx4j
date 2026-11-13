@@ -1093,7 +1093,7 @@ public final class ShapeRenderer {
 				if (c == null) return null;
 				d.add(new Drawing.Area(s, modify(c, mode), null, 0, "shape.fill"));
 			} else if (fill instanceof CTGradientFillProperties) {
-				Drawing.Gradient g = fills.gradient((CTGradientFillProperties) fill);
+				Drawing.Gradient g = fills.wordGradient((CTGradientFillProperties) fill);
 				if (g == null) return null;
 				Color[] cs = g.getColours().clone();
 				for (int i = 0; i < cs.length; i++) cs[i] = modify(cs[i], mode);

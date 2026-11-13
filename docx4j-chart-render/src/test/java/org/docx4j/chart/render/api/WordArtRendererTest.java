@@ -775,4 +775,52 @@ public class WordArtRendererTest {
 		WordArtRenderer.Drawn few = draw(para(run(glow(5) + shadow(4, 3, 45, 100000, 100000, "tl"), "WordArt")), wordForm("textArchUp"));
 		assertEquals(14, pictures(few.getDrawing()).size());
 	}
+
+	private static String gradFill(String... stops) {
+		StringBuilder gs = new StringBuilder();
+		for (int i = 0; i < stops.length; i += 2) {
+			gs.append("<w14:gs w14:pos=\"" + stops[i] + "\"><w14:srgbClr w14:val=\"" + stops[i + 1] + "\"/></w14:gs>");
+		}
+		return "<w14:textFill><w14:gradFill><w14:gsLst>" + gs + "</w14:gsLst><w14:lin w14:ang=\"0\" w14:scaled=\"0\"/>"
+				+ "</w14:gradFill></w14:textFill>";
+	}
+
+	/**
+	 * A gradient of two stops at 0 and 100% blended by Word's curve, any other evenly between its stops (CR-083 D24;
+	 * phase 5 findings section 1.2: wb50-13, red to blue (238, 0, 106) a quarter of the way; wb50-15, three stops)
+	 */
+	@Test
+	public void aTwoStopGradientTakesWordsCurve() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run(gradFill("0", "FF0000", "100000", "0000FF"), "WordArt")), fixed(null));
+		Drawing.Gradient g = areas(d, "wordart.fill").get(0).getGradient();
+		assertEquals(17, g.getColours().length);
+		assertEquals(0.25f, g.getStops()[4], 1e-6);
+		assertEquals(new java.awt.Color(0xEE, 0, 0x69), g.getColours()[4]);
+		assertEquals(new java.awt.Color(0xBA, 0, 0xBA), g.getColours()[8]);
+		WordArtRenderer.Drawn three = draw(para(run(gradFill("0", "FF0000", "50000", "FFFF00", "100000", "0000FF"), "WordArt")), fixed(null));
+		assertEquals(3, areas(three, "wordart.fill").get(0).getGradient().getColours().length);
+		WordArtRenderer.Drawn inside = draw(para(run(gradFill("21000", "FF0000", "88000", "0000FF"), "WordArt")), fixed(null));
+		assertEquals(2, areas(inside, "wordart.fill").get(0).getGradient().getColours().length);
+	}
+
+	/**
+	 * On flat WordArt a gradient spans the run's frame, its advance across and its font's ascent to descent down, not
+	 * its ink (wa30-14 and wg10-06 to -08: Word's axis at 90 degrees 43.9 pt at 36 pt, the ink's 23.9)
+	 */
+	@Test
+	public void aGradientSpansTheRunsFrame() throws Exception {
+		String g90 = gradFill("0", "FF0000", "100000", "0000FF").replace("w14:ang=\"0\"", "w14:ang=\"5400000\"");
+		WordArtRenderer.Drawn d = draw(para(run(g90, "wave")), fixed(null));
+		Drawing.Area a = areas(d, "wordart.fill").get(0);
+		java.awt.geom.Rectangle2D frame = a.getGradientFrame();
+		assertNotNull(frame);
+		java.awt.geom.Rectangle2D ink = a.getShape().getBounds2D();
+		// "wave" has no ascender or descender: its ink well inside the frame, which is about 1.2 em at 36 pt
+		assertTrue(frame.getHeight() > 40 && frame.getHeight() < 48);
+		assertTrue(ink.getHeight() < 25);
+		assertTrue(frame.getMinY() < ink.getMinY() - 5 && frame.getMaxY() > ink.getMaxY() + 5);
+		// a warp's frame isn't measured: the ink, as before
+		WordArtRenderer.Drawn w = draw(para(run(g90, "wave")), fixed("textInflate"));
+		assertNull(areas(w, "wordart.fill").get(0).getGradientFrame());
+	}
 }

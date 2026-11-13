@@ -100,6 +100,9 @@ public final class WordArtText {
 	/** A run's fill or colour that couldn't be resolved or drawn (a gradient with no stops, a colour that doesn't resolve) */
 	public static final String FILL = "render.wordart.fill";
 
+	/** A body run's text effect not drawn as Word draws it (CR-083 phase 5, D9, D23: in HTML, what CSS can't carry) */
+	public static final String BODY_EFFECT = "render.wordart.body_effect";
+
 	/** A run's outline that couldn't be drawn */
 	public static final String OUTLINE = "render.wordart.outline";
 

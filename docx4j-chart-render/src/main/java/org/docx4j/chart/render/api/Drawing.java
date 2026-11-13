@@ -392,6 +392,8 @@ public final class Drawing {
 		private final boolean round;
 		/** its fill a gradient ({@link #fill} its first colour), or null */
 		private Gradient gradient;
+		/** the box the gradient spans, where it isn't the shape's own bounds (a run's frame, CR-083) */
+		private Rectangle2D gradientFrame;
 		/** its line a gradient ({@link #line} its first colour), or null */
 		private Gradient lineGradient;
 		/** its fill a pattern ({@link #fill} its foreground), or null */
@@ -459,6 +461,21 @@ public final class Drawing {
 
 		public void setGradient(Gradient gradient) {
 			this.gradient = gradient;
+		}
+
+		/** The box the gradient spans; null for the shape's own bounds */
+		public Rectangle2D getGradientFrame() {
+			return gradientFrame;
+		}
+
+		/**
+		 * The box the gradient spans, where it isn't the shape's bounds: a WordArt run's frame, its advance across and
+		 * its font's ascent to descent down (CR-083; wa30-14, wg10-06 to -08), not its ink
+		 *
+		 * @since 17.3.7
+		 */
+		public void setGradientFrame(Rectangle2D gradientFrame) {
+			this.gradientFrame = gradientFrame;
 		}
 
 		public Gradient getLineGradient() {
@@ -768,7 +785,7 @@ public final class Drawing {
 					g.setPaint(a.paint);
 					g.fill(a.shape);
 				} else if (a.gradient != null) {
-					g.setPaint(a.gradient.paint(a.shape.getBounds2D()));
+					g.setPaint(a.gradient.paint(a.gradientFrame != null ? a.gradientFrame : a.shape.getBounds2D()));
 					g.fill(a.shape);
 				} else if (a.pattern != null) {
 					g.setPaint(a.pattern.paint());

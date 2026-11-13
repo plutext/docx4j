@@ -27,6 +27,7 @@ import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.model.color.DrawingMLColors;
 import org.docx4j.model.color.ResolvedColor;
 import org.docx4j.model.color.ThemeColors;
+import org.docx4j.model.shapes.GradientCurve;
 
 /**
  * A DrawingML shape's properties ({@code a:spPr}: a classic chart's {@code c:spPr}, a chartex's
@@ -100,6 +101,29 @@ public final class Fills {
 		double angle = g.getLin() != null && g.getLin().getAng() != null ? g.getLin().getAng() / 60000.0 : 0;
 		boolean scaled = g.getLin() != null && Boolean.TRUE.equals(g.getLin().isScaled());
 		return new Drawing.Gradient(stops, colours, true, angle, scaled, null);
+	}
+
+	/**
+	 * A run's gradient fill (a {@code w14:textFill}'s, as DrawingML) or a shape's, as Word blends it: a gradient of exactly
+	 * two stops, at 0 and 100%, along Word's curve in gamma-2.2 light ({@link GradientCurve}: 17 stops); any other as
+	 * {@link #gradient(org.docx4j.dml.CTGradientFillProperties)}, evenly between its stops (CR-083 D24; a shape's measured by
+	 * the cr083-phase5 round, wb82-13 to -15: two stops at the ends (187, 0, 186) halfway, two inside and three even). A
+	 * line's gradient and a chart's are unmeasured and stay even. Null for none.
+	 *
+	 * @since 17.3.7
+	 */
+	public Drawing.Gradient wordGradient(org.docx4j.dml.CTGradientFillProperties g) {
+		Drawing.Gradient even = gradient(g);
+		if (even == null || even.getColours().length != 2 || !GradientCurve.applies(g)) return even;
+		Color[] c = even.getColours();
+		int[] argb = GradientCurve.argb(c[0].getRGB(), c[1].getRGB());
+		float[] stops = new float[argb.length];
+		Color[] colours = new Color[argb.length];
+		for (int k = 0; k < argb.length; k++) {
+			stops[k] = (float) k / GradientCurve.STEPS;
+			colours[k] = new Color(argb[k], true);
+		}
+		return new Drawing.Gradient(stops, colours, even.isLinear(), even.getAngle(), even.isScaled(), even.getFocus());
 	}
 
 	/** A shape's outer shadow and glow (a:effectLst), or null for none */

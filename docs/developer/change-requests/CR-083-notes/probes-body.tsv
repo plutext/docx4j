@@ -1,0 +1,89 @@
+set	file	page	probe	kind	mode	note	summary	text
+cr083-phase5	wb80-body-lines	1	wb80-01	body	15	outline 1 pt red, a run broken across two lines (24 pt)	textOutline	Plain words
+cr083-phase5	wb80-body-lines	2	wb80-02	body	15	gradient 0 degrees, a run broken across two lines (24 pt)	textFill	Plain words
+cr083-phase5	wb80-body-lines	3	wb80-03	body	15	gradient 90 degrees, a run broken across two lines (24 pt)	textFill	Plain words
+cr083-phase5	wb80-body-lines	4	wb80-04	body	15	shadow, a run broken across two lines (24 pt)	shadow	Plain words
+cr083-phase5	wb80-body-lines	5	wb80-05	body	15	glow 5 pt, a run broken across two lines (24 pt)	glow	Plain words
+cr083-phase5	wb80-body-lines	6	wb80-06	body	15	reflection, a run broken across two lines (24 pt)	reflection	Plain words
+cr083-phase5	wb80-body-lines	7	wb80-07	body	15	gradient 0 degrees, a run broken across three lines (24 pt)	textFill	Plain words
+cr083-phase5	wb80-body-lines	8	wb80-08	body	15	gradient 90 degrees, a run broken across three lines (24 pt)	textFill	Plain words
+cr083-phase5	wb80-body-lines	9	wb80-09	body	15	glow 5 pt, a run broken across three lines (24 pt)	glow	Plain words
+cr083-phase5	wb80-body-lines	10	wb80-10	body	15	gradient 0 degrees, a run broken across lines in a justified paragraph	textFill	Plain words
+cr083-phase5	wb80-body-lines	11	wb80-11	body	15	gradient 0 degrees, a run with letter spacing 3 pt (w:spacing 60)	textFill	Plain words
+cr083-phase5	wb80-body-lines	12	wb80-12	body	15	gradient 0 degrees, a tab inside the run (default stops)	textFill	Plain words
+cr083-phase5	wb80-body-lines	13	wb80-13	body	15	glow 5 pt, a tab inside the run (default stops)	glow	Plain words
+cr083-phase5	wb80-body-lines	14	wb80-14	body	15	gradient 0 degrees, a run ending in a trailing space, mid-line	textFill	Plain words
+cr083-phase5	wb80-body-lines	15	wb80-15	body	15	two neighbouring runs, each a shadow blurred 6 pt, 4 pt away at 0 degrees (the drawing order)	shadow	Plain
+cr083-phase5	wb80-body-lines	16	wb80-16	body	15	two neighbouring runs, a glow 8 pt orange then a glow 8 pt blue (the drawing order)	glow	Plain
+cr083-phase5	wb80-body-lines	17	wb80-17	body	15	underlined, a 1 pt red outline over a gradient fill at 0 degrees	textOutline textFill	Plain words
+cr083-phase5	wb80-body-lines	18	wb80-18	body	15	struck through, a 1 pt red outline over a gradient fill at 0 degrees	textOutline textFill	Plain words
+cr083-phase5	wb80-body-lines	19	wb80-19	body	15	underlined, hollow (no fill, a 1 pt black outline)	textOutline textFill	Plain words
+cr083-phase5	wb80-body-lines	20	wb80-20	body	15	highlighted yellow, a glow 8 pt	glow	Plain words
+cr083-phase5	wb80-body-lines	21	wb80-21	body	15	shaded D9E2F3, a glow 8 pt	glow	Plain words
+cr083-phase5	wb80-body-lines	22	wb80-22	body	15	gradient at 45 degrees, scaled 0, 36 pt alone	textFill	Gradient 45
+cr083-phase5	wb80-body-lines	23	wb80-23	body	15	gradient at 45 degrees, scaled 1, 36 pt alone	textFill	Gradient 45
+cr083-phase5	wb80-body-lines	24	wb80-24	body	15	path gradient rect, 36 pt alone	textFill	Path rect
+cr083-phase5	wb80-body-lines	25	wb80-25	body	15	path gradient shape, 36 pt alone	textFill	Path shape
+cr083-phase5	wb81-body-room	1	wb81-01	body	15	Aptos 10 pt, shadow blurred 4 pt, 3 pt at 45 degrees	shadow	WordArt
+cr083-phase5	wb81-body-room	2	wb81-02	body	15	Aptos 10 pt, glow 5 pt	glow	WordArt
+cr083-phase5	wb81-body-room	3	wb81-03	body	15	Aptos 10 pt, reflection sharp, 4 pt down	reflection	WordArt
+cr083-phase5	wb81-body-room	4	wb81-04	body	15	Aptos 11 pt, shadow blurred 4 pt, 3 pt at 45 degrees	shadow	WordArt
+cr083-phase5	wb81-body-room	5	wb81-05	body	15	Aptos 11 pt, glow 5 pt	glow	WordArt
+cr083-phase5	wb81-body-room	6	wb81-06	body	15	Aptos 11 pt, reflection sharp, 4 pt down	reflection	WordArt
+cr083-phase5	wb81-body-room	7	wb81-07	body	15	Aptos 12 pt, shadow blurred 4 pt, 3 pt at 45 degrees	shadow	WordArt
+cr083-phase5	wb81-body-room	8	wb81-08	body	15	Aptos 12 pt, glow 5 pt	glow	WordArt
+cr083-phase5	wb81-body-room	9	wb81-09	body	15	Aptos 12 pt, reflection sharp, 4 pt down	reflection	WordArt
+cr083-phase5	wb81-body-room	10	wb81-10	body	15	Aptos 14 pt, shadow blurred 4 pt, 3 pt at 45 degrees	shadow	WordArt
+cr083-phase5	wb81-body-room	11	wb81-11	body	15	Aptos 14 pt, glow 5 pt	glow	WordArt
+cr083-phase5	wb81-body-room	12	wb81-12	body	15	Aptos 14 pt, reflection sharp, 4 pt down	reflection	WordArt
+cr083-phase5	wb81-body-room	13	wb81-13	body	15	Aptos 14 pt, glow 8 pt, line spacing auto 1.15	glow	WordArt
+cr083-phase5	wb81-body-room	14	wb81-14	body	15	Aptos 14 pt, glow 8 pt, line spacing double	glow	WordArt
+cr083-phase5	wb81-body-room	15	wb81-15	body	15	Aptos 14 pt, glow 8 pt, line spacing exact 24 pt	glow	WordArt
+cr083-phase5	wb81-body-room	16	wb81-16	body	15	Aptos 14 pt, glow 8 pt, line spacing atLeast 12 pt (under the line)	glow	WordArt
+cr083-phase5	wb81-body-room	17	wb81-17	body	15	Aptos 14 pt, glow 8 pt, line spacing atLeast 30 pt (over the line)	glow	WordArt
+cr083-phase5	wb81-body-room	18	wb81-18	body	15	Aptos 14 pt, reflection sharp, 4 pt down, line spacing double	reflection	WordArt
+cr083-phase5	wb81-body-room	19	wb81-19	body	15	Aptos 14 pt, reflection sharp, 4 pt down, line spacing exact 24 pt	reflection	WordArt
+cr083-phase5	wb81-body-room	20	wb81-20	body	15	Aptos 14 pt, reflection sharp, 4 pt down, line spacing atLeast 30 pt (over the line)	reflection	WordArt
+cr083-phase5	wb81-body-room	21	wb81-21	body	15	Aptos 14 pt, a superscript with a glow 8 pt	glow	WordArt
+cr083-phase5	wb81-body-room	22	wb81-22	body	15	Aptos 14 pt, a subscript with a glow 8 pt	glow	WordArt
+cr083-phase5	wb81-body-room	23	wb81-23	body	15	Aptos 14 pt, an empty paragraph whose mark has a glow 8 pt, after an empty one with none	glow	Plain line
+cr083-phase5	wb81-body-room	24	wb81-24	body	15	Aptos 14 pt, a paragraph of spaces alone with a glow 8 pt, after one with none	glow	Plain line
+cr083-phase5	wb81-body-room	25	wb81-25	body	15	Aptos 14 pt, a table: the second row's first cell a glow 8 pt, the first row plain	glow	WordArt
+cr083-phase5	wb81-body-room	26	wb81-26	body	15	Aptos 36 pt at the top of the page, no effect	no effect	WordArt
+cr083-phase5	wb81-body-room	27	wb81-27	body	15	Aptos 36 pt at the top of the page, a glow 8 pt	glow	WordArt
+cr083-phase5	wb81-body-room	28	wb81-28	body	15	a header of three 14 pt lines, past the top margin, no effect	no effect	Header line 3
+cr083-phase5	wb81-body-room	29	wb81-29	body	15	a header of three 14 pt lines, past the top margin, a glow 8 pt on its third line	glow	Header line 3
+cr083-phase5	wb82-body-forms	1	wb82-01	body	15	a character style with a glow 5 pt and a gradient at 0 degrees	no effect	Plain words
+cr083-phase5	wb82-body-forms	2	wb82-02	body	15	a paragraph style with a glow 5 pt and a 1 pt red outline (24 pt)	no effect	A paragraph
+cr083-phase5	wb82-body-forms	3	wb82-03	body	15	a hyperlink's text (to a bookmark) with a 1 pt red outline	textOutline	The target
+cr083-phase5	wb82-body-forms	4	wb82-04	body	15	an outline 0.25 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	5	wb82-05	body	15	an outline 0.5 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	6	wb82-06	body	15	an outline 1 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	7	wb82-07	body	15	an outline 2 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	8	wb82-08	body	15	an outline 3 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	9	wb82-09	body	15	an outline 6 pt red on 11 pt text	textOutline	Outlined
+cr083-phase5	wb82-body-forms	10	wb82-10	body	15	an outline 2 pt red at alpha 50000 (24 pt)	textOutline	Plain words
+cr083-phase5	wb82-body-forms	11	wb82-11	body	15	a text box (not WordArt), sized to its text, a run with a glow 8 pt	glow	Text box
+cr083-phase5	wb82-body-forms	12	wb82-12	body	15	a text box (not WordArt), fixed 288 by 72 pt, a run with a gradient at 0 degrees	textFill	Text box
+cr083-phase5	wb82-body-forms	13	wb82-13	body	15	a shape's gradient fill, red to blue at 0 and 100%, 0 degrees	no effect	
+cr083-phase5	wb82-body-forms	14	wb82-14	body	15	a shape's gradient fill, red to blue at 21 and 88%, 0 degrees	no effect	
+cr083-phase5	wb82-body-forms	15	wb82-15	body	15	a shape's gradient fill, red, yellow, blue at 0, 50, 100%, 0 degrees	no effect	
+cr083-phase5	wb82-body-forms	16	wb82-16	body	15	Calibri 20 pt, a gradient red to blue at 0 and 100%, 90 degrees	textFill	Plain words
+cr083-phase5	wb82-body-forms	17	wb82-17	body	15	Calibri 20 pt, a gradient red to blue at 21 and 88%, 90 degrees	textFill	Plain words
+cr083-phase5	wb82-body-forms	18	wb82-18	body	15	Calibri 20 pt, a gradient red, yellow, blue at 0, 50, 100%, 90 degrees	textFill	Plain words
+cr083-phase5	wb82-body-forms	19	wb82-19	body	15	Times New Roman 48 pt alone, a gradient red to blue at 0 and 100%, 0 degrees	textFill	Gradient
+cr083-phase5	wb82-body-forms	20	wb82-20	body	15	Times New Roman 48 pt alone, a gradient red to blue at 0 and 100%, 90 degrees	textFill	Gradient
+cr083-phase5	wb82-body-forms	21	wb82-21	body	15	Aptos 36 pt alone, a gradient red to blue at 0 and 60%, 0 degrees	textFill	Two stops
+cr083-phase5	wb82-body-forms	22	wb82-22	body	15	Aptos 36 pt alone, a gradient of four stops, red, yellow, green, blue at 0, 30, 70, 100%, 0 degrees	textFill	Four stops
+cr083-phase5	wb82-body-forms	23	wb82-23	body	15	soft hyphens in a gradient run at 0 degrees, one of them at a line's end	textFill	Plain words
+cr083-phase5	wb82-body-forms	24	wb82-24	body	15	a gradient run at 0 degrees with characters Aptos lacks (a font fallback)	textFill	Plain words
+cr083-phase5	wb82-body-forms	25	wb82-25	body	15	a glow 5 pt on a run with characters Aptos lacks (a font fallback)	glow	Plain words
+cr083-phase5	wb82-body-forms	26	wb82-26	body	15	Sylfaen bold (no bold face of its own), a gradient at 0 degrees, 28 pt	textFill	Plain words
+cr083-phase5	wb82-body-forms	27	wb82-27	body	15	Sylfaen italic (no italic face of its own), a 1 pt red outline, 28 pt	textOutline	Plain words
+cr083-phase5	wb82-body-forms	28	wb82-28	body	15	a right-to-left paragraph, Hebrew in Arial 24 pt, a gradient at 0 degrees on its middle run	textFill	
+cr083-phase5	wb82-body-forms	29	wb82-29	body	15	a right-to-left paragraph, Hebrew in Arial 24 pt, a glow 5 pt on its middle run	glow	
+cr083-phase5	wb82-body-forms	30	wb82-30	body	15	a numbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain	glow	The numbered
+cr083-phase5	wb82-body-forms	31	wb82-31	body	15	a numbered paragraph (24 pt) whose mark has a gradient at 0 degrees, its text plain	textFill	The numbered
+cr083-phase5	wb82-body-forms	32	wb82-32	body	15	Aptos 14 pt under atLeast 30 pt, a line with no effect, then one with a glow 5 pt run and a glow 18 pt run	glow	Plain line
+cr083-phase5	wb83-body-hyphen	1	wb83-01	body	15	gradient 0 degrees, a run of long words, automatic hyphenation on	textFill	Plain words
+cr083-phase5	wb83-body-hyphen	2	wb83-02	body	15	glow 5 pt, a run of long words, automatic hyphenation on	glow	Plain words

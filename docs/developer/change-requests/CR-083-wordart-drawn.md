@@ -55,6 +55,15 @@ blended evenly; the painter draws an SVG document as an artifact, from glyph ids
 found per render; the room under each spacing rule stated. D20, D21 and D23 decided as recommended, D22 and D24 as the
 review has them (Jason: "D20 as recommended; D21 as recommended; D23 as recommended; D22 and D24 as per fable
 review").
+Phase 5 begun 2026-11-14 (Jason: "commence phase 5"; findings §5): the round `cr083-phase5` built and staged (88
+probes, `build_body.py`); the fork's CR drafted by its session (fop/CR-043: design only, its build Jason's to order;
+four corrections to findings §2, the subset's glyph ids among them); step 1 built: a solid `w14:textFill` the run's
+colour in PDF (both routes) and HTML, HTML's CSS for the rest (D23), Word's curve for a two-stop gradient (D24), and
+flat WordArt's gradient spanning the run's frame, not its ink (wa30-14: 43.9 pt where docx4j's spanned 23.9); WordArt's
+gradients now Word's shadings within 1 of 255 and 0.2 pt; gates b479 and b480 0 movers, one corpus document's run in
+its fill's colour, as Word draws it. The round read the same day (findings §6): the frame a run's part on each line
+in one font, decorations painted as the glyphs, a right-to-left gradient reversed, the room phase 3's rule at body
+sizes (atLeast moving the baseline), and a shape's two-stop gradient on Word's curve too (applied; gate b481 0 movers).
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -678,6 +687,26 @@ catalogue (through the portfolio).
     - **Gate:** the round's probes within phase 3's tolerances (the box 0.05 pt, the pictures as phase 3's); a fidelity
       gate whose movers are among the corpora's 12 documents with effects (phase 5 findings §1.4), each read line by
       line; their PDF size and render time against b478, any past a threshold reported.
+  - **Begun 2026-11-14** (Jason: "commence phase 5"; findings §5).
+    - The round `cr083-phase5` (88 probes in four files, `build_body.py`, `probes-body.tsv`): staged, verified and
+      announced by the portfolio (to-vm 288), its results awaited.
+    - The fork's CR: fop/CR-043, drafted by its session from §10 (design only; its build Jason's to order). Its four
+      corrections to findings §2 and its answers are findings §5.2; the painter is a JDK `BiFunction` on the
+      `FOUserAgent`, set by reflection as `setWordLayoutFontMetrics` is; four days, not three. Registry: CR-083.5
+      depends on fop/CR-043 (2a23d82). Enterprise CR-001 §6.6 item 70 records the limitation (85031ab).
+    - Step 1 built: `TextFill` (a solid fill the run's colour over `w:color`, its alpha as "#RRGGBBAA", none left as
+      01; the paragraph mark's for its number), `TextOutline` and `TextShadow` (HTML only, D23), from
+      `PropertyFactory.createProperties`; `GradientCurve` (the curve, shared with `VmlWordArt`) and
+      `Fills.wordGradient` (D24, WordArt's runs, and shapes' fills once the round showed Word blends them alike); on
+      flat WordArt a gradient spans the run's frame (`Drawing.Area.setGradientFrame`), found when D24 was measured.
+      Gates b479, b480 and b481: 0 movers; findings §5.1, §6.4.
+    - The round read the same day (findings §6): a run's effects drawn line by line, its frame the run's part on a
+      line in one font (spanning a tab, soft hyphens, a line-end hyphen and trailing spaces; split by a font
+      fallback), down the line box; decorations painted as the glyphs; a right-to-left run's gradient reversed; the
+      room phase 3's rule at body sizes, auto's factor applied to it, exact none, atLeast absorbing it but moving the
+      baseline up by the room below, a superscript's at its stated size unraised; D24's condition confirmed, and a
+      shape's two-stop gradient on the curve too. The fork told what changes for fop/CR-043 (the painter once per
+      run, font and line; decorations in its first build; the direction; the atLeast baseline).
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).
@@ -945,6 +974,9 @@ features, not effects; pptx text warps (pptx4j could use the same code later); P
   simulated style and span box, returning an SVG document drawn by `IFPainter.drawImage(Document, Rectangle)` as an
   artifact; mode 3 for text the painter draws over, in each painter and the IF serializer.
 
+  Drafted 2026-11-14 by that session as fop/CR-043 (design only; its build Jason's to order); the limitation recorded
+  as Enterprise CR-001 §6.6 item 70 (phase 5 findings §5.2).
+
   If a FOP limitation is found, it is recorded in Enterprise CR-001 §6.6, as the CLAUDE.md says.
 - `legals/NOTICE`: an entry for any ported code (D5), with the MIT permission notice where the code is
   office-open-xml-viewer's, to Jason for review before the first ported file is committed.
@@ -956,8 +988,8 @@ Phase 0 three days; phase 1 three days (the line layout and invisible text); pha
 (revised by its design: the round one, the code two, the gate one); phase 4 eight days (revised by its design and its
 review: the shapetypes and the round two, the code five (the geometry source, the evaluator, the stretch, groups and
 paint, the routes), the gate one); phase 5 six days docx4j-side (revised by its design and its review: the round one,
-step 1 one, the painter and the routes three, the gate one), plus the fork's CR (about three days, its session's, each
-painter and the serializer included); phase 6 two days after
+step 1 one, the painter and the routes three, the gate one), plus the fork's CR (fop/CR-043: about four days, its session's, each
+painter and the serializer and the subset's glyph ids included; mode 2 half a day more if the gate calls for it); phase 6 two days after
 CR-081.5; phase 7 one day; phase 8 half a day. About six weeks.
 
 ## 12. Specifications

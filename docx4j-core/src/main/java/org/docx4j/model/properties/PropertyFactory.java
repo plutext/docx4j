@@ -46,6 +46,9 @@ import org.docx4j.model.properties.run.Bold;
 import org.docx4j.model.properties.run.Caps;
 import org.docx4j.model.properties.run.Emphasis;
 import org.docx4j.model.properties.run.FontColor;
+import org.docx4j.model.properties.run.TextFill;
+import org.docx4j.model.properties.run.TextOutline;
+import org.docx4j.model.properties.run.TextShadow;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.HighlightColor;
 import org.docx4j.model.properties.run.Italics;
@@ -371,6 +374,14 @@ public class PropertyFactory {
 //			dest.setW(rPr.getW());
 //		if (rPr.getWebHidden() != null)
 //			dest.setWebHidden(rPr.getWebHidden());
+		// a run's Word 2010 text effects (CR-083 phase 5), after FontColor: a solid w14:textFill is the run's colour
+		// over w:color's; in HTML its outline, gradient, shadow and glow as CSS (D23)
+		if (rPr.getTextFill() != null)
+			properties.add(new TextFill(rPr.getTextFill()));
+		if (rPr.getTextOutline() != null)
+			properties.add(new TextOutline(rPr.getTextOutline()));
+		if (rPr.getGlow() != null || rPr.getShadow14() != null || rPr.getReflection() != null)
+			properties.add(new TextShadow(rPr));
 		
 		return setThemeColors(properties, themeColors(wmlPackage));		
 	}
@@ -464,6 +475,10 @@ public class PropertyFactory {
 //			dest.setW(rPr.getW());
 //		if (rPr.getWebHidden() != null)
 //			dest.setWebHidden(rPr.getWebHidden());
+		
+		// the mark's solid w14:textFill, the colour of the paragraph's number (CR-083 phase 5)
+		if (rPr.getTextFill() != null)
+			properties.add(new TextFill(rPr.getTextFill()));
 		
 		return setThemeColors(properties, themeColors(wmlPackage));		
 	}
