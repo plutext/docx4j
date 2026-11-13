@@ -86,7 +86,9 @@ public final class VmlWordArt {
 		String fillRgb = fillColour(r);
 		Object fill = fill(r, fillRgb, problems);
 		org.docx4j.dml.CTLineProperties outline = outline(r, fillRgb, problems);
-		org.docx4j.dml.CTEffectList effects = shadow(r, fillRgb, problems);
+		// a VML shadow is a copy of the glyphs Word draws under them (shadows), not a DrawingML effect picture
+		shadow(r, fillRgb, problems);
+		org.docx4j.dml.CTEffectList effects = null;
 		boolean threeD = r.has(org.docx4j.vml.officedrawing.CTExtrusion.class)
 				&& isOn(r.child(org.docx4j.vml.officedrawing.CTExtrusion.class, org.docx4j.vml.officedrawing.CTExtrusion::getOn));
 		if (threeD) problems.add(WordArtText.FLAT_3D);
@@ -127,6 +129,25 @@ public final class VmlWordArt {
 	/** Whether the text is sized to fill its path ({@code fitpath}) */
 	public static boolean isFitPath(VmlShapes.Resolved r) {
 		return isOn(r.child(CTTextPath.class, CTTextPath::getFitpath));
+	}
+
+	/**
+	 * The runs' paint as the geometry's sets give it: Word fills none of the text where a set says {@code nf}, and strokes
+	 * none where a set says {@code ns} (cr083-phase4's wv43-28: one set nf, the other ns, nothing drawn).
+	 */
+	public static void paintBySets(WordArtText art, ShapeOutlines geometry) {
+		if (art == null || geometry == null) return;
+		boolean fill = true, stroke = true;
+		for (ShapeOutline o : geometry.getOutlines()) {
+			if (o.getFill() == org.docx4j.dml.STPathFillMode.NONE) fill = false;
+			if (!o.isStroked()) stroke = false;
+		}
+		for (WordArtText.Paragraph p : art.getParagraphs()) {
+			for (WordArtText.Run r : p.getRuns()) {
+				if (!fill) r.fill = new org.docx4j.dml.CTNoFillProperties();
+				if (!stroke) r.outline = null;
+			}
+		}
 	}
 
 	/** Whether the text path trims the room for ascenders and descenders ({@code trim}) */
@@ -214,6 +235,7 @@ public final class VmlWordArt {
 			run.descent = m.winDescent;
 			run.single = m.lineHeightFactor();
 			run.leading = m.eastAsian ? 0 : m.externalLeading;
+			run.emDescent = Math.max(m.winDescent, m.fopDescent);
 		} catch (RuntimeException e) {
 			log.debug("No line metrics for " + run.face + ": " + e.getMessage());
 		}
@@ -222,7 +244,7 @@ public final class VmlWordArt {
 	// ------------------------------------------------------------------ paint (D19)
 
 	/** The fill's colour: {@code v:fill color}, else {@code fillcolor}, else VML's default, white */
-	static String fillColour(VmlShapes.Resolved r) {
+	public static String fillColour(VmlShapes.Resolved r) {
 		String c = r.child(CTFill.class, CTFill::getColor);
 		if (c == null) c = r.attribute(CTShape::getFillcolor, CTShapetype::getFillcolor);
 		String rgb = VmlColours.rgb(c == null ? "white" : c);
@@ -320,23 +342,57 @@ public final class VmlWordArt {
 		}
 	}
 
-	/** {@code v:shadow} as an {@code a:effectLst} of one sharp outer shadow, or null where it is off */
+	/**
+	 * {@code v:shadow} as Word draws it on VML WordArt (cr083-phase4's wv45): copies of the glyphs, filled, no stroke,
+	 * under them, each {dx, dy, rgb, opacity} in the order drawn: for a double shadow the second ({@code offset2},
+	 * {@code color2}) then the first; an offset a percentage of the shape's width and height; the defaults 2pt,2pt and
+	 * gray. Emboss and perspective (copies Word turns and lightens) none, reported in {@link #of}.
+	 */
+	public static java.util.List<double[]> shadows(VmlShapes.Resolved r, double w, double h) {
+		java.util.List<double[]> out = new java.util.ArrayList<double[]>();
+		if (r == null || !r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return out;
+		STShadowType type = r.child(CTShadow.class, CTShadow::getType);
+		if (type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) return out;
+		String fillRgb = fillColour(r);
+		double opacity = number(r.child(CTShadow.class, CTShadow::getOpacity), 1);
+		if (type == STShadowType.DOUBLE) {
+			double[] o2 = offset(r.child(CTShadow.class, CTShadow::getOffset2), w, h, -2, -2);
+			String c2 = VmlColours.rgb(r.child(CTShadow.class, CTShadow::getColor2), fillRgb);
+			out.add(new double[] { o2[0], o2[1], Integer.parseInt(c2 == null ? "CBCBCB" : c2, 16), opacity });
+		}
+		double[] o = offset(r.child(CTShadow.class, CTShadow::getOffset), w, h, 2, 2);
+		String c = VmlColours.rgb(r.child(CTShadow.class, CTShadow::getColor), fillRgb);
+		out.add(new double[] { o[0], o[1], Integer.parseInt(c == null ? "808080" : c, 16), opacity });
+		return out;
+	}
+
+	/** A shadow's offset: lengths, or percentages of the shape's width and height; the default where left out */
+	static double[] offset(String v, double w, double h, double dx, double dy) {
+		if (v == null || v.trim().isEmpty()) return new double[] { dx, dy };
+		String[] p = v.split(",", -1);
+		double[] out = { dx, dy };
+		for (int i = 0; i < 2 && i < p.length; i++) {
+			String s = p[i].trim();
+			if (s.isEmpty()) { out[i] = 0; continue; }
+			out[i] = s.endsWith("%") ? number(s, 0) * (i == 0 ? w : h) : VmlShapes.length(s, 0);
+		}
+		return out;
+	}
+
+	/** {@code v:shadow} reported where it isn't drawn as Word draws it; formerly an {@code a:effectLst} */
 	static org.docx4j.dml.CTEffectList shadow(VmlShapes.Resolved r, String fillRgb, List<String> problems) {
 		if (!r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return null;
 		STShadowType type = r.child(CTShadow.class, CTShadow::getType);
-		if (type == STShadowType.EMBOSS) {
-			if (!problems.contains(SHADOW)) problems.add(SHADOW);
+		if (type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) {
+			if (!problems.contains(SHADOW)) problems.add(SHADOW); // not drawn
 			return null;
-		}
-		if (type == STShadowType.DOUBLE || type == STShadowType.PERSPECTIVE) {
-			if (!problems.contains(SHADOW)) problems.add(SHADOW); // drawn as a single shadow
 		}
 		String offset = r.child(CTShadow.class, CTShadow::getOffset);
 		double dx = 2, dy = 2;
 		if (offset != null) {
 			String[] p = offset.split(",", -1);
 			if (offset.contains("%")) {
-				if (!problems.contains(SHADOW)) problems.add(SHADOW);
+				// drawn by shadows(), a share of the shape's size
 			} else {
 				dx = VmlShapes.length(p.length > 0 && !p[0].trim().isEmpty() ? p[0] : "0", 0);
 				dy = VmlShapes.length(p.length > 1 && !p[1].trim().isEmpty() ? p[1] : "0", 0);

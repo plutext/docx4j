@@ -142,8 +142,8 @@ public class VmlWordArtRendererTest {
 		// phase 0's wv30-02: capitals take the box's cap height of an em, from 0.061 em below its top
 		Case c = read(type(P136), shape("fillcolor=\"black\" stroked=\"f\"", "", ""));
 		Rectangle2D ink = ink(draw(c, 0, true));
-		assertEquals(0, ink.getMinX(), 0.5);
-		assertEquals(288, ink.getMaxX(), 0.5);
+		// across, the advance (its side bearings kept: the ink within the box); down, an em box
+		assertTrue("within the box across: " + ink, ink.getMinX() > -0.5 && ink.getMaxX() < 288.5);
 		assertTrue("the capitals' tops below the box's top: " + ink, ink.getMinY() > 2);
 		assertTrue("the baseline above the box's foot: " + ink, ink.getMaxY() < 120);
 	}
@@ -181,13 +181,32 @@ public class VmlWordArtRendererTest {
 		WordArtRenderer.Drawn d = draw(c, 0, true);
 		assertTrue(d.getDrawing().getItems().size() > fills(d).size());
 		assertNotNull(c.art.getParagraphs().get(0).getRuns().get(0).getOutline());
-		// a shadow with no on is off (provisional: Office writes one on styles with no shadow)
+		// a shadow with no on is off (wv40: Word draws none)
 		Case s = read(type(P136), shape("fillcolor=\"blue\"", "", "<v:shadow color=\"#868686\"/>"));
-		assertNull(s.art.getParagraphs().get(0).getRuns().get(0).getEffects());
-		Case on = read(type(P136), shape("fillcolor=\"blue\"", "", "<v:shadow on=\"t\" color=\"#868686\" offset=\"3pt,4pt\"/>"));
-		org.docx4j.dml.CTEffectList fx = on.art.getParagraphs().get(0).getRuns().get(0).getEffects();
-		assertNotNull(fx);
-		assertEquals(5 * 12700, fx.getOuterShdw().getDist());
+		assertTrue(VmlWordArt.shadows(s.resolved, 288, 144).isEmpty());
+		// on: a copy of the glyphs under them, moved by its offset (cr083-phase4's wv45), not an effect picture
+		Case on = read(type(P136), shape("fillcolor=\"blue\" stroked=\"f\"", "trim=\"t\"",
+				"<v:shadow on=\"t\" color=\"#868686\" offset=\"3pt,4pt\"/>"));
+		assertNull(on.art.getParagraphs().get(0).getRuns().get(0).getEffects());
+		WordArtRenderer.Drawn d2 = draw(on, 0, true);
+		Rectangle2D shadow = null;
+		for (Object o : d2.getDrawing().getItems()) {
+			if (o instanceof Drawing.Area && "wordart.shadow".equals(((Drawing.Area) o).getRole())) {
+				Rectangle2D b = ((Drawing.Area) o).getShape().getBounds2D();
+				shadow = shadow == null ? b : shadow.createUnion(b);
+			}
+		}
+		assertNotNull(shadow);
+		assertEquals(ink(d2).getMinX() + 3, shadow.getMinX(), 0.01);
+		assertEquals(ink(d2).getMinY() + 4, shadow.getMinY(), 0.01);
+		// a percentage of the shape's size; a double shadow's second first
+		Case pct = read(type(P136), shape("fillcolor=\"blue\"", "", "<v:shadow on=\"t\" offset=\"10%,10%\"/>"));
+		assertEquals(28.8, VmlWordArt.shadows(pct.resolved, 288, 144).get(0)[0], 1e-9);
+		assertEquals(14.4, VmlWordArt.shadows(pct.resolved, 288, 144).get(0)[1], 1e-9);
+		Case dbl = read(type(P136), shape("fillcolor=\"blue\"", "",
+				"<v:shadow on=\"t\" type=\"double\" color2=\"red\" offset=\"3pt,3pt\" offset2=\"6pt,6pt\"/>"));
+		assertEquals(2, VmlWordArt.shadows(dbl.resolved, 288, 144).size());
+		assertEquals(6, VmlWordArt.shadows(dbl.resolved, 288, 144).get(0)[0], 1e-9);
 	}
 
 	/**
@@ -205,6 +224,16 @@ public class VmlWordArtRendererTest {
 		assertTrue("wider than the box: " + ink, ink.getMinX() < -20 && ink.getMaxX() > 308);
 		assertTrue("above the box: " + ink, ink.getMinY() < -20);
 		assertTrue("down to the arc's ends: " + ink, ink.getMaxY() > 60 && ink.getMaxY() < 90);
+	}
+
+	/** Turned and flipped: the turn first, then the mirror (cr083-phase4's wv46-12) */
+	@Test
+	public void aTurnIsMirroredAfterItIsTurned() {
+		java.awt.geom.Point2D.Double p = new java.awt.geom.Point2D.Double();
+		WordArtRenderer.vmlTurn(30, true, false, 288, 144).transform(new java.awt.geom.Point2D.Double(288, 72), p);
+		// the box's right middle turned 30 clockwise about the centre, then mirrored across it
+		assertEquals(144 - 144 * Math.cos(Math.toRadians(30)), p.x, 1e-9);
+		assertEquals(72 + 144 * Math.sin(Math.toRadians(30)), p.y, 1e-9);
 	}
 
 	@Test

@@ -140,6 +140,8 @@ public final class WordArtText {
 		double leading;
 		/** a VML WordArt's: stretched to its shape's box, so its effects take no room in its line (CR-083 phase 4) */
 		boolean fitted;
+		/** a VML WordArt's: the descent of the em box its text path maps without trim, as a fraction of the size */
+		double emDescent;
 
 		/** Word's ascent for its font, as a fraction of its size: its single line's share above the baseline */
 		public double getAscent() {
@@ -256,6 +258,17 @@ public final class WordArtText {
 		 */
 		public boolean isFitted() {
 			return fitted;
+		}
+
+		/**
+		 * A VML WordArt's: how far below the baseline the em box its text path maps without {@code trim} reaches, as a
+		 * fraction of the size: the larger of the face's usWinDescent and its hhea descender (cr083-phase4's wv44: Aptos
+		 * 0.282, Calibri 0.269, Times New Roman 0.216); 0 for a DrawingML run
+		 *
+		 * @since 17.3.7 (CR-083 phase 4)
+		 */
+		public double getEmDescent() {
+			return emDescent;
 		}
 
 		/**

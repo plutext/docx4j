@@ -131,7 +131,8 @@ public class VmlShapesTest {
 		VmlShapes.Resolved r = VmlShapes.resolve(shapes(root).get(0), root);
 		assertNull(r.getShapetype());
 		assertNull(r.getPath());
-		assertFalse(r.isTextPath()); // its text path's on was the shapetype's
+		// still WordArt (Word draws whatever on says, wv43-11), but with no path: nothing to draw
+		assertTrue(r.isTextPath());
 		assertTrue(VmlGeometry.outlines(r.definition(), 100, 100).getOutlines().isEmpty());
 	}
 
@@ -162,6 +163,23 @@ public class VmlShapesTest {
 		assertEquals(0.75, r.strokeWeightPt(), 1e-9);
 		assertEquals(STTrueFalse.T, r.child(CTTextPath.class, CTTextPath::getTrim));
 		assertNull(r.child(org.docx4j.vml.CTShadow.class, org.docx4j.vml.CTShadow::getOn));
+	}
+
+	/** An adj past its handle's range is held to it, as Word evaluates it (cr083-phase4's wv42-49: 23313 as 14971) */
+	@Test
+	public void anAdjIsHeldToItsHandlesRange() throws Exception {
+		String t = T136.replace("adj=\"10800\"", "adj=\"10800\"");
+		Object root = hdr("<w:pict>" + t + mark("a", "#_x0000_t136", "X").replace("<v:shape ", "<v:shape adj=\"23313\" ") + "</w:pict>");
+		assertArrayEquals(new Integer[] { 14971 }, VmlShapes.resolve(shapes(root).get(0), root).getAdj());
+		root = hdr("<w:pict>" + t + mark("a", "#_x0000_t136", "X").replace("<v:shape ", "<v:shape adj=\"100\" ") + "</w:pict>");
+		assertArrayEquals(new Integer[] { 6629 }, VmlShapes.resolve(shapes(root).get(0), root).getAdj());
+	}
+
+	/** on="f" doesn't stop Word drawing it (cr083-phase4's wv43-11) */
+	@Test
+	public void onOffIsStillWordArt() throws Exception {
+		Object root = hdr("<w:pict>" + T136 + mark("a", "#_x0000_t136", "X").replace("<v:textpath ", "<v:textpath on=\"f\" ") + "</w:pict>");
+		assertTrue(VmlShapes.resolve(shapes(root).get(0), root).isTextPath());
 	}
 
 	@Test

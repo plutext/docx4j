@@ -188,7 +188,8 @@ final class FOShapes {
 			ShapeOutlines geometry = org.docx4j.model.shapes.VmlGeometry.outlines(r.definition(), w, h);
 			org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.drawVml(art, geometry,
 					org.docx4j.model.chart.ChartFonts.of(part), ThemeColors.of(context.getWmlPackage()), w, h,
-					rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf);
+					rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf,
+				"center".equals(props.get("mso-position-vertical")));
 			Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 			org.w3c.dom.DocumentFragment frag = doc.createDocumentFragment();
 			if (drawn == null) return frag;
@@ -239,7 +240,8 @@ final class FOShapes {
 		ShapeOutlines geometry = org.docx4j.model.shapes.VmlGeometry.outlines(r.definition(), w, h);
 		org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.drawVml(art, geometry,
 				org.docx4j.model.chart.ChartFonts.of(part), ThemeColors.of(context.getWmlPackage()), w, h,
-				rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf);
+				rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf,
+				"center".equals(props.get("mso-position-vertical")));
 		if (drawn != null) for (String code : drawn.getProblems()) log.warn(code + ": VML WordArt (CR-083 D9)");
 		return drawn;
 	}

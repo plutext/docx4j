@@ -677,6 +677,19 @@ public final class WordArtRenderer {
 	 */
 	public static Drawn drawVml(WordArtText art, ShapeOutlines geometry, ChartFonts fonts, ThemeColors theme, double w, double h,
 			double rotation, boolean flipH, boolean flipV, boolean withText) {
+		return drawVml(art, geometry, fonts, theme, w, h, rotation, flipH, flipV, withText, false);
+	}
+
+	/**
+	 * As above.
+	 *
+	 * @param centredDown whether the shape is centred down its reference ({@code mso-position-vertical:center}, as Word's
+	 *        watermark is): a turned one's ink is then centred down its box, as Word places it (wv30-01, -03, wv40's
+	 *        watermark, cr083-phase4's wv47-01, -17: within 0.3 pt); one placed at an offset is turned about its box's
+	 *        centre alone (wv46-08, wv47-16)
+	 */
+	public static Drawn drawVml(WordArtText art, ShapeOutlines geometry, ChartFonts fonts, ThemeColors theme, double w, double h,
+			double rotation, boolean flipH, boolean flipV, boolean withText, boolean centredDown) {
 		if (!(w > 0) || !(h > 0) || art == null) return null;
 		List<String> problems = new ArrayList<String>(art.getProblems());
 		Drawing drawing = new Drawing(w, h);
@@ -698,18 +711,26 @@ public final class WordArtRenderer {
 		}
 		if (measured.isEmpty()) return new Drawn(drawing, spans, w, h, box, geometry, problems, "", over);
 
+		org.docx4j.model.shapes.VmlWordArt.paintBySets(art, geometry);
 		Layout layout = layout(art, fonts, Double.POSITIVE_INFINITY, 1, 1, false);
 		if (!layout.unmapped.isEmpty() && !problems.contains(WordArtText.FONT)) problems.add(WordArtText.FONT);
 		for (Line l : layout.lines) place(l, box, 0);
 		double[] frame = art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isTrim(art.getVml()) ? null : emBox(layout);
+		java.util.List<double[]> shadows = art.getVml() == null ? java.util.Collections.<double[]>emptyList()
+				: org.docx4j.model.shapes.VmlWordArt.shadows(art.getVml(), w, h);
 		// an odd number of text paths: the text along each (Follow Path, o:spt 144 to 147, whatever fitshape says: Word's
 		// own shapes carry fitshape and draw along their paths, wv40), sized to the path by fitpath; even: stretched onto
 		// them in pairs
 		boolean along = measured.size() % 2 == 1;
 		boolean fit = art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isFitPath(art.getVml());
+		if (!along && art.getVml() != null && !org.docx4j.model.shapes.VmlWordArt.isFitShape(art.getVml())) {
+			// fitshape off: the text along the path's first part, as the standard says and Word draws it (wv43-13, wv44-01)
+			along = true;
+			measured = new ArrayList<TextWarp.Measured>(measured.subList(0, 1));
+		}
 		Warped warped = new Warped(along ? (fit ? "vml-along" : "vml-along-natural") : null, measured, box, frame);
 		AffineTransform turn = vmlTurn(rotation, flipH, flipV, w, h);
-		if (!turn.isIdentity() && rotation % 360 != 0) {
+		if (centredDown && !turn.isIdentity() && rotation % 360 != 0) {
 			// turned: Word centres the turned ink down the box, its turn about the box's centre across (provisional:
 			// wv30-01, -03 and wv40's watermark, all three within 0.3 pt down; phase 4 findings section 6)
 			Rectangle2D trial = paint(layout, new Warped(warped.name, warped.paths, warped.rect, warped.frame), theme, turn,
@@ -720,9 +741,26 @@ public final class WordArtRenderer {
 				turn = down;
 			}
 		}
+		Rectangle2D shadowed = null;
+		if (!shadows.isEmpty()) {
+			// the shadows: copies of the glyphs as drawn (turned), moved on the page, under them (cr083-phase4's wv45)
+			Drawing trial = new Drawing(w, h);
+			paint(layout, new Warped(warped.name, warped.paths, warped.rect, warped.frame), theme, turn, trial, new Drawing(w, h),
+					new ArrayList<Span>(), new ArrayList<String>(), null);
+			for (double[] sh : shadows) {
+				Color c = new Color(((int) sh[2] >> 16) & 255, ((int) sh[2] >> 8) & 255, (int) sh[2] & 255,
+						(int) Math.round(255 * Math.max(0, Math.min(1, sh[3]))));
+				for (Object o : trial.getItems()) {
+					if (!(o instanceof Drawing.Area) || !"wordart.fill".equals(((Drawing.Area) o).getRole())) continue;
+					Shape moved = AffineTransform.getTranslateInstance(sh[0], sh[1]).createTransformedShape(((Drawing.Area) o).getShape());
+					drawing.add(new Drawing.Area(moved, c, null, 0, "wordart.shadow"));
+					shadowed = union(shadowed, moved.getBounds2D());
+				}
+			}
+		}
 		Rectangle2D glyphs = paint(layout, warped, theme, turn, drawing, over, spans, problems, null);
 		if (!withText) spans.clear();
-		Rectangle2D bounds = union(glyphs, box);
+		Rectangle2D bounds = union(union(glyphs, shadowed), box);
 
 		StringBuilder text = new StringBuilder();
 		for (Line l : layout.lines) {
@@ -732,18 +770,33 @@ public final class WordArtRenderer {
 		return new Drawn(drawing, spans, w, h, rect(bounds), geometry, problems, text.toString().trim(), over);
 	}
 
-	/** The lines' em boxes, top and bottom: {@link #VML_EM_ABOVE} of each line's largest size above its baseline */
+	/**
+	 * What a VML text path maps without {@code trim} (cr083-phase4's wv44, three faces): across, the lines' advance (their
+	 * side bearings kept); down, each line's em box, its foot the baseline plus the face's {@code emDescent} (its larger
+	 * descent), its top an em above that. {x0, x1, top, bottom}
+	 */
 	private static double[] emBox(Layout layout) {
-		double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY;
+		double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY, x0 = Double.POSITIVE_INFINITY, x1 = Double.NEGATIVE_INFINITY;
 		for (Line l : layout.lines) {
-			double size = 0;
-			for (Glyph g : l.glyphs) if (g.font != null) size = Math.max(size, g.font.getSize2D());
+			double size = 0, descent = 0;
+			for (Glyph g : l.glyphs) {
+				if (g.font == null) continue;
+				if (g.font.getSize2D() >= size) {
+					size = g.font.getSize2D();
+					descent = g.run.getEmDescent() > 0 ? g.run.getEmDescent() : 1 - VML_EM_ABOVE;
+				}
+			}
 			if (size <= 0) continue;
 			double base = l.top + l.baseline;
-			top = Math.min(top, base - VML_EM_ABOVE * size);
-			bottom = Math.max(bottom, base + (1 - VML_EM_ABOVE) * size);
+			top = Math.min(top, base + descent * size - size);
+			bottom = Math.max(bottom, base + descent * size);
+			if (l.width() > 0) {
+				x0 = Math.min(x0, l.x0);
+				x1 = Math.max(x1, l.x0 + l.width());
+			}
 		}
-		return top < bottom ? new double[] { top, bottom } : null;
+		if (!(top < bottom)) return null;
+		return x0 < x1 ? new double[] { x0, x1, top, bottom } : new double[] { top, bottom };
 	}
 
 	/** Whether a path ends where it starts, or is closed */
@@ -766,13 +819,16 @@ public final class WordArtRenderer {
 		return !first && Math.hypot(lx - sx, ly - sy) < 1e-6 * Math.max(1, p.getBounds2D().getWidth() + p.getBounds2D().getHeight());
 	}
 
-	/** A VML style's turn: flipped, then rotated clockwise, about the box's centre */
+	/**
+	 * A VML style's turn about the box's centre: rotated clockwise, then flipped (the glyphs mirrored too), as Word draws
+	 * it (cr083-phase4's wv46-12: turned 30 and flipped across, Word's ink the unflipped turn's mirrored)
+	 */
 	static AffineTransform vmlTurn(double rotation, boolean flipH, boolean flipV, double w, double h) {
 		AffineTransform t = new AffineTransform();
 		if (rotation == 0 && !flipH && !flipV) return t;
 		t.translate(w / 2, h / 2);
-		if (rotation != 0 && Double.isFinite(rotation)) t.rotate(Math.toRadians(rotation));
 		t.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+		if (rotation != 0 && Double.isFinite(rotation)) t.rotate(Math.toRadians(rotation));
 		t.translate(-w / 2, -h / 2);
 		return t;
 	}

@@ -136,7 +136,7 @@ public class VmlGeometryTest {
 		assertEquals(2, VmlGeometry.operate("prod", 3, 1, 2)); // 1.5: half up
 		assertEquals(-1, VmlGeometry.operate("prod", -3, 1, 2)); // -1.5: half up
 		assertEquals(2, VmlGeometry.operate("product", 5, 1, 3)); // 1.67, the standard's spelling
-		assertEquals(0, VmlGeometry.operate("prod", 5, 5, 0)); // division by zero
+		assertEquals(5, VmlGeometry.operate("prod", 5, 5, 0)); // division by zero: its first argument, as Word's (wv43-23)
 		assertEquals(-1, VmlGeometry.operate("mid", -3, 0, 0)); // toward 0
 		assertEquals(1, VmlGeometry.operate("mid", 3, 0, 0));
 		assertEquals(5, VmlGeometry.operate("mod", 3, 4, 0));
@@ -181,9 +181,11 @@ public class VmlGeometryTest {
 		ShapeOutlines o = VmlGeometry.outlines(new VmlGeometry.Definition().coordsize("1000,1000").coordorigin("1000,1000")
 				.path("m1000,1000l2000,2000e"), 50, 50);
 		assertPoints(new double[][] { { 0, 0 }, { 50, 50 } }, o.getOutlines().get(0).getPath());
-		// absent or not positive: 1,000
-		o = VmlGeometry.outlines(new VmlGeometry.Definition().coordsize("0,-5").path("m0,0l1000,1000e"), 10, 20);
+		// absent or not positive: 21,600, as Word reads it (cr083-phase4's wv43-14 and -15), not the standard's 1,000
+		o = VmlGeometry.outlines(new VmlGeometry.Definition().coordsize("0,-5").path("m0,0l21600,21600e"), 10, 20);
 		assertPoints(new double[][] { { 0, 0 }, { 10, 20 } }, o.getOutlines().get(0).getPath());
+		o = VmlGeometry.outlines(new VmlGeometry.Definition().path("m0,0l1000,1000e"), 216, 216);
+		assertPoints(new double[][] { { 0, 0 }, { 10, 10 } }, o.getOutlines().get(0).getPath());
 	}
 
 	@Test

@@ -204,9 +204,34 @@ public final class VmlShapes {
 			return type == null ? null : inherited.apply(type);
 		}
 
-		/** The adjust values, the shape's over its shapetype's. */
+		/**
+		 * The adjust values, the shape's over its shapetype's, each held to its handle's range ({@code xrange},
+		 * {@code yrange}), as Word evaluates them (cr083-phase4's wv42-49: 136's adj of 23313 drawn as 14971)
+		 */
 		public Integer[] getAdj() {
-			return VmlGeometry.adj(VmlGeometry.adj(shape.getAdj()), type == null ? null : VmlGeometry.adj(type.getAdj()));
+			Integer[] adj = VmlGeometry.adj(VmlGeometry.adj(shape.getAdj()), type == null ? null : VmlGeometry.adj(type.getAdj()));
+			org.docx4j.vml.CTHandles hs = own(org.docx4j.vml.CTHandles.class);
+			if (hs == null) hs = inherited(org.docx4j.vml.CTHandles.class);
+			if (hs == null) return adj;
+			for (org.docx4j.vml.CTH h : hs.getH()) {
+				String pos = h.getPosition();
+				if (pos == null || h.getPolar() != null) continue;
+				String[] xy = pos.split(",", -1);
+				for (int axis = 0; axis < 2 && axis < xy.length; axis++) {
+					String ref = xy[axis].trim();
+					String range = axis == 0 ? h.getXrange() : h.getYrange();
+					if (!ref.startsWith("#") || range == null) continue;
+					try {
+						int n = Integer.parseInt(ref.substring(1));
+						String[] r = range.split(",");
+						long lo = Math.round(Double.parseDouble(r[0].trim())), hi = Math.round(Double.parseDouble(r[1].trim()));
+						if (n < adj.length && adj[n] != null && lo <= hi) adj[n] = (int) Math.max(lo, Math.min(hi, adj[n]));
+					} catch (RuntimeException e) {
+						// a range Word wrote otherwise: as given
+					}
+				}
+			}
+			return adj;
 		}
 
 		/** The path: the shape's {@code path}, else its {@code v:path}'s {@code v}, else the shapetype's likewise. */
@@ -244,14 +269,12 @@ public final class VmlShapes {
 		}
 
 		/**
-		 * Whether this is WordArt: its text path is on ({@code on}, by default off), its {@code v:path} doesn't refuse it
-		 * ({@code textpathok="f"}), and it has text. Whether {@code textpathok="t"} alone turns it on is the round's
-		 * (phase 4 findings §3 item 4).
+		 * Whether this is WordArt: it has a text path with text. Word draws it whatever {@code on} and {@code textpathok}
+		 * say (cr083-phase4's wv43-11 and -12: on="f" on the shape, textpathok="f" on its shapetype, both drawn); what it
+		 * draws is its geometry's, and a shape with no path draws nothing.
 		 */
 		public boolean isTextPath() {
-			if (!isTrue(child(CTTextPath.class, CTTextPath::getOn))) return false;
-			org.docx4j.vml.STTrueFalse ok = child(CTPath.class, CTPath::getTextpathok);
-			if (ok != null && !isTrue(ok)) return false;
+			if (!has(CTTextPath.class)) return false;
 			String s = child(CTTextPath.class, CTTextPath::getString);
 			return s != null && !s.isEmpty();
 		}

@@ -98,20 +98,34 @@ final class WordArtWarps {
 	}
 
 	/**
-	 * How far above the baseline, in ems, the line a VML Follow Path's glyphs sit on runs: fitted to Word's o:spt 144, 145
-	 * and 146 in Aptos (wv40: 0.22 puts their ink within 0.3, 0.2 and 1.7 pt of Word's; 0.2 within 2.0, 1.7, 3.6).
-	 * Provisional, one face, until the round's faces (phase 4 findings section 6).
+	 * How far above the baseline, in ems, the line a VML Follow Path's glyphs sit on runs where a run gives no em box:
+	 * fitted to Word's o:spt 144, 145 and 146 in Aptos (wv40: 0.22 puts their ink within 0.3, 0.2 and 1.7 pt of Word's).
 	 */
 	static final double VML_ALONG_RISE = 0.22;
 
 	/**
+	 * The middle of the line's em box (the box a text path maps without trim: its foot the baseline plus the face's
+	 * larger descent), above its baseline, in ems: what Word lays on a Follow Path (Aptos 0.5 - 0.282 = 0.218, the 0.22
+	 * wv40 fitted; cr083-phase4's wv44-52 and -53, Calibri and Times New Roman)
+	 */
+	static double rise(WordArtRenderer.Line l) {
+		double size = 0, d = 0;
+		for (WordArtRenderer.Glyph g : l.glyphs) {
+			if (g.font == null || g.font.getSize2D() < size) continue;
+			size = g.font.getSize2D();
+			d = g.run.getEmDescent();
+		}
+		return d > 0 ? 0.5 - d : VML_ALONG_RISE;
+	}
+
+	/**
 	 * VML's Follow Path (an odd number of text paths: o:spt 144 to 147), as Word draws it (wv40, CR-083 phase 4 findings
-	 * section 6): each line along its path (line i on path i, the extra ones on the first), its glyphs scaled together
-	 * so that the line's advance is the path's whole length ({@code fitpath}; without it at their size, centred,
-	 * unmeasured), each glyph's middle at
-	 * its advance along the path, the line {@link #VML_ALONG_RISE} of an em above its baseline on the path, turned to the
-	 * path's direction (so upright to it: outside an arch drawn over the top, inside one drawn under the bottom). A further line on the same path stands inward by the
-	 * lines before it, unmeasured.
+	 * section 6, cr083-phase4 section 7): each line along its path (line i on path i, the extra ones on the first), all
+	 * lines at one scale, the least that makes a band's longest line its path's length ({@code fitpath}; without it at
+	 * their size, unmeasured), each line aligned along its path, a band's lines moved apart along the path's normal by
+	 * their places in the block, the middle of their rise points on the path; each glyph's middle at
+	 * its advance along the path, the middle of its em box ({@link #rise}) on the path, turned to the
+	 * path's direction (so upright to it: outside an arch drawn over the top, inside one drawn under the bottom).
 	 *
 	 * @return each glyph's scale and the place and turn its text is drawn at: {scale, x, y, angle in radians}
 	 */
@@ -119,29 +133,57 @@ final class WordArtWarps {
 			Map<WordArtRenderer.Glyph, Shape> drawn, boolean fit) {
 		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
 		List<List<WordArtRenderer.Line>> byBand = bands(lines, paths.size());
+		// each line's rise point (VML_ALONG_RISE of its size above its baseline), in the layout's y (down)
+		Map<WordArtRenderer.Line, Double> rise = new HashMap<WordArtRenderer.Line, Double>();
+		for (WordArtRenderer.Line l : lines) {
+			double size = 0;
+			for (WordArtRenderer.Glyph g : l.glyphs) if (g.font != null) size = Math.max(size, g.font.getSize2D());
+			rise.put(l, l.top + l.baseline - rise(l) * size);
+		}
+		// one scale for every line: the least of each band's path's length over its longest line's advance
+		// (cr083-phase4's wv43-29: "One", "Two" and "Three" on three paths at one size, "Three" filling its path); a band's
+		// lines placed by its path's length, each aligned on it, and moved apart along its normal by their places in the
+		// block, the middle of their rise points on the path (wv41-09: on Arch Up "Two lines" fills the arch inside it,
+		// "WordArt" centred outside it)
+		double s = 1;
+		if (fit) {
+			double least = Double.POSITIVE_INFINITY;
+			for (int b = 0; b < paths.size(); b++) {
+				double widest = 0;
+				for (WordArtRenderer.Line l : byBand.get(b)) widest = Math.max(widest, l.width());
+				if (widest > 0 && paths.get(b).length > 0) least = Math.min(least, paths.get(b).length / widest);
+			}
+			if (least < Double.POSITIVE_INFINITY) s = least;
+		}
 		for (int b = 0; b < paths.size(); b++) {
+			List<WordArtRenderer.Line> mine = byBand.get(b);
+			if (mine.isEmpty()) continue;
 			TextWarp.Measured path = paths.get(b);
 			double length = path.length;
 			if (!(length > 0)) continue;
-			double inward = 0;
-			for (WordArtRenderer.Line l : byBand.get(b)) {
+			double mid = (rise.get(mine.get(0)) + rise.get(mine.get(mine.size() - 1))) / 2;
+			for (WordArtRenderer.Line l : mine) {
 				double width = l.width();
 				if (!(width > 0)) continue;
-				double s = fit ? length / width : 1;
-				double start = fit ? 0 : Math.max(0, (length - width) / 2);
+				double out = mid - rise.get(l);                  // outward (the glyphs' up), in the layout's units
+				double start;
+				String align = l.para == null ? "center" : l.para.getAlign();
+				if ("left".equals(align)) start = 0;
+				else if ("right".equals(align)) start = length - s * width;
+				else start = (length - s * width) / 2;
 				for (WordArtRenderer.Glyph g : l.glyphs) {
 					if (g.lineBreak) continue;
 					double u = (start + s * (g.x + g.advance / 2)) / length;
-					double ox = g.advance / 2, oy = -inward / s - VML_ALONG_RISE * g.font.getSize2D();
+					double ox = g.advance / 2, oy = -rise(l) * g.font.getSize2D() + out;
 					if (g.outline != null && !g.space) drawn.put(g, TextWarp.place(g.outline, ox, oy, s, path, u));
 					java.awt.geom.Point2D.Double origin = TextWarp.placed(0, 0, ox, oy, s, path, u);
 					placed.put(g, new double[] { s, origin.x, origin.y, path.angle(u) });
 				}
-				inward += l.height * s;
 			}
 		}
 		return placed;
 	}
+
 
 	/** The lines that have glyphs, given out to the bands: line i to band i, the extra ones to the first */
 	static List<List<WordArtRenderer.Line>> bands(List<WordArtRenderer.Line> lines, int bands) {
@@ -194,7 +236,11 @@ final class WordArtWarps {
 			Map<WordArtRenderer.Glyph, Shape> drawn, Rectangle2D block, double tallest, TextWarp.Budget budget, double[] frame) {
 		Rectangle2D ink = ink(lines, drawn);
 		if (ink == null || ink.getWidth() <= 0 || ink.getHeight() <= 0) return;
-		if (frame != null && frame[1] > frame[0]) ink = new Rectangle2D.Double(ink.getX(), frame[0], ink.getWidth(), frame[1] - frame[0]);
+		if (frame != null && frame.length == 4 && frame[1] > frame[0] && frame[3] > frame[2]) {
+			ink = new Rectangle2D.Double(frame[0], frame[2], frame[1] - frame[0], frame[3] - frame[2]);
+		} else if (frame != null && frame.length == 2 && frame[1] > frame[0]) {
+			ink = new Rectangle2D.Double(ink.getX(), frame[0], ink.getWidth(), frame[1] - frame[0]);
+		}
 		if (block != null) {
 			// a band's lines across the block's ink, and down a range as tall as the tallest band's, centred on their own
 			double h = Math.max(ink.getHeight(), tallest);

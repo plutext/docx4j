@@ -219,6 +219,14 @@ its glyph paths (points, fill rule, colour, alpha), stroke, any shadow path or p
 box on the page); `gate_vml.py` compares docx4j's PDF with Word's probe by probe, from `gate_wordart.py`'s outline
 comparison. Every file is expected silent; none goes on the stop list.
 
+**As built** (2026-11-13, `build_vml.py`, Jason: "build the cr083-phase4 round with build_vml.py"; `probes-vml.tsv`):
+8 files, 263 probes, staged as `cr083-phase4`. Since wv40 had already drawn each type at its defaults, wv41 is the 40
+types on two lines; wv42 51 probes (each type's adj moved, the second value of the eight two-value types, three past
+their handle's range); wv43 31, wv44 54, wv45 38, wv46 24, wv47 20; and wv48 five probes in a mode-15 document, kept
+apart from wv47's sections, whose headers would draw over them. Each probe copies Word's insert form for its type (the
+three forms section 6 reads), so that only what it varies differs from Word's own. A tile fill and a group's picture
+use one 24 by 24 PNG. All 8 files pass `check_wordart.py`; docx4j renders each at a page a probe.
+
 ## 3. What the round answers
 
 1. The stretch before the warp (section 1.1): with `trim` the ink box onto the shape's box; without it, which metric box
@@ -393,3 +401,75 @@ Word's PDF has it (the same page as 144). **All 40 types within 1.7 pt of Word's
 within 0.3 pt), while across its turn about the box's centre is docx4j's (within 0.55 pt). docx4j now does so
 (`drawVml`: a trial paint, then the turn moved down by the ink's offset; provisional, for wv46's turns and other
 anchors): wv30-01 within 0.23 pt, wv30-03 0.70, wv40-watermark 0.31; wv30-02 (unturned) as before.
+
+## 7. What the round found, and what changed (2026-11-13)
+
+cr083-phase4 ran on bridge 22479f7, Word 16.0.20326.20318, 165 s: all 8 files and both controls silent, wv43 too
+(Word rewrote its odd geometry on save: 31, 61 and 30 `v:shape`, `v:textpath` and `v:shapetype` in, 35, 59 and 24 out,
+each shape's effective geometry written on it). Jason: "go ahead with reading each of these against Word's per-glyph
+paths and saved files, fixing them, writing findings §7, then a gate". The measure (`cmpall.py`): each page's filled
+paths' box, Word's against docx4j's; per glyph where it mattered (`glyphs.py`, `sets.py`, Word's save).
+
+**Before and after**, of 263 probes: within 0.7 pt 182, then 223; 0.7 to 3 pt 23, then 13; past 3 pt 39, then 10;
+both drawing nothing 14, then 15; one drawing nothing 5, then 2. Word's 40 shapetypes (wv40) within 1.5 pt (1.7); phase
+0's VML probes within 0.2 pt (0.7); the watermarks (wv47) 19 of 20 within 0.4 pt.
+
+**What Word does, and docx4j now does:**
+- **The default `coordsize` is 21600**, not the standard's 1000: Word saves a shapetype without one as 21600,21600 and
+  draws one of 0,0 alike (wv43-14, -15: a path in 1000s 13.3 by 6.7 pt). `VmlGeometry.DEFAULT_COORDSIZE`.
+- **`prod` by 0 is its first argument** (wv43-23: the line at 5400). 
+- **An adj is held to its handle's range** (`xrange`, `yrange`): wv42-49 (136's 23313, its range 6629 to 14971) drawn
+  as 14971; Word's save keeps 23313. `VmlShapes.Resolved.getAdj`.
+- **`on` and `textpathok` don't stop it**: Word draws a shape whose text path says `on="f"` (wv43-11) and one whose
+  shapetype's `v:path` says `textpathok="f"` (wv43-12; its save drops the attribute). WordArt is a text path with text;
+  a shape with no path draws nothing (wv20, wv43-06, -30). `isTextPath`.
+- **`nf` and `ns` reach the text**: a set that says `nf` leaves the text unfilled, `ns` unstroked (wv43-28: one each,
+  nothing drawn). `VmlWordArt.paintBySets`.
+- **`fitshape="f"` lays the text along the first path**, sized to it by `fitpath` (wv43-13, wv44-01: along 136's top
+  line, 285.6 pt of 288), as Part 4 says.
+- **Without `trim`**, Word maps the text's advance across (side bearings kept: "gyp" in Aptos 150.5 to 422.0 where its
+  ink, trimmed, is the box) and down an em box whose foot is the baseline plus the face's larger descent
+  (max(usWinDescent, hhea descender): Aptos 0.282, Calibri 0.269, Times New Roman 0.216; phase 0's single 0.718 was
+  Aptos's), its top an em above (wv44-41 to -51: within 0.2 pt in all three faces, 5.6 to 10 pt before).
+  `Run.getEmDescent`, `WordArtRenderer.emBox`.
+- **Follow Path's line is the em box's middle** on the path, 0.5 - emDescent above the baseline (Aptos 0.218, wv40's
+  fitted 0.22): Calibri within 0.3 pt, Times New Roman 1.1 (1.3 and 5.2 with 0.22). `WordArtWarps.rise`.
+- **Several lines on Follow Path**: one scale for them all, the least of a band's path's length over its longest line;
+  each line aligned along its path; a band's lines moved apart along the path's normal by their places in the block,
+  the middle of their rise points on the path (wv43-29: three paths, three lines, one size, within 0.4 pt; wv41-09
+  and -10: two lines on Arch Up and Arch Down, "Two lines" filling the arch inside it and "WordArt" centred outside,
+  within 0.7 and 0.2; Button 0.2). They are placed by the path's own length and moved, not laid on offset curves.
+- **A VML shadow is a copy of the glyphs**, filled and unstroked, drawn under them, not an effect picture (wv45: 7
+  shadow paths and 7 glyph paths a probe): gray (`#808080`) at 2pt,2pt by default; an offset a percentage of the
+  shape's width and height (10%: 28.8 and 14.4 pt); a double shadow's `color2` copy at `offset2` first, then the
+  first; `obscured` as single. Emboss (a light and a dark copy) and perspective (a squashed one) not drawn, reported.
+  `VmlWordArt.shadows`; `drawVml` draws them from a trial paint's glyph paths.
+- **A turn, then the mirror**: Word turns a flipped shape and then mirrors it, the glyphs too (wv46-09 to -11: flipped
+  across, "WordArt" reads from the right; wv46-12, turned 30 and flipped, is the unflipped turn's mirror). `vmlTurn`.
+- **A turned shape's ink is centred down its box only where the shape is centred down its reference** (the
+  watermarks: `mso-position-vertical:center`); one placed at an offset turns about its box's centre alone (wv46-08,
+  wv47-16: section 6's rule applied to them had put them 2.8 and 14.1 pt off). `drawVml`'s `centredDown`.
+
+**Open, and why:**
+- wv47-14 (a watermark on unequal margins: top 36, bottom 108): 12.4 pt low in docx4j's terms; its equal-margin
+  siblings are within 0.4. Likely the header's own extent moving the top margin Word centres on; not measured.
+- wv41-16 (151, Button Pour, two lines): 66 pt; the pour types' two-line bands are phase 2's open `textButtonPour` too.
+- wv41-11 (Circle, two lines): 6.6 pt; a closed path's two lines.
+- wv43-07 (two shapetypes of one id): Word's save keeps the first, as docx4j does, yet its ink starts 17.7 pt lower.
+- wv43-27 (`qb` with a control point above the box): Word draws nothing; docx4j draws.
+- wv43-31 (the text path's style on the shapetype only): 7.2 pt.
+- wv44-26 (`v-same-letter-heights`): not drawn (2.4 pt).
+- wv45-17 (a tile picture fill: Word draws the picture, docx4j the colour, reported), wv45-26 (a compound line drawn
+  single, reported), wv45-35 (emboss, reported), wv45-38 (`o:extrusion`, drawn flat, reported: Word draws 288 paths of
+  3-D).
+- wv46-22 (a turned group): drawn unturned, reported (D18).
+- wv46-18 (a table cell): the box measure takes in the cell's borders, which Word draws as filled paths; not read.
+- Small residuals of 0.8 to 1.6 pt: six adjusted types (wv42-03, -09, -12, -17, -20), 156's second adj (4.9), `qx`/`qy`
+  (1.3), a WordArt in its line (1.1), centred across (0.8) and down the page (1.5), 171 on two lines (0.9).
+
+**Gate b475** (this build) against b464: 0 movers, events equal, the corpora's PDFs as b473's but for the two time
+fields (5361, 11875), the probes' 324 the same. (b474, the same build, showed one mover: real3's
+15_es-ES_fields1_num_tbl_2432 scored 0 for "no result within 120s", the scorer timing out while Maven's suites ran
+beside it, its PDF the same as b473's; run again alone, b475.) Tests: core-tests 2,678 (`VmlShapesTest` 8, the clamp and
+on="f"), chart-render 104 (`VmlWordArtRendererTest`: the shadow copies, the turn's order), export-fo 111, export-fo-tests
+971 pass.

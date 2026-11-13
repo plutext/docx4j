@@ -554,6 +554,17 @@ catalogue (through the portfolio).
     against b464: 0 movers,
     events equal, the corpora's PDFs as b470's but for the two time fields (5361, 11875; real3's VML WordArt document
     the same: its three still not drawn, as in Word), the probes' 324 the same.
+  - **The round** (cr083-phase4, 263 probes, `build_vml.py`, all silent; findings §7; Jason: "build the cr083-phase4
+    round with build_vml.py", "go ahead with reading each of these ..., fixing them, writing findings §7, then a
+    gate"): within 0.7 pt of Word's ink 182 probes, then 223; past 3 pt 39, then 10. Word's rules, now docx4j's: a
+    default `coordsize` of 21600; `prod` by 0 its first argument; an adj held to its handle's range; `on` and
+    `textpathok` not stopping it; `nf`/`ns` reaching the text; `fitshape="f"` along the first path; without `trim` the
+    advance across and an em box down, its foot the face's larger descent (three faces within 0.2 pt); Follow Path's
+    line that box's middle, several lines at one scale and moved apart along the normal; a VML shadow a copy of the
+    glyphs; a turn then the mirror; turned ink centred down its box only where the shape is centred. Open: a watermark
+    on unequal margins (12.4 pt), the pour types' two lines, two shapetypes of one id, `qb`, the style on a shapetype
+    only, `v-same-letter-heights`, and the reported gaps (3-D, emboss, a compound line, a tile picture, a turned group).
+    Gate b475 0 movers.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF

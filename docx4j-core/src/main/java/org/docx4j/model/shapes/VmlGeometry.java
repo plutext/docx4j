@@ -54,8 +54,8 @@ import org.docx4j.dml.STPathFillMode;
  * {@code wr} take a bounding box and two radial points, {@code at}/{@code ar} counterclockwise and {@code wa}/{@code wr}
  * clockwise, equal points a whole ellipse, as GDI's {@code Arc}. Angles go counterclockwise as seen on the page, as
  * GDI's do ({@link #ANGLE_SIGN}).</li>
- * <li>A {@code coordsize} side that is absent or not positive is 1,000, VML's default; {@code coordorigin} defaults to
- * 0,0.</li>
+ * <li>A {@code coordsize} side that is absent or not positive is 21,600, as Word reads it (the standard's default is
+ * 1,000); {@code coordorigin} defaults to 0,0. {@code prod} with a divisor of 0 is its first argument, as Word's.</li>
  * <li>The named values: {@code width}, {@code height}, {@code xcenter}, {@code ycenter} from the coordinate space;
  * {@code xlimo}, {@code ylimo} from {@code limo}; {@code hasfill}, {@code hasstroke} and {@code lineDrawn} 1 or 0;
  * {@code pixelWidth}, {@code pixelHeight} and {@code pixelLineWidth} at 96 pixels an inch; {@code emuWidth},
@@ -72,8 +72,11 @@ public final class VmlGeometry {
 	/** The formulas a geometry may have: Part 4 §19.1.2.4's limit. */
 	public static final int MAX_FORMULAS = 128;
 
-	/** The default {@code coordsize} side. */
-	static final int DEFAULT_COORDSIZE = 1000;
+	/**
+	 * The default {@code coordsize} side: Word's 21,600 (its save writes a shapetype without one as 21600,21600, and
+	 * draws one of 0,0 alike: cr083-phase4's wv43-14 and -15), not the standard's 1,000.
+	 */
+	static final int DEFAULT_COORDSIZE = 21600;
 
 	/** An fd unit: a degree is 2<sup>16</sup> of them. */
 	static final double FD = 65536;
@@ -350,7 +353,7 @@ public final class VmlGeometry {
 		case "val": return v;
 		case "sum": return v + p1 - p2;
 		case "prod":
-		case "product": return product(v, p1, p2);
+		case "product": return p2 == 0 ? v : product(v, p1, p2); // Word: v, for a divisor of 0 (wv43-23)
 		case "mid": return (v + p1) / 2; // toward 0
 		case "abs": return Math.abs(v);
 		case "min": return Math.min(v, p1);
