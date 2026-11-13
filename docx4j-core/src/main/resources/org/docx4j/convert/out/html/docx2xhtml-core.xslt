@@ -438,7 +438,7 @@
 			  			$conversionContext, 
 			  			$wpict)" />
 			</xsl:when>
-			<xsl:when test="./v:shape/v:textpath">
+			<xsl:when test="./v:shape/v:textpath or //v:shapetype[concat('#', @id) = current()/v:shape/@type]/v:textpath">
 				<!--  VML WordArt, drawn (17.3.7, CR-083 phase 4) -->
 			  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlShapes.vmlWordArtXslt($conversionContext, .)" />
 			</xsl:when>

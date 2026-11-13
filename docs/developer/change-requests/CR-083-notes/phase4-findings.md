@@ -473,3 +473,116 @@ fields (5361, 11875), the probes' 324 the same. (b474, the same build, showed on
 beside it, its PDF the same as b473's; run again alone, b475.) Tests: core-tests 2,678 (`VmlShapesTest` 8, the clamp and
 on="f"), chart-render 104 (`VmlWordArtRendererTest`: the shadow copies, the turn's order), export-fo 111, export-fo-tests
 971 pass.
+
+## 8. The review of the implementation (2026-11-13)
+
+A Claude Fable 5.1 session reviewed 76635c0f9 and fb8390dbd read-only, with Word's results of the round, Word's saves
+and docx4j's renders (Jason: "commit then have fable conduct a review including a look at those unexplained misses").
+Each finding was checked before applying (Jason: "apply them"):
+
+1. **The shapetype cache held every converted document** (must): a static `WeakHashMap` keyed by the part's root whose
+   index's shapetypes lead back to the root by their parents, so no entry was ever freed. Now the conversion's own
+   cache (`AbstractWmlConversionContext.getVmlShapetypes`, `VmlShapes.resolve(shape, root, cache)`); with none, the
+   part is indexed for the call.
+2. **Two shapetypes of one id: Word draws the last** (must): wv43-07's glyph tops rise as the second definition's top
+   line does, though Word's save writes the first; docx4j took the first. `Index.add` keeps the last. (wv43-07 within
+   0.2 pt, 17.7 before.)
+3. **A builder bug** (should): wv43-08's probe captured its shapetype's id after it had moved on, so its shape pointed
+   at an id no shapetype had (the question "a shapetype after its shape" untested), and wv43-31 held two shapetypes of
+   one id, the first slanted, which docx4j drew. Fixed (`build_vml.py` binds the id); wv43-31 within 0.1 pt now (7.2),
+   Word's save confirming the text path's style merged from the shapetype; the question is in cr083-phase4b.
+4. **Gradients' angle is in the box's own square** (should): Word's 45 degrees in a 2:1 box is 63.4 on the page
+   (wv45-10's shading from (230.5, 208.8) to (345.5, 439.1)); `a:lin scaled="1"`. The box measure read no gradient
+   (Word draws a shading, not a filled path); the focus probes are still unread.
+5. **The unequal-margins watermark** (wv47-14): Word centres between the body's top, where the header runs past the
+   top margin (35.4 pt down and a line: the body at about 60.6 pt), and the bottom margin: its ink centre 397.3 =
+   (60.6 + 733.9) / 2. Not applied: the VML picture container is placed when the FO is written, before the header's
+   height is measured (the fork measures it while it lays the page out), so the fix is the placement's, for any VML
+   shape centred on the margin in a page whose header overflows; open. cr083-phase4b has its sibling with the header
+   inside the margin.
+6. **An unresolved type indexed the part again each time** (should): a miss is now remembered, the part indexed again
+   once.
+7. **`v-same-letter-heights` stretches each lowercase glyph to the cap height** (should; a 37 pt miss the box measure
+   saw as 2.4): `WordArtRenderer.sameHeights`, before the stretch; the probe's glyph tops now Word's.
+8. **The no-trim box reached only two paths** (could): bands too, now (`WordArtWarps.vmlBands`).
+9. **Dead code** (could): `drawVml`'s `closed` and the shadow's discarded `a:effectLst` gone; the em box always four
+   values.
+10. **`PictureRecolour` now reads system colours** through `VmlColours` (could): kept, noted (a picture's chromakey of
+    `windowText`, null before).
+11. **The XSLTs tested the shape's own text path only** (could): they also find it on the shapetype now.
+
+**The misses it explained, and what changed:** the pour types' two lines (wv41-16, 66 pt): Word lays each band's line
+at one scale across the bands, centred on its band, not stretched over the arch; `vmlBands`, within 0.3 pt.
+wv43-07 and -31 (findings 2 and 3). wv46-18 (the table cell): read without the cell's borders, within 0.9 pt. Not
+found: wv41-11 (Circle, two lines: one glyph's reach), the small residuals. `qb` (wv43-27): Word keeps the path and draws
+nothing; one probe can't say whether `qb` or its control point outside the box is the cause: cr083-phase4b.
+
+**Over-fitted rules, and the probes for them** (cr083-phase4b, 17 probes, Jason: "can we do a probe for qb?"): `qb`
+inside the box and on the bottom path; `prod 5400 3 0`; the shapetype after its shape; one id before and after its
+shape (nearest or last); a trapezoid (x between paths of unequal span); Button Pour on one long line and with the wider
+line first; Arch Up and Circle with the wider line first; a shadow on a turned shape; `v-same-letter-heights` with
+descenders; a watermark aligned to the bottom, one with lopsided ink, and unequal margins with the header inside them.
+
+**Round after the review** (`cmpall.py`): within 0.7 pt 226 of 263 (223), past 3 pt 7 (10). Gate b476 against b464:
+0 movers, events equal, PDFs as b475's but for the time fields, the probes the same. Tests: VmlShapesTest 10 (the last
+id wins, the conversion's cache), chart-render 104, the FO WordArt tests 8.
+
+## 9. The settling round: cr083-phase4b (2026-11-13)
+
+Two files (`build_vml.py`'s cr083-phase4b set, `probes-vml-phase4b.tsv`): wv49-settle, 13 probes in mode 12, and
+wv50-settle-marks, 4 watermarks in mode 15; all silent on bridge 22479f7 (Word 16.0.20326.20318), with the control
+cr083m-mu-control-a/-b. Read as section 7's round was: the page's filled paths' box against docx4j's
+(`cmpall.py`), per glyph where it mattered, and Word's saves. Before: 9 of 17 within 0.7 pt, one at 0.8, Word drawing
+nothing for four that docx4j drew, three past 3 pt (17.9, 5.2, 114). After: 12 within 0.7, one at 0.8 (wv49-11), the
+four blank in both.
+
+**What Word does:**
+
+- **`qb` anywhere in the path: nothing** (wv49-01, control point inside the box; -02, `qb` on the bottom path only, the
+  top straight; -03, above the box, wv43-27 again). Not the glyphs, not the shape's stroke: no path on the page. Word's
+  save keeps the path (copied onto the shape too, `l` written as `r`). So it is `qb` that stops it, not where its
+  control point is. `VmlWordArt.isUndrawn`, read by `WordArtRenderer.drawVml` before the geometry: an empty drawing,
+  nothing reported, as for a shape with no path. Left to `VmlGeometry` as it was, since VML other than WordArt is
+  unmeasured.
+- **A shapetype is read in the part's order: the last of its id before the shape.** wv49-05 (the shapetype after its
+  shape in the same `w:pict`): Word draws nothing, and its save writes the shape with no `type` and no path. wv49-06
+  (one id before the shape, again in a later `w:pict`): Word draws the first's (its "W" rises to 252 at the left, the
+  first's top line down to the right), and its save points the shape at the first. With wv43-07 (two before the shape:
+  the second) that is the last before it. `VmlShapes.Index` numbers a part's shapetypes and shapes as it walks them,
+  groups included, and `get(type, shape)` takes the last of the id before the shape; a copy of the shape (the XSLT
+  routes unmarshal their node) is found by its `id`, `o:spid`, `type` and `style`; a shape not found, the last. A
+  shapetype no shape follows in its `w:pict` Word saves as a hidden 50 pt `v:shape` (`_x0000_s1041`, `_x0000_s1039`:
+  wv49's "three shapes with no type" are these two and wv49-05's), which draws nothing.
+- **`prod 5400 3 0` is 5400** (wv49-04, within 0.1 pt): a divisor of 0 gives the first argument, as section 7 had it,
+  not `v` times the second.
+- **`v-same-letter-heights`: every glyph's ink the box's height, across by the advance** (wv49-13 "Gyp ax": G, y, p, a
+  and x each 252.0 to 395.9; their widths each 0.0485 pt a unit, 288 / 5,936, the line's advance; the G's left side
+  bearing kept, its ink from 149.2). wv44-26 ("Wordart") agrees: its ink ends at 429.6, the last advance at 432, where
+  section 8's rule, lowercase to the cap height and the ink across, left it 2.4 pt long. With trim alone the ink is
+  mapped across (wv44-40, "gyp": 144.0 to 431.9, the g's side bearing cut). `WordArtRenderer.sameHeights` (each glyph's
+  ink stretched to the cap height from the baseline) and `WordArtWarps.advanceInkBox` (the advance across, the ink
+  down); the frame a warp maps is now a rule over a set of lines, so a band takes the same rule for its own lines.
+  Without trim, the em box (unmeasured).
+- **A turned shape aligned down its reference is aligned by its ink** (wv50-01, aligned to the bottom of the margin:
+  the ink's foot at 769.6, the margin's at 769.9; docx4j's, turned about the box's centre, was 114 pt lower and ran off
+  the page). Section 6's centring (the ink centred down the box when `mso-position-vertical:center`) is one case of
+  it: `drawVml` takes the alignment, `center` the ink's centre at the box's, `bottom` its foot at the box's, `top` its
+  top at the box's (by symmetry; unmeasured). One placed at an offset is still turned about its box's centre (wv46-08,
+  wv47-16).
+- **Held, as section 7 and 8 had them:** a trapezoid (wv49-07, paths of unequal span: within 0.1 pt); Button Pour on
+  one long line and with the wider line first (wv49-08, -09: 0.3, 0.7); Arch Up and Circle with the wider line first
+  (wv49-10, -11: 0.2, 0.8); a shadow on a turned shape, moved on the page after the turn (wv49-12: 0.1); a two-line
+  watermark whose ink is lopsided in its box, centred by its ink (wv50-02: 0.4); unequal margins with the header inside
+  the top margin, diagonal and level (wv50-03, -04: 0.2, 0.0), so wv47-14's 12.4 pt is the header that overflows the
+  margin, as section 8 (finding 5) took it.
+
+**The round again** (`rerun.sh`, Word's 263): within 0.7 pt 227 (226), 16 blank in both (15): wv43-27 (`qb`) now blank
+as Word's, wv44-26 0.1 (2.4). Word's 40 shapetypes as before (worst 1.5). Still open: wv47-14 (a watermark centred on
+the margin under a header that overflows it: the placement is written before the header's height is known); wv41-11
+(Circle on two lines, 6.6 pt, where wv49-11 with the wider line first is within 0.8); wv42-26 (o:spt 156's second adj,
+4.9); the table cell (wv46-18, measured without the cell's borders); the reported gaps (3-D, emboss, a compound line,
+a tile picture, a turned group); the gradient focus probes, unread. Unmeasured: `top` alignment, `v-same-letter-heights`
+without trim, `qb` outside WordArt.
+
+Tests: `VmlShapesTest` (a shapetype after its shape, the one before the shape, a copy found in the part),
+`VmlWordArtRendererTest` (`qb` draws nothing, same letter heights, a turned shape's ink aligned).

@@ -565,6 +565,19 @@ catalogue (through the portfolio).
     on unequal margins (12.4 pt), the pour types' two lines, two shapetypes of one id, `qb`, the style on a shapetype
     only, `v-same-letter-heights`, and the reported gaps (3-D, emboss, a compound line, a tile picture, a turned group).
     Gate b475 0 movers.
+  - **Reviewed** 2026-11-13 by a Claude Fable 5.1 session (Jason: "commit then have fable conduct a review including a
+    look at those unexplained misses"; findings §8), its findings applied (Jason: "apply them"): the shapetype cache per
+    conversion (a static one held every converted document); two shapetypes of one id, the last; gradients' angle in
+    the box's square (`scaled="1"`); `v-same-letter-heights`; the pour types' bands at one scale; the no-`trim` box on
+    bands; a builder bug that had confounded two probes. 226 of 263 within 0.7 pt; gate b476 0 movers. Not applied: a
+    watermark centred on the margin under a header that overflows it (the placement is written before the header's
+    height is known). A follow-up round, cr083-phase4b (17 probes, Jason: "can we do a probe for qb?"), settles `qb`
+    and the rules the review found rest on one or two probes.
+  - **Settled** 2026-11-13 by cr083-phase4b (findings §9): `qb` anywhere in the path, Word draws nothing; a shape's
+    shapetype is the last of its id before it in the part, one after it not counting; `v-same-letter-heights` every
+    glyph the box's height, mapped across by its advance; a turned shape aligned down its reference aligned by its
+    ink (bottom as well as centre). 12 of the 17 within 0.7 pt, one at 0.8, the four blank in both; the round 227 of
+    263 within 0.7.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF

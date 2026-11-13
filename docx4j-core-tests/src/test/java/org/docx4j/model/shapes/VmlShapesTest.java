@@ -182,6 +182,68 @@ public class VmlShapesTest {
 		assertTrue(VmlShapes.resolve(shapes(root).get(0), root).isTextPath());
 	}
 
+	/** Two shapetypes of one id before the shape: the second, as Word draws them (cr083-phase4's wv43-07; review 2026-11-13) */
+	@Test
+	public void theLastShapetypeOfAnIdWins() throws Exception {
+		String first = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,0l21600,10800m0,21600l21600,21600e\"");
+		String second = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,10800l21600,0m0,21600l21600,21600e\"");
+		Object root = hdr("<w:pict>" + first + second + mark("a", "#_x0000_t136", "X") + "</w:pict>");
+		assertEquals("m0,10800l21600,0m0,21600l21600,21600e", VmlShapes.resolve(shapes(root).get(0), root).getPath());
+	}
+
+	/** A shapetype after its shape doesn't count: the shape has none (cr083-phase4b's wv49-05, Word draws nothing) */
+	@Test
+	public void aShapetypeAfterItsShapeDoesntCount() throws Exception {
+		Object root = hdr("<w:pict>" + mark("a", "#_x0000_t136", "X") + T136 + "</w:pict>");
+		VmlShapes.Resolved r = VmlShapes.resolve(shapes(root).get(0), root);
+		assertNull(r.getShapetype());
+		assertNull(r.getPath());
+	}
+
+	/**
+	 * One id before the shape and again in a later w:pict: the one before (cr083-phase4b's wv49-06, Word's ink down to
+	 * the right as the first's top line)
+	 */
+	@Test
+	public void theShapetypeBeforeTheShapeWins() throws Exception {
+		String first = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,0l21600,10800m0,21600l21600,21600e\"");
+		String second = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,10800l21600,0m0,21600l21600,21600e\"");
+		Object root = hdr("<w:pict>" + first + mark("a", "#_x0000_t136", "X") + "</w:pict></w:r><w:r><w:pict>" + second
+				+ "</w:pict></w:r><w:r><w:pict>" + mark("b", "#_x0000_t136", "Y") + "</w:pict>");
+		List<CTShape> s = shapes(root);
+		assertEquals("m0,0l21600,10800m0,21600l21600,21600e", VmlShapes.resolve(s.get(0), root).getPath());
+		// a shape after both: the second
+		assertEquals("m0,10800l21600,0m0,21600l21600,21600e", VmlShapes.resolve(s.get(1), root).getPath());
+	}
+
+	/** A copy of the shape (the XSLT's routes unmarshal their node) is placed in the part by its attributes */
+	@Test
+	public void aCopyOfTheShapeIsFoundInThePart() throws Exception {
+		String first = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,0l21600,10800m0,21600l21600,21600e\"");
+		String second = T136.replace("path=\"m@7,l@8,m@5,21600l@6,21600e\"", "path=\"m0,10800l21600,0m0,21600l21600,21600e\"");
+		Object root = hdr("<w:pict>" + first + mark("a", "#_x0000_t136", "X") + "</w:pict></w:r><w:r><w:pict>" + second
+				+ "</w:pict>");
+		Object copy = XmlUtils.unwrap(XmlUtils.unmarshalString("<w:pict " + NS + ">" + mark("a", "#_x0000_t136", "X") + "</w:pict>"));
+		CTShape detached = shapes(copy).get(0);
+		assertEquals("m0,0l21600,10800m0,21600l21600,21600e", VmlShapes.resolve(detached, root).getPath());
+	}
+
+	/** A conversion's cache: indexed once, a miss remembered rather than indexing the part again each time */
+	@Test
+	public void aConversionsCache() throws Exception {
+		Object root = hdr("<w:pict>" + T136 + mark("a", "#_x0000_t136", "X") + "</w:pict></w:r><w:r><w:pict>"
+				+ mark("b", "#_x0000_tnone", "Y") + "</w:pict>");
+		java.util.Map<Object, VmlShapes.Index> cache = new java.util.IdentityHashMap<Object, VmlShapes.Index>();
+		List<CTShape> s = shapes(root);
+		assertNotNull(VmlShapes.resolve(s.get(0), root, cache).getShapetype());
+		VmlShapes.Index first = cache.get(root);
+		assertNull(VmlShapes.resolve(s.get(1), root, cache).getShapetype());
+		VmlShapes.Index after = cache.get(root);
+		assertNull(VmlShapes.resolve(s.get(1), root, cache).getShapetype());
+		assertSame("a miss once indexed again is remembered", after, cache.get(root));
+		assertNotNull(first);
+	}
+
 	@Test
 	public void lengths() {
 		assertEquals(1, VmlShapes.length("1pt", 0), 1e-9);

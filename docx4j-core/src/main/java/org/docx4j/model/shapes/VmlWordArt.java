@@ -272,8 +272,9 @@ public final class VmlWordArt {
 			} else {
 				java.math.BigDecimal angle = r.child(CTFill.class, CTFill::getAngle);
 				double vml = angle == null ? 0 : angle.doubleValue();
-				double ang = ((90 - vml) % 360 + 360) % 360; // provisional: 0 blends down, counterclockwise positive
-				x.append("<a:lin ang=\"").append(Math.round(ang * 60000)).append("\" scaled=\"0\"/>");
+				double ang = ((90 - vml) % 360 + 360) % 360; // 0 blends down (wv45-09), counterclockwise positive
+				// the angle in the box's own square, as Word draws it (wv45-10: 45 degrees in a 2:1 box at 63.4 on the page)
+				x.append("<a:lin ang=\"").append(Math.round(ang * 60000)).append("\" scaled=\"1\"/>");
 			}
 			x.append("</a:gradFill>");
 			Object g = read(x.toString(), org.docx4j.dml.CTGradientFillProperties.class);
@@ -379,34 +380,27 @@ public final class VmlWordArt {
 		return out;
 	}
 
-	/** {@code v:shadow} reported where it isn't drawn as Word draws it; formerly an {@code a:effectLst} */
-	static org.docx4j.dml.CTEffectList shadow(VmlShapes.Resolved r, String fillRgb, List<String> problems) {
-		if (!r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return null;
+	/** {@code v:shadow} reported where it isn't drawn as Word draws it: emboss and perspective ({@link #shadows} draws the rest) */
+	static void shadow(VmlShapes.Resolved r, String fillRgb, List<String> problems) {
+		if (!r.has(CTShadow.class) || !isOn(r.child(CTShadow.class, CTShadow::getOn))) return;
 		STShadowType type = r.child(CTShadow.class, CTShadow::getType);
-		if (type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) {
-			if (!problems.contains(SHADOW)) problems.add(SHADOW); // not drawn
-			return null;
-		}
-		String offset = r.child(CTShadow.class, CTShadow::getOffset);
-		double dx = 2, dy = 2;
-		if (offset != null) {
-			String[] p = offset.split(",", -1);
-			if (offset.contains("%")) {
-				// drawn by shadows(), a share of the shape's size
-			} else {
-				dx = VmlShapes.length(p.length > 0 && !p[0].trim().isEmpty() ? p[0] : "0", 0);
-				dy = VmlShapes.length(p.length > 1 && !p[1].trim().isEmpty() ? p[1] : "0", 0);
-			}
-		}
-		String rgb = VmlColours.rgb(r.child(CTShadow.class, CTShadow::getColor), fillRgb);
-		if (rgb == null) rgb = "808080"; // VML's default, gray
-		double opacity = number(r.child(CTShadow.class, CTShadow::getOpacity), 1);
-		long dist = Math.round(Math.hypot(dx, dy) * 12700);
-		double dir = Math.toDegrees(Math.atan2(dy, dx));
-		if (dir < 0) dir += 360;
-		String x = "<a:effectLst xmlns:a=\"" + A + "\"><a:outerShdw blurRad=\"0\" dist=\"" + dist + "\" dir=\""
-				+ Math.round(dir * 60000) + "\" algn=\"ctr\" rotWithShape=\"0\">" + srgb(rgb, opacity) + "</a:outerShdw></a:effectLst>";
-		return (org.docx4j.dml.CTEffectList) read(x, org.docx4j.dml.CTEffectList.class);
+		if ((type == STShadowType.EMBOSS || type == STShadowType.PERSPECTIVE) && !problems.contains(SHADOW)) problems.add(SHADOW);
+	}
+
+	/**
+	 * Whether Word draws this WordArt not at all, whatever its text: its path holds a {@code qb} (cr083-phase4's wv43-27,
+	 * cr083-phase4b's wv49-01 to -03: the control point inside the box or above it, on the top path or the bottom,
+	 * nothing drawn, not even the shape's stroke; Word's save keeps the path). Unmeasured on VML other than WordArt.
+	 */
+	public static boolean isUndrawn(VmlShapes.Resolved r) {
+		String p = r.getPath();
+		return p != null && p.contains("qb");
+	}
+
+	/** Whether the text path's glyphs are all one height ({@code v-same-letter-heights}) */
+	public static boolean isSameLetterHeights(VmlShapes.Resolved r) {
+		String v = style(r.child(CTTextPath.class, CTTextPath::getStyle)).get("v-same-letter-heights");
+		return truthy(v);
 	}
 
 	private static String srgb(String rgb, double opacity) {

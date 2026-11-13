@@ -660,7 +660,7 @@
   			string(./v:shape/@style),
   			string(./v:shape/w10:wrap/@type))" />
 		</xsl:when>
-		<xsl:when test="./v:shape/v:textpath or ./v:group">
+		<xsl:when test="./v:shape/v:textpath or //v:shapetype[concat('#', @id) = current()/v:shape/@type]/v:textpath or ./v:group">
 			<!--  VML WordArt, drawn from its shapetype's path and formulas (17.3.7, CR-083 phase 4) -->
 		  	<xsl:copy-of select="java:org.docx4j.convert.out.fo.XsltFOFunctions.createVmlWordArt(
 		  	$conversionContext, .)" />

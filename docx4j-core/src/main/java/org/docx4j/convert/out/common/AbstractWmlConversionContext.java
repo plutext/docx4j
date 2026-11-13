@@ -440,6 +440,15 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 		this.currentPart = currentPart;
 	}
 
+	private final java.util.Map<Object, org.docx4j.model.shapes.VmlShapes.Index> vmlShapetypes
+			= new java.util.IdentityHashMap<Object, org.docx4j.model.shapes.VmlShapes.Index>();
+
+	/** The VML shapetypes of the parts this conversion has drawn VML WordArt from, by part root (CR-083 phase 4).
+	 *  @since 17.3.7 */
+	public java.util.Map<Object, org.docx4j.model.shapes.VmlShapes.Index> getVmlShapetypes() {
+		return vmlShapetypes;
+	}
+
 	public Part getCurrentPart() {
 		return currentPart;		
 	}

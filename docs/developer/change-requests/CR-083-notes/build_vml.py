@@ -39,7 +39,13 @@ Files (the probe counts in probes-vml.tsv):
         off centre; one turned 30
   wv48  five of the above in a mode-15 document (legacy WordArt kept in a current document)
 
-usage: build_vml.py <staging dir>"""
+cr083-phase4b (the review's probes, 2026-11-13): wv49 (qb inside the box and on the bottom path; prod 5400 3 0; a
+shapetype after its shape, done right; one id before and after its shape; a trapezoid; Button Pour on one long line and
+the wider line first; Arch Up and Circle with the wider line first; a shadow on a turned shape; v-same-letter-heights
+with descenders) and wv50 (a watermark aligned to the bottom; a centred one with lopsided ink; unequal margins with the
+header inside the top margin).
+
+usage: build_vml.py <staging dir> [set]   (cr083-phase4 if none is named)"""
 import hashlib, json, os, re, struct, sys, zipfile, zlib
 from xml.sax.saxutils import escape
 
@@ -233,8 +239,8 @@ def fam_geometry():
     out.append(V('two shapetypes of one id, the first slanted down to the right, the second up', tid=a, shapetype=dup))
     a = tid()
     out.append(V('the shapetype after its shape', tid=a, shapetype='',
-                 raw=lambda p, n, typed: (f'<w:r><w:pict>{p.shape_xml(n)}{custom(a, "m0,0l21600,10800m0,21600l21600,21600e")}'
-                                          '</w:pict></w:r>', '')))
+                 raw=lambda p, n, typed, a=a: (f'<w:r><w:pict>{p.shape_xml(n)}{custom(a, "m0,0l21600,10800m0,21600l21600,21600e")}'
+                                               '</w:pict></w:r>', '')))
     a = tid()
     out.append(V('the shapetype only in a header (this page\'s section\'s header holds it, unused there)', tid=a,
                  shapetype='', raw=None))
@@ -489,6 +495,8 @@ class Mark(bw.Mark):
         if self.kids:
             head, sep, tail = xml.rpartition('<v:textpath ')       # the shape's, after its shapetype's
             xml = head + self.kids + sep + tail
+        if '\n' in self.string:
+            xml = xml.replace(f'string="{escape(self.string)}"', f'string="{escape(self.string).replace(chr(10), "&#xA;")}"')
         return xml
 
 def fam_marks():
@@ -527,6 +535,59 @@ def fam_mode15():
             V('136 turned 315, in a mode-15 document', 136, style=pos_style(extra='rotation:315;')),
             group_page('a group with a WordArt, in a mode-15 document', [(136, 200, 100, 1000, 500, 'Grouped')],
                        pos_style(w=200, h=100))]
+
+# ------------------------------------------------------------------------------------------- cr083-phase4b (settle)
+
+def fam_settle():
+    """The review's probes (2026-11-13): what one or two of cr083-phase4's probes left open"""
+    out = []
+    t = [0]
+    def tid():
+        t[0] += 1
+        return f'95{t[0]:02d}'
+    a = tid()
+    out.append(V('qb on the top path, its control point inside the box (10800,0)', tid=a,
+                 shapetype=custom(a, 'm0,5400qb10800,0,21600,5400m0,21600l21600,21600e')))
+    a = tid()
+    out.append(V('qb on the bottom path only, the top straight', tid=a,
+                 shapetype=custom(a, 'm0,0l21600,0m0,21600qb10800,16200,21600,21600e')))
+    a = tid()
+    out.append(V('qb with its control point above the box (wv43-27 again)', tid=a,
+                 shapetype=custom(a, 'm0,5400qb10800,-5400,21600,5400m0,21600l21600,21600e')))
+    a = tid()
+    out.append(V('the top line at prod 5400 3 0 (5400 if its first argument, 16200 if v times p1)', tid=a,
+                 shapetype=custom(a, 'm0,@0l21600,@0m0,21600l21600,21600e', ['prod 5400 3 0'], adj='3000')))
+    a = tid()
+    out.append(V('the shapetype after its shape, in the same w:pict (wv43-08 done right)', tid=a, shapetype='',
+                 raw=lambda p, n, typed, a=a: (f'<w:r><w:pict>{p.shape_xml(n)}{custom(a, "m0,0l21600,10800m0,21600l21600,21600e")}'
+                                               '</w:pict></w:r>', '')))
+    a = tid()
+    first, second = custom(a, 'm0,0l21600,10800m0,21600l21600,21600e'), custom(a, 'm0,10800l21600,0m0,21600l21600,21600e')
+    out.append(V('one id: the first (down to the right) before the shape, the second (up) in a later w:pict', tid=a,
+                 shapetype='', raw=lambda p, n, typed, f=first, g=second: (
+                     f'<w:r><w:pict>{f}{p.shape_xml(n)}</w:pict></w:r><w:r><w:pict>{g}</w:pict></w:r>', '')))
+    a = tid()
+    out.append(V('a trapezoid: the top path 16200 long, the bottom 21600 (x between paths of unequal span)', tid=a,
+                 shapetype=custom(a, 'm0,0l16200,0m0,21600l21600,21600e')))
+    out.append(V('151 (Button Pour), one long line', 151, text='WordArt is a long line here'))
+    out.append(V('151, two lines, the first the wider', 151, text='The wider line\nArt'))
+    out.append(V('144 (Arch Up), two lines, the first the wider', 144, text='The wider line\nArt'))
+    out.append(V('146 (Circle), two lines, the first the wider', 146, text='The wider line\nArt'))
+    out.append(V('a v:shadow (4pt,4pt) on a shape turned 30', 136, attrs='fillcolor="#336699"',
+                 children='<v:shadow on="t" offset="4pt,4pt"/>', style=pos_style(extra='rotation:30;')))
+    out.append(V('v-same-letter-heights on "Gyp ax" (descenders, an x-height letter)', 136, text='Gyp ax',
+                 font_style=st(extra='v-same-letter-heights:t')))
+    return out
+
+def fam_settle_marks():
+    tall = '<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2160" w:right="1440" w:bottom="720" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>'
+    return [Mark('diagonal, aligned to the bottom of the margin (mso-position-vertical:bottom)',
+                 pos='position:absolute;margin-left:0;margin-top:0;width:468pt;height:117pt;rotation:315;z-index:-251657216;'
+                     'mso-position-horizontal:center;mso-position-horizontal-relative:margin;mso-position-vertical:bottom;'
+                     'mso-position-vertical-relative:margin'),
+            Mark('diagonal, centred, two lines of unequal length (ink lopsided in its box)', string='CONFIDENTIAL\nX'),
+            Mark('diagonal, unequal margins with the header inside the top margin (top 108, bottom 36)', pg=tall),
+            Mark('horizontal, unequal margins with the header inside the top margin (top 108, bottom 36)', rotation=0, pg=tall)]
 
 # ------------------------------------------------------------------------------------------------------- packages
 
@@ -596,17 +657,21 @@ FILES = [('wv41-two-lines', fam_two_lines, 12),
          ('wv47-watermarks', fam_marks, 15),
          ('wv48-mode15', fam_mode15, 15)]
 
-def main(staging):
+SETS = {SET: FILES,
+        'cr083-phase4b': [('wv49-settle', fam_settle, 12), ('wv50-settle-marks', fam_settle_marks, 15)]}
+
+def main(staging, setname=SET):
+    files = SETS[setname]
     manifest = ['set\tfile\tpage\tprobe\tkind\tmode\tnote\tsummary\n']
     sums, order, count = [], [], 0
-    for name, fam, mode in FILES:
+    for name, fam, mode in files:
         prefix = name.split('-')[0]
         probes = [(f'{prefix}-{i + 1:02d}', p) for i, p in enumerate(fam())]
         for i, (pid, p) in enumerate(probes, 1):
             summary = p.summary().replace('\n', ' / ')
-            manifest.append(f'{SET}\t{name}\t{i}\t{pid}\t{p.kind}\t{mode}\t{p.note}\t{summary}\n')
+            manifest.append(f'{setname}\t{name}\t{i}\t{pid}\t{p.kind}\t{mode}\t{p.note}\t{summary}\n')
         count += len(probes)
-        d = os.path.join(staging, SET, name)
+        d = os.path.join(staging, setname, name)
         os.makedirs(d, exist_ok=True)
         f = os.path.join(d, name + '.docx')
         package(f, probes, mode)
@@ -614,13 +679,14 @@ def main(staging):
         with open(j, 'w', newline='') as out:
             json.dump({'verb': 'save', 'input': name + '.docx', 'timeoutSeconds': TIMEOUT, 'formats': ['docx', 'pdf']}, out)
         for x in (j, f):
-            sums.append(f'{hashlib.sha256(open(x, "rb").read()).hexdigest()}  {SET}/{name}/{os.path.basename(x)}\n')
+            sums.append(f'{hashlib.sha256(open(x, "rb").read()).hexdigest()}  {setname}/{name}/{os.path.basename(x)}\n')
         order.append(name + '\n')
         print(f'{name}: {len(probes)} probes, mode {mode}')
-    open(os.path.join(HERE, 'probes-vml.tsv'), 'w', newline='').writelines(manifest)
-    open(os.path.join(staging, SET + '.sha256'), 'w', newline='').writelines(sums)
-    open(os.path.join(staging, SET + '.order.txt'), 'w', newline='').writelines(order)
-    print(SET, len(order), 'files,', count, 'probes')
+    tsv = 'probes-vml.tsv' if setname == SET else 'probes-vml-' + setname.split('-')[-1] + '.tsv'
+    open(os.path.join(HERE, tsv), 'w', newline='').writelines(manifest)
+    open(os.path.join(staging, setname + '.sha256'), 'w', newline='').writelines(sums)
+    open(os.path.join(staging, setname + '.order.txt'), 'w', newline='').writelines(order)
+    print(setname, len(order), 'files,', count, 'probes')
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(*sys.argv[1:])

@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import org.docx4j.TraversalUtil;
@@ -50,7 +49,9 @@ import jakarta.xml.bind.JAXBElement;
  * Word writes a shapetype once in a part, in the first {@code w:pict} that uses it, later ones carrying only the
  * {@code type}; a group holds its own. So a part's shapetypes are indexed whole, groups included ({@link Index}). A
  * {@code type} that resolves to nothing leaves the shape with no shapetype, which draws nothing where the shapetype held
- * the path, as in Word (phase 0's wv20-41). Two shapetypes with one id: the first, until the round measures Word's rule.
+ * the path, as in Word (phase 0's wv20-41). Word reads a part in order: a shape's shapetype is the last of its id
+ * before it, and one only after it doesn't count (cr083-phase4b's wv49-05 and -06; two before it, the second:
+ * cr083-phase4's wv43-07).
  *
  * @since 17.3.7
  */
@@ -58,25 +59,28 @@ public final class VmlShapes {
 
 	private VmlShapes() {}
 
-	private static final Map<Object, Index> INDEXES = Collections.synchronizedMap(new WeakHashMap<Object, Index>());
-
-	/** A part's shapetypes by id. */
+	/**
+	 * A part's shapetypes by id and its shapes, each numbered in the part's order, and the ids looked for and not found
+	 * since it was built.
+	 */
 	public static final class Index {
-		private final Object root;
-		private final Map<String, CTShapetype> byId = new HashMap<String, CTShapetype>();
+		private final Map<String, List<Object[]>> byId = new HashMap<String, List<Object[]>>();
+		private final Map<CTShape, Integer> shapes = new java.util.IdentityHashMap<CTShape, Integer>();
+		private final Map<String, Integer> shapesByKey = new HashMap<String, Integer>();
+		private final java.util.Set<String> misses = new java.util.HashSet<String>();
+		private int order;
 
-		private Index(Object root) {
-			this.root = root;
-		}
+		private Index() {}
 
 		/** The shapetypes in a part's content (its JAXB root: a {@code w:document}, {@code w:hdr}, {@code w:ftr}, ...). */
 		public static Index of(Object root) {
-			Index index = new Index(root);
+			Index index = new Index();
 			new TraversalUtil(root, new TraversalUtil.CallbackImpl() {
 				@Override
 				public List<Object> apply(Object o) {
 					Object u = XmlUtils.unwrap(o);
 					if (u instanceof CTShapetype) index.add((CTShapetype) u);
+					else if (u instanceof CTShape) index.shape((CTShape) u);
 					else if (u instanceof CTGroup) index.group((CTGroup) u, 0);
 					return null;
 				}
@@ -85,37 +89,58 @@ public final class VmlShapes {
 		}
 
 		private void add(CTShapetype t) {
+			int at = order++;
 			String id = t.getVmlId();
-			if (id != null && !byId.containsKey(id)) byId.put(id, t);
+			if (id != null) byId.computeIfAbsent(id, k -> new ArrayList<Object[]>()).add(new Object[] { at, t });
 		}
 
-		/** A group's shapetypes, and its groups' (TraversalUtil doesn't enter a group). */
+		private void shape(CTShape s) {
+			if (shapes.containsKey(s)) return;
+			int at = order++;
+			shapes.put(s, at);
+			shapesByKey.putIfAbsent(key(s), at);
+		}
+
+		/** A group's shapetypes and shapes, and its groups' (TraversalUtil doesn't enter a group). */
 		private void group(CTGroup g, int depth) {
 			if (depth > 64) return;
 			for (JAXBElement<?> j : g.getPathOrFormulasOrHandles()) {
 				Object u = j.getValue();
 				if (u instanceof CTShapetype) add((CTShapetype) u);
+				else if (u instanceof CTShape) shape((CTShape) u);
 				else if (u instanceof CTGroup) group((CTGroup) u, depth + 1);
 			}
 		}
 
-		/** The shapetype a {@code type} names ({@code #_x0000_t136}), or null. */
+		/** A shape copied out of the part (the XSLT's routes unmarshal their node) is found by these. */
+		private static String key(CTShape s) {
+			return s.getVmlId() + '\u0000' + s.getSpid() + '\u0000' + s.getType() + '\u0000' + s.getStyle();
+		}
+
+		/** The last shapetype a {@code type} names ({@code #_x0000_t136}) in the part, or null. */
 		public CTShapetype get(String type) {
+			return get(type, null);
+		}
+
+		/**
+		 * The shapetype a shape's {@code type} names: the last of its id before the shape in the part, as Word reads it
+		 * (one only after it doesn't count: cr083-phase4b's wv49-05, -06); for a shape not in the part, the last.
+		 */
+		public CTShapetype get(String type, CTShape shape) {
 			if (type == null) return null;
 			String id = type.startsWith("#") ? type.substring(1) : type;
-			return byId.get(id);
+			List<Object[]> all = byId.get(id);
+			if (all == null) return null;
+			Integer at = shape == null ? null : shapes.get(shape);
+			if (at == null && shape != null) at = shapesByKey.get(key(shape));
+			if (at == null) return (CTShapetype) all.get(all.size() - 1)[1];
+			CTShapetype found = null;
+			for (Object[] t : all) {
+				if ((Integer) t[0] > at) break;
+				found = (CTShapetype) t[1];
+			}
+			return found;
 		}
-	}
-
-	/** The index of the part the shape is in, found from its root (cached while the root lives). */
-	public static Index index(Object root) {
-		if (root == null) return null;
-		Index index = INDEXES.get(root);
-		if (index == null) {
-			index = Index.of(root);
-			INDEXES.put(root, index);
-		}
-		return index;
 	}
 
 	/** The topmost object above the shape by its parents: its part's root, where its parents are set. */
@@ -130,25 +155,39 @@ public final class VmlShapes {
 	}
 
 	/**
-	 * The shape with its shapetype.
+	 * The shape with its shapetype, the part's shapetypes indexed afresh: for a single shape. A conversion passes its
+	 * own cache ({@link #resolve(CTShape, Object, Map)}).
 	 *
 	 * @param root the part's content (its JAXB root), or null to find it from the shape's parents
 	 */
 	public static Resolved resolve(CTShape shape, Object root) {
+		return resolve(shape, root, null);
+	}
+
+	/**
+	 * The shape with its shapetype.
+	 *
+	 * @param root the part's content (its JAXB root), or null to find it from the shape's parents
+	 * @param cache the conversion's indexes by root, which live as long as it does (a static cache held every converted
+	 *        document: its index's shapetypes lead back to their root by their parents); null for none
+	 */
+	public static Resolved resolve(CTShape shape, Object root, Map<Object, Index> cache) {
 		if (root == null) root = root(shape);
 		CTShapetype type = null;
-		if (shape.getType() != null) {
-			Index index = index(root);
-			type = index == null ? null : index.get(shape.getType());
-			if (type == null && index != null) {
-				// a shapetype added since the part was indexed
-				INDEXES.remove(root);
-				index = index(root);
-				type = index.get(shape.getType());
-			} else if (type != null && root(type) != root) {
-				// a stale index: the shapetype is no longer in this part
-				INDEXES.remove(root);
-				type = index(root).get(shape.getType());
+		String ref = shape.getType();
+		if (ref != null && root != null) {
+			Index index = cache == null ? null : cache.get(root);
+			if (index == null) {
+				index = Index.of(root);
+				if (cache != null) cache.put(root, index);
+			}
+			type = index.get(ref, shape);
+			if ((type == null && !index.misses.contains(ref)) || (type != null && root(type) != root)) {
+				// a shapetype added since the part was indexed, or one no longer in it: indexed again, once a miss
+				Index again = Index.of(root);
+				if (cache != null) cache.put(root, again);
+				type = again.get(ref, shape);
+				if (type == null) again.misses.add(ref);
 			}
 		}
 		return new Resolved(shape, type);

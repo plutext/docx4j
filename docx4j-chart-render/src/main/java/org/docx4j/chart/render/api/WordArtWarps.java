@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * How each kind of warp sets the lines of a WordArt (CR-083 phase 2), as Word does (phase 0, findings sections 3 to 5):
@@ -59,17 +60,23 @@ final class WordArtWarps {
 	}
 
 	/**
-	 * As above; frame, where given, the top and bottom of what two paths map down, in place of the lines' ink (a VML text
-	 * path without {@code trim}: CR-083 phase 4), the ink still mapped across
+	 * As above; frame, where given, the rule for what a set of lines maps between two paths, {x0, x1, top, bottom}, in
+	 * place of their ink (a VML text path without {@code trim}, {@link #emBox}; with {@code v-same-letter-heights},
+	 * {@link #advanceInkBox}: CR-083 phase 4)
 	 */
 	static Map<WordArtRenderer.Glyph, double[]> warp(WordArtRenderer.Layout layout, String name, List<TextWarp.Measured> paths,
-			Rectangle2D.Double rect, Map<WordArtRenderer.Glyph, Shape> drawn, List<String> problems, double[] frame) {
+			Rectangle2D.Double rect, Map<WordArtRenderer.Glyph, Shape> drawn, List<String> problems,
+			Function<List<WordArtRenderer.Line>, double[]> frame) {
 		int n = paths.size();
 		List<WordArtRenderer.Line> lines = layout.lines;
 		TextWarp.Budget budget = new TextWarp.Budget(TextWarp.maxPoints);
 		if ("vml-along".equals(name) || "vml-along-natural".equals(name)) return along(lines, paths, drawn, "vml-along".equals(name));
+		if ("vml-bands".equals(name) && n % 2 == 0) {
+			vmlBands(lines, paths, drawn, budget, frame);
+			return null;
+		}
 		if (n == 2) {
-			envelope(lines, paths.get(0), paths.get(1), drawn, null, 0, budget, frame);
+			envelope(lines, paths.get(0), paths.get(1), drawn, null, 0, budget, frame == null ? null : frame.apply(lines));
 			return null;
 		}
 		Map<WordArtRenderer.Glyph, double[]> placed = new HashMap<WordArtRenderer.Glyph, double[]>();
@@ -185,6 +192,108 @@ final class WordArtWarps {
 	}
 
 
+	/**
+	 * VML's bands (an even number of text paths past two: o:spt 151, 166, 167): each band's lines between its pair of
+	 * paths, at one scale across, the least of a band's paths' mean length over its lines' width, centred on the band,
+	 * each band's lines down its depth (cr083-phase4's wv41-16, Button Pour on two lines: Word's "WordArt" on the arch at
+	 * about the straight band's scale, not stretched over the arch; review 2026-11-13). The frame, where given, the rule
+	 * for each band's box in place of its ink (its em boxes without trim).
+	 */
+	private static void vmlBands(List<WordArtRenderer.Line> lines, List<TextWarp.Measured> paths, Map<WordArtRenderer.Glyph, Shape> drawn,
+			TextWarp.Budget budget, Function<List<WordArtRenderer.Line>, double[]> frame) {
+		int slots = paths.size() / 2;
+		List<List<WordArtRenderer.Line>> byBand = bands(lines, slots);
+		double s = Double.POSITIVE_INFINITY, tallest = 0;
+		Rectangle2D[] inks = new Rectangle2D[slots];
+		for (int b = 0; b < slots; b++) {
+			List<WordArtRenderer.Line> mine = byBand.get(b);
+			if (mine.isEmpty()) continue;
+			Rectangle2D ink = ink(mine, drawn);
+			if (ink == null) continue;
+			if (frame != null) {
+				double[] em = frame.apply(mine);
+				if (em != null && em.length == 4) ink = new Rectangle2D.Double(em[0], em[2], em[1] - em[0], em[3] - em[2]);
+			}
+			inks[b] = ink;
+			tallest = Math.max(tallest, ink.getHeight());
+			double mean = (paths.get(2 * b).length + paths.get(2 * b + 1).length) / 2;
+			if (ink.getWidth() > 0) s = Math.min(s, mean / ink.getWidth());
+		}
+		if (!(s < Double.POSITIVE_INFINITY)) return;
+		for (int b = 0; b < slots; b++) {
+			Rectangle2D ink = inks[b];
+			if (ink == null) continue;
+			double mean = (paths.get(2 * b).length + paths.get(2 * b + 1).length) / 2;
+			// the band's frame: as wide as its paths' mean length at the one scale, centred on the ink; as deep as the
+			// tallest band's ink, centred on its own
+			double w = mean / s, hgt = Math.max(ink.getHeight(), tallest);
+			Rectangle2D.Double rect = new Rectangle2D.Double(ink.getCenterX() - w / 2, ink.getCenterY() - hgt / 2, w, hgt);
+			TextWarp.Mapping m = TextWarp.envelope(rect, paths.get(2 * b), paths.get(2 * b + 1));
+			for (WordArtRenderer.Line l : byBand.get(b)) {
+				for (WordArtRenderer.Glyph g : l.glyphs) {
+					Shape sh = drawn.get(g);
+					if (sh != null) drawn.put(g, TextWarp.warp(sh, m, TextWarp.segment(g.font.getSize2D()), budget));
+				}
+			}
+		}
+	}
+
+	/**
+	 * What a VML text path maps with {@code v-same-letter-heights} (its glyphs one height, {@code WordArtRenderer
+	 * .sameHeights}): across, the lines' advance, as {@link #emBox}; down, their ink. Word's "Gyp ax" (cr083-phase4b's
+	 * wv49-13) and "Wordart" (cr083-phase4's wv44-26), with trim, start at the pen and end at the last advance, where
+	 * without the face's side bearings are cut (wv44-40). Without trim, {@link #emBox} (unmeasured). {x0, x1, top,
+	 * bottom}, or null
+	 */
+	static double[] advanceInkBox(List<WordArtRenderer.Line> lines) {
+		double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY, x0 = Double.POSITIVE_INFINITY, x1 = Double.NEGATIVE_INFINITY;
+		for (WordArtRenderer.Line l : lines) {
+			double base = l.top + l.baseline;
+			for (WordArtRenderer.Glyph g : l.glyphs) {
+				if (g.space || g.lineBreak || g.outline == null) continue;
+				Rectangle2D b = g.outline.getBounds2D();
+				if (!(b.getHeight() > 0)) continue;
+				top = Math.min(top, base + b.getMinY());
+				bottom = Math.max(bottom, base + b.getMaxY());
+			}
+			if (l.width() > 0) {
+				x0 = Math.min(x0, l.x0);
+				x1 = Math.max(x1, l.x0 + l.width());
+			}
+		}
+		if (!(top < bottom) || !(x0 < x1)) return null;
+		return new double[] { x0, x1, top, bottom };
+	}
+
+	/**
+	 * What a VML text path maps without {@code trim} (cr083-phase4's wv44, three faces): across, the lines' advance (their
+	 * side bearings kept); down, each line's em box, its foot the baseline plus the face's {@code emDescent} (its larger
+	 * descent), its top an em above that. {x0, x1, top, bottom}, or null
+	 */
+	static double[] emBox(List<WordArtRenderer.Line> lines) {
+		double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY, x0 = Double.POSITIVE_INFINITY, x1 = Double.NEGATIVE_INFINITY;
+		for (WordArtRenderer.Line l : lines) {
+			double size = 0, descent = 0;
+			for (WordArtRenderer.Glyph g : l.glyphs) {
+				if (g.font == null) continue;
+				if (g.font.getSize2D() >= size) {
+					size = g.font.getSize2D();
+					descent = g.run.getEmDescent() > 0 ? g.run.getEmDescent() : 1 - WordArtRenderer.VML_EM_ABOVE;
+				}
+			}
+			if (size <= 0) continue;
+			double base = l.top + l.baseline;
+			top = Math.min(top, base + descent * size - size);
+			bottom = Math.max(bottom, base + descent * size);
+			if (l.width() > 0) {
+				x0 = Math.min(x0, l.x0);
+				x1 = Math.max(x1, l.x0 + l.width());
+			}
+		}
+		if (!(top < bottom) || !(x0 < x1)) return null;
+		return new double[] { x0, x1, top, bottom };
+	}
+
 	/** The lines that have glyphs, given out to the bands: line i to band i, the extra ones to the first */
 	static List<List<WordArtRenderer.Line>> bands(List<WordArtRenderer.Line> lines, int bands) {
 		List<WordArtRenderer.Line> real = new ArrayList<WordArtRenderer.Line>();
@@ -238,8 +347,6 @@ final class WordArtWarps {
 		if (ink == null || ink.getWidth() <= 0 || ink.getHeight() <= 0) return;
 		if (frame != null && frame.length == 4 && frame[1] > frame[0] && frame[3] > frame[2]) {
 			ink = new Rectangle2D.Double(frame[0], frame[2], frame[1] - frame[0], frame[3] - frame[2]);
-		} else if (frame != null && frame.length == 2 && frame[1] > frame[0]) {
-			ink = new Rectangle2D.Double(ink.getX(), frame[0], ink.getWidth(), frame[1] - frame[0]);
 		}
 		if (block != null) {
 			// a band's lines across the block's ink, and down a range as tall as the tallest band's, centred on their own

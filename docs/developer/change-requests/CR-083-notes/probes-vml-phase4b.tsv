@@ -1,0 +1,18 @@
+set	file	page	probe	kind	mode	note	summary
+cr083-phase4b	wv49-settle	1	wv49-01	vml	12	qb on the top path, its control point inside the box (10800,0)	type #_x0000_t9501 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	2	wv49-02	vml	12	qb on the bottom path only, the top straight	type #_x0000_t9502 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	3	wv49-03	vml	12	qb with its control point above the box (wv43-27 again)	type #_x0000_t9503 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	4	wv49-04	vml	12	the top line at prod 5400 3 0 (5400 if its first argument, 16200 if v times p1)	type #_x0000_t9504 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	5	wv49-05	vml	12	the shapetype after its shape, in the same w:pict (wv43-08 done right)	type #_x0000_t9505 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	6	wv49-06	vml	12	one id: the first (down to the right) before the shape, the second (up) in a later w:pict	type #_x0000_t9506 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	7	wv49-07	vml	12	a trapezoid: the top path 16200 long, the bottom 21600 (x between paths of unequal span)	type #_x0000_t9507 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	8	wv49-08	vml	12	151 (Button Pour), one long line	type #_x0000_t151 (o:spt 151); "WordArt is a long line here"
+cr083-phase4b	wv49-settle	9	wv49-09	vml	12	151, two lines, the first the wider	type #_x0000_t151 (o:spt 151); "The wider line / Art"
+cr083-phase4b	wv49-settle	10	wv49-10	vml	12	144 (Arch Up), two lines, the first the wider	type #_x0000_t144 (o:spt 144); "The wider line / Art"
+cr083-phase4b	wv49-settle	11	wv49-11	vml	12	146 (Circle), two lines, the first the wider	type #_x0000_t146 (o:spt 146); "The wider line / Art"
+cr083-phase4b	wv49-settle	12	wv49-12	vml	12	a v:shadow (4pt,4pt) on a shape turned 30	type #_x0000_t136 (o:spt 136); "WordArt"
+cr083-phase4b	wv49-settle	13	wv49-13	vml	12	v-same-letter-heights on "Gyp ax" (descenders, an x-height letter)	type #_x0000_t136 (o:spt 136); "Gyp ax"
+cr083-phase4b	wv50-settle-marks	1	wv50-01	watermark	15	diagonal, aligned to the bottom of the margin (mso-position-vertical:bottom)	header watermark o:spt 136 rotation 315 "WATERMARK" 468x117pt
+cr083-phase4b	wv50-settle-marks	2	wv50-02	watermark	15	diagonal, centred, two lines of unequal length (ink lopsided in its box)	header watermark o:spt 136 rotation 315 "CONFIDENTIAL / X" 468x117pt
+cr083-phase4b	wv50-settle-marks	3	wv50-03	watermark	15	diagonal, unequal margins with the header inside the top margin (top 108, bottom 36)	header watermark o:spt 136 rotation 315 "WATERMARK" 468x117pt
+cr083-phase4b	wv50-settle-marks	4	wv50-04	watermark	15	horizontal, unequal margins with the header inside the top margin (top 108, bottom 36)	header watermark o:spt 136 rotation 0 "WATERMARK" 468x117pt

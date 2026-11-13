@@ -677,36 +677,40 @@ public final class WordArtRenderer {
 	 */
 	public static Drawn drawVml(WordArtText art, ShapeOutlines geometry, ChartFonts fonts, ThemeColors theme, double w, double h,
 			double rotation, boolean flipH, boolean flipV, boolean withText) {
-		return drawVml(art, geometry, fonts, theme, w, h, rotation, flipH, flipV, withText, false);
+		return drawVml(art, geometry, fonts, theme, w, h, rotation, flipH, flipV, withText, null);
 	}
 
 	/**
 	 * As above.
 	 *
-	 * @param centredDown whether the shape is centred down its reference ({@code mso-position-vertical:center}, as Word's
-	 *        watermark is): a turned one's ink is then centred down its box, as Word places it (wv30-01, -03, wv40's
-	 *        watermark, cr083-phase4's wv47-01, -17: within 0.3 pt); one placed at an offset is turned about its box's
-	 *        centre alone (wv46-08, wv47-16)
+	 * @param alignedDown how the shape is aligned down its reference, its style's {@code mso-position-vertical}: a turned
+	 *        one's ink, not its box, is then what is aligned, as Word places it; {@code center} its ink centred down its
+	 *        box (wv30-01, -03, wv40's watermark, cr083-phase4's wv47-01, -17: within 0.3 pt), {@code bottom} its ink's
+	 *        foot at the box's (cr083-phase4b's wv50-01: within 0.3 pt), {@code top} its ink's top at the box's
+	 *        (unmeasured); one placed at an offset ({@code absolute}, or null) is turned about its box's centre alone
+	 *        (wv46-08, wv47-16)
 	 */
 	public static Drawn drawVml(WordArtText art, ShapeOutlines geometry, ChartFonts fonts, ThemeColors theme, double w, double h,
-			double rotation, boolean flipH, boolean flipV, boolean withText, boolean centredDown) {
+			double rotation, boolean flipH, boolean flipV, boolean withText, String alignedDown) {
 		if (!(w > 0) || !(h > 0) || art == null) return null;
 		List<String> problems = new ArrayList<String>(art.getProblems());
 		Drawing drawing = new Drawing(w, h);
 		Drawing over = new Drawing(w, h);
 		List<Span> spans = new ArrayList<Span>();
 		Rectangle2D.Double box = new Rectangle2D.Double(0, 0, w, h);
+		if (art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isUndrawn(art.getVml())) {
+			// a path Word draws no WordArt on (qb): nothing, as Word, and nothing to report
+			return new Drawn(drawing, spans, w, h, box, geometry, problems, "", over);
+		}
 		if (geometry == null || geometry.getProblem() != null) {
 			if (!problems.contains(org.docx4j.model.shapes.VmlWordArt.BAD_GEOMETRY)) problems.add(org.docx4j.model.shapes.VmlWordArt.BAD_GEOMETRY);
 			return new Drawn(drawing, spans, w, h, box, geometry, problems, "", over);
 		}
 		List<TextWarp.Measured> measured = new ArrayList<TextWarp.Measured>();
-		boolean closed = false;
 		for (ShapeOutline o : geometry.getOutlines()) {
 			for (Path2D.Double p : org.docx4j.model.shapes.VmlGeometry.subPaths(o.getPath())) {
 				if (p.getBounds2D().getWidth() <= 0 && p.getBounds2D().getHeight() <= 0) continue;
 				measured.add(new TextWarp.Measured(p));
-				closed |= closed(p);
 			}
 		}
 		if (measured.isEmpty()) return new Drawn(drawing, spans, w, h, box, geometry, problems, "", over);
@@ -715,7 +719,11 @@ public final class WordArtRenderer {
 		Layout layout = layout(art, fonts, Double.POSITIVE_INFINITY, 1, 1, false);
 		if (!layout.unmapped.isEmpty() && !problems.contains(WordArtText.FONT)) problems.add(WordArtText.FONT);
 		for (Line l : layout.lines) place(l, box, 0);
-		double[] frame = art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isTrim(art.getVml()) ? null : emBox(layout);
+		boolean same = art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isSameLetterHeights(art.getVml());
+		if (same) sameHeights(layout);
+		// what two paths map: with trim the ink (with v-same-letter-heights the advance across), without it the em boxes
+		java.util.function.Function<List<Line>, double[]> frame = art.getVml() != null && org.docx4j.model.shapes.VmlWordArt.isTrim(art.getVml())
+				? (same ? WordArtWarps::advanceInkBox : null) : WordArtWarps::emBox;
 		java.util.List<double[]> shadows = art.getVml() == null ? java.util.Collections.<double[]>emptyList()
 				: org.docx4j.model.shapes.VmlWordArt.shadows(art.getVml(), w, h);
 		// an odd number of text paths: the text along each (Follow Path, o:spt 144 to 147, whatever fitshape says: Word's
@@ -728,15 +736,20 @@ public final class WordArtRenderer {
 			along = true;
 			measured = new ArrayList<TextWarp.Measured>(measured.subList(0, 1));
 		}
-		Warped warped = new Warped(along ? (fit ? "vml-along" : "vml-along-natural") : null, measured, box, frame);
+		Warped warped = new Warped(along ? (fit ? "vml-along" : "vml-along-natural") : measured.size() > 2 ? "vml-bands" : null,
+				measured, box, frame);
 		AffineTransform turn = vmlTurn(rotation, flipH, flipV, w, h);
-		if (centredDown && !turn.isIdentity() && rotation % 360 != 0) {
-			// turned: Word centres the turned ink down the box, its turn about the box's centre across (provisional:
-			// wv30-01, -03 and wv40's watermark, all three within 0.3 pt down; phase 4 findings section 6)
+		String aligned = alignedDown == null ? "" : alignedDown.trim().toLowerCase(java.util.Locale.ROOT);
+		boolean byInk = "center".equals(aligned) || "bottom".equals(aligned) || "top".equals(aligned);
+		if (byInk && !turn.isIdentity() && rotation % 360 != 0) {
+			// turned: Word aligns the turned ink down the box as the shape is aligned down its reference, its turn about
+			// the box's centre across (phase 4 findings sections 6 and 9)
 			Rectangle2D trial = paint(layout, new Warped(warped.name, warped.paths, warped.rect, warped.frame), theme, turn,
 					new Drawing(w, h), new Drawing(w, h), new ArrayList<Span>(), new ArrayList<String>(), null);
 			if (trial != null) {
-				AffineTransform down = AffineTransform.getTranslateInstance(0, h / 2 - trial.getCenterY());
+				double dy = "bottom".equals(aligned) ? h - trial.getMaxY() : "top".equals(aligned) ? -trial.getMinY()
+						: h / 2 - trial.getCenterY();
+				AffineTransform down = AffineTransform.getTranslateInstance(0, dy);
 				down.concatenate(turn);
 				turn = down;
 			}
@@ -771,52 +784,23 @@ public final class WordArtRenderer {
 	}
 
 	/**
-	 * What a VML text path maps without {@code trim} (cr083-phase4's wv44, three faces): across, the lines' advance (their
-	 * side bearings kept); down, each line's em box, its foot the baseline plus the face's {@code emDescent} (its larger
-	 * descent), its top an em above that. {x0, x1, top, bottom}
+	 * {@code v-same-letter-heights}: each glyph's ink, capitals, descenders and x-height letters alike, stretched down to
+	 * its face's cap height, from the baseline, its width kept, before the text is stretched (cr083-phase4's wv44-26
+	 * "Wordart" and cr083-phase4b's wv49-13 "Gyp ax": every glyph Word draws spans the whole box, within 0.1 pt)
 	 */
-	private static double[] emBox(Layout layout) {
-		double top = Double.POSITIVE_INFINITY, bottom = Double.NEGATIVE_INFINITY, x0 = Double.POSITIVE_INFINITY, x1 = Double.NEGATIVE_INFINITY;
+	private static void sameHeights(Layout layout) {
 		for (Line l : layout.lines) {
-			double size = 0, descent = 0;
 			for (Glyph g : l.glyphs) {
-				if (g.font == null) continue;
-				if (g.font.getSize2D() >= size) {
-					size = g.font.getSize2D();
-					descent = g.run.getEmDescent() > 0 ? g.run.getEmDescent() : 1 - VML_EM_ABOVE;
-				}
-			}
-			if (size <= 0) continue;
-			double base = l.top + l.baseline;
-			top = Math.min(top, base + descent * size - size);
-			bottom = Math.max(bottom, base + descent * size);
-			if (l.width() > 0) {
-				x0 = Math.min(x0, l.x0);
-				x1 = Math.max(x1, l.x0 + l.width());
+				if (g.outline == null || g.space || g.lineBreak || g.font == null) continue;
+				Rectangle2D ink = g.outline.getBounds2D();
+				Rectangle2D cap = g.font.createGlyphVector(FRC, "H").getVisualBounds();
+				if (!(ink.getHeight() > 0) || !(cap.getMinY() < 0)) continue;
+				double k = cap.getMinY() / (ink.getMinY() - ink.getMaxY());
+				AffineTransform t = AffineTransform.getScaleInstance(1, k);
+				t.translate(0, -ink.getMaxY());
+				g.outline = t.createTransformedShape(g.outline);
 			}
 		}
-		if (!(top < bottom)) return null;
-		return x0 < x1 ? new double[] { x0, x1, top, bottom } : new double[] { top, bottom };
-	}
-
-	/** Whether a path ends where it starts, or is closed */
-	private static boolean closed(Path2D p) {
-		double[] c = new double[6];
-		double sx = 0, sy = 0, lx = 0, ly = 0;
-		boolean first = true;
-		for (java.awt.geom.PathIterator it = p.getPathIterator(null); !it.isDone(); it.next()) {
-			int t = it.currentSegment(c);
-			if (t == java.awt.geom.PathIterator.SEG_CLOSE) return true;
-			int n = t == java.awt.geom.PathIterator.SEG_CUBICTO ? 4 : t == java.awt.geom.PathIterator.SEG_QUADTO ? 2 : 0;
-			lx = c[n];
-			ly = c[n + 1];
-			if (first) {
-				sx = lx;
-				sy = ly;
-				first = false;
-			}
-		}
-		return !first && Math.hypot(lx - sx, ly - sy) < 1e-6 * Math.max(1, p.getBounds2D().getWidth() + p.getBounds2D().getHeight());
 	}
 
 	/**
@@ -862,14 +846,14 @@ public final class WordArtRenderer {
 		final String name;
 		final List<TextWarp.Measured> paths;
 		final Rectangle2D.Double rect;
-		/** the top and bottom of what a two-path warp maps down, in place of the lines' ink; null for the ink */
-		final double[] frame;
+		/** the rule for what a two-path warp maps, in place of the lines' ink ({@link WordArtWarps#warp}); null for the ink */
+		final java.util.function.Function<List<Line>, double[]> frame;
 
 		Warped(String name, List<TextWarp.Measured> paths, Rectangle2D.Double rect) {
 			this(name, paths, rect, null);
 		}
 
-		Warped(String name, List<TextWarp.Measured> paths, Rectangle2D.Double rect, double[] frame) {
+		Warped(String name, List<TextWarp.Measured> paths, Rectangle2D.Double rect, java.util.function.Function<List<Line>, double[]> frame) {
 			this.name = name;
 			this.paths = paths;
 			this.rect = rect;

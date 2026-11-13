@@ -221,7 +221,7 @@ public final class HtmlShapes {
 			Part part = context.getCurrentPart();
 			Object root = part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart
 					? ((org.docx4j.openpackaging.parts.JaxbXmlPart<?>) part).getJaxbElement() : null;
-			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root);
+			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root, context.getVmlShapetypes());
 			if (!r.isTextPath()) return null;
 			// D17: VML WordArt in a header or footer isn't written in HTML
 			if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart

@@ -176,7 +176,7 @@ final class FOShapes {
 		try {
 			Part part = context.getCurrentPart();
 			Object root = root(part);
-			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root);
+			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root, context.getVmlShapetypes());
 			if (!r.isTextPath()) return null;
 			org.docx4j.model.shapes.WordArtText art = org.docx4j.model.shapes.VmlWordArt.of(r, context.getWmlPackage());
 			if (art == null) return null;
@@ -189,7 +189,7 @@ final class FOShapes {
 			org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.drawVml(art, geometry,
 					org.docx4j.model.chart.ChartFonts.of(part), ThemeColors.of(context.getWmlPackage()), w, h,
 					rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf,
-				"center".equals(props.get("mso-position-vertical")));
+				props.get("mso-position-vertical"));
 			Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 			org.w3c.dom.DocumentFragment frag = doc.createDocumentFragment();
 			if (drawn == null) return frag;
@@ -241,7 +241,7 @@ final class FOShapes {
 		org.docx4j.chart.render.api.WordArtRenderer.Drawn drawn = org.docx4j.chart.render.api.WordArtRenderer.drawVml(art, geometry,
 				org.docx4j.model.chart.ChartFonts.of(part), ThemeColors.of(context.getWmlPackage()), w, h,
 				rotation(props.get("rotation")), flip.contains("x"), flip.contains("y"), !hf,
-				"center".equals(props.get("mso-position-vertical")));
+				props.get("mso-position-vertical"));
 		if (drawn != null) for (String code : drawn.getProblems()) log.warn(code + ": VML WordArt (CR-083 D9)");
 		return drawn;
 	}
@@ -262,7 +262,7 @@ final class FOShapes {
 			java.util.Map<String, String> gp = FOTextBoxes.parseStyle(group.getStyle());
 			double gw = FOTextBoxes.pts(gp.get("width"), 0), gh = FOTextBoxes.pts(gp.get("height"), 0);
 			List<String> problems = new ArrayList<String>();
-			members(group, new double[] { 0, 0, gw, gh }, root, members, art, problems, 0);
+			members(group, new double[] { 0, 0, gw, gh }, root, context.getVmlShapetypes(), members, art, problems, 0);
 			if (!art[0]) return null;
 			if (rotation(gp.get("rotation")) != 0 || gp.containsKey("flip")) problems.add("render.shape.vml");
 			for (String code : problems) log.warn(code + ": in a VML group with WordArt (CR-083 D18)");
@@ -327,7 +327,8 @@ final class FOShapes {
 	 *
 	 * @param frame the group's box in the outer group's points: {x, y, w, h}
 	 */
-	private static void members(org.docx4j.vml.CTGroup g, double[] frame, Object root, List<Object[]> out, boolean[] art,
+	private static void members(org.docx4j.vml.CTGroup g, double[] frame, Object root,
+			java.util.Map<Object, org.docx4j.model.shapes.VmlShapes.Index> cache, List<Object[]> out, boolean[] art,
 			List<String> problems, int depth) {
 		if (depth > 16) return;
 		long[] origin = pair(g.getCoordorigin(), 0, 0), size = pair(g.getCoordsize(), 1000, 1000);
@@ -344,11 +345,11 @@ final class FOShapes {
 			double x = frame[0] + (number(p.get("left")) - origin[0]) * sx, y = frame[1] + (number(p.get("top")) - origin[1]) * sy;
 			double[] box = { x, y, number(p.get("width")) * sx, number(p.get("height")) * sy };
 			if (u instanceof org.docx4j.vml.CTGroup) {
-				members((org.docx4j.vml.CTGroup) u, box, root, out, art, problems, depth + 1);
+				members((org.docx4j.vml.CTGroup) u, box, root, cache, out, art, problems, depth + 1);
 				continue;
 			}
 			org.docx4j.vml.CTShape shape = (org.docx4j.vml.CTShape) u;
-			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root);
+			org.docx4j.model.shapes.VmlShapes.Resolved r = org.docx4j.model.shapes.VmlShapes.resolve(shape, root, cache);
 			if (r.isTextPath()) {
 				out.add(new Object[] { r, box });
 				art[0] = true;

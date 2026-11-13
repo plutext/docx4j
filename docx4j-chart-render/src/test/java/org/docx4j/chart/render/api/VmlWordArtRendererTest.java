@@ -247,6 +247,76 @@ public class VmlWordArtRendererTest {
 		assertTrue(d.getProblems().isEmpty());
 	}
 
+	/** qb anywhere in the path: Word draws nothing, wherever its control point (cr083-phase4b's wv49-01 to -03) */
+	@Test
+	public void aQuadraticBezierDrawsNothing() throws Exception {
+		for (String path : new String[] { "m0,5400qb10800,0,21600,5400m0,21600l21600,21600e",
+				"m0,0l21600,0m0,21600qb10800,16200,21600,21600e", "m0,5400qb10800,-5400,21600,5400m0,21600l21600,21600e" }) {
+			Case c = read(type(path), shape("fillcolor=\"black\"", "trim=\"t\"", ""));
+			WordArtRenderer.Drawn d = draw(c, 0, true);
+			assertTrue(path, d.isEmpty());
+			assertTrue(path, d.getProblems().isEmpty());
+		}
+	}
+
+	/**
+	 * v-same-letter-heights: every glyph the box's height, an x-height letter too; across, the advance from the pen
+	 * (cr083-phase4b's wv49-13 "Gyp ax", cr083-phase4's wv44-26)
+	 */
+	@Test
+	public void sameLetterHeightsMakesEveryGlyphTheBoxsHeight() throws Exception {
+		String same = shape("fillcolor=\"black\" stroked=\"f\"", "trim=\"t\" fitpath=\"t\"", "")
+				.replace("v-text-kern:t", "v-text-kern:t;v-same-letter-heights:t").replace("WATERMARK", "Gyp ax");
+		Rectangle2D x = lastGlyph(draw(read(type(P136), same), 0, true));
+		assertEquals("the x reaches the box's top: " + x, 0, x.getMinY(), 0.5);
+		assertEquals("and its foot: " + x, 144, x.getMaxY(), 0.5);
+		Rectangle2D ink = ink(draw(read(type(P136), same), 0, true));
+		assertTrue("the G's side bearing kept: " + ink, ink.getMinX() > 1);
+		// without it, the x is short of both
+		Rectangle2D plain = lastGlyph(draw(read(type(P136), same.replace(";v-same-letter-heights:t", "")), 0, true));
+		assertTrue(plain.toString(), plain.getMinY() > 20 && plain.getMaxY() < 124);
+	}
+
+	/** The ink in the box's last 14 pt: the x of "Gyp ax" */
+	private static Rectangle2D lastGlyph(WordArtRenderer.Drawn d) {
+		java.awt.geom.Area a = new java.awt.geom.Area();
+		for (Drawing.Area f : fills(d)) a.add(new java.awt.geom.Area(f.getShape()));
+		a.intersect(new java.awt.geom.Area(new Rectangle2D.Double(274, -10, 14, 164)));
+		return a.getBounds2D();
+	}
+
+	/**
+	 * A turned shape aligned down its reference: its ink, not its box, aligned (centred: wv30-01; at the bottom:
+	 * cr083-phase4b's wv50-01); placed at an offset, turned about the box's centre alone
+	 */
+	@Test
+	public void aTurnedShapesInkIsWhatIsAligned() throws Exception {
+		Case c = read(type(P136), shape("fillcolor=\"silver\" stroked=\"f\"", "", ""));
+		Watermark g = new Watermark(c);
+		Rectangle2D bottom = ink(g.draw("bottom")), centre = ink(g.draw("center")), top = ink(g.draw("top")),
+				offset = ink(g.draw(null));
+		// a watermark's box, 468 by 117
+		assertEquals(117, bottom.getMaxY(), 0.01);
+		assertEquals(58.5, centre.getCenterY(), 0.01);
+		assertEquals(0, top.getMinY(), 0.01);
+		assertEquals("across, the turn about the centre alone", offset.getCenterX(), bottom.getCenterX(), 0.01);
+		assertTrue(offset.toString(), Math.abs(offset.getCenterY() - 58.5) > 1);
+	}
+
+	/** A turned watermark's drawing, aligned down as given */
+	private static final class Watermark {
+		final Case c;
+
+		Watermark(Case c) {
+			this.c = c;
+		}
+
+		WordArtRenderer.Drawn draw(String aligned) {
+			return WordArtRenderer.drawVml(c.art, VmlGeometry.outlines(c.resolved.definition(), 468, 117),
+					ChartFonts.of(c.pkg.getMainDocumentPart()), ThemeColors.of(c.pkg), 468, 117, 315, false, false, false, aligned);
+		}
+	}
+
 	@Test
 	public void aFormulaThatCantBeReadDrawsNothingAndIsReported() throws Exception {
 		Case c = read(type(P136).replace("sum #0 0 10800", "frobnicate #0 0 10800"), shape("fillcolor=\"black\"", "", ""));
