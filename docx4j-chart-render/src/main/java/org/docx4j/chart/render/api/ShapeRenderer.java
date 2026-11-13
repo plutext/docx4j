@@ -824,7 +824,7 @@ public final class ShapeRenderer {
 	}
 
 	/** docx4j.convert.out.effects.pixelsPerPoint, an upper bound on an effect picture's resolution (D3); 0 for none */
-	private static double maxPixelsPerPoint() {
+	static double maxPixelsPerPoint() {
 		String bound = org.docx4j.Docx4jProperties.getProperty("docx4j.convert.out.effects.pixelsPerPoint");
 		if (bound == null || bound.trim().isEmpty()) return 0;
 		try {

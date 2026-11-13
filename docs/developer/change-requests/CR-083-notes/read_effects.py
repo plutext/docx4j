@@ -84,7 +84,10 @@ class Grid:
             subprocess.run(['mutool', 'draw', '-q', '-r', str(PPT * 72), '-o', png, pdf, str(page)], check=True)
             im = np.asarray(Image.open(png).convert('L'))
         top, left = int(round((height - self.y1) * PPT)), int(round(self.x0 * PPT))
-        self.ink = im[top:top + self.h, left:left + self.w] < DARK
+        ink = np.zeros((self.h, self.w), bool)          # the page's edge may cut the region: what is off it is no ink
+        cut = im[max(0, top):top + self.h, max(0, left):left + self.w] < DARK
+        ink[max(0, -top):max(0, -top) + cut.shape[0], max(0, -left):max(0, -left) + cut.shape[1]] = cut
+        self.ink = ink
 
     def place(self, a, place):
         """The picture's alpha on this grid (nearest pixel)."""

@@ -20,6 +20,12 @@ by a Claude Fable 5.1 session (Jason: "have fable review the design"), its findi
 changes"; findings §3): Word draws a text effect at about 0.6 of its stated size and in a frame that isn't the glyphs'
 ink, both now the round's to measure (about 190 probes), and D14's reflection is one mirrored block, cut glyph by
 glyph.
+Phase 3 built 2026-11-13 (Jason: "commence phase 3"; findings §4) from two rounds (`cr083-phase3`, 235 pages, and
+`cr083-phase3b`, 34): Word draws a flat run's shadow and glow at (size / 72)^0.7 of their lengths, a warped run's at
+their stated lengths, a reflection moved 0.266 of the run's descent per point of dist; the frame is the run's line box,
+and the room it takes in its line, Word's rule on that frame (`TextEffects.reach`), fits 176 of 180 probes' boxes within
+0.05 pt, body text's alike; docx4j draws them through `Effects.drawText` (picture bounds at the comparison's floor, about
+0.4 pt median); a face's line gap now set above its ascent, as Word sets it; gate b469 0 movers.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -403,6 +409,21 @@ catalogue (through the portfolio).
     - the fidelity corpora unmoved (none of their text boxes is WordArt: phase 1-2 findings §5), events equal;
     - tests: `WordArtRendererTest` (the conversion, w14's alpha and the scale, the units and their frame, the room, the
       inner shadow) and `WordArtFoTest` (an effect picture under real text, the text still extracted).
+  - **Built** 2026-11-13 (findings §4), as designed but for these, which the rounds decided:
+    - the lengths: a flat run's at (size / 72)^0.7 (`TextEffects.scale`), a reflection's blur at size / 72 and its move
+      0.266 of the descent per point of dist; a warped run's as stated;
+    - the frame: the run's line box (its ascent with the font's line gap above it) flat; a reflection mirrored about the
+      baseline and faded across the ascent, nothing of it before its mirror line; the warped glyphs' box warped;
+    - the room from Word's rule on the frame (`TextEffects.reach`), not from the drawn pictures' reach: the rule is exact
+      to Word's rounding where the pictures' reach would carry their blur's tail;
+    - a glow at 0.44 of its radius (`Effects.TEXT_GLOW_SPREAD`), following the glyphs' coverage;
+    - flat pictures clipped to the box across and its text rectangle up and down, as Word's PDF clips them;
+    - each unit's pictures before all the glyphs and text, not each before its own (Word's order, a Follow Path glyph's
+      shadow on the glyph before it, isn't kept); an inner shadow after the text (`Drawn.getOver`);
+    - a face's line gap above its ascent, as Word and `WordLineMetrics.wordBaselinePt` set it (phase 1 put it below).
+    Gates: `gate_effects.py` on both rounds and phase 0's effect probes; b469 0 movers. Open (findings §4): Times New
+    Roman's drawn reflection move, the text's 1/300 inch grid, the shape's own `a:effectLst` cast by its text
+    (`render.effect.shape_text`), and a text box whose effects don't make it WordArt (D12), phase 5's.
 - **Phase 4, VML WordArt** (D6).
   - First, round 2 (findings §11): Word's own shapetypes for types 137 to 175, and a VML probe of each.
   - `v:textpath` drawn from its shapetype's own `path`, `formulas` and `adj`, through a VML formula evaluator, and then
@@ -429,7 +450,9 @@ catalogue (through the portfolio).
   - **Revised by phase 3's design** (2026-11-13; phase 3 findings §1, D13): Word gives a body run's shadow, glow or
     reflection room in its line, as in WordArt (wb50: a glow of 18 pt sets its line 8.16 pt lower and the next
     paragraph 20.9; a reflection the next paragraph up to 21.4), so this phase changes layout as well as painting:
-    docx4j gives the run's line the room, from phase 3's round (fb10), and the fidelity gate's movers are read as that.
+    docx4j gives the run's line the room, from phase 3's round (wb70), and the fidelity gate's movers are read as that.
+    Measured (phase 3 findings §4, wb70): the room is WordArt's rule, `TextEffects.reach`, for the line alone and for a
+    run within it.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).

@@ -158,6 +158,12 @@ public final class Effects {
 	public static final double BLUR_PIXELS = 16;
 	/** The glow's silhouette grown by this share of its radius before its blur (its 50% contour: 0.486 to 0.493 rad) */
 	public static final double GLOW_SPREAD = 0.485;
+	/**
+	 * A run's glow (CR-083 phase 3): the glyphs grown by this share of its drawn radius before its blur, rad / 6 as a
+	 * shape's (fitted to Word's pictures of glows 5 to 25 pt at 36 to 96 pt, with Word's own glyphs: 0.42 to 0.44, the
+	 * error half {@link #GLOW_SPREAD}'s)
+	 */
+	public static final double TEXT_GLOW_SPREAD = 0.44;
 	/** The soft edge's silhouette shrunk by this share of its radius before its blur (its 50% contour: 0.84 to 0.94) */
 	public static final double SOFT_EDGE_INSET = 0.88;
 	/** D10's cap */
@@ -228,7 +234,7 @@ public final class Effects {
 		Painter lineOver = soft != null ? null : line;
 		Painter own = stack(painter, line);
 		Rectangle2D bounds = drawn;
-		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, own, cap));
+		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, own, cap, false, GLOW_SPREAD));
 		if (glow != null) bounds = bounds.createUnion(glow.place);
 		// a shadow's and a reflection's algn point is on the drawing's box with its line (fs10-08: Thick Matte's sy 90%
 		// about the bottom of its 35pt line, 3pt lower than about the picture's)
@@ -239,10 +245,59 @@ public final class Effects {
 		if (preset != null && presetBounds != null) bounds = bounds.createUnion(presetBounds);
 		if (list.getReflection() != null) {
 			reflection = add(problems, reflection(list.getReflection(), drawn, bounds,
-					stack(preset, painter(shadow), painter(glow), drawing, painter(inner), lineOver), cap));
+					stack(preset, painter(shadow), painter(glow), drawing, painter(inner), lineOver), cap, null, false));
 		}
 		// drawn in Word's order: under the drawing its reflection, outer shadow and glow; then in its place or over it
 		for (Picture p : new Picture[] { reflection, shadow, glow, soft, inner }) if (p != null) out.add(p);
+		return new Result(out, problems);
+	}
+
+	/**
+	 * A run's shadow, glow and reflection on its glyphs, as Word draws text effects (CR-083 phase 3; phase 3 findings
+	 * section 4): CR-081's chain, with these differences, measured on WordArt.
+	 * <ul>
+	 * <li>The frame isn't the drawing's box but the run's line box (its advance across, its ascent and descent up and
+	 * down) flat, the warped glyphs' box warped: a shadow's algn point is on it (sx and sy 50% about tl scale about the
+	 * line's start at the ascent, about b about the descent line).</li>
+	 * <li>A reflection is mirrored about the bottom of its own frame, the run's ascent box flat (so about the baseline: a
+	 * word with descenders is mirrored about its baseline as one without), and faded across that frame and half its move,
+	 * as CR-081's; nothing of it is drawn before the mirror line (the reflection of a descender, which would fall above
+	 * the baseline, is cut).</li>
+	 * <li>The glow follows the glyphs' coverage, not their fill's transparency (a fill at 50% glows as an opaque one; its
+	 * shadow is half as strong).</li>
+	 * <li>The lengths are the caller's: Word draws a flat run's at {@code TextEffects.scale}, a warped run's as stated.</li>
+	 * </ul>
+	 *
+	 * @param list the effects, their lengths as Word draws them ({@code TextEffects.scaled})
+	 * @param frame where a shadow's algn point is
+	 * @param mirror the reflection's frame: mirrored about its bottom, faded across it
+	 * @param reach what the painter paints, points in the frame's coordinates
+	 * @since 17.3.7 (CR-083 phase 3)
+	 */
+	public static Result drawText(CTEffectList list, ThemeColors theme, Rectangle2D frame, Rectangle2D mirror, Rectangle2D reach,
+			Painter painter, double maxPixelsPerPoint) {
+		List<Picture> out = new ArrayList<Picture>();
+		List<String> problems = new ArrayList<String>();
+		if (list == null || painter == null || frame == null || reach == null || !(reach.getWidth() > 0) || !(reach.getHeight() > 0)) {
+			return new Result(out, problems);
+		}
+		if (mirror == null) mirror = frame;
+		double cap = maxPixelsPerPoint > 0 ? maxPixelsPerPoint : Double.MAX_VALUE;
+		Picture inner = null, glow = null, shadow = null, reflection = null;
+		if (list.getInnerShdw() != null) {
+			inner = add(problems, inner(list.getInnerShdw(), theme, new Rectangle2D.Double(reach.getX(), reach.getY(), reach.getWidth(),
+					reach.getHeight()), painter, cap));
+		}
+		Rectangle2D bounds = reach;
+		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, painter, cap, true, TEXT_GLOW_SPREAD));
+		if (glow != null) bounds = bounds.createUnion(glow.place);
+		if (list.getOuterShdw() != null) shadow = add(problems, outer(list.getOuterShdw(), theme, frame, bounds, stack(painter(glow), painter), cap));
+		if (shadow != null) bounds = bounds.createUnion(shadow.place);
+		if (list.getReflection() != null) {
+			reflection = add(problems, reflection(list.getReflection(), mirror, bounds, stack(painter(shadow), painter(glow), painter, painter(inner)),
+					cap, mirror, true));
+		}
+		for (Picture p : new Picture[] { reflection, shadow, glow, inner }) if (p != null) out.add(p);
 		return new Result(out, problems);
 	}
 
@@ -283,8 +338,9 @@ public final class Effects {
 		return g.picture(a, c, Layer.UNDER, "outerShdw");
 	}
 
-	/** Round what the painter paints, within bounds */
-	private static Object glow(CTGlowEffect s, ThemeColors theme, Rectangle2D bounds, Painter painter, double cap) {
+	/** Round what the painter paints, within bounds; its coverage alone, its transparency left out, where coverage */
+	private static Object glow(CTGlowEffect s, ThemeColors theme, Rectangle2D bounds, Painter painter, double cap, boolean coverage,
+			double spread) {
 		Color c = colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
 		double rad = s.getRad() / 12700.0;
 		if (c == null || !(rad > 0)) return null;
@@ -293,7 +349,13 @@ public final class Effects {
 		if (ppt <= 0) return OVER_LIMIT;
 		Grid g = Grid.of(area, ppt);
 		float[] a = g.alpha(painter, null);
-		a = dilate(a, g.w, g.h, GLOW_SPREAD * rad * ppt);
+		if (coverage) {
+			// a run's one fill: its transparency is its alpha's peak
+			float peak = 0;
+			for (float v : a) peak = Math.max(peak, v);
+			if (peak > 0 && peak < 1) for (int i = 0; i < a.length; i++) a[i] = Math.min(1, a[i] / peak);
+		}
+		a = dilate(a, g.w, g.h, spread * rad * ppt);
 		a = blur(a, g.w, g.h, rad / 6 * ppt);
 		return g.picture(a, c, Layer.UNDER, "glow");
 	}
@@ -366,8 +428,13 @@ public final class Effects {
 		return new Picture(im, g.place(), Layer.REPLACE, "softEdge");
 	}
 
-	/** What the painter paints, within bounds, reflected about the drawing's box */
-	private static Object reflection(CTReflectionEffect s, Rectangle2D box, Rectangle2D bounds, Painter painter, double cap) {
+	/**
+	 * What the painter paints, within bounds, reflected about the drawing's box; faded across what is reflected, or across
+	 * fadeFrame where given (text: from half its move before its near edge, whichever way it is moved: Word's reflection
+	 * moved up fades as one moved down, phase 3 findings section 4); nothing drawn before the fade's start where clip
+	 */
+	private static Object reflection(CTReflectionEffect s, Rectangle2D box, Rectangle2D bounds, Painter painter, double cap, Rectangle2D fadeFrame,
+			boolean clip) {
 		double blur = s.getBlurRad() / 12700.0;
 		double[] al = align(s.getAlgn());
 		double dist = s.getDist() / 12700.0, dir = s.getDir() / 60000.0, sx = s.getSx() / 100000.0, sy = s.getSy() / 100000.0,
@@ -385,13 +452,15 @@ public final class Effects {
 		// fade starts, and spans, 108 + dist / 2)
 		double fd = Math.toRadians(s.getFadeDir() / 60000.0), vx = Math.cos(fd), vy = Math.sin(fd);
 		double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
-		List<Point2D> fadeBox = corners(bounds, t);
-		fadeBox.addAll(corners(bounds, placed(box, al, dist / 2, dir, sx, sy, kx, ky)));
+		Rectangle2D faded = fadeFrame != null ? fadeFrame : bounds;
+		List<Point2D> fadeBox = corners(faded, t);
+		if (fadeFrame == null) fadeBox.addAll(corners(faded, placed(box, al, dist / 2, dir, sx, sy, kx, ky)));
 		for (Point2D p : fadeBox) {
 			double d = p.getX() * vx + p.getY() * vy;
 			lo = Math.min(lo, d);
 			hi = Math.max(hi, d);
 		}
+		if (fadeFrame != null) lo -= dist / 2;
 		double stA = s.getStA() / 100000.0, stPos = s.getStPos() / 100000.0, endA = s.getEndA() / 100000.0, endPos = s.getEndPos() / 100000.0;
 		float[] r = new float[px.length], gr = new float[px.length], b = new float[px.length], a = new float[px.length];
 		for (int y = 0; y < g.h; y++) {
@@ -399,7 +468,7 @@ public final class Effects {
 				int i = y * g.w + x;
 				double qx = g.x0 + (x + 0.5) / ppt, qy = g.y0 + (y + 0.5) / ppt;
 				double f = hi > lo ? ((qx * vx + qy * vy) - lo) / (hi - lo) : 0;
-				float v = (px[i] >>> 24) / 255f * (float) fade(f, stA, stPos, endA, endPos);
+				float v = clip && f < 0 ? 0 : (px[i] >>> 24) / 255f * (float) fade(f, stA, stPos, endA, endPos);
 				// premultiplied, for the blur
 				a[i] = v;
 				r[i] = v * ((px[i] >> 16) & 0xFF);

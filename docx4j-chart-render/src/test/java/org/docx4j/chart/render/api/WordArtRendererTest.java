@@ -189,6 +189,65 @@ public class WordArtRendererTest {
 		assertTrue(TextEffects.hasAlpha(fill));
 	}
 
+	/**
+	 * Phase 3: a run's glow, shadow and reflection as an a:effectLst, the colours' w14:alpha as a:alpha's opacity and the
+	 * theme colours' transforms kept; the gallery's style 15 (sx and sy 0, algn none) an inner shadow, which keeps only
+	 * its blur, distance and direction; algn none on an outer shadow read as ctr
+	 */
+	@Test
+	public void runEffectsAreAnEffectList() throws Exception {
+		String glow = "<w14:glow w14:rad=\"63500\"><w14:schemeClr w14:val=\"accent2\"><w14:lumMod w14:val=\"75000\"/>"
+				+ "<w14:alpha w14:val=\"60000\"/></w14:schemeClr></w14:glow>";
+		String shadow = "<w14:shadow w14:blurRad=\"50800\" w14:dist=\"38100\" w14:dir=\"2700000\" w14:sx=\"50000\" w14:sy=\"150000\" w14:kx=\"0\""
+				+ " w14:ky=\"0\" w14:algn=\"ctr\"><w14:srgbClr w14:val=\"000000\"><w14:alpha w14:val=\"60000\"/></w14:srgbClr></w14:shadow>";
+		String reflection = "<w14:reflection w14:blurRad=\"6350\" w14:stA=\"55000\" w14:stPos=\"0\" w14:endA=\"300\" w14:endPos=\"45500\""
+				+ " w14:dist=\"50800\" w14:dir=\"5400000\" w14:fadeDir=\"5400000\" w14:sx=\"100000\" w14:sy=\"-100000\" w14:kx=\"0\" w14:ky=\"0\""
+				+ " w14:algn=\"bl\"/>";
+		WordArtText art = read(para(run(glow + shadow + reflection, "WordArt")), wordForm("textNoShape"));
+		WordArtText.Run r = art.getParagraphs().get(0).getRuns().get(0);
+		org.docx4j.dml.CTEffectList fx = r.getEffects();
+		assertNotNull(fx);
+		assertEquals(63500, fx.getGlow().getRad());
+		org.docx4j.dml.CTSchemeColor sc = fx.getGlow().getSchemeClr();
+		assertEquals("accent2", sc.getVal().value());
+		assertEquals("the transforms in order", 2, sc.getEGColorTransform().size());
+		assertEquals(75000, ((org.docx4j.dml.CTPercentage) XmlUtils.unwrap(sc.getEGColorTransform().get(0))).getVal());
+		assertEquals("w14:alpha 60000: opacity 40%", 40000,
+				((org.docx4j.dml.CTPositiveFixedPercentage) XmlUtils.unwrap(sc.getEGColorTransform().get(1))).getVal());
+		org.docx4j.dml.CTOuterShadowEffect o = fx.getOuterShdw();
+		assertNotNull(o);
+		assertNull(fx.getInnerShdw());
+		assertEquals(50800, o.getBlurRad());
+		assertEquals(38100, o.getDist());
+		assertEquals(2700000, o.getDir());
+		assertEquals(50000, o.getSx());
+		assertEquals(150000, o.getSy());
+		assertEquals(org.docx4j.dml.STRectAlignment.CTR, o.getAlgn());
+		org.docx4j.dml.CTReflectionEffect rf = fx.getReflection();
+		assertEquals(55000, rf.getStA());
+		assertEquals(45500, rf.getEndPos());
+		assertEquals(50800, rf.getDist());
+		assertEquals(-100000, rf.getSy());
+		assertEquals(org.docx4j.dml.STRectAlignment.BL, rf.getAlgn());
+
+		String inner = "<w14:shadow w14:blurRad=\"63500\" w14:dist=\"50800\" w14:dir=\"13500000\" w14:sx=\"0\" w14:sy=\"0\" w14:kx=\"0\" w14:ky=\"0\""
+				+ " w14:algn=\"none\"><w14:srgbClr w14:val=\"000000\"><w14:alpha w14:val=\"50000\"/></w14:srgbClr></w14:shadow>";
+		fx = read(para(run(inner, "WordArt")), wordForm("textNoShape")).getParagraphs().get(0).getRuns().get(0).getEffects();
+		assertNull(fx.getOuterShdw());
+		org.docx4j.dml.CTInnerShadowEffect is = fx.getInnerShdw();
+		assertNotNull("style 15: an inner shadow", is);
+		assertEquals(63500, is.getBlurRad());
+		assertEquals(50800, is.getDist());
+		assertEquals(13500000, is.getDir());
+
+		String none = inner.replace("w14:sx=\"0\" w14:sy=\"0\"", "w14:sx=\"100000\" w14:sy=\"100000\"");
+		fx = read(para(run(none, "WordArt")), wordForm("textNoShape")).getParagraphs().get(0).getRuns().get(0).getEffects();
+		assertNotNull("algn none at 100%: an outer shadow", fx.getOuterShdw());
+		assertEquals("algn none read as ctr (we16-10)", org.docx4j.dml.STRectAlignment.CTR, fx.getOuterShdw().getAlgn());
+
+		assertNull("no effects", read(para(run(OUTLINE, "WordArt")), fixed(null)).getParagraphs().get(0).getRuns().get(0).getEffects());
+	}
+
 	@Test
 	public void anOutlineIsALine() throws Exception {
 		WordArtText art = read(para(run(OUTLINE, "WordArt")), fixed(null));
@@ -511,5 +570,112 @@ public class WordArtRendererTest {
 	public void aBoxOfNoWidthStaysText() throws Exception {
 		assertNull(draw(para(run(OUTLINE, "WordArt")), fixed(null), 0, 1828800));
 		assertNotNull(draw(para(run("", "WordArt")), wordForm("textNoShape"), 0, 0));
+	}
+
+	// ------------------------------------------------------------------ phase 3: shadow, glow and reflection
+
+	/** w14:shadow, lengths in points, its direction in degrees, black at w14:alpha 60000 */
+	private static String shadow(double blur, double dist, double dir, int sx, int sy, String algn) {
+		return "<w14:shadow w14:blurRad=\"" + Math.round(blur * 12700) + "\" w14:dist=\"" + Math.round(dist * 12700) + "\" w14:dir=\""
+				+ Math.round(dir * 60000) + "\" w14:sx=\"" + sx + "\" w14:sy=\"" + sy + "\" w14:kx=\"0\" w14:ky=\"0\" w14:algn=\"" + algn + "\">"
+				+ "<w14:srgbClr w14:val=\"000000\"><w14:alpha w14:val=\"60000\"/></w14:srgbClr></w14:shadow>";
+	}
+
+	private static String glow(double rad) {
+		return "<w14:glow w14:rad=\"" + Math.round(rad * 12700) + "\"><w14:srgbClr w14:val=\"ED7D31\"><w14:alpha w14:val=\"60000\"/></w14:srgbClr></w14:glow>";
+	}
+
+	private static String reflection(double blur, double dist, double dir, int sy) {
+		return "<w14:reflection w14:blurRad=\"" + Math.round(blur * 12700) + "\" w14:stA=\"55000\" w14:stPos=\"0\" w14:endA=\"300\""
+				+ " w14:endPos=\"45500\" w14:dist=\"" + Math.round(dist * 12700) + "\" w14:dir=\"" + Math.round(dir * 60000) + "\" w14:fadeDir=\"5400000\""
+				+ " w14:sx=\"100000\" w14:sy=\"" + sy + "\" w14:kx=\"0\" w14:ky=\"0\" w14:algn=\"bl\"/>";
+	}
+
+	/** Aptos' typographic box, which Word sets its lines by */
+	private static final double ASC = 1923 / 2048.0, DESC = 577 / 2048.0;
+
+	/** The room TextEffects.reach gives "WordArt" in Aptos at this size, above and below added */
+	private static double room(String fx, double size) throws Exception {
+		WordArtText.Run r = read(para(run(fx, "WordArt")), wordForm("textNoShape")).getParagraphs().get(0).getRuns().get(0);
+		double[] reach = TextEffects.reach(r.getEffects(), size, ASC * size, DESC * size, 127.9 * size / 36);
+		return reach[0] + reach[1] - (ASC + DESC) * size;
+	}
+
+	/**
+	 * Word's room, measured (round cr083-phase3, phase 3 findings section 4): how much taller each probe's spAutoFit box
+	 * is than one with no effect, "WordArt" in Aptos; Word sizes the box in twentieths of a point
+	 */
+	@Test
+	public void theRoomIsWords() throws Exception {
+		double t = 0.03;
+		assertEquals("we10-05 shadow blur 8", 9.85, room(shadow(8, 0, 90, 100000, 100000, "tl"), 36), t);
+		assertEquals("we10-11 shadow 6 pt down", 3.70, room(shadow(0, 6, 90, 100000, 100000, "tl"), 36), t);
+		assertEquals("we10-21 shadow blur 4, 3 pt up", 4.90, room(shadow(4, 3, 270, 100000, 100000, "tl"), 36), t);
+		assertEquals("we10-27 shadow scaled 150% about ctr", 21.95, room(shadow(0, 0, 90, 150000, 150000, "ctr"), 36), t);
+		assertEquals("we11-08 glow 25", 23.10, room(glow(25), 36), t);
+		assertEquals("we11-09 reflection", 5.25, room(reflection(0, 0, 90, -100000), 36), t);
+		assertEquals("we11-13 reflection 4 pt down", 16.05, room(reflection(0, 4, 90, -100000), 36), t);
+		assertEquals("we11-18 reflection sy -50%, 4 pt down", 8.60, room(reflection(0.5, 4, 90, -50000), 36), t);
+		assertEquals("we11-29 reflection 16 pt up", 19.55, room(reflection(0, 16, 270, -100000), 36), t);
+		assertEquals("we16-03 the inner shadow: none", 0, room(shadow(5, 4, 225, 0, 0, "none"), 36), 1e-9);
+		assertEquals("we16-12 a shadow scaled to nothing about tl", 4.80, room(shadow(5, 4, 225, 0, 0, "tl"), 36), t);
+		assertEquals("we12-29 at 12 pt", 3.40, room(shadow(0, 12, 90, 100000, 100000, "tl"), 12), t);
+		assertEquals("we12-33 at 72 pt", 12.0, room(shadow(0, 12, 90, 100000, 100000, "tl"), 72), t);
+		assertEquals("we21-01 at 96 pt", 14.66, room(shadow(0, 12, 90, 100000, 100000, "tl"), 96), t);
+		assertEquals("across: none", 0, room(shadow(0, 12, 0, 100000, 100000, "tl"), 72), 1e-9);
+		assertEquals(0.616, TextEffects.scale(36), 0.001);
+	}
+
+	/** Which of the root's children holds the node */
+	private static int top(org.w3c.dom.Document svg, org.w3c.dom.Node n) {
+		while (n.getParentNode() != svg.getDocumentElement()) n = n.getParentNode();
+		int i = 0;
+		for (org.w3c.dom.Node c = svg.getDocumentElement().getFirstChild(); c != n; c = c.getNextSibling()) i++;
+		return i;
+	}
+
+	private static List<Drawing.Picture> pictures(Drawing d) {
+		List<Drawing.Picture> out = new ArrayList<Drawing.Picture>();
+		for (Object o : d.getItems()) if (o instanceof Drawing.Picture) out.add((Drawing.Picture) o);
+		return out;
+	}
+
+	/**
+	 * Drawn: flat, a picture a run on a line, under the text, the box taller by the room and the text lower by what is
+	 * above; an inner shadow over the text, taking none; warped, the same room; on Follow Path a picture a glyph (D14)
+	 */
+	@Test
+	public void effectsAreDrawnWithTheirRoom() throws Exception {
+		WordArtRenderer.Drawn plain = draw(para(run("", "WordArt")), wordForm("textNoShape"));
+		WordArtRenderer.Drawn blurred = draw(para(run(shadow(8, 0, 90, 100000, 100000, "tl"), "WordArt")), wordForm("textNoShape"));
+		assertTrue(pictures(plain.getDrawing()).isEmpty());
+		assertEquals("a picture under the text", 1, pictures(blurred.getDrawing()).size());
+		WordArtText.Run r = read(para(run(shadow(8, 0, 90, 100000, 100000, "tl"), "WordArt")), wordForm("textNoShape")).getParagraphs().get(0)
+				.getRuns().get(0);
+		double size = r.getSize(), asc = (r.getAscent() + r.getLeading()) * size, desc = r.getDescent() * size;
+		double[] reach = TextEffects.reach(r.getEffects(), size, asc, desc, 100);
+		assertEquals("the box taller by the room", reach[0] - asc + reach[1] - desc, blurred.getHeight() - plain.getHeight(), 1e-6);
+		double y0 = Double.parseDouble(texts(plain).get(0).getAttribute("y")), y1 = Double.parseDouble(texts(blurred).get(0).getAttribute("y"));
+		assertEquals("the text lower by the room above (the SVG to 4 places)", reach[0] - asc, y1 - y0, 1e-3);
+		assertTrue(blurred.getProblems().toString(), blurred.getProblems().isEmpty());
+
+		WordArtRenderer.Drawn inner = draw(para(run(shadow(5, 4, 225, 0, 0, "none"), "WordArt")), wordForm("textNoShape"));
+		assertTrue("an inner shadow is over the text", pictures(inner.getDrawing()).isEmpty());
+		assertEquals(1, pictures(inner.getOver()).size());
+		assertEquals("no room", plain.getHeight(), inner.getHeight(), 1e-6);
+		org.w3c.dom.Document svg = inner.toSvg();
+		NodeList images = svg.getElementsByTagNameNS(SVG_NS, "image");
+		assertEquals(1, images.getLength());
+		NodeList t = svg.getElementsByTagNameNS(SVG_NS, "text");
+		assertTrue("after the text", top(svg, images.item(0)) > top(svg, t.item(0)));
+
+		WordArtRenderer.Drawn arch = draw(para(run(glow(5), "WordArt")), wordForm("textArchUp"));
+		assertEquals("Follow Path: a picture a glyph", 7, pictures(arch.getDrawing()).size());
+		WordArtRenderer.Drawn wave = draw(para(run(glow(5), "Word") + run(glow(5), "Art")), wordForm("textWave1"));
+		assertEquals("two paths: a picture a run", 2, pictures(wave.getDrawing()).size());
+		WordArtRenderer.Drawn flat = draw(para(run(glow(5), "Word") + run(glow(5), "Art")), wordForm("textNoShape"));
+		assertEquals("warped, the same room", flat.getHeight(), wave.getHeight(), 1e-6);
+		for (Drawing.Picture p : pictures(flat.getDrawing())) assertNotNull("flat: within the box and its text rectangle", p.getClip());
+		for (Drawing.Picture p : pictures(wave.getDrawing())) assertNull("warped: not cut", p.getClip());
 	}
 }

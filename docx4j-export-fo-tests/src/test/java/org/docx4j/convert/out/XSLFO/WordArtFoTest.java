@@ -200,4 +200,38 @@ public class WordArtFoTest extends AbstractXSLFOTest {
 		}
 		return false;
 	}
+	/**
+	 * CR-083 phase 3: a run's glow drawn as a picture under its real text in both routes, the box taller by its room; the
+	 * text still found in the PDF
+	 */
+	@Test
+	public void anEffectIsAPictureUnderTheText() throws Exception {
+		String glow = "<w14:glow w14:rad=\"63500\"><w14:srgbClr w14:val=\"ED7D31\"><w14:alpha w14:val=\"60000\"/></w14:srgbClr></w14:glow>";
+		String plain = anchored("WordArt", bodyPr("textNoShape", true));
+		String body = plain.replace("<w:sz w:val=\"72\"/>", "<w:sz w:val=\"72\"/>" + glow);
+		for (int flags : BOTH) {
+			Element box = box(fo(body, flags)), without = box(fo(plain, flags));
+			assertNotNull("flags " + flags, box);
+			Element svg = (Element) box.getElementsByTagNameNS(SVG_NS, "svg").item(0);
+			NodeList images = svg.getElementsByTagNameNS(SVG_NS, "image"), texts = svg.getElementsByTagNameNS(SVG_NS, "text");
+			assertEquals("flags " + flags + ": the glow's picture", 1, images.getLength());
+			assertEquals("flags " + flags, 1, texts.getLength());
+			assertTrue("flags " + flags + ": real text", !"none".equals(((Element) texts.item(0)).getAttribute("fill")));
+			assertTrue("flags " + flags + ": the picture under the text", top(svg, images.item(0)) < top(svg, texts.item(0)));
+			double h = pt(svg.getAttribute("height")), h0 = pt(((Element) without.getElementsByTagNameNS(SVG_NS, "svg").item(0)).getAttribute("height"));
+			assertTrue("flags " + flags + ": taller by its room, " + h + " for " + h0, h > h0 + 3);
+			try (PDDocument d = Loader.loadPDF(pdf(body, flags))) {
+				String text = new PDFTextStripper().getText(d);
+				assertTrue("flags " + flags + ": " + text, text.contains("WordArt"));
+			}
+		}
+	}
+
+	/** Which of the svg's children holds the node */
+	private static int top(Element svg, org.w3c.dom.Node n) {
+		while (n.getParentNode() != svg) n = n.getParentNode();
+		int i = 0;
+		for (org.w3c.dom.Node c = svg.getFirstChild(); c != n; c = c.getNextSibling()) i++;
+		return i;
+	}
 }

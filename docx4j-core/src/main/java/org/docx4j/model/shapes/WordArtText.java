@@ -76,7 +76,7 @@ public final class WordArtText {
 	/** A WordArt text box holding what the line layout doesn't lay out (a table, a picture, a symbol): left as text */
 	public static final String CONTENT = "render.wordart.content";
 
-	/** A run's shadow, glow or reflection, not yet drawn on WordArt (CR-083 phase 3) */
+	/** A run's shadow, glow or reflection that couldn't be drawn as Word draws it (CR-083 phase 3) */
 	public static final String EFFECT = "render.wordart.effect";
 
 	/** 3-D WordArt ({@code w14:props3d}, {@code w14:scene3d}, the bodyPr's {@code a:scene3d} or {@code a:sp3d}), drawn flat (D10) */
@@ -124,6 +124,7 @@ public final class WordArtText {
 		Object fill;
 		CTLineProperties outline;
 		boolean shadow, glow, reflection, threeD, textFill, alpha;
+		org.docx4j.dml.CTEffectList effects;
 		String lang;
 		RPr rPr;
 		/** the paragraph mark of a paragraph with no runs: no text, its line's height */
@@ -135,6 +136,8 @@ public final class WordArtText {
 		double rise;
 		/** Word's ascent and descent, and its single line, as fractions of the size (WordLineMetrics) */
 		double ascent = 0.8, descent = 0.2, single = 1.2;
+		/** the font's external leading, which Word puts above the ascent, as a fraction of the size */
+		double leading;
 
 		/** Word's ascent for its font, as a fraction of its size: its single line's share above the baseline */
 		public double getAscent() {
@@ -144,6 +147,17 @@ public final class WordArtText {
 		/** Word's descent, as a fraction of its size */
 		public double getDescent() {
 			return descent;
+		}
+
+		/**
+		 * The font's external leading (its line gap), as a fraction of its size: Word puts it above the ascent, so that the
+		 * baseline is the ascent and the leading below the line's top (WordLineMetrics.wordBaselinePt; phase 3 findings
+		 * section 4: Times New Roman 36 pt WordArt sits 0.24 above Aptos, not 1.7)
+		 *
+		 * @since 17.3.7 (CR-083 phase 3)
+		 */
+		public double getLeading() {
+			return leading;
 		}
 
 		/** Word's single line height, as a multiple of its size */
@@ -215,6 +229,16 @@ public final class WordArtText {
 		/** It has a shadow, glow or reflection (drawn in phase 3) */
 		public boolean hasEffect() {
 			return shadow || glow || reflection;
+		}
+
+		/**
+		 * Its shadow, glow and reflection as DrawingML's {@code a:effectLst} ({@link TextEffects#effects(RPr)}), their
+		 * lengths as written; null where it has none
+		 *
+		 * @since 17.3.7 (CR-083 phase 3)
+		 */
+		public org.docx4j.dml.CTEffectList getEffects() {
+			return effects;
 		}
 
 		/** It has 3-D ({@code w14:props3d} or {@code w14:scene3d}) */
@@ -375,7 +399,7 @@ public final class WordArtText {
 		return warped ? shape.getBodyPr().getPrstTxWarp().getPrst().value() : null;
 	}
 
-	/** The gaps found reading it (stable codes, CR-083 D9): {@link #EFFECT}, {@link #FLAT_3D} */
+	/** The gaps found reading it (stable codes, CR-083 D9): {@link #FLAT_3D}; the renderer adds its own ({@link #EFFECT} among them) */
 	public List<String> getProblems() {
 		return problems;
 	}
@@ -408,7 +432,6 @@ public final class WordArtText {
 				if (r.lineBreak || r.mark) continue;
 				any = true;
 				if (r.paint(false) != Paint.TEXT) paths = true;
-				if (r.hasEffect() && !problems.contains(EFFECT)) problems.add(EFFECT);
 				if (r.threeD && !problems.contains(FLAT_3D)) problems.add(FLAT_3D);
 			}
 		}
@@ -694,6 +717,7 @@ public final class WordArtText {
 				run.shadow = rPr.getShadow14() != null;
 				run.glow = rPr.getGlow() != null;
 				run.reflection = rPr.getReflection() != null;
+				if (run.hasEffect()) run.effects = TextEffects.effects(rPr);
 				run.threeD = rPr.getProps3D() != null || rPr.getScene3D() != null;
 				if (rPr.getLang() != null) run.lang = rPr.getLang().getVal();
 				decorations(run, rPr);
@@ -736,6 +760,7 @@ public final class WordArtText {
 				run.ascent = m.winAscent;
 				run.descent = m.winDescent;
 				run.single = m.lineHeightFactor();
+				run.leading = m.eastAsian ? 0 : m.externalLeading;
 			} catch (RuntimeException e) {
 				log.debug("No line metrics for " + run.face + ": " + e.getMessage());
 			}

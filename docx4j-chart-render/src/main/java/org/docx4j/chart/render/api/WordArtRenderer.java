@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.docx4j.com.microsoft.schemas.office.word.x2010.wordprocessingShape.CTWordprocessingShape;
+import org.docx4j.dml.CTEffectList;
 import org.docx4j.dml.CTGradientFillProperties;
 import org.docx4j.dml.CTLineProperties;
 import org.docx4j.dml.CTNoFillProperties;
@@ -47,6 +48,7 @@ import org.docx4j.model.shapes.ShapeGeometry;
 import org.docx4j.model.shapes.ShapeOutline;
 import org.docx4j.model.shapes.ShapeOutlines;
 import org.docx4j.model.shapes.ShapeText;
+import org.docx4j.model.shapes.TextEffects;
 import org.docx4j.model.shapes.WordArtText;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,8 +74,13 @@ import org.w3c.dom.Element;
  * <li><b>Decorations</b>: a run's underline, strikes, highlight and shading are drawn on flat WordArt as the FO output
  * draws them, and a superscript or subscript is set as it sets them; on warped WordArt the decorations are reported
  * ({@link WordArtText#DECORATION}), how Word warps them not being measured.</li>
+ * <li><b>Effects</b> (phase 3, phase 3 findings section 4): a run's shadow, glow and reflection are drawn as Word
+ * draws them, pictures under its glyphs ({@link Effects#drawText}), an inner shadow over them: flat, each run's glyphs
+ * on a line together, in its line box, at {@link TextEffects#scale}; warped, at their stated lengths, in the warped
+ * glyphs' box, on Follow Path glyph by glyph (D14). They take room in the line as Word gives it, flat or warped
+ * ({@link TextEffects#reach}): the line taller, its text lower.</li>
  * </ul>
- * Shadows, glows and reflections (phase 3) and 3-D (phase 6) aren't drawn yet, and are reported. A face with no font
+ * 3-D (phase 6) isn't drawn yet, and is reported. A face with no font
  * file is drawn in AWT's fallback and reported ({@link WordArtText#FONT}); a warp whose outlines would pass
  * {@link TextWarp#MAX_POINTS} points is drawn unwarped ({@link WordArtText#OVER_LIMIT}).
  *
@@ -105,9 +112,12 @@ public final class WordArtRenderer {
 		private final ShapeOutlines outlines;
 		private final List<String> problems;
 		private final String text;
+		/** what is drawn over the text: inner shadows */
+		private final Drawing over;
 
 		Drawn(Drawing drawing, List<Span> spans, double width, double height, Rectangle2D.Double bounds, ShapeOutlines outlines,
-				List<String> problems, String text) {
+				List<String> problems, String text, Drawing over) {
+			this.over = over;
 			this.drawing = drawing;
 			this.spans = spans;
 			this.width = width;
@@ -158,15 +168,29 @@ public final class WordArtRenderer {
 			return drawing.getItems().isEmpty() && spans.isEmpty();
 		}
 
+		/** What is drawn over its text: the runs' inner shadows (phase 3) */
+		public Drawing getOver() {
+			return over;
+		}
+
 		/**
-		 * As SVG, a user unit a point, its canvas {@link #getBounds()}: the paths, then the text, visible where Word keeps
-		 * it as text, with no fill where Word draws it as outlines. Its families are those docx4j's font mapping gives FOP,
-		 * then the document's faces, then the generic family, as a chart's.
+		 * As SVG, a user unit a point, its canvas {@link #getBounds()}: the paths (the effects' pictures among them), then
+		 * the text, visible where Word keeps it as text, with no fill where Word draws it as outlines, then what is over
+		 * it. Its families are those docx4j's font mapping gives FOP, then the document's faces, then the generic family,
+		 * as a chart's.
 		 */
 		public Document toSvg() {
 			Document doc = SvgWriter.toSvg(drawing, bounds);
 			Element root = doc.getDocumentElement();
 			for (Span s : spans) root.appendChild(s.element(doc));
+			if (over != null && !over.getItems().isEmpty()) {
+				Element top = SvgWriter.toSvg(over, bounds).getDocumentElement();
+				for (org.w3c.dom.Node n = top.getFirstChild(); n != null; n = n.getNextSibling()) {
+					// Batik's empty defs (its id would be the drawing's twice)
+					if (n instanceof Element && "defs".equals(n.getLocalName()) && !n.hasChildNodes()) continue;
+					root.appendChild(doc.importNode(n, true));
+				}
+			}
 			return doc;
 		}
 	}
@@ -262,6 +286,8 @@ public final class WordArtRenderer {
 		boolean first, last, forced;
 		double top, height, baseline, x0, extraPerSpace;
 		double ascent, descent, single;
+		/** the room its runs' effects take above and below it (phase 3) */
+		double roomAbove, roomBelow;
 
 		/** Its natural width: to its last glyph's advance, trailing spaces left out */
 		double width() {
@@ -331,6 +357,7 @@ public final class WordArtRenderer {
 				l.last = i == lines.size() - 1;
 				metrics(l, mark != null ? mark : previous != null && !previous.glyphs.isEmpty() ? previous.glyphs.get(0).run : null, fontScale);
 				space(l, lineScale);
+				room(l, fontScale);
 				if (l.first) y += p.getSpaceBefore();
 				l.top = y;
 				y += l.height;
@@ -436,27 +463,67 @@ public final class WordArtRenderer {
 		return lines;
 	}
 
-	/** The line's ascent, descent and single height, Word's, for the largest of its runs (an empty line: its mark's) */
+	/**
+	 * The line's ascent (with the font's leading above it, as Word sets a line: phase 3 findings section 4), descent and
+	 * single height, Word's, for the largest of its runs (an empty line: its mark's)
+	 */
 	private static void metrics(Line l, WordArtText.Run mark, double fontScale) {
 		double a = 0, d = 0, s = 0;
 		boolean any = false;
 		for (Glyph g : l.glyphs) {
 			WordArtText.Run r = g.run;
 			double size = r.getSize() * fontScale;
-			a = Math.max(a, r.getAscent() * size);
+			a = Math.max(a, frameAscent(r) * size);
 			d = Math.max(d, r.getDescent() * size);
 			s = Math.max(s, r.getSingle() * size);
 			any = true;
 		}
 		if (!any && mark != null) {
 			double size = mark.getSize() * fontScale;
-			a = mark.getAscent() * size;
+			a = frameAscent(mark) * size;
 			d = mark.getDescent() * size;
 			s = mark.getSingle() * size;
 		}
 		l.ascent = a;
 		l.descent = d;
 		l.single = Math.max(s, a + d);
+	}
+
+	/** The run's ascent with its font's leading above it, as Word sets its line, a fraction of its size */
+	static double frameAscent(WordArtText.Run r) {
+		return r.getAscent() + r.getLeading();
+	}
+
+	/**
+	 * The room its runs' shadows, glows and reflections take ({@link TextEffects#reach}, each on its run's line box): the
+	 * line taller by it, its baseline lower by what is above. Word gives it on the line before any warp, flat or warped
+	 * alike (phase 3 findings section 4); with exact line spacing it isn't measured, and none is given.
+	 */
+	private static void room(Line l, double fontScale) {
+		if ("exact".equals(l.para.getLineRule())) return;
+		Map<WordArtText.Run, double[]> runs = new java.util.LinkedHashMap<WordArtText.Run, double[]>();
+		for (Glyph g : l.glyphs) {
+			if (g.lineBreak || g.run.getEffects() == null) continue;
+			double[] x = runs.computeIfAbsent(g.run, r -> new double[] { Double.MAX_VALUE, -Double.MAX_VALUE });
+			if (!g.space) {
+				x[0] = Math.min(x[0], g.x);
+				x[1] = Math.max(x[1], g.x + g.advance);
+			}
+		}
+		if (runs.isEmpty()) return;
+		double up = l.ascent, down = l.descent;
+		for (Map.Entry<WordArtText.Run, double[]> e : runs.entrySet()) {
+			WordArtText.Run r = e.getKey();
+			double size = r.getSize() * fontScale;
+			double[] x = e.getValue();
+			double[] reach = TextEffects.reach(r.getEffects(), size, frameAscent(r) * size, r.getDescent() * size, x[1] > x[0] ? x[1] - x[0] : 0);
+			up = Math.max(up, reach[0]);
+			down = Math.max(down, reach[1]);
+		}
+		l.roomAbove = up - l.ascent;
+		l.roomBelow = down - l.descent;
+		l.height += l.roomAbove + l.roomBelow;
+		l.baseline += l.roomAbove;
 	}
 
 	/** The line's height and baseline by its paragraph's line spacing, as the FO output sets Word's */
@@ -565,9 +632,11 @@ public final class WordArtRenderer {
 			}
 		}
 
-		// the runs painted, and their text
+		// the runs painted, and their text; what is over the text
 		List<Span> spans = new ArrayList<Span>();
-		Rectangle2D glyphs = paint(layout, warped, theme, turn, drawing, spans, problems);
+		Drawing over = new Drawing(w, h);
+		// flat effects are drawn within the box across and its text rectangle up and down (Word's clip)
+		Rectangle2D glyphs = paint(layout, warped, theme, turn, drawing, over, spans, problems, new Rectangle2D.Double(0, rect.y, w, rect.height));
 		bounds = union(bounds, glyphs);
 		bounds = union(bounds, new Rectangle2D.Double(0, 0, w, h));
 
@@ -578,7 +647,7 @@ public final class WordArtRenderer {
 			// the space a wrapped line ends with is the one between the lines
 			text.append(line.toString().stripTrailing()).append(l.last ? "\n" : " ");
 		}
-		return new Drawn(drawing, spans, w, h, rect(bounds), shape.getOutlines(), problems, text.toString().trim());
+		return new Drawn(drawing, spans, w, h, rect(bounds), shape.getOutlines(), problems, text.toString().trim(), over);
 	}
 
 	/** The line set in the rectangle: its top, its start by its paragraph's alignment, its spaces stretched if justified */
@@ -629,11 +698,11 @@ public final class WordArtRenderer {
 	}
 
 	/**
-	 * Each run's glyphs painted as Word paints them (D2), warped where there is a warp; its text as spans. The area its
-	 * outlines paint, or null.
+	 * Each run's glyphs painted as Word paints them (D2), warped where there is a warp, its effects under them (and an
+	 * inner shadow in over); its text as spans. The area its outlines and effects paint, or null.
 	 */
-	private static Rectangle2D paint(Layout layout, Warped warped, ThemeColors theme, AffineTransform turn, Drawing drawing, List<Span> spans,
-			List<String> problems) {
+	private static Rectangle2D paint(Layout layout, Warped warped, ThemeColors theme, AffineTransform turn, Drawing drawing, Drawing over,
+			List<Span> spans, List<String> problems, Rectangle2D clip) {
 		// the glyphs where Word draws them: unwarped, or by the warp
 		Map<Glyph, Shape> drawn = new HashMap<Glyph, Shape>();
 		for (Line l : layout.lines) {
@@ -679,6 +748,10 @@ public final class WordArtRenderer {
 				painted = union(painted, sh.getBounds2D());
 			}
 		}
+
+		// the runs' shadows, glows and reflections, under their glyphs (phase 3)
+		painted = effects(layout, warped != null, followed != null, drawn, theme, turn, drawing, over, problems, painted,
+				warped == null ? clip : null);
 
 		// each run: its glyphs over all its lines, painted at once (a gradient spans the run)
 		Map<WordArtText.Run, Path2D.Double> byRun = new java.util.LinkedHashMap<WordArtText.Run, Path2D.Double>();
@@ -828,6 +901,153 @@ public final class WordArtRenderer {
 		// spans of spaces alone carry nothing
 		spans.removeIf(s -> s.text.toString().trim().isEmpty());
 		return painted;
+	}
+
+	// ------------------------------------------------------------------ effects (phase 3)
+
+	/**
+	 * Each unit's shadow, glow and reflection ({@link Effects#drawText}), as Word draws them (phase 3 findings section 4),
+	 * added to the drawing before the glyphs, an inner shadow to over:
+	 * <ul>
+	 * <li>flat: a run's glyphs on a line, at {@link TextEffects#scale} (a reflection's blur at
+	 * {@link TextEffects#reflectionScale}, moved {@link TextEffects#reflectionMove}), in the run's line box (its ascent
+	 * box for the reflection);</li>
+	 * <li>on two paths: a run's glyphs on a line, at the stated lengths, in their warped box;</li>
+	 * <li>on Follow Path: each glyph, at the stated lengths, the reflection's frame the whole warped block (D14).</li>
+	 * </ul>
+	 * Word draws each unit's pictures just before its glyphs; here they are all before the glyphs (a Follow Path glyph's
+	 * shadow doesn't fall on the glyph before it) and, for a run kept as text, before all the text. Flat, Word draws each
+	 * picture within the box across and the text rectangle up and down (its PDF's clip paths): a shadow 12 pt to the right
+	 * of 72 pt text, past the box's 7.2 pt inset, is cut at its right side (we12-32), a shadow scaled 150% too (we10-26);
+	 * warped, within the page.
+	 *
+	 * @param clip where flat effects are drawn within, in the box's frame; null for none
+	 */
+	private static Rectangle2D effects(Layout layout, boolean warped, boolean follow, Map<Glyph, Shape> drawn, ThemeColors theme,
+			AffineTransform turn, Drawing drawing, Drawing over, List<String> problems, Rectangle2D painted, Rectangle2D clip) {
+		Rectangle2D block = null;
+		if (follow) for (Shape s : drawn.values()) block = union(block, s.getBounds2D());
+		double cap = ShapeRenderer.maxPixelsPerPoint();
+		for (Line l : layout.lines) {
+			Map<WordArtText.Run, List<Glyph>> units = new java.util.LinkedHashMap<WordArtText.Run, List<Glyph>>();
+			for (Glyph g : l.glyphs) {
+				if (g.run.getEffects() != null && drawn.containsKey(g)) units.computeIfAbsent(g.run, r -> new ArrayList<Glyph>()).add(g);
+			}
+			for (Map.Entry<WordArtText.Run, List<Glyph>> e : units.entrySet()) {
+				WordArtText.Run r = e.getKey();
+				List<Glyph> gs = e.getValue();
+				if (!warped) {
+					double size = gs.get(0).font.getSize2D();
+					CTEffectList fx = TextEffects.scaled(r.getEffects(), TextEffects.scale(size), TextEffects.reflectionScale(size),
+							TextEffects.REFLECTION_MOVE * r.getDescent() * size);
+					Glyph first = gs.get(0), last = gs.get(gs.size() - 1);
+					double base = baseline(l, first), asc = frameAscent(r) * size, desc = r.getDescent() * size;
+					double x0 = l.x0 + first.x, width = Math.max(0, last.x + last.advance - first.x);
+					Rectangle2D frame = new Rectangle2D.Double(x0, base - asc, width, asc + desc);
+					Rectangle2D mirror = new Rectangle2D.Double(x0, base - asc, width, asc);
+					painted = unit(fx, theme, frame, mirror, outlines(gs, drawn), r, turn, drawing, over, problems, painted, cap, clip);
+				} else if (!follow) {
+					Shape s = outlines(gs, drawn);
+					Rectangle2D box = s.getBounds2D();
+					painted = unit(TextEffects.scaled(r.getEffects(), 1, 1, 1), theme, box, box, s, r, turn, drawing, over, problems, painted, cap,
+							null);
+				} else {
+					CTEffectList fx = TextEffects.scaled(r.getEffects(), 1, 1, 1);
+					for (Glyph g : gs) {
+						Shape s = drawn.get(g);
+						painted = unit(fx, theme, s.getBounds2D(), block, s, r, turn, drawing, over, problems, painted, cap, null);
+					}
+				}
+			}
+		}
+		return painted;
+	}
+
+	/** The glyphs' outlines where they are drawn, as one shape */
+	private static Shape outlines(List<Glyph> glyphs, Map<Glyph, Shape> drawn) {
+		Path2D.Double p = new Path2D.Double(Path2D.WIND_NON_ZERO);
+		for (Glyph g : glyphs) p.append(drawn.get(g), false);
+		return p;
+	}
+
+	/**
+	 * One unit's effects, cast by its glyphs as the run paints them (its fill's transparency, its outline's width; a
+	 * gradient as opaque), placed in the drawing (turned with the box: Word's turn with it, we19) and in over
+	 */
+	private static Rectangle2D unit(CTEffectList fx, ThemeColors theme, Rectangle2D frame, Rectangle2D mirror, Shape glyphs, WordArtText.Run r,
+			AffineTransform turn, Drawing drawing, Drawing over, List<String> problems, Rectangle2D painted, double cap, Rectangle2D clip) {
+		if (fx == null) return painted;
+		Color fill = silhouette(r, theme);
+		java.awt.BasicStroke stroke = null;
+		CTLineProperties ln = r.getOutline();
+		if (ln != null && ln.getNoFill() == null) {
+			float w = ln.getW() == null ? 0.75f : (float) (ln.getW() / 12700.0);
+			if (w > 0) stroke = new java.awt.BasicStroke(w, java.awt.BasicStroke.CAP_BUTT, java.awt.BasicStroke.JOIN_ROUND);
+		}
+		// nothing painted, nothing cast (we15-09, -10); its room is taken still
+		if (fill == null && stroke == null) return painted;
+		Rectangle2D reach = glyphs.getBounds2D();
+		if (stroke != null) reach = reach.createUnion(stroke.createStrokedShape(glyphs).getBounds2D());
+		final java.awt.BasicStroke line = stroke;
+		Effects.Painter painter = g -> {
+			if (fill != null) {
+				g.setColor(fill);
+				g.fill(glyphs);
+			}
+			if (line != null) {
+				g.setColor(Color.BLACK);
+				g.setStroke(line);
+				g.draw(glyphs);
+			}
+		};
+		Effects.Result res;
+		try {
+			res = Effects.drawText(fx, theme, frame, mirror, reach, painter, cap);
+		} catch (RuntimeException e) {
+			if (!problems.contains(WordArtText.EFFECT)) problems.add(WordArtText.EFFECT);
+			return painted;
+		}
+		for (String c : res.getProblems()) if (!problems.contains(c)) problems.add(c);
+		for (Effects.Picture p : res.getPictures()) {
+			Drawing.Picture dp = turned(p, turn, p.getLayer() == Effects.Layer.OVER ? null : clip);
+			(p.getLayer() == Effects.Layer.OVER ? over : drawing).add(dp);
+			painted = union(painted, dp.getInto());
+		}
+		return painted;
+	}
+
+	/** What the run's glyphs cast with: black at its fill's opacity (a gradient's as opaque); null where it has no fill */
+	private static Color silhouette(WordArtText.Run r, ThemeColors theme) {
+		Object fill = r.getFill();
+		if (fill instanceof CTNoFillProperties) return null;
+		int alpha = 255;
+		if (fill instanceof CTSolidColorFillProperties) {
+			Color c = Fills.awt(DrawingMLColors.resolve(fill, theme));
+			if (c == null) return null;
+			alpha = c.getAlpha();
+		}
+		return new Color(0, 0, 0, alpha);
+	}
+
+	/** The picture where it goes, turned with the box (its image turned, on a grid of its own resolution), within clip */
+	private static Drawing.Picture turned(Effects.Picture p, AffineTransform turn, Rectangle2D clip) {
+		Rectangle2D.Double pl = p.getPlace();
+		Shape cut = clip == null ? null : turn == null ? clip : turn.createTransformedShape(clip);
+		if (turn == null || turn.isIdentity()) return new Drawing.Picture(p.getImage(), pl, cut);
+		Rectangle2D into = turn.createTransformedShape(pl).getBounds2D();
+		double ppt = p.getPixelsPerPoint();
+		int w = Math.max(1, (int) Math.ceil(into.getWidth() * ppt)), h = Math.max(1, (int) Math.ceil(into.getHeight() * ppt));
+		java.awt.image.BufferedImage im = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = im.createGraphics();
+		g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.setRenderingHint(java.awt.RenderingHints.KEY_RENDERING, java.awt.RenderingHints.VALUE_RENDER_QUALITY);
+		g.scale(ppt, ppt);
+		g.translate(-into.getX(), -into.getY());
+		g.transform(turn);
+		g.drawImage(p.getImage(), new AffineTransform(pl.width / p.getImage().getWidth(), 0, 0, pl.height / p.getImage().getHeight(), pl.x, pl.y),
+				null);
+		g.dispose();
+		return new Drawing.Picture(im, new Rectangle2D.Double(into.getX(), into.getY(), w / ppt, h / ppt), cut);
 	}
 
 	/**
