@@ -678,4 +678,101 @@ public class WordArtRendererTest {
 		for (Drawing.Picture p : pictures(flat.getDrawing())) assertNotNull("flat: within the box and its text rectangle", p.getClip());
 		for (Drawing.Picture p : pictures(wave.getDrawing())) assertNull("warped: not cut", p.getClip());
 	}
+	// ------------------------------------------------------------------ phase 3: the review's findings
+
+	/** The picture's alpha, 0 to 1, row by row from the top, each row's greatest */
+	private static double[] rows(Drawing.Picture p) {
+		java.awt.image.BufferedImage im = p.getImage();
+		double[] out = new double[im.getHeight()];
+		for (int y = 0; y < im.getHeight(); y++) for (int x = 0; x < im.getWidth(); x++) out[y] = Math.max(out[y], (im.getRGB(x, y) >>> 24) / 255.0);
+		return out;
+	}
+
+	private static double peak(Drawing.Picture p) {
+		double m = 0;
+		for (double v : rows(p)) m = Math.max(m, v);
+		return m;
+	}
+
+	/** Where the picture's alpha starts, in the drawing's frame: its first row with any */
+	private static double firstRow(Drawing.Picture p) {
+		double[] r = rows(p);
+		for (int y = 0; y < r.length; y++) if (r[y] > 0.01) return p.getInto().getY() + y * p.getInto().getHeight() / r.length;
+		return Double.NaN;
+	}
+
+	private static double baselineOf(WordArtRenderer.Drawn d) {
+		return Double.parseDouble(texts(d).get(0).getAttribute("y"));
+	}
+
+	/**
+	 * A reflection's fade starts half its move, at the reflection's scale, before its first edge: Word's we11-18 (sy -50%,
+	 * 4 pt down) peaks as we11-13 (sy -100%) does, 0.376 (the review's finding 1: 0.251 before)
+	 */
+	@Test
+	public void aReflectionFadesAlikeAtAnySy() throws Exception {
+		Drawing.Picture full = pictures(draw(para(run(reflection(0, 4, 90, -100000), "WordArt")), wordForm("textNoShape")).getDrawing()).get(0);
+		Drawing.Picture half = pictures(draw(para(run(reflection(0, 4, 90, -50000), "WordArt")), wordForm("textNoShape")).getDrawing()).get(0);
+		assertEquals(peak(full), peak(half), 0.02);
+	}
+
+	/** A reflection is mirrored about the baseline, and of a descender nothing is drawn above it (we11-33) */
+	@Test
+	public void aReflectionIsCutAtTheBaseline() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run(reflection(0, 0, 90, -100000), "Typography")), wordForm("textNoShape"));
+		assertTrue(firstRow(pictures(d.getDrawing()).get(0)) >= baselineOf(d) - 0.5);
+		// algn none on a reflection read as b, mirrored about the baseline as its room is given (the review's finding 2)
+		WordArtRenderer.Drawn none = draw(para(run(reflection(0, 0, 90, -100000).replace("w14:algn=\"bl\"", "w14:algn=\"none\""), "WordArt")),
+				wordForm("textNoShape"));
+		assertTrue(firstRow(pictures(none.getDrawing()).get(0)) >= baselineOf(none) - 0.5);
+	}
+
+	/**
+	 * Flat pictures are clipped to the box across and its text rectangle up and down, and the drawing's bounds take in
+	 * only what is shown (finding 4); a turned box's clip is turned with it
+	 */
+	@Test
+	public void flatPicturesAreClipped() throws Exception {
+		WordArtRenderer.Drawn d = draw(para(run(reflection(0, 4, 90, -100000), "WordArt")), wordForm("textNoShape"));
+		Drawing.Picture p = pictures(d.getDrawing()).get(0);
+		Rectangle2D clip = p.getClip().getBounds2D();
+		assertEquals(0, clip.getX(), 1e-9);
+		assertEquals(d.getWidth(), clip.getWidth(), 1e-9);
+		assertTrue("the bounds the box's: " + d.getBounds() + " for " + d.getHeight(), d.getBounds().getHeight() <= d.getHeight() + 1e-3);
+
+		WordprocessingMLPackage pkg = pkg(anchor(para(run(shadow(0, 6, 90, 100000, 100000, "tl"), "WordArt")), wordForm("textNoShape"))
+				.replace("<a:xfrm>", "<a:xfrm rot=\"1800000\">"));
+		WordArtRenderer.Drawn turned = WordArtRenderer.draw(WordArtText.of(shape(pkg), pkg), ChartFonts.of(pkg.getMainDocumentPart()),
+				ThemeColors.of(pkg), 3657600, 1828800, null);
+		java.awt.Shape cut = pictures(turned.getDrawing()).get(0).getClip();
+		assertNotNull(cut);
+		assertTrue("turned with the box", !(cut instanceof Rectangle2D));
+	}
+
+	/** A wholly transparent effect draws nothing (we17-06; finding 5); a colour that doesn't resolve is reported (finding 8) */
+	@Test
+	public void effectsThatDrawNothing() throws Exception {
+		String clear = "<w14:glow w14:rad=\"101600\"><w14:srgbClr w14:val=\"ED7D31\"><w14:alpha w14:val=\"100000\"/></w14:srgbClr></w14:glow>";
+		WordArtRenderer.Drawn d = draw(para(run(clear, "WordArt")), wordForm("textNoShape"));
+		assertTrue(pictures(d.getDrawing()).isEmpty());
+		assertTrue(d.getProblems().toString(), d.getProblems().isEmpty());
+		String placeholder = "<w14:glow w14:rad=\"101600\"><w14:schemeClr w14:val=\"phClr\"/></w14:glow>";
+		WordArtRenderer.Drawn ph = draw(para(run(placeholder, "WordArt")), wordForm("textNoShape"));
+		assertTrue(pictures(ph.getDrawing()).isEmpty());
+		assertTrue(ph.getProblems().toString(), ph.getProblems().contains(WordArtText.EFFECT));
+	}
+
+	/** Follow Path takes a picture a glyph an effect: past MAX_EFFECT_PICTURES none is drawn, and it is reported (finding 3) */
+	@Test
+	public void manyPicturesAreNotDrawn() throws Exception {
+		StringBuilder text = new StringBuilder();
+		for (int i = 0; i < 60; i++) text.append("WordArt ");
+		long t0 = System.nanoTime();
+		WordArtRenderer.Drawn d = draw(para(run(glow(5) + shadow(4, 3, 45, 100000, 100000, "tl"), text.toString().trim())), wordForm("textArchUp"));
+		assertTrue(pictures(d.getDrawing()).isEmpty());
+		assertTrue(d.getProblems().toString(), d.getProblems().contains(Effects.OVER_LIMIT));
+		assertTrue("left out before drawing", (System.nanoTime() - t0) / 1e9 < 30);
+		WordArtRenderer.Drawn few = draw(para(run(glow(5) + shadow(4, 3, 45, 100000, 100000, "tl"), "WordArt")), wordForm("textArchUp"));
+		assertEquals(14, pictures(few.getDrawing()).size());
+	}
 }

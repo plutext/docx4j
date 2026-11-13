@@ -284,21 +284,52 @@ public final class Effects {
 		if (mirror == null) mirror = frame;
 		double cap = maxPixelsPerPoint > 0 ? maxPixelsPerPoint : Double.MAX_VALUE;
 		Picture inner = null, glow = null, shadow = null, reflection = null;
-		if (list.getInnerShdw() != null) {
+		// an effect wholly transparent draws nothing (Word draws no picture for it: we17-06)
+		if (list.getInnerShdw() != null && !clear(list.getInnerShdw(), theme)) {
 			inner = add(problems, inner(list.getInnerShdw(), theme, new Rectangle2D.Double(reach.getX(), reach.getY(), reach.getWidth(),
 					reach.getHeight()), painter, cap));
 		}
 		Rectangle2D bounds = reach;
-		if (list.getGlow() != null) glow = add(problems, glow(list.getGlow(), theme, bounds, painter, cap, true, TEXT_GLOW_SPREAD));
+		if (list.getGlow() != null && !clear(list.getGlow(), theme)) glow = add(problems, glow(list.getGlow(), theme, bounds, painter, cap, true,
+				TEXT_GLOW_SPREAD));
 		if (glow != null) bounds = bounds.createUnion(glow.place);
-		if (list.getOuterShdw() != null) shadow = add(problems, outer(list.getOuterShdw(), theme, frame, bounds, stack(painter(glow), painter), cap));
+		if (list.getOuterShdw() != null && !clear(list.getOuterShdw(), theme)) {
+			shadow = add(problems, outer(list.getOuterShdw(), theme, frame, bounds, stack(painter(glow), painter), cap));
+		}
 		if (shadow != null) bounds = bounds.createUnion(shadow.place);
-		if (list.getReflection() != null) {
-			reflection = add(problems, reflection(list.getReflection(), mirror, bounds, stack(painter(shadow), painter(glow), painter, painter(inner)),
-					cap, mirror, true));
+		CTReflectionEffect rf = list.getReflection();
+		if (rf != null && (rf.getStA() > 0 || rf.getEndA() > 0)) {
+			reflection = add(problems, reflection(rf, mirror, bounds, stack(painter(shadow), painter(glow), painter, painter(inner)), cap, mirror,
+					true));
 		}
 		for (Picture p : new Picture[] { reflection, shadow, glow, inner }) if (p != null) out.add(p);
 		return new Result(out, problems);
+	}
+
+	/** The effect's colour is wholly transparent */
+	private static boolean clear(Object effect, ThemeColors theme) {
+		Color c = colourOf(effect, theme);
+		return c != null && c.getAlpha() == 0;
+	}
+
+	/**
+	 * An outer or inner shadow's or a glow's colour, resolved; null where it can't be (CR-083 phase 3: a run's effect
+	 * whose colour doesn't resolve draws nothing, and WordArt reports it)
+	 */
+	static Color colourOf(Object effect, ThemeColors theme) {
+		if (effect instanceof CTOuterShadowEffect) {
+			CTOuterShadowEffect s = (CTOuterShadowEffect) effect;
+			return colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
+		}
+		if (effect instanceof CTInnerShadowEffect) {
+			CTInnerShadowEffect s = (CTInnerShadowEffect) effect;
+			return colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
+		}
+		if (effect instanceof CTGlowEffect) {
+			CTGlowEffect s = (CTGlowEffect) effect;
+			return colour(s.getSrgbClr(), s.getSchemeClr(), s.getPrstClr(), s.getSysClr(), s.getHslClr(), s.getScrgbClr(), theme);
+		}
+		return null;
 	}
 
 	private static Picture add(List<String> problems, Object p) {
@@ -430,8 +461,10 @@ public final class Effects {
 
 	/**
 	 * What the painter paints, within bounds, reflected about the drawing's box; faded across what is reflected, or across
-	 * fadeFrame where given (text: from half its move before its near edge, whichever way it is moved: Word's reflection
-	 * moved up fades as one moved down, phase 3 findings section 4); nothing drawn before the fade's start where clip
+	 * fadeFrame where given: text, the frame taken half the move further past its mirror edge and reflected with it, so
+	 * that the fade starts half the move, at the reflection's scale, before the reflection's first edge along fadeDir
+	 * (Word's: sy -50% fades as sy -100% from that edge, we11-18; moved up as moved down, we11-29; phase 3 findings
+	 * section 4); nothing drawn before the fade's start where clip
 	 */
 	private static Object reflection(CTReflectionEffect s, Rectangle2D box, Rectangle2D bounds, Painter painter, double cap, Rectangle2D fadeFrame,
 			boolean clip) {
@@ -453,6 +486,11 @@ public final class Effects {
 		double fd = Math.toRadians(s.getFadeDir() / 60000.0), vx = Math.cos(fd), vy = Math.sin(fd);
 		double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
 		Rectangle2D faded = fadeFrame != null ? fadeFrame : bounds;
+		if (fadeFrame != null) {
+			// half the move past the mirror edge (the frame's bottom about b, its top about t), reflected and scaled with it
+			faded = al[1] >= 0.5 ? new Rectangle2D.Double(faded.getX(), faded.getY(), faded.getWidth(), faded.getHeight() + dist / 2)
+					: new Rectangle2D.Double(faded.getX(), faded.getY() - dist / 2, faded.getWidth(), faded.getHeight() + dist / 2);
+		}
 		List<Point2D> fadeBox = corners(faded, t);
 		if (fadeFrame == null) fadeBox.addAll(corners(faded, placed(box, al, dist / 2, dir, sx, sy, kx, ky)));
 		for (Point2D p : fadeBox) {
@@ -460,7 +498,6 @@ public final class Effects {
 			lo = Math.min(lo, d);
 			hi = Math.max(hi, d);
 		}
-		if (fadeFrame != null) lo -= dist / 2;
 		double stA = s.getStA() / 100000.0, stPos = s.getStPos() / 100000.0, endA = s.getEndA() / 100000.0, endPos = s.getEndPos() / 100000.0;
 		float[] r = new float[px.length], gr = new float[px.length], b = new float[px.length], a = new float[px.length];
 		for (int y = 0; y < g.h; y++) {

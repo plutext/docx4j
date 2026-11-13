@@ -128,9 +128,10 @@ public final class TextEffects {
 	 *
 	 * <p>A shadow with {@code sx} and {@code sy} 0 and {@code algn="none"} is an inner shadow: the gallery's style 15,
 	 * which Word draws over the text (phase 3 findings section 1, D15); an inner shadow keeps its blur, distance and
-	 * direction. {@code algn="none"} on any other shadow or a reflection, which DrawingML has no value for, is read as
-	 * {@code ctr}: a shadow with {@code sy} 0 and {@code algn="none"} takes no room, which it would about the default,
-	 * {@code b} (phase 3 findings section 4, we16-10).</p>
+	 * direction. {@code algn="none"}, which DrawingML has no value for, is read as {@code ctr} on any other shadow (a shadow
+	 * with {@code sy} 0 and {@code algn="none"} takes no room, which it would about the default, {@code b}: phase 3
+	 * findings section 4, we16-10), and as {@code b}, DrawingML's default, on a reflection, mirrored about the baseline as
+	 * its room is given (a reflection with {@code algn="none"} isn't measured; about the middle it would lie on the text).</p>
 	 *
 	 * @since 17.3.7
 	 */
@@ -168,7 +169,7 @@ public final class TextEffects {
 		try {
 			if (reflection != null) {
 				list.setReflection(convert(new JAXBElement<CTReflection>(new QName(W14, "reflection"), CTReflection.class, reflection),
-						CTReflectionEffect.class, null, NONE_ALIGNMENT));
+						CTReflectionEffect.class, null, REFLECTION_NONE));
 				any = true;
 			}
 		} catch (Exception e) {
@@ -316,6 +317,9 @@ public final class TextEffects {
 
 	/** algn="none" read as ctr (name=value:replacement) */
 	private static final java.util.Set<String> NONE_ALIGNMENT = java.util.Collections.singleton("algn=none:ctr");
+
+	/** algn="none" on a reflection read as b */
+	private static final java.util.Set<String> REFLECTION_NONE = java.util.Collections.singleton("algn=none:b");
 
 	/** The w14 element, marshalled, renamed into DrawingML's namespace and read back as the DrawingML class */
 	private static <T> T convert(JAXBElement<?> w14, Class<T> as) throws Exception {

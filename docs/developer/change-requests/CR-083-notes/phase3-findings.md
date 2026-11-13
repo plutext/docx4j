@@ -314,5 +314,44 @@ fields (5361, 11875), the 324 probes' the same. Tests: core-tests 2,653, chart-r
 - The shape's own `a:effectLst` cast by its text (we18; CR-081's `render.effect.shape_text`, reported, not drawn).
 - Word draws each unit's pictures just before its glyphs, docx4j all of them first: a Follow Path glyph's shadow doesn't
   fall on the glyph before it, a second line's glow doesn't fall on the first line's text.
-- Unmeasured: the room under exact line spacing (none given), a reflection's or shadow's skew on text, a turned box's
-  clip, sizes past 96 pt (at 144 pt Word broke the line), warped WordArt's reflection at other sizes than 36 pt.
+- Unmeasured: the room under exact line spacing (none given) and under atLeast spacing (given on top of the fixed height,
+  whatever slack the line has), a superscript's or subscript's effects (the room on the unraised frame, the drawing
+  raised), the paragraph mark's effects on an empty paragraph (no room), a run of spaces alone with an effect (room, no
+  picture), a reflection with `algn="none"` (read as `b`), a reflection or shadow skewed on text, a turned box's clip,
+  sizes past 96 pt (at 144 pt Word broke the line), warped WordArt's reflection at other sizes than 36 pt.
+
+## 5. The review of the implementation (2026-11-13)
+
+A Claude Fable 5.1 session reviewed d99fd2d13 read-only at Jason's request ("commit, then have fable conduct a review of
+the implementation"), aimed at what the gates don't reach, with a scratch harness on odd input (blurs, distances and
+radii 0 to 2,000 pt, sx and sy -100% to 10^7, skews to 89.9 degrees, alpha 0 and 100000, sy +100%, fadeDir 0, endPos
+before stPos, empty runs, breaks, RTL, vertical text, normAutofit, mixed sizes, every warp family with all four
+effects, turned and flipped boxes): nothing threw out of a drawing. CR-081's shapes are untouched by the changes to
+`Effects` (the new parameters inert on their path, the fade box built as before), and `TextEffects.reach` agrees with
+section 4's rule and with the drawing's lengths. Jason: "yes" to the recommendation below. Its findings, each read in
+the code before fixing, and what was done:
+
+1. **A scaled reflection faded too soon** (wrong): the half move before its first edge was taken unscaled, so at sy
+   -50% the fade started early and the reflection was faint (we11-18: Word's peak 0.376, as at -100%; docx4j's 0.251,
+   the gate's worst alpha miss; at -25%, 0.075). Fixed: the fade frame is taken half the move further past its mirror
+   edge and reflected with it (`Effects.reflection`), the same at -100% either way (we11-29's moved up reflection kept).
+   we11-18 now 0.376 for 0.376; the gate's worst alpha miss 0.13 to 0.02.
+2. **A reflection with `algn="none"`** was read as ctr, mirroring it on the text while its room was given about the
+   baseline (risk; unmeasured): read as `b`, DrawingML's default (`TextEffects`), listed as unmeasured.
+3. **No budget on Follow Path's pictures** (risk): a picture a glyph an effect, 1,000 glyphs with three effects 3,000
+   pictures, a 15.7 MB SVG and half a gigabyte. Now at most `WordArtRenderer.MAX_EFFECT_PICTURES` (600, counted before
+   drawing) and `MAX_EFFECT_PIXELS` (D10's one picture) a WordArt; past either none is drawn and
+   `render.effect.over_limit` reported.
+4. **The drawing's bounds** took in the parts of flat pictures their clip hides (nit): only what is shown now.
+5. **A wholly transparent effect** drew a picture of no alpha (nit): none now, on text (CR-081's shapes as they were).
+6. **A superscript's room** is the unraised frame's (nit; unmeasured): listed in section 4's unmeasured items.
+7. **atLeast spacing, the paragraph mark, a run of spaces** (nit; unmeasured): listed likewise.
+8. **A run's effects that couldn't be read**, or a colour that doesn't resolve, drew nothing and reported nothing
+   (nit): `render.wordart.effect` reported for either.
+9. **The tests** didn't cover the clip's extent, a turned box's picture, the cut at the mirror line or the fade by sy
+   (nit): `WordArtRendererTest.aReflectionFadesAlikeAtAnySy`, `aReflectionIsCutAtTheBaseline` (with algn none),
+   `flatPicturesAreClipped` (turned too), `effectsThatDrawNothing`, `manyPicturesAreNotDrawn`.
+
+Gates: `gate_effects.py` on both rounds as before but we11 (its worst alpha miss 0.02, its worst 5% bound 0.90 pt for
+1.02); phase 0's effect probes the same; b470 against b464, 0 movers, events equal, the corpora's PDFs as b469's but for
+the two time fields; core-tests 2,653, chart-render 93, export-fo 111, export-fo-tests 967 pass.

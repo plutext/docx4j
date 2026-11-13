@@ -25,7 +25,10 @@ Phase 3 built 2026-11-13 (Jason: "commence phase 3"; findings §4) from two roun
 their stated lengths, a reflection moved 0.266 of the run's descent per point of dist; the frame is the run's line box,
 and the room it takes in its line, Word's rule on that frame (`TextEffects.reach`), fits 176 of 180 probes' boxes within
 0.05 pt, body text's alike; docx4j draws them through `Effects.drawText` (picture bounds at the comparison's floor, about
-0.4 pt median); a face's line gap now set above its ascent, as Word sets it; gate b469 0 movers.
+0.4 pt median); a face's line gap now set above its ascent, as Word sets it; gate b469 0 movers. Reviewed the same day
+by a Claude Fable 5.1 session (Jason: "commit, then have fable conduct a review of the implementation"; findings §5):
+a scaled reflection's fade fixed (sy -50% now as Word's), a reflection's `algn="none"` read as `b`, a budget on Follow
+Path's pictures, and four smaller; gate b470 0 movers.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1

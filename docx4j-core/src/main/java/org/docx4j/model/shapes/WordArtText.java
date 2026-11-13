@@ -399,7 +399,10 @@ public final class WordArtText {
 		return warped ? shape.getBodyPr().getPrstTxWarp().getPrst().value() : null;
 	}
 
-	/** The gaps found reading it (stable codes, CR-083 D9): {@link #FLAT_3D}; the renderer adds its own ({@link #EFFECT} among them) */
+	/**
+	 * The gaps found reading it (stable codes, CR-083 D9): {@link #FLAT_3D}; {@link #EFFECT} for a run whose effects
+	 * couldn't be read; the renderer adds its own
+	 */
 	public List<String> getProblems() {
 		return problems;
 	}
@@ -433,6 +436,8 @@ public final class WordArtText {
 				any = true;
 				if (r.paint(false) != Paint.TEXT) paths = true;
 				if (r.threeD && !problems.contains(FLAT_3D)) problems.add(FLAT_3D);
+				// a shadow, glow or reflection none of which could be read: nothing drawn, its room not taken
+				if (r.hasEffect() && r.effects == null && !problems.contains(EFFECT)) problems.add(EFFECT);
 			}
 		}
 		if (!(warped || wordForm || paths) || !any) return null;

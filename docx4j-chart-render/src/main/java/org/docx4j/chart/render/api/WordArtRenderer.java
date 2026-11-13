@@ -921,6 +921,10 @@ public final class WordArtRenderer {
 	 * of 72 pt text, past the box's 7.2 pt inset, is cut at its right side (we12-32), a shadow scaled 150% too (we10-26);
 	 * warped, within the page.
 	 *
+	 * <p>A WordArt's effects are drawn in at most {@link #MAX_EFFECT_PICTURES} pictures and {@link #MAX_EFFECT_PIXELS}
+	 * pixels (Follow Path takes a picture a glyph an effect); past either none is drawn, and
+	 * {@link Effects#OVER_LIMIT} is reported, as a warp past {@link TextWarp#MAX_POINTS} is drawn unwarped.</p>
+	 *
 	 * @param clip where flat effects are drawn within, in the box's frame; null for none
 	 */
 	private static Rectangle2D effects(Layout layout, boolean warped, boolean follow, Map<Glyph, Shape> drawn, ThemeColors theme,
@@ -928,12 +932,36 @@ public final class WordArtRenderer {
 		Rectangle2D block = null;
 		if (follow) for (Shape s : drawn.values()) block = union(block, s.getBounds2D());
 		double cap = ShapeRenderer.maxPixelsPerPoint();
+		// the units, line by line: a run's glyphs on a line
+		List<Map<WordArtText.Run, List<Glyph>>> lines = new ArrayList<Map<WordArtText.Run, List<Glyph>>>();
+		long pictures = 0;
 		for (Line l : layout.lines) {
 			Map<WordArtText.Run, List<Glyph>> units = new java.util.LinkedHashMap<WordArtText.Run, List<Glyph>>();
 			for (Glyph g : l.glyphs) {
 				if (g.run.getEffects() != null && drawn.containsKey(g)) units.computeIfAbsent(g.run, r -> new ArrayList<Glyph>()).add(g);
 			}
 			for (Map.Entry<WordArtText.Run, List<Glyph>> e : units.entrySet()) {
+				pictures += (long) count(e.getKey().getEffects()) * (follow ? e.getValue().size() : 1);
+			}
+			lines.add(units);
+		}
+		if (pictures > MAX_EFFECT_PICTURES) {
+			if (!problems.contains(Effects.OVER_LIMIT)) problems.add(Effects.OVER_LIMIT);
+			return painted;
+		}
+		final Rectangle2D before = painted;
+		List<Drawing.Picture> added = new ArrayList<Drawing.Picture>();
+		for (int li = 0; li < layout.lines.size(); li++) {
+			Line l = layout.lines.get(li);
+			Map<WordArtText.Run, List<Glyph>> units = lines.get(li);
+			for (Map.Entry<WordArtText.Run, List<Glyph>> e : units.entrySet()) {
+				if (pixels(added) > MAX_EFFECT_PIXELS) {
+					// past the budget: none of them drawn
+					drawing.getItems().removeAll(added);
+					over.getItems().removeAll(added);
+					if (!problems.contains(Effects.OVER_LIMIT)) problems.add(Effects.OVER_LIMIT);
+					return before;
+				}
 				WordArtText.Run r = e.getKey();
 				List<Glyph> gs = e.getValue();
 				if (!warped) {
@@ -945,22 +973,50 @@ public final class WordArtRenderer {
 					double x0 = l.x0 + first.x, width = Math.max(0, last.x + last.advance - first.x);
 					Rectangle2D frame = new Rectangle2D.Double(x0, base - asc, width, asc + desc);
 					Rectangle2D mirror = new Rectangle2D.Double(x0, base - asc, width, asc);
-					painted = unit(fx, theme, frame, mirror, outlines(gs, drawn), r, turn, drawing, over, problems, painted, cap, clip);
+					painted = unit(fx, theme, frame, mirror, outlines(gs, drawn), r, turn, drawing, over, problems, painted, cap, clip, added);
 				} else if (!follow) {
 					Shape s = outlines(gs, drawn);
 					Rectangle2D box = s.getBounds2D();
 					painted = unit(TextEffects.scaled(r.getEffects(), 1, 1, 1), theme, box, box, s, r, turn, drawing, over, problems, painted, cap,
-							null);
+							null, added);
 				} else {
 					CTEffectList fx = TextEffects.scaled(r.getEffects(), 1, 1, 1);
 					for (Glyph g : gs) {
 						Shape s = drawn.get(g);
-						painted = unit(fx, theme, s.getBounds2D(), block, s, r, turn, drawing, over, problems, painted, cap, null);
+						painted = unit(fx, theme, s.getBounds2D(), block, s, r, turn, drawing, over, problems, painted, cap, null, added);
 					}
 				}
 			}
 		}
+		if (pixels(added) > MAX_EFFECT_PIXELS) {
+			drawing.getItems().removeAll(added);
+			over.getItems().removeAll(added);
+			if (!problems.contains(Effects.OVER_LIMIT)) problems.add(Effects.OVER_LIMIT);
+			return before;
+		}
 		return painted;
+	}
+
+	/**
+	 * At most this many effect pictures in a WordArt (a Follow Path glyph takes one an effect: 1,000 glyphs with three
+	 * effects would take 3,000 pictures, a 15.7 MB SVG and half a gigabyte: the phase 3 review)
+	 */
+	public static final int MAX_EFFECT_PICTURES = 600;
+
+	/** At most this many pixels in a WordArt's effect pictures: one picture's worth under CR-081's D10 */
+	public static final long MAX_EFFECT_PIXELS = Effects.MAX_PIXELS;
+
+	/** The pictures a unit's effects take: one an effect */
+	private static int count(CTEffectList fx) {
+		if (fx == null) return 0;
+		return (fx.getOuterShdw() != null ? 1 : 0) + (fx.getInnerShdw() != null ? 1 : 0) + (fx.getGlow() != null ? 1 : 0)
+				+ (fx.getReflection() != null ? 1 : 0);
+	}
+
+	private static long pixels(List<Drawing.Picture> pictures) {
+		long n = 0;
+		for (Drawing.Picture p : pictures) n += (long) p.getImage().getWidth() * p.getImage().getHeight();
+		return n;
 	}
 
 	/** The glyphs' outlines where they are drawn, as one shape */
@@ -975,7 +1031,8 @@ public final class WordArtRenderer {
 	 * gradient as opaque), placed in the drawing (turned with the box: Word's turn with it, we19) and in over
 	 */
 	private static Rectangle2D unit(CTEffectList fx, ThemeColors theme, Rectangle2D frame, Rectangle2D mirror, Shape glyphs, WordArtText.Run r,
-			AffineTransform turn, Drawing drawing, Drawing over, List<String> problems, Rectangle2D painted, double cap, Rectangle2D clip) {
+			AffineTransform turn, Drawing drawing, Drawing over, List<String> problems, Rectangle2D painted, double cap, Rectangle2D clip,
+			List<Drawing.Picture> added) {
 		if (fx == null) return painted;
 		Color fill = silhouette(r, theme);
 		java.awt.BasicStroke stroke = null;
@@ -1008,10 +1065,17 @@ public final class WordArtRenderer {
 			return painted;
 		}
 		for (String c : res.getProblems()) if (!problems.contains(c)) problems.add(c);
+		// a shadow's or glow's colour that doesn't resolve: nothing drawn for it
+		for (Object e : new Object[] { fx.getOuterShdw(), fx.getInnerShdw(), fx.getGlow() }) {
+			if (e != null && Effects.colourOf(e, theme) == null && !problems.contains(WordArtText.EFFECT)) problems.add(WordArtText.EFFECT);
+		}
 		for (Effects.Picture p : res.getPictures()) {
 			Drawing.Picture dp = turned(p, turn, p.getLayer() == Effects.Layer.OVER ? null : clip);
 			(p.getLayer() == Effects.Layer.OVER ? over : drawing).add(dp);
-			painted = union(painted, dp.getInto());
+			added.add(dp);
+			// what is shown of it: within its clip
+			Rectangle2D shown = dp.getClip() == null ? dp.getInto() : dp.getInto().createIntersection(dp.getClip().getBounds2D());
+			if (shown.getWidth() > 0 && shown.getHeight() > 0) painted = union(painted, shown);
 		}
 		return painted;
 	}
