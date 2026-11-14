@@ -181,4 +181,24 @@ public class TextEffectBodyTest {
 		assertEquals(new Rectangle2D.Double(0, 2, 40, 1), d.get(0).getBounds2D());
 		assertEquals(new Rectangle2D.Double(60, 2, 30, 1), d.get(1).getBounds2D());
 	}
+	/** A run's rect or shape path gradient: rectangular rings about its focus, painted as a picture (wb80-24, -25) */
+	@Test
+	public void aRectPathGradientHasRectangularRings() throws Exception {
+		String rect = GRADIENT.replace("<w14:lin w14:ang=\"0\" w14:scaled=\"0\"/>",
+				"<w14:path w14:path=\"rect\"><w14:fillToRect w14:l=\"50000\" w14:t=\"50000\" w14:r=\"50000\" w14:b=\"50000\"/></w14:path>");
+		WordArtRenderer.Body b = WordArtRenderer.drawBody(run(rect), glyphs(), 24, FRAME, FRAME, null, false, theme(), false);
+		Drawing.Gradient g = areas(b.getDrawing(), "wordart.fill").get(0).getGradient();
+		assertTrue(g.isRectangular());
+		java.awt.image.BufferedImage img = g.picture(new Rectangle2D.Double(0, 0, 100, 40));
+		int w = img.getWidth(), h = img.getHeight();
+		// red in the middle, blue at the edges; a point 0.6 of the way out on the diagonal as one 0.6 out across
+		assertEquals(255, (img.getRGB(w / 2, h / 2) >> 16) & 255, 3);
+		assertEquals(255, img.getRGB(0, h / 2) & 255, 3);
+		int across = img.getRGB((int) (w / 2 + 0.6 * w / 2), h / 2), diagonal = img.getRGB((int) (w / 2 + 0.6 * w / 2), (int) (h / 2 + 0.6 * h / 2));
+		assertEquals((across >> 16) & 255, (diagonal >> 16) & 255, 6);
+		// a circle stays a radial shading
+		String circle = rect.replace("w14:path=\"rect\"", "w14:path=\"circle\"");
+		WordArtRenderer.Body c = WordArtRenderer.drawBody(run(circle), glyphs(), 24, FRAME, FRAME, null, false, theme(), false);
+		assertFalse(areas(c.getDrawing(), "wordart.fill").get(0).getGradient().isRectangular());
+	}
 }

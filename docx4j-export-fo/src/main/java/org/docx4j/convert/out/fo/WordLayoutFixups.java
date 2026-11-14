@@ -634,10 +634,11 @@ public final class WordLayoutFixups {
 	static void listLabelLines(Document doc) {
 		for (Element item : elements(doc, "list-item")) {
 			Element labelEl = firstChildElement(item, "list-item-label");
+			Element label = labelEl == null ? null : firstChildElement(labelEl, "block");
+			// read, and the hint taken off, whatever follows: the renderer takes no hint
+			double labelRoom = label == null ? 0 : labelRoomAbove(label);
 			Element bodyEl = firstChildElement(item, "list-item-body");
-			if (labelEl == null || bodyEl == null) continue;
-			Element label = firstChildElement(labelEl, "block");
-			if (label == null) continue;
+			if (label == null || bodyEl == null) continue;
 			Element body = null;
 			for (Element b : descendants(bodyEl, "block")) {
 				if (b.getAttribute(HINT_LINE_BOX).length() > 0) { body = b; break; }
@@ -674,7 +675,14 @@ public final class WordLayoutFixups {
 			 * 10.27pt ascent over a 7.11pt baseline, +3.2pt an item.  At 240 the two agreed.
 			 * @since 17.3.1 */
 			double cut = "auto".equals(rule) ? lengthPt(body.getAttribute(HINT_AUTO_CUT)) : 0;
-			double labelAscent = (m.winAscent + m.externalLeading) * size - Math.max(0, cut);
+			/* And the room above the label which its mark's shadow, glow or reflection takes
+			 * (TextEffectsFo.labelInline; CR-083 phase 5): Word gave a numbered line the mark's room
+			 * above and none below (wb82-30: 2.88pt at 24pt under a glow of 8, the paragraph after
+			 * it at the plain pitch), which is this rule's own shape, the label's ascent raising the
+			 * line and its descent counting for nothing; so the room rides on the label's ascent,
+			 * outside auto's multiple as the rise is, absorbed by atLeast's slack, none under exact.
+			 * One probe; the round cr083-phase5b asks the rest.  @since 17.3.7 */
+			double labelAscent = (m.winAscent + m.externalLeading) * size - Math.max(0, cut) + labelRoom;
 			double a = Math.max(labelAscent, base);
 			double d = box - base;
 			label.setAttribute(HINT_LINE_BOX, pt(a + d));
@@ -688,6 +696,21 @@ public final class WordLayoutFixups {
 				label.setAttribute("line-height", pt(a + d + (bodyLh - box)));
 			}
 			body.setAttribute(HINT_LABEL_ASCENT, pt(labelAscent));
+		}
+	}
+
+	/** The room above a list label its mark's effects take, in points, from the label block's
+	 *  {@link TextEffectsFo#HINT_LABEL_ROOM} ("above below"), which is taken off the block; 0 for none.
+	 *  @since 17.3.7 */
+	private static double labelRoomAbove(Element label) {
+		String room = label.getAttribute(TextEffectsFo.HINT_LABEL_ROOM);
+		if (room.length() == 0) return 0;
+		label.removeAttribute(TextEffectsFo.HINT_LABEL_ROOM);
+		try {
+			double above = Double.parseDouble(room.trim().split("\\s+")[0]);
+			return above > 0 && above < 1e4 ? above : 0;
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 
@@ -822,7 +845,21 @@ public final class WordLayoutFixups {
 			span.setAttributeNS(ns, "docx4j:" + org.docx4j.fop.wordlayout.WordLayoutElementMapping.SMALL_CAPS, scale);
 		}
 		// a run's text effect and the room it takes (TextEffectsFo), on its inline, the room on an empty paragraph's
-		// block, for the renderer's painter and Word line (fop/CR-043).  @since 17.3.7
+		// block, for the renderer's painter and Word line (fop/CR-043); a run formatted as its previous sibling run
+		// takes that run's id, Word drawing the two as one (wb80-15).  @since 17.3.7
+		java.util.Map<Element, String> effectKeys = new java.util.HashMap<Element, String>();
+		for (Element el : elements(doc, "inline")) {
+			String key = el.getAttribute(TextEffectsFo.HINT_TEXT_EFFECT_KEY);
+			if (key.length() == 0) continue;
+			el.removeAttribute(TextEffectsFo.HINT_TEXT_EFFECT_KEY);
+			effectKeys.put(el, key);
+			Node prev = el.getPreviousSibling();
+			while (prev != null && prev.getNodeType() == Node.TEXT_NODE && prev.getNodeValue().trim().isEmpty()) prev = prev.getPreviousSibling();
+			if (prev instanceof Element && key.equals(effectKeys.get(prev))) {
+				String id = ((Element) prev).getAttribute(TextEffectsFo.HINT_TEXT_EFFECT);
+				if (id.length() > 0) el.setAttribute(TextEffectsFo.HINT_TEXT_EFFECT, id);
+			}
+		}
 		for (String kind : new String[] { "inline", "block" }) {
 			for (Element el : elements(doc, kind)) {
 				for (String[] h : new String[][] {
@@ -4880,6 +4917,7 @@ public final class WordLayoutFixups {
 			block.removeAttribute(HINT_LABEL_ASCENT);
 			block.removeAttribute(HINT_AUTO_CUT);
 			block.removeAttribute(HINT_LABEL_SUFFIX);
+			block.removeAttribute(TextEffectsFo.HINT_LABEL_ROOM);
 			block.removeAttribute(HINT_COLUMN_BREAK);
 			block.removeAttribute(HINT_BREAK_RUN);
 			block.removeAttribute(HINT_BREAK_DIRECT);

@@ -582,7 +582,9 @@ public final class WordArtText {
 	 */
 	public static boolean hasBodyEffect(RPr rPr) {
 		if (rPr == null) return false;
-		if (rPr.getGlow() != null || rPr.getShadow14() != null || rPr.getReflection() != null) return true;
+		if (rPr.getGlow() != null && rPr.getGlow().getRad() != null && rPr.getGlow().getRad() > 0) return true;
+		if (rPr.getShadow14() != null && !drawsNothing(rPr.getShadow14())) return true;
+		if (rPr.getReflection() != null && !drawsNothing(rPr.getReflection())) return true;
 		if (rPr.getTextOutline() != null) {
 			org.docx4j.w14.CTTextOutlineEffect o = rPr.getTextOutline();
 			if (o.getNoFill() == null && (o.getSolidFill() != null || o.getGradFill() != null)) return true;
@@ -594,6 +596,23 @@ public final class WordArtText {
 			if (dml instanceof CTSolidColorFillProperties && TextEffects.hasAlpha((CTSolidColorFillProperties) dml)) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * A shadow Word draws nothing of and gives no room: an inner shadow (sx and sy 0, algn none) with no blur and no
+	 * distance, which numbering levels and styles carry as "no shadow" (five corpus documents' heading numbers)
+	 */
+	public static boolean drawsNothing(org.docx4j.w14.CTShadow s) {
+		return TextEffects.isInner(s) && (s.getBlurRad() == null || s.getBlurRad() == 0) && (s.getDist() == null || s.getDist() == 0);
+	}
+
+	/**
+	 * A reflection Word draws nothing of and gives no room: no opacity at either end, or no height (sy 0), as numbering
+	 * levels carry "no reflection" (four corpus documents' heading numbers: every attribute 0)
+	 */
+	public static boolean drawsNothing(org.docx4j.w14.CTReflection r) {
+		boolean clear = r.getStA() != null && r.getStA() == 0 && r.getEndA() != null && r.getEndA() == 0;
+		return clear || (r.getSy() != null && r.getSy() == 0);
 	}
 
 	private static final class Reader {

@@ -97,4 +97,37 @@ public class TextEffectsFoTest {
 		assertTrue(out, out.contains("docx4j:effect-room=\"1.191 1.191\""));
 		assertTrue(out, out.contains("docx4j:effect-room=\"1.907 1.907\""));
 	}
+	/** A run formatted as its previous sibling run takes its id, Word drawing the two as one (wb80-15); another doesn't */
+	@Test
+	public void identicalNeighboursShareAnId() throws Exception {
+		WordLayoutOn.assume();
+		String run = "<fo:inline " + TextEffectsFo.HINT_TEXT_EFFECT + "=\"%s\" " + TextEffectsFo.HINT_TEXT_EFFECT_KEY + "=\"%s\">%s</fo:inline>";
+		String fo = "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\"><fo:layout-master-set><fo:simple-page-master "
+				+ "master-name=\"p\"><fo:region-body/></fo:simple-page-master></fo:layout-master-set><fo:page-sequence "
+				+ "master-reference=\"p\"><fo:flow flow-name=\"xsl-region-body\"><fo:block>"
+				+ String.format(run, "fx1", "k1", "Shadow") + String.format(run, "fx2", "k1", "Next")
+				+ String.format(run, "fx3", "k2", "Other") + "</fo:block></fo:flow></fo:page-sequence></fo:root>";
+		String out = WordLayoutFixups.apply(fo, 15);
+		assertFalse(out, out.contains(TextEffectsFo.HINT_TEXT_EFFECT_KEY));
+		assertFalse(out, out.contains("docx4j:text-effect=\"fx2\""));
+		assertEquals(out, 2, out.split("docx4j:text-effect=\"fx1\"", -1).length - 1);
+		assertTrue(out, out.contains("docx4j:text-effect=\"fx3\""));
+	}
+	/** A shadow that draws nothing (inner, no blur, no distance: numbering's "no shadow") and a glow of radius 0 are no
+	 *  effect: the five corpus documents whose heading numbers carry them were painted for nothing */
+	@Test
+	public void effectsThatDrawNothingAreNone() throws Exception {
+		assertFalse(WordArtText.hasBodyEffect(rPr("<w14:shadow w14:blurRad=\"0\" w14:dist=\"0\" w14:dir=\"0\" w14:sx=\"0\" "
+				+ "w14:sy=\"0\" w14:kx=\"0\" w14:ky=\"0\" w14:algn=\"none\"><w14:srgbClr w14:val=\"000000\"/></w14:shadow>"
+				+ "<w14:textOutline w14:w=\"0\" w14:cap=\"flat\" w14:cmpd=\"sng\" w14:algn=\"ctr\"><w14:noFill/>"
+				+ "<w14:prstDash w14:val=\"solid\"/><w14:bevel/></w14:textOutline>")));
+		assertFalse(WordArtText.hasBodyEffect(rPr("<w14:glow w14:rad=\"0\"><w14:srgbClr w14:val=\"ED7D31\"/></w14:glow>")));
+		assertFalse(WordArtText.hasBodyEffect(rPr("<w14:reflection w14:blurRad=\"0\" w14:stA=\"0\" w14:stPos=\"0\" w14:endA=\"0\" "
+				+ "w14:endPos=\"0\" w14:dist=\"0\" w14:dir=\"0\" w14:fadeDir=\"0\" w14:sx=\"0\" w14:sy=\"0\" w14:kx=\"0\" "
+				+ "w14:ky=\"0\" w14:algn=\"none\"/>")));
+		// gallery style 15's inner shadow has blur and distance: drawn
+		assertTrue(WordArtText.hasBodyEffect(rPr("<w14:shadow w14:blurRad=\"63500\" w14:dist=\"50800\" w14:dir=\"13500000\" "
+				+ "w14:sx=\"0\" w14:sy=\"0\" w14:kx=\"0\" w14:ky=\"0\" w14:algn=\"none\"><w14:srgbClr w14:val=\"000000\"/>"
+				+ "</w14:shadow>")));
+	}
 }

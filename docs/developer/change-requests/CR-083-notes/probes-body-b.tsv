@@ -1,0 +1,17 @@
+set	file	page	probe	kind	mode	note	summary	text
+cr083-phase5b	wb84-mark-room	1	wb84-01	body	15	a numbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain (wb82-30 again)	glow	The numbered
+cr083-phase5b	wb84-mark-room	2	wb84-02	body	15	a numbered paragraph (24 pt) whose mark has a shadow (blur 4, 3 pt at 45 degrees), its text plain	shadow	The numbered
+cr083-phase5b	wb84-mark-room	3	wb84-03	body	15	a numbered paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain	reflection	The numbered
+cr083-phase5b	wb84-mark-room	4	wb84-04	body	15	a numbered paragraph (12 pt) whose mark has a glow 8 pt, its text plain	glow	The numbered
+cr083-phase5b	wb84-mark-room	5	wb84-05	body	15	a numbered paragraph (12 pt) whose mark has a reflection 4 pt down, its text plain	reflection	The numbered
+cr083-phase5b	wb84-mark-room	6	wb84-06	body	15	a bulleted paragraph (24 pt) whose mark has a glow 8 pt, its text plain	glow	The numbered
+cr083-phase5b	wb84-mark-room	7	wb84-07	body	15	a bulleted paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain	reflection	The numbered
+cr083-phase5b	wb84-mark-room	8	wb84-08	body	15	a numbered paragraph (24 pt) whose mark and its text both have a glow 8 pt	glow	The numbered
+cr083-phase5b	wb84-mark-room	9	wb84-09	body	15	a numbered paragraph (24 pt) whose text has a glow 8 pt, its mark plain	glow	The numbered
+cr083-phase5b	wb84-mark-room	10	wb84-10	body	15	a numbered paragraph (24 pt) whose level w:rPr has a glow 8 pt, its mark and text plain	no effect	The numbered
+cr083-phase5b	wb84-mark-room	11	wb84-11	body	15	a numbered paragraph (24 pt) whose mark has a glow 8 pt, under auto 1.15	glow	The numbered
+cr083-phase5b	wb84-mark-room	12	wb84-12	body	15	a numbered paragraph (24 pt) whose mark has a glow 8 pt, under atLeast 40 pt	glow	The numbered
+cr083-phase5b	wb84-mark-room	13	wb84-13	body	15	a numbered paragraph (24 pt) whose mark has a glow 8 pt, under exact 30 pt	glow	The numbered
+cr083-phase5b	wb84-mark-room	14	wb84-14	body	15	an unnumbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain	glow	The numbered
+cr083-phase5b	wb84-mark-room	15	wb84-15	body	15	an unnumbered paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain	reflection	The numbered
+cr083-phase5b	wb84-mark-room	16	wb84-16	body	15	a centred numbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain	glow	The numbered

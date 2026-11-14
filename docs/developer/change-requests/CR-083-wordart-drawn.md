@@ -66,6 +66,8 @@ in one font, decorations painted as the glyphs, a right-to-left gradient reverse
 sizes (atLeast moving the baseline), and a shape's two-stop gradient on Word's curve too (applied; gate b481 0 movers).
 Step 2 built the same day (Jason: "do step 2"; findings §7) on the fork's r85 and r86: the painter, the ids and the
 room; Word's drawing on every page of the round but for the gaps phase 7 lists; gates b483 and b486 one mover, +65 lines.
+Its open items closed the same day (findings §7.5, §7.6): merged runs, rect path gradients, a numbered mark's number
+(a Claude Fable 5.1 session's; its room provisional until the round cr083-phase5b); gates b487 and b490 0 movers.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -717,6 +719,12 @@ catalogue (through the portfolio).
       wb50, wb80, wb82 and wg20 drawn alike but for merged runs, emoji, non-circular path gradients, 3-D and a numbered
       mark (not built); the room within 0.25 pt under every spacing rule. Gates b483 (r85) and b486 (r86): one mover,
       real's 79 +65 lines (an empty paragraph's room); PDFs +11%, +38% and +15% on the three documents painted.
+    - Phase 5's open items the same day (Jason: "can we fix the 2 things still open in phase 5? feel free to delegate
+      to fable"; findings §7.5, §7.6): runs Word draws as one share an id; a run's rect or shape path gradient is
+      rectangular rings, a picture as Word's; a numbered paragraph's mark paints its number (a Claude Fable 5.1
+      session's, its room above the label's ascent until the round cr083-phase5b, staged); effects that draw nothing
+      (numbering's "no shadow", "no glow", "no reflection") are none. A colour emoji is a renderer limit outside CR-083:
+      Enterprise CR-001 §6.6 item 71. Gates b487 and b490 0 movers.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).

@@ -1730,7 +1730,8 @@ public class XsltFOFunctions {
 		}
 
 		/* Now that we have pPr, we can format the block. */
-		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark, context.getNumberingState());
+		return createBlock(context.getWmlPackage(), context.getRunFontSelector(), pStyleVal, childResults, sdt, pPrDirect, pPr, rPr, rPrParagraphMark, context.getNumberingState(),
+				context.getConversionSettings());
 
     }
 
@@ -1905,6 +1906,17 @@ public class XsltFOFunctions {
 			String pStyleVal, Node childResults,
 			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
 			org.docx4j.model.listnumbering.NumberingState state) {
+		return createBlock(wmlPackage, runFontSelector, pStyleVal, childResults, sdt, pPrDirect, pPr, rPr,
+				rPrParagraphMark, state, null);
+	}
+
+	/** @param settings the conversion's settings, which hold its text-effects table (TextEffectsFo) for a numbered
+	 *  paragraph's label; null where there are none.  @since 17.3.7 */
+	protected static DocumentFragment createBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, Node childResults,
+			boolean sdt, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
+			org.docx4j.model.listnumbering.NumberingState state,
+			org.docx4j.convert.out.AbstractConversionSettings settings) {
 
         try {
             // Create a DOM builder and parse the fragment			
@@ -1932,7 +1944,7 @@ public class XsltFOFunctions {
 					// indent (§2.8).  @since 17.1.0
 					document.appendChild(foBlockElement);
 					indentHandledByNumbering = createInlineLabel(wmlPackage, runFontSelector, pStyleVal,
-							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd, state);
+							pPrDirect, pPr, rPr, rPrParagraphMark, document, foBlockElement, listInd, state, settings);
 
 				} else {
 
@@ -1944,7 +1956,7 @@ public class XsltFOFunctions {
 					// allow us to use fo:list-block properly.
 
 					indentHandledByNumbering = createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr,
-							rPrParagraphMark, document, foBlockElement, foListBlock, listInd, state);
+							rPrParagraphMark, document, foBlockElement, foListBlock, listInd, state, settings);
 
 					if (log.isDebugEnabled()) {
 						log.debug("bare list result: " + XmlUtils.w3CDomNodeToString(foListBlock) );
@@ -2896,7 +2908,18 @@ public class XsltFOFunctions {
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
 			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut,
 			org.docx4j.model.listnumbering.NumberingState state) {
-		
+		return createListBlock(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr, rPrParagraphMark,
+				document, foBlockElement, foListBlock, indOut, state, null);
+	}
+
+	/** @param settings the conversion's settings, for the label's text effects (TextEffectsFo.labelInline); null
+	 *  where there are none.  @since 17.3.7 */
+	protected static boolean createListBlock(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark, Document document,
+			Element foBlockElement, Element foListBlock, PPrBase.Ind[] indOut,
+			org.docx4j.model.listnumbering.NumberingState state,
+			org.docx4j.convert.out.AbstractConversionSettings settings) {
+
 		/* Create something like:
 		 * 			
 			<fo:list-block provisional-distance-between-starts="0.5in" start-indent="0.5in">
@@ -2972,8 +2995,9 @@ public class XsltFOFunctions {
 			// OK just to override specific values
 			// Values come from numbering rPr, unless overridden in p-level rpr
 			DocumentFragment rfsFrag = null;
+			RPr labelFx = rPrParagraphMark; // what the label's text effects come from (TextEffectsFo.labelInline)
 			if(triple.getLabelRPr()==null) {
-				
+
 				if (pPr.getRPr()==null) {
 					// do nothing, since we're already inheriting the formatting in the style
 					// (as opposed to the paragraph mark formatting)
@@ -3003,31 +3027,36 @@ public class XsltFOFunctions {
 				 * Word draws the number in Tahoma-Bold and the text after it in Tahoma,
 				 * and reading the level's rPr for both cost that document 0.074 of line
 				 * parity.  @since 17.1.0 */
-				createFoAttributes(wmlPackage, labelRPr(actual, rPrParagraphMark), foListItemLabel );
+				labelFx = labelRPr(actual, rPrParagraphMark);
+				createFoAttributes(wmlPackage, labelFx, foListItemLabel );
 				if (rPrParagraphMark!=null) {
 					createFoAttributes(wmlPackage, alignmentRPr(rPrParagraphMark), foListItemBody );
 				}
 
 			}
 
+			/* The label painted with its mark's text effects (CR-083 phase 5; wb82-30, -31): its text goes in
+			 * an fo:inline carrying the effect's id where the renderer paints them, and straight into its
+			 * block, as before, everywhere else.  @since 17.3.7 */
+			Element labelFxInline = TextEffectsFo.labelInline(wmlPackage, settings, labelFx, foListItemLabelBody);
+
 			int numChars=1;
 			if (triple.getBullet()!=null ) {
-//				foListItemLabelBody.setTextContent(triple.getBullet() );  
+//				foListItemLabelBody.setTextContent(triple.getBullet() );
 		    	// give effect to any character mapping performed by RFS; where it made
 		    	// none for a symbol font, symbolLabelFallback does (@since 17.1.0)
-		    	foListItemLabelBody.setTextContent(
+		    	setLabelText(foListItemLabelBody, labelFxInline,
 		    			symbolLabelFallback(triple, rfsFrag.getTextContent(), foListItemLabelBody, wmlPackage));
-				
+
 			} else if (triple.getNumString()==null) {
 				log.debug("computed NumString was null!");
 				if (log.isDebugEnabled() ) {
 					foListItemLabelBody.setAttribute("color", "red");
 					foListItemLabelBody.setTextContent("null#");
-				} 
+				}
 				numChars=0;
 			} else {
-				Text number = document.createTextNode( triple.getNumString() );
-				foListItemLabelBody.appendChild(number);
+				setLabelText(foListItemLabelBody, labelFxInline, triple.getNumString());
 				numChars = triple.getNumString().length();
 			}
 			
@@ -3169,6 +3198,17 @@ public class XsltFOFunctions {
 		return indentHandledByNumbering;
 	}
 
+	/** The label's text into its (empty) block: inside the inline {@link TextEffectsFo#labelInline} made, where it
+	 *  made one, else as the block's own text.  @since 17.3.7 */
+	private static void setLabelText(Element labelBlock, Element fxInline, String text) {
+		if (fxInline == null) {
+			labelBlock.setTextContent(text);
+		} else {
+			fxInline.setTextContent(text);
+			labelBlock.appendChild(fxInline);
+		}
+	}
+
 	/**
 	 * Whether Word draws this paragraph's number <b>on the line with its text</b> rather
 	 * than at the list indent: a centred or right-aligned numbered paragraph.
@@ -3225,6 +3265,17 @@ public class XsltFOFunctions {
 			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
 			Document document, Element foBlockElement, PPrBase.Ind[] indOut,
 			org.docx4j.model.listnumbering.NumberingState state) {
+		return createInlineLabel(wmlPackage, runFontSelector, pStyleVal, pPrDirect, pPr, rPr, rPrParagraphMark,
+				document, foBlockElement, indOut, state, null);
+	}
+
+	/** @param settings the conversion's settings, for the label's text effects (TextEffectsFo.markInlineLabel);
+	 *  null where there are none.  @since 17.3.7 */
+	protected static boolean createInlineLabel(WordprocessingMLPackage wmlPackage, RunFontSelector runFontSelector,
+			String pStyleVal, PPr pPrDirect, PPr pPr, RPr rPr, RPr rPrParagraphMark,
+			Document document, Element foBlockElement, PPrBase.Ind[] indOut,
+			org.docx4j.model.listnumbering.NumberingState state,
+			org.docx4j.convert.out.AbstractConversionSettings settings) {
 
 		NumberingResult triple = numberFor(wmlPackage, pStyleVal, pPrDirect, pPr, state);
 		if (triple==null) {
@@ -3237,11 +3288,15 @@ public class XsltFOFunctions {
 		RPr forFont = level!=null ? level : (pPr.getRPr()!=null ? rPrParagraphMark : rPr);
 		DocumentFragment rfsFrag = (DocumentFragment)runFontSelector.fontSelector(pPr, forFont, triple.getNumString());
 		applyRunFontSelection(rfsFrag, label);
+		RPr labelFx = rPrParagraphMark;
 		if (level!=null) {
-			createFoAttributes(wmlPackage, labelRPr(level, rPrParagraphMark), label );
+			labelFx = labelRPr(level, rPrParagraphMark);
+			createFoAttributes(wmlPackage, labelFx, label );
 		} else if (pPr.getRPr()!=null) {
 			createFoAttributes(wmlPackage, rPrParagraphMark, label );
 		}
+		// the label painted with its mark's text effects (CR-083 phase 5), as a list block's label is
+		TextEffectsFo.markInlineLabel(wmlPackage, settings, labelFx, label);
 
 		String text = triple.getBullet()!=null
 				? (rfsFrag==null ? triple.getBullet() : rfsFrag.getTextContent())

@@ -399,10 +399,8 @@ the grouping below; unmerged at writing).
   SVG returned with its rectangle; GLYPHS_DRAWN where Word draws paths or nothing, DECORATIONS_DRAWN where the run's
   decorations were painted. A face whose glyphs can't be had (no file, no ids) isn't painted: the text is drawn as
   without effects, reported once (`render.wordart.body_effect`).
-- **Not built**: a numbered paragraph's mark painting its number (wb82-30, -31): the label is a block, the fork reads
-  the id from inlines only, and the number would have to be wrapped in an inline the label rule reads; Word's own room
-  there is unexplained. The highlight over the room (the fork's, low priority). Mode 2. Phase 7's gap report takes
-  these.
+- **Not built at first**: a numbered paragraph's mark painting its number (wb82-30, -31), built after (7.6). The
+  highlight over the room (the fork's, low priority). Mode 2. Phase 7's gap report takes these.
 
 ### 7.2 Against Word
 
@@ -452,4 +450,68 @@ the grouping below; unmerged at writing).
   - b486: step 2 (final) on r86 against b485: the one mover 79 (+65), events equal; PDF size 14372 +11%, 252 +38%, 4102
     +15%, 14 and 79 unchanged; render times within the run's noise (the corpora's totals -1.6% to +1.7%); the probes'
     324 the same.
+
+### 7.5 Two of the gaps closed (2026-11-14)
+
+Jason: "can we fix the 2 things still open in phase 5? feel free to delegate to fable". The numbered paragraph's mark
+went to a Claude Fable 5.1 session (7.6); these two here:
+- **Runs Word draws as one**: two neighbouring runs of one formatting are one run to Word, one picture and one frame
+  (wb80-15: one shadow picture for "Shadow" and "Next"; Word's save merges them). `TextEffectsFo.mark` writes a key of
+  the run's effective properties beside its id (`HINT_TEXT_EFFECT_KEY`), and `WordLayoutFixups.lineBoxAttributes` gives
+  a run whose key is its previous sibling run's that run's id, so the fork's group runs across both. wb80-15 one picture,
+  as Word's; corpus 252's 14 marked runs 5 groups, 14372's 4 two.
+- **A rect or shape path gradient on text**: Word draws it as a picture whose rings are rectangles about the focus, the
+  colour by the larger of the distances across and down (wb80-24, -25: a diagonal point 0.61 of the way out the colour
+  of the row's at 0.61; an ellipse would put it 0.86 out), blended by the two-stop curve. `Drawing.Gradient.rectangular`
+  and `picture` (2 pixels a point, Word's 1.33), painted clipped to the glyphs by `Drawing.paint`; `paintGlyphs` makes a
+  run's non-circular path gradient rectangular. Against Word's pictures: within 4 of 255 across the middle, within 9 on
+  the diagonal. A shape's path gradients are unmeasured and unchanged.
+- **Not a text effect**: a colour emoji is drawn in colour by Word, as a picture in its own PDF export (wb82-24, -25:
+  the telephone) and as the font's colour layers when printed (the probe `fonts-symbol-and-emoji`, no effect); FOP
+  draws a face's monochrome glyph in the text's colour. A renderer limit for all text, outside CR-083: recorded as
+  Enterprise CR-001 section 6.6 item 71 (Jason: "we should record the emoji issue somewhere").
+- Tests: chart-render `TextEffectBodyTest` (a rect path gradient's rings; a circle stays a radial shading), export-fo-tests
+  `TextEffectsFoTest` (identical neighbours share an id); chart-render 120, export-fo 111, export-fo-tests 978 pass.
+  Gate b487 against b486: 0 movers, events equal; 14372 and 252 smaller (132,916 to 132,360 and 176,476 to 170,238
+  bytes, fewer groups); the probes' 324 the same.
+
+### 7.6 A numbered paragraph's mark painting its number (2026-11-14)
+
+Built by a Claude Fable 5.1 session in a worktree of its own (Jason: "feel free to delegate to fable"), its patch read
+and merged here.
+- **The label**: the renderer reads an id from the inlines above a text, never from the label's `fo:block`, so where
+  the label's effective properties (the mark's, under the level's `w:rPr` where it has one) have an effect, the number
+  or bullet goes into an `fo:inline` carrying the id (`TextEffectsFo.labelInline`, `XsltFOFunctions.createListBlock`'s
+  `setLabelText`, both routes sharing it; the conversion settings threaded through `createBlock`, `createListBlock`,
+  `createInlineLabel`); a centred or right-aligned number, already an inline on the text's line, gets the id only
+  (`markInlineLabel`). Without the capability, or without an effect, the FO is byte for byte as before.
+- **The room**: the one numbered line measured (wb82-30) had the mark's room above (2.88 pt, phase 3's rule's 2.78 on
+  the grid) and none below, which is the label rule's own shape (its ascent raises the line, its descent counts for
+  nothing). So the room above rides on the label's ascent (`HINT_LABEL_ROOM` on the label's block, which
+  `WordLayoutFixups.listLabelLines` adds to `labelAscent`: into the label's line box and the body's `label-ascent`,
+  outside auto's multiple, absorbed by atLeast's slack, none under exact), not `effect-room` on the inline, which the
+  renderer would read as room on both sides of the label's line alone. Provisional: the round cr083-phase5b (16 probes,
+  `build_body.py` set b, `probes-body-b.tsv`: glow, shadow and reflection on the mark at 24 and 12 pt, a bullet, the mark
+  and the text both, the text alone, the level's `w:rPr`, each spacing rule, an unnumbered mark, a centred number) is
+  staged and sent to the portfolio.
+- **Against Word**: wb82-30 the number's glow picture (Word's second picture, the mark's, is empty), the line 2.78
+  lower (Word 2.91), the next paragraph at the plain pitch (29.29; Word 29.28); wb82-31 the number filled with the
+  mark's gradient over its advance, 72.00 to 91.68 as Word's, its text invisible.
+- **Found on the corpora: effects that draw nothing.** The first gate with it (b488) painted 1 to 8 heading numbers in
+  five documents (2394, 9838, 9031, 8992, 6251) for nothing: their numbering levels write "no effect" as an inner
+  shadow with no blur and no distance, a glow of radius 0 and a reflection with every opacity and its height 0 (and a
+  hollow outline of width 0, already none). `WordArtText.hasBodyEffect` now counts none of them (`drawsNothing`), nor
+  does HTML's report: b490 against b487 the corpora's PDFs the same but the time fields. So no corpus document has a
+  number with an effect.
+- **Found, the fork's (to confirm with cr083-phase5b's wb84-09)**: a numbered paragraph whose text has a glow, in
+  docx4j's render: the text's baseline not moved down by the room above, and the next paragraph pushed by twice the
+  room (a pitch of 34.86 where single room gives 29.28 + 2.78); wb81 measured only unnumbered lines. Seemingly the room
+  above lost against the label's declared baseline in the renderer's list item; to the fork once Word's number is in.
+- Tests: export-fo-tests `NumberedLabelEffectsFoTest` (6: the number in an inline with the id in both routes, no
+  effect-room, the label's ascent raised by the room; a gradient without room; a centred number; byte-identical FO
+  without the capability or an effect; the hint consumed), `TextEffectsFoTest` (effects that draw nothing are none);
+  core-tests 2,697, chart-render 120, export-fo 111, export-fo-tests 985 pass. Gates: b488 (with the numbers, before
+  `drawsNothing`) 0 movers, the five documents' numbers painted for nothing; b489 (the shadow and glow) 0 movers, four
+  left; b490 (final) against b487 0 movers, events equal, the corpora's PDFs the same but the time fields, the probes'
+  324 the same.
 

@@ -1394,10 +1394,17 @@ public final class WordArtRenderer {
 			}
 		} else if (fill instanceof CTGradientFillProperties) {
 			Drawing.Gradient gr = fills.wordGradient((CTGradientFillProperties) fill);
+			org.docx4j.dml.CTPathShadeProperties path = ((CTGradientFillProperties) fill).getPath();
+			if (gr != null && path != null && path.getPath() != null && path.getPath() != org.docx4j.dml.STPathShadeType.CIRCLE) {
+				// a run's rect or shape path: rectangular rings, a picture in Word's PDF (wb80-24, -25)
+				gr = gr.rectangular();
+			}
 			if (gr != null && mirror) {
 				double[] f = gr.getFocus();
+				boolean rect = gr.isRectangular();
 				gr = new Drawing.Gradient(gr.getStops(), gr.getColours(), gr.isLinear(), gr.isLinear() ? 180 - gr.getAngle() : 0,
 						gr.isScaled(), f == null ? null : new double[] { f[2], f[1], f[0], f[3] });
+				if (rect) gr = gr.rectangular();
 			}
 			if (gr != null) {
 				Drawing.Area a = new Drawing.Area(s, gr.getColours()[0], null, 0, "wordart.fill");

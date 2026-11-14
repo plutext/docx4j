@@ -55,6 +55,8 @@ public final class Drawing {
 		private final double angle;
 		/** a path's focus: its insets from the box's left, top, right and bottom, shares of the box */
 		private final double[] focus;
+		/** a path's rings rectangles, not ellipses ({@link #rectangular()}) */
+		private boolean rectangular;
 
 		/**
 		 * @param stops strictly increasing, 0 to 1
@@ -98,6 +100,67 @@ public final class Drawing {
 		/** A path's focus: its insets from the box's left, top, right and bottom, shares of the box; null where linear */
 		public double[] getFocus() {
 			return focus;
+		}
+
+		/**
+		 * A copy whose rings are rectangles about its focus: a text run's {@code path="rect"} or {@code path="shape"}
+		 * gradient, which Word draws as a picture whose colour goes by the larger of the distances across and down from
+		 * the focus (cr083-phase5's wb80-24, -25: a diagonal point 0.61 of the way out as the row's at 0.61, where an
+		 * ellipse would put it 0.86 out), its frame the run's
+		 *
+		 * @since 17.3.7
+		 */
+		public Gradient rectangular() {
+			Gradient g = new Gradient(stops, colours, false, 0, false, focus == null ? new double[] { 0.5, 0.5, 0.5, 0.5 } : focus);
+			g.rectangular = true;
+			return g;
+		}
+
+		/** Whether its rings are rectangles: painted as a picture ({@link #picture}) */
+		public boolean isRectangular() {
+			return rectangular;
+		}
+
+		/** The colour at a share of the way through its stops, blended evenly between them */
+		Color at(double t) {
+			if (t <= stops[0]) return colours[0];
+			for (int i = 1; i < stops.length; i++) {
+				if (t <= stops[i]) {
+					double f = (t - stops[i - 1]) / Math.max(1e-9, stops[i] - stops[i - 1]);
+					Color a = colours[i - 1], c = colours[i];
+					return new Color((int) Math.round(a.getRed() + (c.getRed() - a.getRed()) * f),
+							(int) Math.round(a.getGreen() + (c.getGreen() - a.getGreen()) * f),
+							(int) Math.round(a.getBlue() + (c.getBlue() - a.getBlue()) * f),
+							(int) Math.round(a.getAlpha() + (c.getAlpha() - a.getAlpha()) * f));
+				}
+			}
+			return colours[colours.length - 1];
+		}
+
+		/** Pixels a point for {@link #picture}: Word's is 96 dpi; this twice it, at most {@link #MAX_PICTURE_SIDE} a side */
+		static final double PICTURE_PIXELS_PER_POINT = 2;
+		static final int MAX_PICTURE_SIDE = 2048;
+
+		/**
+		 * A rectangular gradient as a picture over the box b: each pixel's colour by the larger of its distances across
+		 * and down from the focus, as shares of the way from the focus to the box's edge on its side
+		 */
+		public java.awt.image.BufferedImage picture(Rectangle2D b) {
+			int w = Math.max(1, Math.min(MAX_PICTURE_SIDE, (int) Math.ceil(b.getWidth() * PICTURE_PIXELS_PER_POINT)));
+			int h = Math.max(1, Math.min(MAX_PICTURE_SIDE, (int) Math.ceil(b.getHeight() * PICTURE_PIXELS_PER_POINT)));
+			double[] f = focus == null ? new double[] { 0.5, 0.5, 0.5, 0.5 } : focus;
+			double fx0 = f[0], fx1 = 1 - f[2], fy0 = f[1], fy1 = 1 - f[3];
+			java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+			for (int y = 0; y < h; y++) {
+				double v = (y + 0.5) / h;
+				double dy = v < fy0 ? (fy0 - v) / Math.max(1e-9, fy0) : v > fy1 ? (v - fy1) / Math.max(1e-9, 1 - fy1) : 0;
+				for (int x = 0; x < w; x++) {
+					double u = (x + 0.5) / w;
+					double dx = u < fx0 ? (fx0 - u) / Math.max(1e-9, fx0) : u > fx1 ? (u - fx1) / Math.max(1e-9, 1 - fx1) : 0;
+					img.setRGB(x, y, at(Math.min(1, Math.max(dx, dy))).getRGB());
+				}
+			}
+			return img;
 		}
 
 		/** The gradient as a paint for a shape's box */
@@ -784,6 +847,15 @@ public final class Drawing {
 				if (a.paint != null) {
 					g.setPaint(a.paint);
 					g.fill(a.shape);
+				} else if (a.gradient != null && a.gradient.isRectangular()) {
+					// a picture within the shape, as Word draws it
+					Rectangle2D b = a.gradientFrame != null ? a.gradientFrame : a.shape.getBounds2D();
+					java.awt.image.BufferedImage img = a.gradient.picture(b);
+					Shape before = g.getClip();
+					g.clip(a.shape);
+					g.drawImage(img, new AffineTransform(b.getWidth() / img.getWidth(), 0, 0, b.getHeight() / img.getHeight(), b.getX(),
+							b.getY()), null);
+					g.setClip(before);
 				} else if (a.gradient != null) {
 					g.setPaint(a.gradient.paint(a.gradientFrame != null ? a.gradientFrame : a.shape.getBounds2D()));
 					g.fill(a.shape);

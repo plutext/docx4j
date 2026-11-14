@@ -32,7 +32,13 @@ away at 45 degrees, black at 40% (SH); a glow of 5 pt, ED7D31 at 40% (GL); a ref
         mark carries the effect; two runs with unequal glows on one line under atLeast spacing
   wb83  a run split by automatic hyphenation (the file has w:autoHyphenation)
 
-usage: build_body.py <staging dir>   (writes probes-body.tsv beside this script; stages cr083-phase5)"""
+A second set, cr083-phase5b (build_body.py <staging dir> b; probes-body-b.tsv), asks what the round's one numbered
+probe left open (findings section 6.2: wb82-30's line took the mark's glow's room above and none below):
+
+  wb84  a numbered paragraph's mark with a glow, a shadow and a reflection at 24 and 12 pt, a bullet's, the run's own
+        effect beside the mark's, the level's rPr, each spacing rule, an unnumbered paragraph's mark, a centred number
+
+usage: build_body.py <staging dir> [b]   (writes probes-body.tsv beside this script; stages cr083-phase5)"""
 import hashlib, json, os, re, sys, zipfile
 from xml.sax.saxutils import escape
 
@@ -247,7 +253,7 @@ def package(path, probes, styles=None, numbering=False, hyphenate=False):
         if styles:
             fx.entry(z, 'word/styles.xml', styles)
         if numbering:
-            fx.entry(z, 'word/numbering.xml', NUMBERING)
+            fx.entry(z, 'word/numbering.xml', NUMBERING if numbering is True else numbering)
         for n, _, xml in hdr:
             fx.entry(z, f'word/header{n}.xml', xml)
 
@@ -512,19 +518,87 @@ FILES = [
     ('wb83-body-hyphen', fam_hyphen, dict(hyphenate=True)),
 ]
 
+# ------------------------------------------------------------------------------------------------- wb84 (cr083-phase5b)
 
-def main(staging):
+SET_B = 'cr083-phase5b'
+IGNORABLE = (f'xmlns:w14="{W14}" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" '
+             'mc:Ignorable="w14"')
+LVL_DECIMAL = ('<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/>'
+               '<w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="720"/></w:pPr>{rpr}</w:lvl>')
+LVL_BULLET = ('<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val=""/>'
+              '<w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="720"/></w:pPr>'
+              '<w:rPr><w:rFonts w:ascii="Symbol" w:hAnsi="Symbol" w:hint="default"/></w:rPr></w:lvl>')
+# numId 1 a decimal level; 2 Word's Symbol bullet; 3 a decimal level whose own w:rPr has a glow 8 pt
+NUMBERING_B = (f'{fx.DECL}<w:numbering xmlns:w="{fx.NS["w"]}" {IGNORABLE}>'
+               f'<w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="singleLevel"/>{LVL_DECIMAL.format(rpr="")}'
+               f'</w:abstractNum><w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="singleLevel"/>{LVL_BULLET}'
+               f'</w:abstractNum><w:abstractNum w:abstractNumId="2"><w:multiLevelType w:val="singleLevel"/>'
+               f'{LVL_DECIMAL.format(rpr="<w:rPr>" + GL8 + "</w:rPr>")}</w:abstractNum>'
+               '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num><w:num w:numId="2"><w:abstractNumId w:val="1"/>'
+               '</w:num><w:num w:numId="3"><w:abstractNumId w:val="2"/></w:num></w:numbering>')
+
+
+def numbered(note, size=24, num=1, mark='', run_fx='', line=240, rule='auto', jc='left'):
+    """A numbered paragraph (num 1; 2 a bullet; 3 the level with the glow; None unnumbered) whose mark has the effect
+    `mark` and whose one run has `run_fx`, then a plain paragraph, both at `size` under one spacing rule: the page's
+    label lines above the first give its room above, the paragraph after it the room below"""
+    return Page(note, [P([R('The numbered paragraph.', size=size, fx=run_fx)], num=num, mark=rpr(size, fx=mark),
+                         line=line, rule=rule, jc=jc),
+                       P([R('A plain paragraph after it.', size=size)], line=line, rule=rule)], 'The numbered')
+
+
+def fam_marks():
+    """The room a numbered paragraph's line takes from its mark's effects (phase 5 findings section 6.2: wb82-30 got
+    the glow's room above and none below, one probe), and which label effects Word paints: by effect kind (a glow's
+    room is on both sides, a shadow's mostly below, a reflection's below only), at 12 pt, on a bullet, with the run's
+    own effect beside the mark's, from the level's rPr, under each spacing rule, on a plain paragraph's mark (no
+    label: is the room the label's or the mark's?), and on a centred number (drawn on the text's line)"""
+    return [
+        numbered('a numbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain (wb82-30 again)', mark=GL8),
+        numbered('a numbered paragraph (24 pt) whose mark has a shadow (blur 4, 3 pt at 45 degrees), its text plain',
+                 mark=SH),
+        numbered('a numbered paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain', mark=RF4),
+        numbered('a numbered paragraph (12 pt) whose mark has a glow 8 pt, its text plain', size=12, mark=GL8),
+        numbered('a numbered paragraph (12 pt) whose mark has a reflection 4 pt down, its text plain', size=12,
+                 mark=RF4),
+        numbered('a bulleted paragraph (24 pt) whose mark has a glow 8 pt, its text plain', num=2, mark=GL8),
+        numbered('a bulleted paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain', num=2,
+                 mark=RF4),
+        numbered('a numbered paragraph (24 pt) whose mark and its text both have a glow 8 pt', mark=GL8, run_fx=GL8),
+        numbered('a numbered paragraph (24 pt) whose text has a glow 8 pt, its mark plain', run_fx=GL8),
+        numbered('a numbered paragraph (24 pt) whose level w:rPr has a glow 8 pt, its mark and text plain', num=3),
+        numbered('a numbered paragraph (24 pt) whose mark has a glow 8 pt, under auto 1.15', mark=GL8, line=276),
+        numbered('a numbered paragraph (24 pt) whose mark has a glow 8 pt, under atLeast 40 pt', mark=GL8, line=800,
+                 rule='atLeast'),
+        numbered('a numbered paragraph (24 pt) whose mark has a glow 8 pt, under exact 30 pt', mark=GL8, line=600,
+                 rule='exact'),
+        numbered('an unnumbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain', num=None, mark=GL8),
+        numbered('an unnumbered paragraph (24 pt) whose mark has a reflection 4 pt down, its text plain', num=None,
+                 mark=RF4),
+        numbered('a centred numbered paragraph (24 pt) whose mark has a glow 8 pt, its text plain', mark=GL8,
+                 jc='center'),
+    ]
+
+
+FILES_B = [
+    ('wb84-mark-room', fam_marks, dict(numbering=NUMBERING_B)),
+]
+
+
+def main(staging, which='a'):
+    """which: 'a' the round cr083-phase5 (probes-body.tsv), 'b' cr083-phase5b (probes-body-b.tsv)"""
+    set_name, files, tsv = (SET, FILES, 'probes-body.tsv') if which == 'a' else (SET_B, FILES_B, 'probes-body-b.tsv')
     manifest = ['set\tfile\tpage\tprobe\tkind\tmode\tnote\tsummary\ttext\n']
     sums, order, count = [], [], 0
-    for name, fam, kw in FILES:
+    for name, fam, kw in files:
         prefix = name.split('-')[0]
         probes = [(f'{prefix}-{i + 1:02d}', p) for i, p in enumerate(fam())]
         plain = [x for x in probes if not x[1].header]
         probes = plain + [x for x in probes if x[1].header]          # the headed probes last, as document() needs
         for page, (pid, p) in enumerate(probes, 1):
-            manifest.append(f'{SET}\t{name}\t{page}\t{pid}\t{p.kind}\t15\t{p.note}\t{p.summary()}\t{p.text()}\n')
+            manifest.append(f'{set_name}\t{name}\t{page}\t{pid}\t{p.kind}\t15\t{p.note}\t{p.summary()}\t{p.text()}\n')
         count += len(probes)
-        d = os.path.join(staging, SET, name)
+        d = os.path.join(staging, set_name, name)
         os.makedirs(d, exist_ok=True)
         f = os.path.join(d, name + '.docx')
         package(f, probes, **kw)
@@ -533,12 +607,12 @@ def main(staging):
             json.dump({'verb': 'save', 'input': name + '.docx', 'timeoutSeconds': TIMEOUT, 'formats': ['docx', 'pdf']},
                       out)
         for x in (j, f):
-            sums.append(f'{hashlib.sha256(open(x, "rb").read()).hexdigest()}  {SET}/{name}/{os.path.basename(x)}\n')
+            sums.append(f'{hashlib.sha256(open(x, "rb").read()).hexdigest()}  {set_name}/{name}/{os.path.basename(x)}\n')
         order.append(name + '\n')
-    open(os.path.join(HERE, 'probes-body.tsv'), 'w', newline='').writelines(manifest)
-    open(os.path.join(staging, SET + '.sha256'), 'w', newline='').writelines(sums)
-    open(os.path.join(staging, SET + '.order.txt'), 'w', newline='').writelines(order)
-    print(SET, len(order), 'files,', count, 'probes')
+    open(os.path.join(HERE, tsv), 'w', newline='').writelines(manifest)
+    open(os.path.join(staging, set_name + '.sha256'), 'w', newline='').writelines(sums)
+    open(os.path.join(staging, set_name + '.order.txt'), 'w', newline='').writelines(order)
+    print(set_name, len(order), 'files,', count, 'probes')
 
 
 if __name__ == '__main__':

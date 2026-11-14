@@ -48,6 +48,9 @@ import org.w3c.dom.Element;
  * below in points, D22): phase 3's rule ({@link TextEffects#reach}) on the run's box at its stated size, unraised (phase
  * 5 findings section 6.2: a superscript's room is its run's at its stated size). An empty paragraph whose mark has one
  * gets it on its {@code fo:block} (wb81-23); Word draws nothing there.</li>
+ * <li>A numbered paragraph's label (its number or bullet) is painted with its mark's effects too
+ * ({@link #labelInline}): the id on an {@code fo:inline} around the label's text, the room above on the label's block,
+ * folded into the label's ascent (wb82-30, -31).</li>
  * <li>The renderer finds the table through the painter docx4j sets on the conversion's {@code FOUserAgent}
  * ({@link #painter}), the {@link TextEffectPainter}, which draws each run's part on a line as Word does.</li>
  * </ul>
@@ -70,6 +73,13 @@ public final class TextEffectsFo {
 	public static final String HINT_EFFECT_ROOM = "docx4j-effect-room";
 
 	/**
+	 * The run's formatting as a key, a hint WordLayoutFixups reads and removes: a run whose formatting is its previous
+	 * sibling run's takes that run's id, as Word draws two such runs as one (cr083-phase5's wb80-15: one picture for two
+	 * runs with one shadow)
+	 */
+	public static final String HINT_TEXT_EFFECT_KEY = "docx4j-text-effect-key";
+
+	/**
 	 * The renderer's attribute for a run's id (fop/CR-043's {@code WordLayoutElementMapping.TEXT_EFFECT}); kept here, not
 	 * in docx4j's {@link org.docx4j.fop.wordlayout.WordLayoutElementMapping}, which names the attributes of the renderer
 	 * docx4j is built against (2.12-docx4j.1, without text effects: WordLayoutAttributesTest), until docx4j moves to
@@ -85,8 +95,19 @@ public final class TextEffectsFo {
 
 	private TextEffectsFo() {}
 
+	/**
+	 * The room above and below a numbered paragraph's label (its number or bullet) which the mark's shadow, glow or
+	 * reflection takes, "above below" in points: a hint on the label's {@code fo:block} until
+	 * {@link WordLayoutFixups#listLabelLines} folds the room above into the label's ascent (see {@link #labelInline})
+	 */
+	public static final String HINT_LABEL_ROOM = "docx4j-label-effect-room";
+
+	/** Tests only: whether the renderer draws text effects, null to ask it */
+	static Boolean enabledForTest;
+
 	/** Whether the renderer draws text effects (fop/CR-043) */
 	public static boolean enabled() {
+		if (enabledForTest != null) return enabledForTest;
 		return FopCapabilities.has(FopCapabilities.Capability.TEXT_EFFECTS);
 	}
 
@@ -124,21 +145,79 @@ public final class TextEffectsFo {
 	 * @param rPr the run's effective properties
 	 */
 	public static void mark(OpcPackage pkg, AbstractConversionSettings settings, RPr rPr, Element foInline) {
-		if (rPr == null || foInline == null || !(pkg instanceof WordprocessingMLPackage) || !enabled()
+		String room = enter(pkg, settings, rPr, foInline);
+		if (foInline != null && foInline.hasAttribute(HINT_TEXT_EFFECT)) foInline.setAttribute(HINT_TEXT_EFFECT_KEY, key(rPr));
+		if (room != null) foInline.setAttribute(HINT_EFFECT_ROOM, room);
+	}
+
+	/**
+	 * A numbered paragraph's label painted with its paragraph mark's effects (wb82-30: the number's glow a picture;
+	 * wb82-31: the number filled with the mark's gradient): the {@code fo:inline} to hold the label's text, carrying
+	 * the id (the renderer reads an id from the inlines above a text, never from the label's block, so the number
+	 * can't be marked on its block), or null where there is nothing to mark, the label's text then going straight into
+	 * its block as before.
+	 *
+	 * <p>The room: Word gave the one numbered line measured the mark's room above and none below (wb82-30: 2.88 pt at
+	 * 24 pt with a glow of 8, phase 3's rule; the paragraph after it at the plain pitch), which is the label's own
+	 * rule, its ascent raising the line and its descent counting for nothing ({@link WordLayoutFixups#listLabelLines}).
+	 * So the room goes on the label's block as {@link #HINT_LABEL_ROOM}, for that method to add its above to the
+	 * label's ascent, and not on the inline as a run's ({@link #HINT_EFFECT_ROOM}), which the renderer would read as
+	 * room on both sides of the label's line alone, setting the label's baseline off the text's. One probe; the round
+	 * cr083-phase5b asks the rest (a reflection, a bullet, 12 pt, each spacing rule, effects on the runs too).</p>
+	 *
+	 * @param rPr the label's effective properties: the paragraph mark's, under the level's where it has them
+	 * @param labelBlock the label's {@code fo:block}, still empty
+	 */
+	public static Element labelInline(OpcPackage pkg, AbstractConversionSettings settings, RPr rPr, Element labelBlock) {
+		if (labelBlock == null || !WordLayoutFixups.isEnabled()) return null;
+		Element inline = labelBlock.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");
+		String room = enter(pkg, settings, rPr, inline);
+		if (!inline.hasAttribute(HINT_TEXT_EFFECT)) return null;
+		if (room != null) labelBlock.setAttribute(HINT_LABEL_ROOM, room);
+		return inline;
+	}
+
+	/**
+	 * A label drawn on the paragraph's own line (a centred or right-aligned numbered paragraph: an {@code fo:inline}
+	 * at the head of its block): its id, so that the renderer paints it; no room, which is unmeasured there.
+	 *
+	 * @param rPr the label's effective properties, as {@link #labelInline}'s
+	 */
+	public static void markInlineLabel(OpcPackage pkg, AbstractConversionSettings settings, RPr rPr, Element label) {
+		enter(pkg, settings, rPr, label);
+	}
+
+	/**
+	 * The id on the element and the run's effects in the table, where the renderer has the capability and the run has
+	 * an effect; returns the room its shadow, glow or reflection takes ({@link #room}), null for none or where nothing
+	 * was marked.
+	 */
+	private static String enter(OpcPackage pkg, AbstractConversionSettings settings, RPr rPr, Element el) {
+		if (rPr == null || el == null || !(pkg instanceof WordprocessingMLPackage) || !enabled()
 				|| !WordArtText.hasBodyEffect(rPr)) {
-			return;
+			return null;
 		}
 		Table t = table(settings);
-		if (t == null) return;
+		if (t == null) return null;
 		try {
 			WordArtText.Run run = WordArtText.bodyRun((WordprocessingMLPackage) pkg, rPr);
-			if (run == null) return;
+			if (run == null) return null;
 			if (t.theme == null) t.theme = ThemeColors.of((WordprocessingMLPackage) pkg);
-			foInline.setAttribute(HINT_TEXT_EFFECT, t.add(new TextEffectPainter.Entry(run, t.theme)));
-			String room = room(run, rPr);
-			if (room != null) foInline.setAttribute(HINT_EFFECT_ROOM, room);
+			el.setAttribute(HINT_TEXT_EFFECT, t.add(new TextEffectPainter.Entry(run, t.theme)));
+			return room(run, rPr);
 		} catch (RuntimeException e) {
 			log.warn(WordArtText.BODY_EFFECT + ": a run's text effects couldn't be read: " + e.getMessage());
+			return null;
+		}
+	}
+
+	/** The run's formatting as a key: its effective properties as XML, hashed */
+	static String key(RPr rPr) {
+		try {
+			String xml = org.docx4j.XmlUtils.marshaltoString(rPr, true, false);
+			return Integer.toHexString(xml.hashCode()) + "-" + xml.length();
+		} catch (RuntimeException e) {
+			return "x" + System.identityHashCode(rPr);
 		}
 	}
 

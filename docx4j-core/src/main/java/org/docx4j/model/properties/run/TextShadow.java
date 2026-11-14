@@ -68,8 +68,13 @@ public class TextShadow extends AbstractRunProperty {
 		RPr rPr = (RPr) this.getObject();
 		CTEffectList fx = TextEffects.effects(rPr);
 		if (fx == null) return CSS_NULL;
-		if (fx.getReflection() != null) TextEffectCss.report("a reflection on body text, not drawn");
-		if (fx.getInnerShdw() != null) TextEffectCss.report("an inner shadow on body text, not drawn");
+		// "no reflection" and "no shadow" as numbering levels write them (every length and opacity 0) aren't reported
+		if (rPr.getReflection() != null && !org.docx4j.model.shapes.WordArtText.drawsNothing(rPr.getReflection())) {
+			TextEffectCss.report("a reflection on body text, not drawn");
+		}
+		if (rPr.getShadow14() != null && fx.getInnerShdw() != null && !org.docx4j.model.shapes.WordArtText.drawsNothing(rPr.getShadow14())) {
+			TextEffectCss.report("an inner shadow on body text, not drawn");
+		}
 		boolean known = rPr.getSz() != null && rPr.getSz().getVal() != null && rPr.getSz().getVal().signum() > 0;
 		double size = known ? rPr.getSz().getVal().doubleValue() / 2 : DEFAULT_SIZE;
 		double s = TextEffects.scale(size);
