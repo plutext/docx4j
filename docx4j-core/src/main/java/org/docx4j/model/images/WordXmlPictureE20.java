@@ -687,6 +687,11 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      *  2026-11-10: the text beside a 144pt picture at 226.18 with r = 1pt, at 225.22 with none
      *  or with wrapTight; at 228.1 with 3pt).  Only where some side is not 0.  @since 17.3.7 */
     public static final String HINT_ANCHOR_EFFECT = "docx4j-anchor-effect";
+    /** An object positioned relative to the margin: "&lt;edge&gt; &lt;top&gt; &lt;bottom&gt;", the edge of the margin
+     *  box its "page:" top was aligned to, "top" (top, inside, or an offset), "center" or "bottom" (bottom, outside),
+     *  and that box, the stated margins, in pt from the page's top: for the renderer to shift by as far as that edge
+     *  of the body moves from the box as laid out (CR-083 phase 4b; fork fop/CR-045).  @since 17.3.7 */
+    public static final String HINT_ANCHOR_MARGIN_Y = "docx4j-anchor-margin-y";
 
     /** The property WordLayoutFixups (docx4j-export-fo) is enabled by. */
     private static final String WORD_LAYOUT_FIXUPS_PROPERTY = "docx4j.convert.out.fo.wordLayoutFixups";
@@ -801,6 +806,19 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	    			}
 	    		}
 	    		y = "page:" + fmt(py);
+	    		/* Relative to the margin, Word measures from the body as laid out: below a header that runs past the top
+	    		 * margin, above a footer that runs past the bottom one (cr083-phase4b-margin: a rectangle centred +31.64,
+	    		 * at the top and 100pt down +63.27, at the bottom 0, under a header 63.24 past the margin).  Which edge py
+	    		 * was aligned to, and the box it was aligned in (the stated margins, which the page master can't carry
+	    		 * where a header or footer distance exceeds its margin), for the renderer to shift by
+	    		 * (WordLayoutFixups.marginY).  @since 17.3.7 */
+	    		if (relV==org.docx4j.dml.wordprocessingDrawing.STRelFromV.MARGIN) {
+	    			org.docx4j.dml.wordprocessingDrawing.STAlignV a = pv.getAlign();
+	    			g.setAttribute(HINT_ANCHOR_MARGIN_Y, (a==org.docx4j.dml.wordprocessingDrawing.STAlignV.CENTER ? "center"
+	    					: a==org.docx4j.dml.wordprocessingDrawing.STAlignV.BOTTOM
+	    					|| a==org.docx4j.dml.wordprocessingDrawing.STAlignV.OUTSIDE ? "bottom" : "top")
+	    					+ " " + fmt(refTop) + " " + fmt(refBottom));
+	    		}
 	    	}
 
 	    	g.setAttribute(HINT_ANCHOR, kind);

@@ -45,6 +45,12 @@ the wider line first; Arch Up and Circle with the wider line first; a shadow on 
 with descenders) and wv50 (a watermark aligned to the bottom; a centred one with lopsided ink; unequal margins with the
 header inside the top margin).
 
+cr083-phase4b-margin (phase 4b's round, 2026-11-14; the fork's fop/CR-045): wv51, a shape positioned against the margin
+where the header runs past the top margin (three lines of text below the shape's paragraph, a 72 pt margin) or the
+footer past the bottom one, each against its control with the header inside: a level watermark centred, at the top, at
+the bottom and 100 pt down; centred on the page; the footer's side; both; a first page's own header (titlePg); two
+columns; wv47-14's diagonal; a DrawingML rectangle centred, at the top, at the bottom, 100 pt down and on the page.
+
 usage: build_vml.py <staging dir> [set]   (cr083-phase4 if none is named)"""
 import hashlib, json, os, re, struct, sys, zipfile, zlib
 from xml.sax.saxutils import escape
@@ -589,6 +595,122 @@ def fam_settle_marks():
             Mark('diagonal, unequal margins with the header inside the top margin (top 108, bottom 36)', pg=tall),
             Mark('horizontal, unequal margins with the header inside the top margin (top 108, bottom 36)', rotation=0, pg=tall)]
 
+# ------------------------------------------------------------------------------- cr083-phase4b-margin (phase 4b)
+
+CT_PART = {'header': bw.CT_HDR, 'footer': 'application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml'}
+TALL = 3          # a tall header's or footer's lines of text beyond its first paragraph: past a 72 pt margin
+
+def vpos(v='center', rel='margin', top=0, rotation=0):
+    """A 468 by 117 watermark's style, centred across the margin, v the vertical alignment (None: margin-top's offset)"""
+    rot = f'rotation:{rotation};' if rotation else ''
+    align = f'mso-position-vertical:{v};' if v else ''
+    return (f'position:absolute;margin-left:0;margin-top:{top}pt;width:468pt;height:117pt;{rot}z-index:-251657216;'
+            f'mso-position-horizontal:center;mso-position-horizontal-relative:margin;{align}'
+            f'mso-position-vertical-relative:{rel}')
+
+def text_lines(kind, k):
+    return ''.join(f'<w:p>{bw.fx.run(f"{kind} line {i + 1} of {k}.")}</w:p>' for i in range(k))
+
+def dml_rect(n, v='center', rel='margin', top=0, w=300, h=80):
+    """A DrawingML rectangle anchored in the header, behind the text, centred across the margin"""
+    pos = f'<wp:align>{v}</wp:align>' if v else f'<wp:posOffset>{round(top * EMU)}</wp:posOffset>'
+    cx, cy = round(w * EMU), round(h * EMU)
+    d = (f'<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="{251658240 + n}" '
+         'behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'
+         '<wp:positionH relativeFrom="margin"><wp:align>center</wp:align></wp:positionH>'
+         f'<wp:positionV relativeFrom="{rel}">{pos}</wp:positionV><wp:extent cx="{cx}" cy="{cy}"/>'
+         f'<wp:effectExtent l="0" t="0" r="0" b="0"/><wp:wrapNone/><wp:docPr id="{3000 + n}" name="Rectangle {3000 + n}"/>'
+         '<wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">'
+         f'<wps:wsp><wps:cNvSpPr/><wps:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="{cx}" cy="{cy}"/></a:xfrm>'
+         '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="BDD7EE"/></a:solidFill>'
+         '<a:ln><a:noFill/></a:ln></wps:spPr><wps:bodyPr/></wps:wsp></a:graphicData></a:graphic></wp:anchor>')
+    return f'<w:r><mc:AlternateContent><mc:Choice Requires="wps"><w:drawing>{d}</w:drawing></mc:Choice></mc:AlternateContent></w:r>'
+
+class MarginMark(Mark):
+    """A shape positioned against the margin, in a header that runs past the top margin (hdr lines of text after the
+    shape's paragraph) or stays inside it, or with a footer that runs past the bottom margin (ftr lines): a VML
+    watermark (468 by 117, level unless turned), or with dml a DrawingML rectangle (300 by 80) aligned dml or, with
+    dml='offset', at top pt. first: the section's first page has its own header, the tall one, and its second page the
+    short default; cols: the section's columns. Every section has its own default header and footer."""
+
+    def __init__(self, note, hdr=0, ftr=0, dml=None, rel='margin', top=0, first=False, cols=1, v='center', **kw):
+        kw.setdefault('rotation', 0)
+        if not dml:
+            kw.setdefault('pos', vpos(v, rel, top, kw['rotation']))
+        super().__init__(note, **kw)
+        self.hdr, self.ftr, self.dml, self.rel, self.top, self.first, self.cols, self.v = hdr, ftr, dml, rel, top, first, cols, v
+
+    def summary(self):
+        what = (f'DrawingML rect 300x80pt {self.dml if self.dml != "offset" else f"offset {self.top}pt"} '
+                if self.dml else f'header watermark rotation {self.rotation} 468x117pt '
+                + (f'{self.v} ' if self.v else f'offset {self.top}pt '))
+        return (what + f'relative to {self.rel}; header {self.hdr} lines more, footer {self.ftr} lines'
+                + ('; titlePg, the first page\'s header tall' if self.first else '') + (f'; {self.cols} columns' if self.cols > 1 else ''))
+
+    def shape_header(self, n, lines):
+        if self.dml:
+            xmlns = ' '.join(f'xmlns:{k}="{v}"' for k, v in bw.NS.items())
+            xml = (f'{bw.fx.DECL}<w:hdr {xmlns} mc:Ignorable="w14"><w:p>'
+                   f'{dml_rect(n, None if self.dml == "offset" else self.dml, self.rel, self.top)}</w:p></w:hdr>')
+        else:
+            xml = super().header(n)
+        return xml.replace('</w:hdr>', text_lines('Header', lines) + '</w:hdr>')
+
+    def header(self, n):
+        return self.shape_header(n, 0 if self.first else self.hdr)
+
+    def parts(self, n):
+        # every section its own footer, one line inside the bottom margin unless ftr asks for more: a section with no
+        # reference inherits the previous section's, a tall footer among them
+        xmlns = ' '.join(f'xmlns:{k}="{v}"' for k, v in bw.NS.items())
+        out = [(f'rIdF{n}', 'footer', f'footer{n}.xml',
+                f'{bw.fx.DECL}<w:ftr {xmlns}><w:p>{bw.fx.run("Footer.")}</w:p>{text_lines("Footer", self.ftr)}</w:ftr>',
+                f'<w:footerReference w:type="default" r:id="rIdF{n}"/>')]
+        if self.first:
+            out.append((f'rIdHF{n}', 'header', f'header{500 + n}.xml', self.shape_header(500 + n, self.hdr),
+                        f'<w:headerReference w:type="first" r:id="rIdHF{n}"/>'))
+        return out
+
+    def sect_tail(self):
+        return (f'<w:cols w:num="{self.cols}" w:space="708"/>' if self.cols > 1 else '') + ('<w:titlePg/>' if self.first else '')
+
+    def page(self, n):
+        first, after = super().page(n)
+        if self.first:
+            after += ('<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+                      + bw.para([bw.Run('The section\'s second page, under its default header, the short one.', size=11)], jc='left'))
+        return first, after
+
+def fam_margin():
+    t = TALL
+    return [MarginMark('centred on the margin, the header past the top margin', hdr=t),
+            MarginMark('centred on the margin, the header inside the top margin (control)'),
+            MarginMark('at the margin\'s top, the header past the top margin', hdr=t, v='top'),
+            MarginMark('at the margin\'s top, the header inside the top margin (control)', v='top'),
+            MarginMark('at the margin\'s bottom, the header past the top margin', hdr=t, v='bottom'),
+            MarginMark('at the margin\'s bottom, the header inside the top margin (control)', v='bottom'),
+            MarginMark('100 pt below the margin\'s top, the header past the top margin', hdr=t, v=None, top=100),
+            MarginMark('100 pt below the margin\'s top, the header inside the top margin (control)', v=None, top=100),
+            MarginMark('centred on the page, the header past the top margin (control)', hdr=t, rel='page'),
+            MarginMark('centred on the margin, the footer past the bottom margin', ftr=t),
+            MarginMark('at the margin\'s bottom, the footer past the bottom margin', ftr=t, v='bottom'),
+            MarginMark('centred on the margin, the header and the footer past their margins', hdr=t, ftr=t),
+            MarginMark('centred on the margin, titlePg: the first page\'s header past the top margin, the second page\'s inside',
+                       hdr=t, first=True),
+            MarginMark('centred on the margin, the header past the top margin, two columns', hdr=t, cols=2),
+            MarginMark('diagonal, centred on the margin, the header past the top margin (wv47-14\'s shape)', hdr=t, rotation=315),
+            MarginMark('a DrawingML rectangle centred on the margin, the header past the top margin', hdr=t, dml='center'),
+            MarginMark('a DrawingML rectangle centred on the margin, the header inside the top margin (control)', dml='center'),
+            MarginMark('a DrawingML rectangle at the margin\'s top, the header past the top margin', hdr=t, dml='top'),
+            MarginMark('a DrawingML rectangle at the margin\'s bottom, the header past the top margin', hdr=t, dml='bottom'),
+            MarginMark('a DrawingML rectangle 100 pt below the margin\'s top, the header past the top margin', hdr=t,
+                       dml='offset', top=100),
+            MarginMark('a DrawingML rectangle 100 pt below the margin\'s top, the header inside the top margin (control)',
+                       dml='offset', top=100),
+            MarginMark('a DrawingML rectangle centred on the page, the header past the top margin (control)', hdr=t,
+                       dml='center', rel='page'),
+            MarginMark('a DrawingML rectangle centred on the margin, the footer past the bottom margin', ftr=t, dml='center')]
+
 # ------------------------------------------------------------------------------------------------------- packages
 
 def png():
@@ -620,18 +742,34 @@ def document(probes, mode):
         hdr.append((n, 'rIdH900', f'{bw.fx.DECL}<w:hdr {xmlns}><w:p><w:r><w:pict>{"".join(extra)}</w:pict></w:r></w:p></w:hdr>'))
         doc = doc.replace('<w:sectPr>', '<w:sectPr><w:headerReference w:type="default" r:id="rIdH900"/>', 1) \
             if '<w:headerReference' not in doc else doc
-    return doc, hdr
+    # a probe's further parts (cr083-phase4b-margin: a footer, a first page's header), referenced from its section,
+    # and the section's tail (its columns, titlePg)
+    more = []
+    for n, (pid, p) in enumerate(probes, 1):
+        parts = p.parts(n) if hasattr(p, 'parts') else []
+        tail = p.sect_tail() if hasattr(p, 'sect_tail') else ''
+        if not parts and not tail:
+            continue
+        head = f'<w:sectPr><w:headerReference w:type="default" r:id="rIdH{n}"/>'
+        i = doc.index(head)
+        j = doc.index('</w:sectPr>', i)
+        doc = doc[:i] + head + ''.join(ref for *_, ref in parts) + doc[i + len(head):j] + tail + doc[j:]
+        more += [(rid, kind, name, xml) for rid, kind, name, xml, _ in parts]
+    return doc, hdr, more
 
 def package(path, probes, mode):
-    doc, hdr = document(probes, mode)
+    doc, hdr, more = document(probes, mode)
     image = 'rIdImg1' in doc
     rels = [f'<Relationship Id="rId1" Type="{bw.fx.REL}settings" Target="settings.xml"/>',
             f'<Relationship Id="rId2" Type="{bw.fx.REL}theme" Target="theme/theme1.xml"/>']
     rels += [f'<Relationship Id="{rid}" Type="{bw.fx.REL}header" Target="header{n}.xml"/>' for n, rid, _ in hdr]
+    rels += [f'<Relationship Id="{rid}" Type="{bw.fx.REL}{kind}" Target="{name}"/>' for rid, kind, name, _ in more]
     if image:
         rels.append(f'<Relationship Id="rIdImg1" Type="{bw.fx.REL}image" Target="media/image1.png"/>')
     ct = bw.fx.CT.replace('</Types>', ''.join(f'<Override PartName="/word/header{n}.xml" ContentType="{bw.CT_HDR}"/>'
-                                              for n, _, _ in hdr) + '</Types>')
+                                              for n, _, _ in hdr)
+                          + ''.join(f'<Override PartName="/word/{name}" ContentType="{CT_PART[kind]}"/>'
+                                    for _, kind, name, _ in more) + '</Types>')
     if image and 'Extension="png"' not in ct:
         ct = ct.replace('<Default ', '<Default Extension="png" ContentType="image/png"/><Default ', 1)
     settings = bw.fx.SETTINGS.replace('w:val="15"', f'w:val="{mode}"')
@@ -645,6 +783,8 @@ def package(path, probes, mode):
         bw.fx.entry(z, 'word/theme/theme1.xml', open(os.path.join(bw.fx.THEMES, bw.fx.THEME_2023), encoding='utf-8').read())
         for n, _, xml in hdr:
             bw.fx.entry(z, f'word/header{n}.xml', xml)
+        for _, _, name, xml in more:
+            bw.fx.entry(z, f'word/{name}', xml)
         if image:
             z.writestr('word/media/image1.png', png())
 
@@ -658,7 +798,8 @@ FILES = [('wv41-two-lines', fam_two_lines, 12),
          ('wv48-mode15', fam_mode15, 15)]
 
 SETS = {SET: FILES,
-        'cr083-phase4b': [('wv49-settle', fam_settle, 12), ('wv50-settle-marks', fam_settle_marks, 15)]}
+        'cr083-phase4b': [('wv49-settle', fam_settle, 12), ('wv50-settle-marks', fam_settle_marks, 15)],
+        'cr083-phase4b-margin': [('wv51-margin', fam_margin, 15)]}
 
 def main(staging, setname=SET):
     files = SETS[setname]

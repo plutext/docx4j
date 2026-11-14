@@ -70,6 +70,9 @@ Its open items closed the same day (findings §7.5, §7.6): merged runs, rect pa
 (a Claude Fable 5.1 session's; its room measured by the round cr083-phase5b, a centred number's added, the number
 lowered with its text's room); gates b487 to b492 0 movers.
 Phase 5 closed 2026-11-14 (Jason: "close phase 5"); the rest go to phase 7's gap report (phase 5's Closed bullet).
+Phase 4b started and closed the same day (Jason: "commit and close phase 4b"), with the fork's fop/CR-045 (merged to
+2.12-docx4j.2 at 5beea3b2d, unreleased): a shape positioned relative to the margin is placed against the body as laid
+out, as Word places it (the round cr083-phase4b-margin); wv47-14 0.05 pt from Word's; gates b494 to b496 0 movers.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -631,6 +634,38 @@ catalogue (through the portfolio).
     anchors relative to the margin (unverified): a design first, with the fork's session, then a fork release.
   - For a Claude Fable 5.1 session (its triage, findings §10: it crosses the FO writer and the fork).
   - **Gate:** wv47-14 within 0.7 pt; a fidelity gate.
+  - **Started** 2026-11-14 (Jason told the fork's session to start it, then there "let's do it, delegating to fable
+    as appropriate"). The fork's side is drafted as fop/CR-045 (position against the body), which is not built and is
+    under a Claude Fable 5.1 review:
+    - docx4j writes `docx4j:margin-y="center"` on the fixed block-container it already writes for the shape, its `top`
+      still the stated margins' (`FOTextBoxes.createVmlContainer`: (36 + 733.9 - 117) / 2 = 326.45 for wv47-14);
+    - the fork resolves the top against the page's region-body as laid out, below fop/CR-018's measured header (wv47-14:
+      338.75, Word's box), only where the renderer advertises the capability `margin-y`;
+    - The round cr083-phase4b-margin read the same day (wv51, 23 probes; phase 4 findings §11): Word positions a
+      shape relative to the margin against the body as laid out, below a header that runs past the top margin and
+      above a footer that runs past the bottom one, for top, centre, bottom and an offset, VML and DrawingML alike,
+      each page by its own header; relative to the page it doesn't move. docx4j moved none of them.
+    - Settled with the fork's review: `docx4j:margin-y="top|center|bottom"` names the edge of the margin box the
+      written top was aligned to (an offset is "top"); the fork shifts the top by as far as that edge of the body moved
+      (top the header's overflow, bottom the footer's, center half the two), leaving docx4j's arithmetic (a text box's
+      insets, DrawingML's effect extents) as it is.
+    - docx4j's side built the same day: `FOTextBoxes.createVmlContainer` and `WordXmlPictureE20.stampAnchorHints`
+      mark a margin-relative position (`HINT_ANCHOR_MARGIN_Y`), and `WordLayoutFixups` writes `docx4j:margin-y` on
+      the page-fixed container, a text box's (`anchorTextBox`) or a picture's (`anchorImage`), where the renderer has
+      `margin-y` (`FopCapabilities.Capability.MARGIN_Y`); not in a table cell. Test: `MarginYFoTest`.
+    - The fork's r88 gated (b495: 0 line movers; wv47-14 0.05 pt from Word, wv51 within docx4j's header-height
+      difference; three corpus documents' shapes to Word's within 0.4 pt) but for one: corpus 1806's footer distance
+      (36) exceeds its bottom margin (13.7), so the page master's body (its region-body margin clamped at 0) is not
+      the box docx4j aligned to, and the shift, taken from the master, put the watermark 11.1 pt low. So docx4j also
+      writes `docx4j:margin-box="top bottom"`, the stated margins it aligned in, which the fork shifts from (r89).
+    - Gate b496 (r89) against b495: 0 movers; 1806's watermark at 99.66, Word's 99.70. Over r87, without the hint:
+      wv47-14 12.37 to 0.05 pt from Word's; corpus 8785's picture 5.37 to 0.06, 6864's 22.19 to 0, 9454's header box
+      11.6 to 0.37, 1806's watermark 5.57 to 0.04; wv51's margin-relative probes 31.65 and 63.25 to within 0.94 and
+      1.93, the rest docx4j's header taller than Word's in that package (0.48 pt a line), not this phase's.
+  - **Closed** 2026-11-14 (Jason: "commit and close phase 4b"); the fork's fop/CR-045 merged at 5beea3b2d
+    (unreleased; Enterprise CR-001 §6.6 item 73 closed in the fork). Left, not this phase's: the header and footer
+    line pitch in a package without a styles part (0.48 pt a line); 9454's turned arrow not drawn and its text at the
+    box's top, where Word sets it 12.1 pt lower.
 - **Phase 5, WordArt effects on body text** (D3; with the FO renderer fork).
   - The text stays FO text in docx4j's layout. docx4j writes a run's `w14:textOutline`, `w14:textFill`,
     `w14:shadow`, `w14:glow` and `w14:reflection` as extension attributes on its `fo:inline`, and the fork's PDF

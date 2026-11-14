@@ -245,7 +245,15 @@ public final class FopCapabilities {
 		 *  run's inline (an empty paragraph's block) as room in its Word line, {@code docx4j:text-effect} an id the
 		 *  renderer hands to the painter docx4j sets on the {@code FOUserAgent}, which draws the run's pictures and, where
 		 *  Word draws it as paths, its glyphs, the text then drawn invisibly ({@link TextEffectsFo}).  @since 17.3.7 */
-		TEXT_EFFECTS("text-effects");
+		TEXT_EFFECTS("text-effects"),
+		/** {@code docx4j:margin-y="top|center|bottom"} on a page-positioned container (fork fop/CR-045; docx4j CR-083
+		 *  phase 4b): which edge of the margin box its written top was aligned to, and {@code docx4j:margin-box="top
+		 *  bottom"}, that box (the stated margins, in pt from the page's top), which the renderer shifts the top by as far
+		 *  as that edge of the page's body as laid out is from the box's (top: the header's overflow past the top
+		 *  margin, bottom: the footer's past the bottom one, center: half the two). Word positions a shape relative to the
+		 *  margin against the body as laid out (cr083-phase4b-margin, CR-083-notes/phase4-findings.md section 11).
+		 *  Without it the top is the stated margins', as before.  @since 17.3.7 */
+		MARGIN_Y("margin-y");
 
 		private final String key;
 

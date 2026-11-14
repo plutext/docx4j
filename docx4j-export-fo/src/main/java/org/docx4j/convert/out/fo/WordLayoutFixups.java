@@ -1063,10 +1063,19 @@ public final class WordLayoutFixups {
 	 *  (WordXmlPictureE20.HINT_ANCHOR_EFFECT), which Word's wrap adds to the object's box.
 	 *  @since 17.3.7 */
 	public static final String HINT_ANCHOR_EFFECT = "docx4j-anchor-effect";
+	/** A box positioned relative to the margin: "&lt;edge&gt; &lt;top&gt; &lt;bottom&gt;", the edge of the margin box its
+	 *  "page:" top was aligned to ("top", "center" or "bottom") and that box, the stated margins, in pt from the page's
+	 *  top (WordXmlPictureE20.HINT_ANCHOR_MARGIN_Y; {@link FOTextBoxes#createVmlContainer}), which {@link #marginY}
+	 *  writes as {@code docx4j:margin-y} and {@code docx4j:margin-box} for a renderer with
+	 *  {@link FopCapabilities.Capability#MARGIN_Y}.  @since 17.3.7 */
+	public static final String HINT_ANCHOR_MARGIN_Y = "docx4j-anchor-margin-y";
 	private static final String[] ANCHOR_HINTS = { HINT_ANCHOR, HINT_ANCHOR_W, HINT_ANCHOR_H,
 			HINT_ANCHOR_X, HINT_ANCHOR_Y, "docx4j-anchor-dist", "docx4j-anchor-behind",
 			HINT_ANCHOR_COL, HINT_ANCHOR_ML, HINT_TEXTBOX_BESIDE, HINT_ANCHOR_CELL, HINT_ANCHOR_SIDES,
-			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF, HINT_ANCHOR_EFFECT, HINT_ANCHOR_WRAP };
+			HINT_ANCHOR_CELL_FOOT, HINT_ANCHOR_HREF, HINT_ANCHOR_EFFECT, HINT_ANCHOR_WRAP, HINT_ANCHOR_MARGIN_Y };
+
+	/** Tests only: whether the renderer has {@link FopCapabilities.Capability#MARGIN_Y}, null to ask it.  @since 17.3.7 */
+	static Boolean marginYForTest;
 
 	/** Tests only: what {@link #obstaclesInTheLine} answers, null to ask the renderer.  @since 17.3.3 */
 	static Boolean obstaclesForTest;
@@ -2129,6 +2138,7 @@ public final class WordLayoutFixups {
 			wrapper.appendChild(holder);
 		} else {
 			wrapper = positioned(doc, holder, x, off, w, h, pageY, ml);
+			if (pageY && inCell == null) marginY(doc, firstElementChild(wrapper), g.getAttribute(HINT_ANCHOR_MARGIN_Y));
 			// on the fork's obstacles the page's lines wrap round it (CR-032 phase 5), behind the
 			// text as well (above)
 			if (pageY && ("square".equals(wrapKind) || "topAndBottom".equals(wrapKind))
@@ -2153,6 +2163,33 @@ public final class WordLayoutFixups {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * A page-positioned container placed relative to the margin: {@code docx4j:margin-y}, the edge of the margin box
+	 * its top was aligned to ({@link #HINT_ANCHOR_MARGIN_Y}: "top", "center" or "bottom"), and {@code docx4j:margin-box},
+	 * that box ("top bottom" in pt from the page's top), for a renderer with
+	 * {@link FopCapabilities.Capability#MARGIN_Y}.  Word measures such a shape from the body as laid out, below a
+	 * header that runs past the top margin and above a footer that runs past the bottom one, which only the renderer
+	 * knows (fop/CR-018's measured extents); the top written here is the stated margins', and the renderer shifts it by
+	 * as far as the named edge of the body moved (fop/CR-045; cr083-phase4b-margin, CR-083-notes/phase4-findings.md
+	 * section 11: VML and DrawingML alike, wv47-14's watermark 12.4pt high without).  Not for a shape in a table cell,
+	 * which Word measures from the cell.  @since 17.3.7
+	 */
+	private static void marginY(Document doc, Element box, String hint) {
+		if (box == null || hint == null || hint.trim().length() == 0) return;
+		if (!(marginYForTest != null ? marginYForTest : FopCapabilities.has(FopCapabilities.Capability.MARGIN_Y))) return;
+		String ns = extensionNamespace();
+		if (ns == null) return;
+		String[] parts = hint.trim().split("\\s+");
+		if (!doc.getDocumentElement().hasAttribute("xmlns:docx4j")) {
+			doc.getDocumentElement().setAttributeNS(XMLNS, "xmlns:docx4j", ns);
+		}
+		box.setAttributeNS(ns, "docx4j:margin-y", parts[0]);
+		/* The box the top was aligned in, the stated margins, which the renderer shifts from: the page master's body
+		 * can't carry a margin smaller than its header or footer distance (its region-body margin is clamped at 0;
+		 * corpus 1806, a footer at 36 over a bottom margin of 13.7, shifted 11.1 too far from the master's).  */
+		if (parts.length == 3) box.setAttributeNS(ns, "docx4j:margin-box", parts[1] + " " + parts[2]);
 	}
 
 	/** An anchored picture's holder positioned at (x, top) from its paragraph's top (or, pageY, fixed on the page),
@@ -3834,6 +3871,7 @@ public final class WordLayoutFixups {
 			double above = y.startsWith("t:") ? textRelativeTop(para) : 0;
 			box.setAttribute("top", pt(off - above + lengthPt(box.getAttribute("padding-top"))));
 			box.setAttribute("left", pt(pageY ? x + ml : x));
+			if (pageY && inCell == null) marginY(doc, box, box.getAttribute(HINT_ANCHOR_MARGIN_Y));
 			if (!pageY && inCell == null) {
 				/* A float beside the paragraph moves a box relative to the text with its line
 				 * below mode 15, and leaves it on the column from mode 15; relative to the margin

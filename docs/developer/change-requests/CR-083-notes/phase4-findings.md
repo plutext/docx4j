@@ -651,3 +651,59 @@ Still open: wv47-14 (later, Fable: an FO hint the fork resolves against the body
 anchors relative to the margin, unverified); wv41-11; wv42-26; a radial gradient's rectangle; the reported gaps
 (perspective, 3-D, a compound line, a tile picture, a turned group). Unmeasured: `top` alignment,
 `v-same-letter-heights` without trim, `qb` outside WordArt, a colours list with a focus or the curve, an emboss's offsets.
+
+## 11. Phase 4b's round: cr083-phase4b-margin (2026-11-14)
+
+Phase 4b (the CR's phase 4b, with the fork's fop/CR-045) asks where Word puts a shape positioned against the margin
+when the header or footer runs past its margin. wv51-margin (23 probes on 24 pages, `build_vml.py`'s `fam_margin`,
+`probes-vml-margin.tsv`) was staged and read the same day, silent on bridge 22479f7 with Word 16.0.20326.20318. Each probe
+is a section of its own on A4, with 72 pt margins all round and the header and footer at 35.4. A tall header is the
+shape's paragraph and three lines of text; a tall footer is its line and three more. Every section has its own header
+and footer, so none inherits another's. The VML watermark is 468 by 117, level unless turned; the DrawingML shape is a
+300 by 80 rectangle behind the text. Read by the shapes' filled paths (`read_margin.py` in the session's scratch: the
+union of a page's silver or #BDD7EE paths); a shape's move is against its control with the header inside the margin.
+
+| Probe | Shape, position | Header, footer | Word's move | docx4j's |
+|---|---|---|---|---|
+| wv51-01, -02 | VML, centred on the margin | tall header; control | +31.65 | 0 |
+| wv51-03, -04 | VML, the margin's top | tall header; control | +63.25 | 0 |
+| wv51-05, -06 | VML, the margin's bottom | tall header; control | 0 | 0 |
+| wv51-07, -08 | VML, 100 pt below the margin's top | tall header; control | +63.25 | 0 |
+| wv51-09 | VML, centred on the page | tall header | 0 | 0 |
+| wv51-10 | VML, centred on the margin | tall footer | -31.65 | 0 |
+| wv51-11 | VML, the margin's bottom | tall footer | -63.25 | 0 |
+| wv51-12 | VML, centred on the margin | both tall | 0 | 0 |
+| wv51-13 | VML, centred, titlePg | page 1's first header tall; page 2's short | +31.65; 0 | 0 |
+| wv51-14 | VML, centred, two columns | tall header | +31.65 | 0 |
+| wv51-15 | VML diagonal (wv47-14's), centred | tall header | +31.82 (ink) | 0 |
+| wv51-16, -17 | DrawingML, centred on the margin | tall header; control | +31.64 | 0 |
+| wv51-18 | DrawingML, the margin's top | tall header | +63.27 | 0 |
+| wv51-19 | DrawingML, the margin's bottom | tall header | 0 | 0 |
+| wv51-20, -21 | DrawingML, posOffset 100 from the margin | tall header; control | +63.27 | 0 |
+| wv51-22 | DrawingML, centred on the page | tall header | 0 | 0 |
+| wv51-23 | DrawingML, centred on the margin | tall footer | -31.64 | 0 |
+
+- **The rule.** Word positions a shape relative to the margin (VML's `mso-position-vertical-relative:margin`,
+  DrawingML's `relativeFrom="margin"`) against the body as laid out. Its top is the top margin or the header's bottom,
+  whichever is lower; its bottom is the bottom margin or the footer's top, whichever is higher. The same holds for top,
+  centre, bottom and an offset, in VML and DrawingML alike. Each page takes its own header (wv51-13: the first page's
+  tall header moves its shape, the second page's short one doesn't), and two columns change nothing. A shape relative
+  to the page doesn't move.
+- **The size of the move.** The tall header's bottom is 35.4 + 4 x 24.96 = 135.24, 63.24 below the margin, and the
+  tall footer's top is as far above the bottom margin: Word's top and bottom alignments move by those 63.25, the centre
+  by half. Word's body text moves 63.39 (its label's baseline, 83.30 to 146.69).
+- **docx4j** places every margin-relative shape from the stated margins whatever the header or footer does
+  (`FOTextBoxes.createVmlContainer`; the DrawingML anchor likewise): the watermark's ink centre at 408.04 and the
+  rectangle's at 420.95 on every page, so it is off by the whole move on 15 of the 23.
+- **Aside, not phase 4b's:** docx4j's tall header is 1.8 pt taller than Word's (its body text moves 65.17, Word's 63.39;
+  the header lines' pitch 25.44 to Word's 24.96 in this package, which has no styles part).
+- **For fop/CR-045:** the fork's region-body as laid out is exactly Word's reference, on both sides. Top, bottom and an
+  offset take it as centre does, and a DrawingML anchor relative to the margin takes it as VML does.
+- **Applied** the same day (CR-083 phase 4b, closed): docx4j writes `docx4j:margin-y` (the edge the top was aligned
+  to) and `docx4j:margin-box` (the stated margins it aligned in) on a margin-relative shape's page-fixed container,
+  and the fork's fop/CR-045 (r89, merged at 5beea3b2d) shifts the top by as far as that edge of the body as laid out
+  is from the box's. On r89 every margin-relative probe here is within docx4j's header-height difference of Word's
+  (centre +0.94, top and the offset +1.93, a tall footer's bottom -1.91), the controls and page-relative probes 0.00;
+  wv47-14 0.05 from Word's (was 12.37). The box was added after the first drop: corpus 1806's footer distance (36)
+  exceeds its bottom margin (13.7), which the page master can't carry (its region-body margin clamped at 0), so a
+  shift from the master's body put its watermark 11.1 pt low; from the stated box, 0.04 from Word's.

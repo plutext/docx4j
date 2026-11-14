@@ -246,6 +246,7 @@ public class FOTextBoxes {
 		String relV = props.get("mso-position-vertical-relative");
 		String posV = props.get("mso-position-vertical");
 		String y;
+		String marginY = null;
 		if (ownVml && (relV==null || "text".equals(relV))) {
 			// from the paragraph's top before its space-before (WordLayoutFixups.anchorTextBox)
 			y = "t:" + fmt(marginTop);
@@ -271,11 +272,26 @@ public class FOTextBoxes {
 				py = refTop + marginTop; // absolute, or none given
 			}
 			y = "page:" + fmt(py);
+			/* Relative to the margin, Word measures from the body as laid out: below a header that runs past the top
+			 * margin, above a footer that runs past the bottom one (cr083-phase4b-margin, CR-083-notes/
+			 * phase4-findings.md section 11: a watermark centred +31.65, at the top and 100pt down +63.25, at the
+			 * bottom 0, under a header 63.24 past the margin; with such a footer, centred -31.65 and at the bottom
+			 * -63.25).  Which edge py was aligned to, and the box it was aligned in, for the renderer to shift by
+			 * (WordLayoutFixups.marginY): the stated margins, which the page master can't carry where a header or
+			 * footer distance exceeds its margin (corpus 1806: a footer at 36 over a bottom margin of 13.7).
+			 * @since 17.3.7 */
+			if ("margin".equals(relV)) {
+				marginY = ("center".equals(posV) ? "center" : "bottom".equals(posV) || "outside".equals(posV) ? "bottom" : "top")
+						+ " " + fmt(refTop) + " " + fmt(refBottom);
+			}
 		}
 
 		Element container = createContainer(doc, kind(wrapType), w, h, x, y, colW, mL, inset);
 		// what x is relative to, for a float beside it (WordLayoutFixups.anchorTextBox)
 		if (ownVml) container.setAttribute(WordLayoutFixups.HINT_ANCHOR_HREF, relH == null ? "text" : relH);
+		if (marginY != null && container.hasAttribute(WordLayoutFixups.HINT_ANCHOR_Y)) {
+			container.setAttribute(WordLayoutFixups.HINT_ANCHOR_MARGIN_Y, marginY);
+		}
 		/* Square, tight and through let text run beside the box; the fixups keep its band
 		 * clear when it is too wide to be positioned alone (WordLayoutFixups.textBesideBand).
 		 * Word's VML defaults are 9pt left and right.  @since 17.3.1 */
