@@ -69,6 +69,7 @@ room; Word's drawing on every page of the round but for the gaps phase 7 lists; 
 Its open items closed the same day (findings §7.5, §7.6): merged runs, rect path gradients, a numbered mark's number
 (a Claude Fable 5.1 session's; its room measured by the round cr083-phase5b, a centred number's added, the number
 lowered with its text's room); gates b487 to b492 0 movers.
+Phase 5 closed 2026-11-14 (Jason: "close phase 5"); the rest go to phase 7's gap report (phase 5's Closed bullet).
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -730,6 +731,19 @@ catalogue (through the portfolio).
       line's above only, phase 3's rule, under each spacing rule, as built; a centred number's too (now given); a
       numbered paragraph whose text has a glow now lowers its number with its text (the label's block takes the runs'
       room above; traced by the fork session). Gates b491 and b492 0 movers.
+    - **Closed** 2026-11-14 (Jason: "close phase 5"). Colour emoji is Enterprise CR-001 §6.6 item 71, outside
+      CR-083, and 3-D is phase 6. The rest go to phase 7's gap report with findings §5.1, §6.1 and §7's numbers:
+      - a gradient from a character style with a glow framed by its ink (wb82-01), not its advance;
+      - a paragraph style's outlined text, whose invisible text Word drops (wb82-02); these two are one probe each,
+        and a follow-up pair would separate the style from the glow;
+      - a simulated bold's thickening, drawn as a shading of its own (wb82-26);
+      - the highlight over the room (the fork's);
+      - a face whose glyphs can't be had (no file, a single-byte or Type 1 face), drawn without its effects and
+        reported;
+      - a numbered paragraph whose effect run falls on a later line, which lowers its label too (no corpus document);
+      - in HTML (D23): an inner shadow and a reflection not drawn; a scaled or skewed shadow drawn as its plain
+        offset; an outline's gradient not drawn, and its compound or dash drawn solid; each reported;
+      - mode 2, kept as an option and unused.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).
