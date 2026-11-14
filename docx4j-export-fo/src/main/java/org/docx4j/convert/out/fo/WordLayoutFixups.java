@@ -680,8 +680,9 @@ public final class WordLayoutFixups {
 			 * above and none below (wb82-30: 2.88pt at 24pt under a glow of 8, the paragraph after
 			 * it at the plain pitch), which is this rule's own shape, the label's ascent raising the
 			 * line and its descent counting for nothing; so the room rides on the label's ascent,
-			 * outside auto's multiple as the rise is, absorbed by atLeast's slack, none under exact.
-			 * One probe; the round cr083-phase5b asks the rest.  @since 17.3.7 */
+			 * outside auto's multiple as the rise is, absorbed by atLeast's slack, none under exact
+			 * (the round cr083-phase5b: a glow, a shadow, a reflection, 12 pt, a bullet, the level's
+			 * w:rPr, each spacing rule).  @since 17.3.7 */
 			double labelAscent = (m.winAscent + m.externalLeading) * size - Math.max(0, cut) + labelRoom;
 			double a = Math.max(labelAscent, base);
 			double d = box - base;
@@ -696,6 +697,31 @@ public final class WordLayoutFixups {
 				label.setAttribute("line-height", pt(a + d + (bodyLh - box)));
 			}
 			body.setAttribute(HINT_LABEL_ASCENT, pt(labelAscent));
+			/* The room above the paragraph's runs' effects take (TextEffectsFo.mark: their
+			 * effect-room) lowers the text's first line in the renderer, but not the label, a block
+			 * of its own on its own declared baseline; Word sets the number on the text's baseline
+			 * (cr083-phase5b's wb84-09: a glow of 8 on the text, the number and the text both 2.67
+			 * lower). So the label's block takes the most of the runs' room above, less what its
+			 * ascent already carries (its mark's, wb84-08), as block-level room with none below,
+			 * which the renderer adds to the label's line (the fork session's trace on r86: "7." and
+			 * the text then both at +2.78, the next paragraph unchanged).  The runs are the
+			 * paragraph's, not its first line's, which isn't known here.  @since 17.3.7 */
+			double runRoom = 0;
+			for (Element r : descendants(body, "inline")) runRoom = Math.max(runRoom, roomAbove(r.getAttribute(TextEffectsFo.HINT_EFFECT_ROOM)));
+			if (runRoom - labelRoom > 0.005) {
+				label.setAttribute(TextEffectsFo.HINT_EFFECT_ROOM, String.format(java.util.Locale.ROOT, "%.3f 0.000", runRoom - labelRoom));
+			}
+		}
+	}
+
+	/** The room above in an effect-room hint ("above below" in points); 0 for none or one that doesn't read */
+	private static double roomAbove(String room) {
+		if (room == null || room.length() == 0) return 0;
+		try {
+			double above = Double.parseDouble(room.trim().split("\\s+")[0]);
+			return above > 0 && above < 1e4 ? above : 0;
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 

@@ -68,6 +68,11 @@ public class NumberedLabelEffectsFoTest {
 
 	/** A numbered paragraph at 24 pt whose mark has {@code markFx}, its text plain; {@code jc} the alignment */
 	private static String fo(String markFx, String jc, int flags) throws Exception {
+		return fo(markFx, "", jc, flags);
+	}
+
+	/** As above, its text's run with {@code runFx} */
+	private static String fo(String markFx, String runFx, String jc, int flags) throws Exception {
 		WordprocessingMLPackage pkg = WordprocessingMLPackage.createPackage();
 		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
 		ndp.setJaxbElement((Numbering) XmlUtils.unmarshalString(NUMBERING));
@@ -76,7 +81,7 @@ public class NumberedLabelEffectsFoTest {
 				"<w:document " + W + "><w:body>"
 				+ "<w:p><w:pPr><w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"1\"/></w:numPr>"
 				+ "<w:jc w:val=\"" + jc + "\"/><w:rPr>" + RUN_PR + markFx + "</w:rPr></w:pPr>"
-				+ "<w:r><w:rPr>" + RUN_PR + "</w:rPr><w:t>The numbered paragraph.</w:t></w:r></w:p>"
+				+ "<w:r><w:rPr>" + RUN_PR + runFx + "</w:rPr><w:t>The numbered paragraph.</w:t></w:r></w:p>"
 				+ "<w:p><w:r><w:rPr>" + RUN_PR + "</w:rPr><w:t>A plain paragraph after it.</w:t></w:r></w:p>"
 				+ "<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/>"
 				+ "<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\"/></w:sectPr>"
@@ -176,7 +181,8 @@ public class NumberedLabelEffectsFoTest {
 		assertEquals(plainAscent, bodyLineBlock(doc).getAttributeNS(DOCX4J, "label-ascent"));
 	}
 
-	/** A centred number is drawn on the paragraph's line, an fo:inline already: its id, and no room (unmeasured) */
+	/** A centred number is drawn on the paragraph's line, an fo:inline already: its id, and its room above as a run's,
+	 *  none below (wb84-16: 2.64 above at 24 pt, as a left-aligned number's) */
 	@Test
 	public void aCentredNumberIsMarkedOnItsLine() throws Exception {
 		WordLayoutOn.assume();
@@ -192,7 +198,8 @@ public class NumberedLabelEffectsFoTest {
 			}
 			assertNotNull("route " + route + ": the label inline\n" + fo, label);
 			assertEquals("fx1", label.getAttributeNS(DOCX4J, "text-effect"));
-			assertFalse(fo.contains("effect-room"));
+			double g = org.docx4j.model.shapes.TextEffects.GLOW_ROOM * org.docx4j.model.shapes.TextEffects.scale(24) * 8;
+			assertEquals(String.format(java.util.Locale.ROOT, "%.3f 0.000", g), label.getAttributeNS(DOCX4J, "effect-room"));
 		}
 	}
 
@@ -256,5 +263,20 @@ public class NumberedLabelEffectsFoTest {
 		assertEquals("the label's line: its ascent with the room over the text's descent",
 				ascent + 2.78 + (12.65 - 9.76), pt(label.getAttributeNS(DOCX4J, "line-box")), 0.011);
 		assertFalse("none below", roomed.contains("effect-room"));
+	}
+	/** The text's run with a glow, the mark plain: the label's block takes the run's room above as block-level room with
+	 *  none below, so that the number stays on the text's lowered baseline (wb84-09: Word lowers both by 2.67); with the
+	 *  mark glowing too, only what the label's ascent doesn't carry (wb84-08: nothing) */
+	@Test
+	public void aRunsRoomAboveLowersTheLabel() throws Exception {
+		WordLayoutOn.assume();
+		double g = org.docx4j.model.shapes.TextEffects.GLOW_ROOM * org.docx4j.model.shapes.TextEffects.scale(24) * 8;
+		for (int route : ROUTES) {
+			TextEffectsFo.enabledForTest = Boolean.TRUE;
+			Element label = labelBlock(dom(fo("", GLOW8, "left", route)));
+			assertEquals("route " + route, String.format(java.util.Locale.ROOT, "%.3f 0.000", g), label.getAttributeNS(DOCX4J, "effect-room"));
+			Element both = labelBlock(dom(fo(GLOW8, GLOW8, "left", route)));
+			assertEquals("route " + route, "", both.getAttributeNS(DOCX4J, "effect-room"));
+		}
 	}
 }

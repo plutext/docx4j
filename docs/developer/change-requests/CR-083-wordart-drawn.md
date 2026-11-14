@@ -67,7 +67,8 @@ sizes (atLeast moving the baseline), and a shape's two-stop gradient on Word's c
 Step 2 built the same day (Jason: "do step 2"; findings §7) on the fork's r85 and r86: the painter, the ids and the
 room; Word's drawing on every page of the round but for the gaps phase 7 lists; gates b483 and b486 one mover, +65 lines.
 Its open items closed the same day (findings §7.5, §7.6): merged runs, rect path gradients, a numbered mark's number
-(a Claude Fable 5.1 session's; its room provisional until the round cr083-phase5b); gates b487 and b490 0 movers.
+(a Claude Fable 5.1 session's; its room measured by the round cr083-phase5b, a centred number's added, the number
+lowered with its text's room); gates b487 to b492 0 movers.
 Phases 1 and 2 reviewed by another Claude Fable 5.1 session the same day and its nine findings fixed (Jason: "fix all 9 as
 suggested"; phase 1-2 findings §8): decorations drawn, a warp's points capped, empty paragraphs, gate b468 0 movers.
 Needs CR-080 phase 1 (the geometry engine evaluates the warp presets), and CR-081 phase 1
@@ -725,6 +726,10 @@ catalogue (through the portfolio).
       session's, its room above the label's ascent until the round cr083-phase5b, staged); effects that draw nothing
       (numbering's "no shadow", "no glow", "no reflection") are none. A colour emoji is a renderer limit outside CR-083:
       Enterprise CR-001 §6.6 item 71. Gates b487 and b490 0 movers.
+    - The round cr083-phase5b read the same day (16 probes; findings §7.7): a numbered or bulleted mark's room is its
+      line's above only, phase 3's rule, under each spacing rule, as built; a centred number's too (now given); a
+      numbered paragraph whose text has a glow now lowers its number with its text (the label's block takes the runs'
+      room above; traced by the fork session). Gates b491 and b492 0 movers.
 - **Phase 6, 3-D WordArt** (D10; needs CR-081.5).
   - `w14:props3d` and `w14:scene3d` mapped to DrawingML's `sp3d` and `scene3d`, and drawn with CR-081's 3-D.
     Until then, phases 1 to 3 draw such text flat, with its fill, outline and effects, and report it (D9).

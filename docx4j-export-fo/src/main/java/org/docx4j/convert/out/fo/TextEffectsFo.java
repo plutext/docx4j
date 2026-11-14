@@ -157,13 +157,13 @@ public final class TextEffectsFo {
 	 * can't be marked on its block), or null where there is nothing to mark, the label's text then going straight into
 	 * its block as before.
 	 *
-	 * <p>The room: Word gave the one numbered line measured the mark's room above and none below (wb82-30: 2.88 pt at
-	 * 24 pt with a glow of 8, phase 3's rule; the paragraph after it at the plain pitch), which is the label's own
+	 * <p>The room: Word gives a numbered line the mark's room above and none below (wb82-30, and the round cr083-phase5b:
+	 * wb84-01 to -07, -10 to -13, a glow, a shadow and a reflection, at 24 and 12 pt, a bullet, the level's w:rPr, under
+	 * each spacing rule; phase 3's rule), which is the label's own
 	 * rule, its ascent raising the line and its descent counting for nothing ({@link WordLayoutFixups#listLabelLines}).
 	 * So the room goes on the label's block as {@link #HINT_LABEL_ROOM}, for that method to add its above to the
 	 * label's ascent, and not on the inline as a run's ({@link #HINT_EFFECT_ROOM}), which the renderer would read as
-	 * room on both sides of the label's line alone, setting the label's baseline off the text's. One probe; the round
-	 * cr083-phase5b asks the rest (a reflection, a bullet, 12 pt, each spacing rule, effects on the runs too).</p>
+	 * room on both sides of the label's line alone, setting the label's baseline off the text's.</p>
 	 *
 	 * @param rPr the label's effective properties: the paragraph mark's, under the level's where it has them
 	 * @param labelBlock the label's {@code fo:block}, still empty
@@ -179,12 +179,16 @@ public final class TextEffectsFo {
 
 	/**
 	 * A label drawn on the paragraph's own line (a centred or right-aligned numbered paragraph: an {@code fo:inline}
-	 * at the head of its block): its id, so that the renderer paints it; no room, which is unmeasured there.
+	 * at the head of its block): its id, so that the renderer paints it, and the room above as a run's, with none below,
+	 * as a left-aligned label's (cr083-phase5b's wb84-16: a centred number's glow of 8 at 24 pt 2.64 above, as
+	 * wb84-01's left-aligned one, the next paragraph at the plain pitch).
 	 *
 	 * @param rPr the label's effective properties, as {@link #labelInline}'s
 	 */
 	public static void markInlineLabel(OpcPackage pkg, AbstractConversionSettings settings, RPr rPr, Element label) {
-		enter(pkg, settings, rPr, label);
+		String room = enter(pkg, settings, rPr, label);
+		String above = room == null ? null : room.trim().split("\\s+")[0];
+		if (above != null && Double.parseDouble(above) > 0.005) label.setAttribute(HINT_EFFECT_ROOM, above + " 0.000");
 	}
 
 	/**

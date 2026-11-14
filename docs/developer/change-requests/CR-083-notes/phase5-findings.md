@@ -4,8 +4,8 @@ Phase 5 draws a body run's Word 2010 text effects: `w14:textFill`, `w14:textOutl
 `w14:reflection`, in body paragraphs, table cells, headers and footers, and in text boxes with no warp (phase 3's D12).
 3-D (`w14:props3d`, `w14:scene3d`) is phase 6's. The design is in the CR (phase 5, D3, D20 to D24). This note holds
 what is known before the round (section 1), what the FOP fork offers (section 2), the round (section 3), the
-design's review (section 4), step 1 with the fork's CR (section 5), the round read (section 6), and step 2, the
-painter (section 7).
+design's review (section 4), step 1 with the fork's CR (section 5), the round read (section 6), step 2, the
+painter (section 7), and the numbered marks' round (section 7.7).
 
 ## 1. What is known before the round (2026-11-13)
 
@@ -514,4 +514,44 @@ and merged here.
   `drawsNothing`) 0 movers, the five documents' numbers painted for nothing; b489 (the shadow and glow) 0 movers, four
   left; b490 (final) against b487 0 movers, events equal, the corpora's PDFs the same but the time fields, the probes'
   324 the same.
+
+### 7.7 The numbered marks' round, cr083-phase5b (2026-11-14)
+
+wb84-mark-room (16 probes, Fable's design, `probes-body-b.tsv`; silent on bridge 22479f7, Word 16.0.20326.20318), read
+by stext baselines against docx4j's render (`wb84_read.py` in the session's scratch). The room above a probe's line is
+its label-to-line distance less the reflection page's (a reflection takes no room above: Word 36.24, docx4j 37.65, the
+1.41 between them the labels' own), below its line-to-next distance less the plain pitch (29.28 at 24 pt, 14.64 at 12):
+
+| | Word above, below | docx4j above, below |
+|---|---|---|
+| 01 mark glow 8, 24 pt | 2.64, 0 | 2.78, 0 |
+| 02 mark shadow (blur 4, 3 at 45) | 0.72, 0 | 0.87, 0 |
+| 04 mark glow 8, 12 pt | 1.71, 0 | 1.71, 0 |
+| 06 bullet, mark glow (against 07's reflection) | 2.91, 0 | 2.78, 0 |
+| 08 mark and text glow | 2.67, 2.88 | 2.78, 2.80 |
+| 09 text glow, mark plain | 2.67, 2.88 (the number with the text) | text 2.78, 2.80; the number unmoved (then with it) |
+| 10 the level's w:rPr glow | 2.64, 0 | 2.78, 0 |
+| 11, 12, 13 auto 1.15, atLeast 40, exact 30 | 33.60, 40.10, 30.00 below | 33.69, 40.00, 30.00 |
+| 14, 15 unnumbered, mark glow, reflection | 0, 0 | 0, 0 |
+| 16 centred number, mark glow | 2.64, 0 | 0, 0 (then 2.78, 0) |
+
+- **The rule held**: a numbered or bulleted paragraph's mark (or its level's `w:rPr`) gives its line the effect's room
+  above, phase 3's rule, and none below; under auto 1.15 none below, atLeast absorbed, exact none; an unnumbered
+  paragraph's mark gives none. The label's ascent carries it, as built (7.6); no longer provisional.
+- **A centred number** (wb84-16) takes the room above too: `TextEffectsFo.markInlineLabel` now writes it as the number
+  inline's room, above only ("above 0"); docx4j's line 2.78 lower, as Word's 2.64.
+- **A numbered paragraph whose text has a glow** (wb84-09): Word gives the run's room on both sides, as on an
+  unnumbered line, and sets the number on the text's lowered baseline. docx4j's text took the room (2.78 above, the next
+  paragraph 32.08 below it) but the number stayed: the label is a block of its own on its own declared baseline. First
+  read here as the renderer's (the reader took the line's first glyph, the number, for its baseline); the fork session
+  traced it on r86 and proposed the fix, docx4j's: `WordLayoutFixups.listLabelLines` gives the label's block the most of
+  the paragraph's runs' room above, less what its ascent already carries (the mark's, wb84-08), as block-level room
+  with none below, which the renderer adds to the label's line. Now the number and the text both at 148.20 (Word both
+  2.67 lower than a plain line), the next paragraph unchanged. The runs are the paragraph's, not its first line's
+  (unknown here): a numbered paragraph whose effect run falls on a later line would lower its label too (no corpus
+  document has the shape). The general fix, a label set on the first line's baseline whatever lowers it, is the
+  fork's to order (the fork session's note).
+- Gates against b490: b491 (the centred number) and b492 (the label lowered with its runs): 0 movers, events equal, the
+  PDFs the same but the time fields, the probes' 324 the same. export-fo-tests 986 pass (`NumberedLabelEffectsFoTest`:
+  the centred number's room; a run's room on the label's block, none where the mark's ascent carries it).
 
